@@ -2,7 +2,7 @@
 
 计算数学系列课程的配套交互教学页。每页一个可拖动的实验台：零依赖、可离线打开（公式渲染需联网加载 MathJax），页内所有数值结论都由本地脚本实测得出。
 
-线上地址：<https://USERNAME.github.io/math-visualization/>
+线上地址：<https://cotigo-cmd.github.io/math-visualization/>
 
 ## 结构
 

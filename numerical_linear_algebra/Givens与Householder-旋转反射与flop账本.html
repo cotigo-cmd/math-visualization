@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Givens 旋转与 Householder 反射 · 几何与 flop 账本</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 本页 = NLA-08，对应第四次测试第 2 题原题（F/J 的几何效果、Givens QR、6 vs 4 flops）。
+  2. 关键判断：题目给的 J = [[c,s],[-s,c]]（注意第二行第一列是 −s），它把 e₁ 转到 (c,−s)，
+     所以是「顺时针」旋转 θ。标准逆时针写法是 [[c,−s],[s,c]]。θ=π/2 代入即可验证，别背结论。
+  3. F = [[c,s],[s,−c]] 是反射，反射轴与 e₁ 夹角 θ/2（θ=0 是 x 轴，θ=π/2 是 y=x）。
+  4. 实验 02 的 Givens QR 是真实执行（不是预设动画），矩阵每次旋转后重算，读数自检。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
+.crumb{font-size:13px;margin:0 0 16px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
+.sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
+.sheet .cell:last-child{border-right:none}
+.sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
+.sheet .v{font-size:14.5px;margin:0;font-weight:600}
+.sheet .no{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;color:var(--cinn)}
+h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
+.tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:#EEF3F8;color:var(--steel)}
+h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+h3{font-size:15px;font-weight:680;margin:26px 0 8px}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:4px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
+  margin:22px 0;padding:18px 20px 20px}
+.lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
+.lab-head .t{font-size:15.5px;font-weight:680}
+.lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+.lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
+canvas{display:block;width:100%;height:auto;background:var(--card);
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
+.ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
+.ctrl label{color:var(--ink2);white-space:nowrap}
+.ctrl .nm{font-family:ui-monospace,Consolas,monospace;color:var(--ink);min-width:52px}
+input[type=range]{width:180px;accent-color:var(--cinn)}
+button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  border-radius:7px;padding:5px 13px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+button:disabled{opacity:.45;cursor:default}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:none;border-radius:0;padding:5px 12px}
+.seg button.on{background:var(--steel);color:#fff}
+.readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
+.ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
+  border-bottom:1px dotted var(--grid);padding:3px 0}
+.ro .k{color:var(--ink2)}
+.ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
+.eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
+  border-radius:0 8px 8px 0;font-size:14px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+.note.a{border-left-color:var(--amber);background:#FBF6E7}
+.note .h{font-weight:680;display:block;margin-bottom:2px}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
+table.tb{border-collapse:collapse;margin:14px 0;font-size:14px;width:100%}
+table.tb td,table.tb th{border:1px solid var(--line);padding:6px 12px;text-align:left;vertical-align:top}
+table.tb th{background:#F2F5F8;font-weight:650;text-align:center;white-space:nowrap}
+table.tb td.c{text-align:center}
+table.tb tr.hi td{background:#FBF1ED;font-weight:600}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--ink2)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:22px 0 0;flex-wrap:wrap}
+.pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
+.pager a:hover{text-decoration:underline}
+.hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
+.mxwrap{overflow-x:auto;margin:12px 0}
+table.mx{border-collapse:collapse;font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  font-size:14.5px;margin:0 auto}
+table.mx td{padding:7px 14px;text-align:right;border:none;min-width:62px}
+table.mx td.zero{color:#B9C4CF}
+table.mx td.fresh{background:#EDF6F1;color:var(--green);font-weight:700;border-radius:4px}
+table.mx td.pivot{color:var(--cinn);font-weight:700}
+.mxframe{position:relative;padding:6px 10px;display:inline-block}
+.mxframe::before,.mxframe::after{content:'';position:absolute;top:0;bottom:0;width:7px;
+  border:1.5px solid var(--ink)}
+.mxframe::before{left:0;border-right:none}
+.mxframe::after{right:0;border-left:none}
+.stepinfo{font-size:13px;color:var(--ink2);margin:8px 0 0;min-height:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
+
+<div class="sheet">
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-08</p></div>
+  <div class="cell" style="flex:2 1 240px"><p class="k">主题</p><p class="v">Givens 旋转与 Householder 反射</p></div>
+  <div class="cell"><p class="k">出处</p><p class="v">第四次测试第 2 题</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+</div>
+
+<h1>反射会翻转手性，旋转不会</h1>
+<p class="lead">第四次第 2 题给了两个 \(2\times2\) 正交矩阵：\(F=\begin{bmatrix}c&s\\s&-c\end{bmatrix}\)（\(\det=-1\)，反射）与 \(J=\begin{bmatrix}c&s\\-s&c\end{bmatrix}\)（\(\det=1\)，旋转）。题目第一问就要你说清「左乘它们分别有什么几何效果，<strong>方向是顺时针还是逆时针</strong>」。这一问不画图基本答不准，因为 \(J\) 的写法与课本里的标准旋转矩阵差一个负号位置。</p>
+
+<h2><span class="no">01</span>先把两个矩阵认清楚</h2>
+<div class="eq">$$F=\begin{bmatrix}c&s\\s&-c\end{bmatrix},\qquad J=\begin{bmatrix}c&s\\-s&c\end{bmatrix},\qquad s=\sin\theta,\ c=\cos\theta.$$</div>
+<p>两个都是正交阵：\(F^{\mathrm{T}}F=J^{\mathrm{T}}J=I\)。区别只在 \(\det\)：\(\det F=c(-c)-s^2=-(c^2+s^2)=-1\)，\(\det J=c^2+s^2=1\)。</p>
+
+<div class="note">
+<span class="h">一行代码判方向：代入 \(\theta=\pi/2\) 看 \(e_1\) 去哪</span>
+\(\theta=\pi/2\) 时 \(c=0,s=1\)：<br>
+\(Je_1=\begin{bmatrix}0&1\\-1&0\end{bmatrix}\begin{bmatrix}1\\0\end{bmatrix}=\begin{bmatrix}0\\-1\end{bmatrix}\)，从 \((1,0)\) 走到 \((0,-1)\)，是<strong>顺时针</strong> \(90^\circ\)。<br>
+\(Fe_1=\begin{bmatrix}0&1\\1&0\end{bmatrix}\begin{bmatrix}1\\0\end{bmatrix}=\begin{bmatrix}0\\1\end{bmatrix}\)，关于直线 \(y=x\) 反射。<br>
+<strong>课本里的逆时针旋转矩阵是 \(\begin{bmatrix}c&-s\\s&c\end{bmatrix}\)</strong>——本题的 \(J\) 把负号放在第二行第一列，方向就反了。这是最容易答错的一处。
+</div>
+
+<h2><span class="no">02</span>沙盘：拖 \(\theta\)，看手性怎么变</h2>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">F 与 J 的几何效果</span><span class="tag">第四次第 2(a) 题</span></div>
+  <p class="lab-sub">灰色是原始图形（一个不等边三角形，有明确手性）。钢青是 \(J\) 作用后，朱砂是 \(F\) 作用后。拖动 \(\theta\)：旋转保持三角形的手性（只是转），反射会把它翻成镜像。虚线是 \(F\) 的反射轴。</p>
+
+  <canvas id="cv-givens" width="720" height="420"></canvas>
+
+  <div class="ctrls">
+    <div class="ctrl"><label>θ</label><input type="range" id="s-th" min="0" max="360" step="1" value="72"><span class="nm" id="v-th">72°</span></div>
+    <button id="b-anim">▶ 自动旋转</button>
+    <span class="seg" id="seg-show">
+      <button data-m="both" class="on">两者</button><button data-m="J">只看 J</button><button data-m="F">只看 F</button>
+    </span>
+  </div>
+
+  <div class="readouts">
+    <div class="ro"><span class="k">J e₁ 的极角</span><span class="v" id="r-ja">−40.0°</span></div>
+    <div class="ro"><span class="k">J 的旋转方向</span><span class="v" id="r-jdir">顺时针</span></div>
+    <div class="ro"><span class="k">F 的反射轴角</span><span class="v" id="r-fax">20.0°</span></div>
+    <div class="ro"><span class="k">det F</span><span class="v" id="r-df">−1</span></div>
+    <div class="ro"><span class="k">det J</span><span class="v" id="r-dj">1</span></div>
+    <div class="ro"><span class="k">三角形手性（有向面积）</span><span class="v" id="r-or">原始 +0.000 · J +0.000 · F −0.000</span></div>
+  </div>
+  <p class="hint">「有向面积」是手性的判据：\(J\) 作用后符号不变，\(F\) 作用后符号翻转。这比「看起来像镜像」可靠。</p>
+</section>
+
+<div class="note b">
+<span class="h">\(F\) 的反射轴为什么是 \(\theta/2\)</span>
+反射轴上的向量必须不动：解 \(Fx=x\)，即 \((c-1)x+sy=0\) 与 \(sx-(c+1)y=0\)。用半角公式 \(c-1=-2\sin^2\tfrac\theta2\)、\(s=2\sin\tfrac\theta2\cos\tfrac\theta2\)，第一式化为 \(-\sin\tfrac\theta2\,x+\cos\tfrac\theta2\,y=0\)，即 \(y=\tan\tfrac\theta2\,x\)。所以轴方向是 \((\cos\tfrac\theta2,\sin\tfrac\theta2)\)，与 \(e_1\) 夹角 \(\theta/2\)。<br>
+另一个特征向量是 \((-\sin\tfrac\theta2,\cos\tfrac\theta2)\)，对应特征值 \(-1\)——法向被翻号，这正是「反射」。
+</div>
+
+<h2><span class="no">03</span>Givens QR：一次转掉一个元素</h2>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">从下往上消零</span><span class="tag">第四次第 2(b) 题</span></div>
+  <p class="lab-sub">对一个 \(4\times3\) 矩阵真实执行 Givens 旋转。每次点击「下一步」做一次旋转，把当前位置（绿色）消成 0。注意顺序：<strong>外层按列、内层从下往上</strong>——这样每次旋转只影响两行，已消掉的零不会被破坏。</p>
+
+  <div class="mxwrap"><div class="mxframe" id="mxhost"></div></div>
+
+  <div class="ctrls">
+    <button id="b-next">下一步 ▸</button>
+    <button id="b-all">全部完成</button>
+    <button id="b-reset">重置</button>
+    <span class="mono" style="font-size:12.5px;color:#5A6B7C">已用旋转：<b id="v-rot">0</b> 次 · 累计 flops：<b id="v-flop">0</b></span>
+  </div>
+  <div class="stepinfo" id="stepinfo">准备就绪。矩阵是 \(4\times3\)，共需要 \(3+2+1=6\) 次旋转（\(k=1\) 消 2 个，\(k=2\) 消 1 个…按列计）。</div>
+</section>
+
+<div class="note g">
+<span class="h">算法骨架（答题时照这个写）</span>
+<pre style="margin:6px 0;font-size:12.5px;line-height:1.7;overflow-x:auto">for k = 1 : n
+  for i = m : -1 : k+1          // 从下往上
+     r = hypot(A[i-1][k], A[i][k])
+     c = A[i-1][k]/r ;  s = -A[i][k]/r
+     for j = k : n              // 只动第 k 列及右侧
+        t          =  c*A[i-1][j] + s*A[i][j]
+        A[i][j]    = -s*A[i-1][j] + c*A[i][j]
+        A[i-1][j]  = t
+     // 同时把同样的旋转作用到 Q 上（或累积 G 的乘积）
+</pre>
+<strong>必须先存 \(t\)</strong>：第二个式子要用 \(A[i-1][j]\) 的原值，若先覆盖它就会连锁算错。这是手写代码和手算都会翻车的地方。
+</div>
+
+<h2><span class="no">04</span>6 flops vs 4 flops：为什么多 50%</h2>
+
+<p>题目要求「证明你的算法在每个操作项上有六次计算，而不是四次」。这里的「操作项」指<strong>更新一个元素</strong>这件事。</p>
+
+<table class="tb">
+<tr><th>算法</th><th>更新一个元素要做的事</th><th>运算数</th></tr>
+<tr>
+  <td>MGS</td>
+  <td>先算投影系数 \(r_{ij}=q_i^{\mathrm{T}}a_j\)（1 乘 1 加），再更新 \(a_j\leftarrow a_j-r_{ij}q_i\)（1 乘 1 减）</td>
+  <td class="c">4 flops</td>
+</tr>
+<tr class="hi">
+  <td>Givens</td>
+  <td>一次旋转同时更新<strong>两个</strong>元素：
+    \(t=c\,a_{i-1}+s\,a_i\)（2 乘 2 加）与 \(a_i'=-s\,a_{i-1}+c\,a_i\)（2 乘 2 减）</td>
+  <td class="c">6 flops</td>
+</tr>
+</table>
+
+<div class="eq">$$\frac{6}{4}=1.5\quad\Longrightarrow\quad\text{Givens 比 MGS 多 }50\%.$$</div>
+
+<div class="note a">
+<span class="h">这个「50%」到底在比什么——别答错</span>
+题目说的是<strong>每个操作项</strong>（per operation）的运算数，不是整个算法的总 flops。整算法的量级对比是另一张表：MGS \(\approx2mn^2\)，Householder \(\approx2mn^2-\tfrac23n^3\)，Givens \(\approx3mn^2-n^3\)（约 1.5 倍）。两者结论方向一致（Givens 更贵），但说法不同，答题时按题目问的是哪一个来答。<br>
+Givens 贵的原因是：每次旋转为了消掉<strong>一个</strong>元素，要把两整行（从第 \(k\) 列到第 \(n\) 列）都过一遍；而 MGS 一次更新只针对一列。
+</div>
+
+<h2><span class="no">05</span>Householder 的全套结论（第四次第 1 题）</h2>
+<table class="tb">
+<tr><th>项目</th><th>结果</th><th>理由</th></tr>
+<tr><td>定义</td><td>\(H=I-2\dfrac{vv^*}{v^*v}\)</td><td>\(v\) 是镜面法向</td></tr>
+<tr><td>Hermitian</td><td>\(H^*=H\)</td><td>\(vv^*\) 是 Hermitian</td></tr>
+<tr><td>对合</td><td>\(H^2=I\)</td><td>展开 \(I-4P+4P^2\)，\(P=vv^*/v^*v\) 是投影，\(P^2=P\)</td></tr>
+<tr><td>特征值</td><td>\(-1\)（1 重，特征向量 \(v\)）；\(1\)（\(m-1\) 重，特征向量取 \(v^\perp\) 中任意向量）</td><td>\(Hv=v-2v=-v\)；\(Hx=x\)（\(x\perp v\)）</td></tr>
+<tr><td>行列式</td><td>\(\det H=-1\)</td><td>特征值之积 \((-1)\cdot1^{m-1}\)</td></tr>
+<tr><td>奇异值</td><td>全部为 \(1\)</td><td>\(H^*H=I\)</td></tr>
+<tr><td>2-范数 / F-范数</td><td>\(\|H\|_2=1\)，\(\|H\|_F=\sqrt m\)</td><td>正交但 \(F\) 范数不为 1</td></tr>
+</table>
+<div class="note">
+<span class="h">几何论证 vs 代数证明，题目要两个都写</span>
+<strong>几何</strong>：把 \(x\) 拆成 \(x=x_\parallel+x_\perp\)（沿 \(v\) 与垂直 \(v\)）。\(Hx=x_\parallel-2x_\parallel+x_\perp=-x_\parallel+x_\perp\)，即法向分量翻号、切向分量不变——关于超平面 \(v^\perp\) 的镜像。<br>
+<strong>代数</strong>：\(H^2=(I-2P)^2=I-4P+4P^2=I\)（用 \(P^2=P\)），且 \(H^*=H\)，故 \(H^*H=I\)，\(H\) 是酉阵；\(\det H=\det(I-2P)=(-1)^{\operatorname{rank}P}=-1\)（\(P\) 秩 1）。
+</div>
+
+<div class="note b">
+<span class="h">构造 \(H\) 把 \(x\) 打到 \(e_1\) 方向，为什么取负号</span>
+取 \(v=x+\mathrm{sign}(x_1)\|x\|_2e_1\)（实情形），则 \(Hx=-\mathrm{sign}(x_1)\|x\|_2e_1\)。<strong>取「加」而不是「减」</strong>，是为了让 \(v\) 的第一个分量 \(x_1+\mathrm{sign}(x_1)\|x\|_2\) 变成两个同号数相加——若取减号，当 \(x\) 接近 \(e_1\) 方向时 \(x_1-\|x\|_2\) 是两个相近大数相减，灾难性相消会把有效数字吃光。这句话就是「为什么这样选」的标准答案。
+</div>
+
+<div class="pager">
+  <a href="./SVD手算-超椭圆与最少负号.html">← NLA-07 SVD 手算</a>
+  <a href="./完全QR-两平面交线与棋盘结构.html">NLA-09 完全 QR 与交线 →</a>
+</div>
+
+<footer>
+<p>题目取自第四次测试第 2 题；矩阵消元由页内真实执行，flops 按「每次旋转更新两行、每元素 3 次运算」累计。</p>
+<p>目录：math_visualization/site/numerical_linear_algebra/ · 图号 NLA-08</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const D2R = Math.PI/180, R2D = 180/Math.PI;
+
+  // ---------- 实验 01 ----------
+  const cv = $('cv-givens');
+  const dpr = window.devicePixelRatio||1;
+  const CW = 720, CH = 420;
+  cv.width = CW*dpr; cv.height = CH*dpr;
+  cv.style.width = CW+'px'; cv.style.maxWidth='100%';
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  const half = 1.32;
+  const cx = CW/2, cy = CH/2;
+  const sc = (Math.min(CW,CH)/2 - 38)/half;
+  const X = x => cx + x*sc, Y = y => cy - y*sc;
+
+  let theta = 72*D2R;
+  let mode = 'both';
+  let animId = null;
+
+  // 不等边三角形（有手性）；略超出单位圆，便于看清旋转与反射的差别
+  const TRI = [[0.22,0.12],[1.12,0.24],[0.30,0.98]];
+
+  function apply(M,p){ return [M[0][0]*p[0]+M[0][1]*p[1], M[1][0]*p[0]+M[1][1]*p[1]]; }
+  function signedArea(P){
+    let a=0;
+    for(let i=0;i<P.length;i++){
+      const q=P[(i+1)%P.length];
+      a += P[i][0]*q[1]-q[0]*P[i][1];
+    }
+    return a/2;
+  }
+
+  function drawGrid(){
+    ctx.strokeStyle='#E6EBF1'; ctx.lineWidth=1;
+    for(let v=-1.5;v<=1.5+1e-9;v+=0.5){
+      ctx.beginPath(); ctx.moveTo(X(v),Y(-1.55)); ctx.lineTo(X(v),Y(1.55)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(-1.55),Y(v)); ctx.lineTo(X(1.55),Y(v)); ctx.stroke();
+    }
+    ctx.strokeStyle='#B9C4CF'; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(X(-1.55),Y(0)); ctx.lineTo(X(1.55),Y(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(0),Y(-1.55)); ctx.lineTo(X(0),Y(1.55)); ctx.stroke();
+  }
+
+  function poly(P, stroke, fill, lw, dash){
+    ctx.beginPath();
+    P.forEach((p,i)=> i? ctx.lineTo(X(p[0]),Y(p[1])) : ctx.moveTo(X(p[0]),Y(p[1])));
+    ctx.closePath();
+    if(fill){ ctx.fillStyle=fill; ctx.fill(); }
+    ctx.setLineDash(dash||[]);
+    ctx.strokeStyle=stroke; ctx.lineWidth=lw||2; ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function arrow(x0,y0,x1,y1,color,label){
+    const X0=X(x0),Y0=Y(y0),X1=X(x1),Y1=Y(y1);
+    const dx=X1-X0, dy=Y1-Y0, len=Math.hypot(dx,dy);
+    if(len<1) return;
+    ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.moveTo(X0,Y0); ctx.lineTo(X1,Y1); ctx.stroke();
+    const a=Math.atan2(dy,dx), hl=Math.min(12,len*0.35);
+    ctx.beginPath();
+    ctx.moveTo(X1,Y1);
+    ctx.lineTo(X1-hl*Math.cos(a-0.36), Y1-hl*Math.sin(a-0.36));
+    ctx.lineTo(X1-hl*Math.cos(a+0.36), Y1-hl*Math.sin(a+0.36));
+    ctx.closePath(); ctx.fill();
+    if(label){
+      ctx.font='600 12.5px ui-monospace,Consolas,monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      const px=X1+16*Math.cos(a), py=Y1+16*Math.sin(a);
+      const tw=ctx.measureText(label).width;
+      ctx.fillStyle='rgba(255,255,255,.9)';
+      ctx.fillRect(px-tw/2-3,py-9,tw+6,18);
+      ctx.fillStyle=color; ctx.fillText(label,px,py);
+    }
+  }
+
+  function draw(){
+    const c = Math.cos(theta), s = Math.sin(theta);
+    const F = [[c,s],[s,-c]];
+    const J = [[c,s],[-s,c]];
+    ctx.clearRect(0,0,CW,CH);
+    drawGrid();
+
+    // 单位圆
+    ctx.strokeStyle='#DCE3EA'; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.arc(X(0),Y(0),sc,0,7); ctx.stroke();
+
+    // F 的反射轴（角 θ/2）
+    if(mode!=='J'){
+      const ax = theta/2;
+      ctx.setLineDash([6,6]); ctx.strokeStyle='#E8C9BE'; ctx.lineWidth=1.6;
+      ctx.beginPath();
+      ctx.moveTo(X(-1.5*Math.cos(ax)),Y(-1.5*Math.sin(ax)));
+      ctx.lineTo(X(1.5*Math.cos(ax)),Y(1.5*Math.sin(ax)));
+      ctx.stroke(); ctx.setLineDash([]);
+      ctx.font='600 11.5px ui-monospace,Consolas,monospace';
+      ctx.fillStyle='#C08A76'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText('反射轴 θ/2', X(1.5*Math.cos(ax))+6, Y(1.5*Math.sin(ax)));
+    }
+
+    // 原始三角形
+    poly(TRI,'#8A96A3','rgba(138,150,163,.13)',1.8);
+
+    // J 作用（实线）
+    if(mode!=='F'){
+      const TJ = TRI.map(p=>apply(J,p));
+      poly(TJ,'#2F5D8A','rgba(47,93,138,.13)',2.2);
+      arrow(0,0,J[0][0],J[1][0],'#2F5D8A','Je₁');
+    }
+    // F 作用（虚线，与 J 区分）
+    if(mode!=='J'){
+      const TF = TRI.map(p=>apply(F,p));
+      poly(TF,'#B04A2F','rgba(176,74,47,.13)',2.2,[7,4]);
+      arrow(0,0,F[0][0],F[1][0],'#B04A2F','Fe₁');
+    }
+
+    // 图例（带白底）
+    ctx.font='600 12px system-ui';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    const items = [['■ 原始','#8A96A3']];
+    if(mode!=='F') items.push(['■ J 作用（旋转，实线）','#2F5D8A']);
+    if(mode!=='J') items.push(['■ F 作用（反射，虚线）','#B04A2F']);
+    let lx = 14;
+    ctx.fillStyle='rgba(255,255,255,.86)';
+    ctx.fillRect(8, 8, 460, 26);
+    for(const [txt,col] of items){
+      ctx.fillStyle=col; ctx.fillText(txt, lx, 22);
+      lx += ctx.measureText(txt).width + 16;
+    }
+
+    // 读数
+    const angJ = Math.atan2(J[1][0], J[0][0])*R2D;
+    $('r-ja').textContent = (angJ>0?'+':'')+angJ.toFixed(1)+'°';
+    $('r-jdir').textContent = (s>=0? '顺时针' : '逆时针') + '（θ=' + (theta*R2D).toFixed(0) + '°）';
+    $('r-fax').textContent = ((theta/2)*R2D).toFixed(1)+'°';
+    const o0 = signedArea(TRI);
+    const oJ = signedArea(TRI.map(p=>apply(J,p)));
+    const oF = signedArea(TRI.map(p=>apply(F,p)));
+    $('r-or').textContent = `${o0>0?'+':''}${o0.toFixed(3)} · ${oJ>0?'+':''}${oJ.toFixed(3)} · ${oF>0?'+':''}${oF.toFixed(3)}`;
+  }
+
+  $('s-th').addEventListener('input',e=>{
+    theta = +e.target.value*D2R;
+    $('v-th').textContent = e.target.value+'°';
+    draw();
+  });
+  document.querySelectorAll('#seg-show button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('#seg-show button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); mode = b.dataset.m; draw();
+    });
+  });
+  $('b-anim').addEventListener('click',()=>{
+    if(animId){ cancelAnimationFrame(animId); animId=null; $('b-anim').textContent='▶ 自动旋转'; return; }
+    $('b-anim').textContent='⏸ 暂停';
+    let t0 = performance.now();
+    const tick = (now)=>{
+      theta = (theta + 0.012) % (Math.PI*2);
+      $('s-th').value = Math.round(theta*R2D);
+      $('v-th').textContent = Math.round(theta*R2D)+'°';
+      draw();
+      animId = requestAnimationFrame(tick);
+    };
+    animId = requestAnimationFrame(tick);
+  });
+
+  draw();
+
+  // ---------- 实验 02：Givens QR ----------
+  const A0 = [[4,1,2],[3,5,1],[1,2,6],[2,1,3]];
+  const M = A0.length, N = A0[0].length;
+  let A = A0.map(r=>r.slice());
+  let k = 0, i = M-1, rot = 0, flops = 0;
+  let fresh = null;
+
+  function render(){
+    let html = '<table class="mx">';
+    for(let r=0;r<M;r++){
+      html += '<tr>';
+      for(let c=0;c<N;c++){
+        const v = A[r][c];
+        const isZero = Math.abs(v) < 5e-13;
+        let cls = isZero? 'zero' : '';
+        if(fresh && fresh[0]===r && fresh[1]===c) cls = 'fresh';
+        else if(Math.abs(v) > 5e-13 && c < k) cls = 'pivot';
+        const txt = isZero? '0' : (Math.abs(v)>=100? v.toFixed(0) : v.toFixed(4).replace(/\.?0+$/,''));
+        html += `<td class="${cls}">${txt}</td>`;
+      }
+      html += '</tr>';
+    }
+    html += '</table>';
+    $('mxhost').innerHTML = html;
+    $('v-rot').textContent = rot;
+    $('v-flop').textContent = flops;
+  }
+
+  function nextStep(){
+    if(k >= N){ $('stepinfo').textContent='已完成：下三角全为 0，得到上三角 R。'; return; }
+    // 找下一个需要消的位置：从下往上，跳过已为 0 的
+    while(i > k && Math.abs(A[i][k]) < 5e-13) i--;
+    if(i <= k){ k++; i = M-1; nextStep(); return; }
+
+    const a = A[i-1][k], b = A[i][k];
+    const r = Math.hypot(a,b);
+    const c = a/r, s = -b/r;
+    const before = A.map(row=>row.slice());
+    for(let j=k;j<N;j++){
+      const t = c*A[i-1][j] + s*A[i][j];
+      A[i][j] = -s*A[i-1][j] + c*A[i][j];
+      A[i-1][j] = t;
+    }
+    rot++; flops += 6;
+    fresh = [i,k];
+    $('stepinfo').innerHTML =
+      `第 ${rot} 次旋转：用第 ${i} 行消去第 ${i+1} 行的第 ${k+1} 列。` +
+      `取 r=√(${a.toFixed(3)}²+${b.toFixed(3)}²)=${r.toFixed(4)}，c=${c.toFixed(4)}，s=${s.toFixed(4)}。` +
+      `该位置已变为 0（绿色）。`;
+    render();
+    i--;
+    if(i <= k){ k++; i = M-1; }
+  }
+
+  $('b-next').addEventListener('click', nextStep);
+  $('b-all').addEventListener('click', ()=>{ let guard=0; while(k<N && guard++<50) nextStep(); });
+  $('b-reset').addEventListener('click', ()=>{
+    A = A0.map(r=>r.slice()); k=0; i=M-1; rot=0; flops=0; fresh=null;
+    $('stepinfo').textContent = '已重置。矩阵是 4×3，需要 6 次旋转。';
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

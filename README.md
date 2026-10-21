@@ -19,7 +19,7 @@ index.html                     总导航
 | --- | --- | --- |
 | `pde/` | 数学物理方程（谷超豪 第四版）：卷积与热核、分离变量法、傅里叶变换、唯一性与稳定性、达朗贝尔公式、高维波动方程、调和方程 | 9 页已上线 |
 | `numerical_analysis/` | 数值分析（张平文、李铁军）：Runge 现象与 Chebyshev 节点、数值积分与 Romberg、非线性方程迭代与收敛阶 | 3 页已上线 |
-| `numerical_linear_algebra/` | 数值线性代数（Trefethen & Bau）：矩阵—向量乘积、范数、SVD、投影算子、QR、最小二乘 | 6 页已上线 |
+| `numerical_linear_algebra/` | 数值线性代数（Trefethen & Bau）：矩阵—向量乘积、范数、SVD、投影算子、QR、最小二乘；另含作业向三页（SVD 超椭圆、Givens/Householder、完全 QR）与期中复习指南 | 9 页 + 1 份复习指南 |
 | `cpp_programming/` | C++ 程序设计（谭浩强）：指针与内存布局 | 1 页已上线 |
 | `functional_analysis/` | 泛函分析 | 筹备中 |
 | `parallel_computing/` | 并行算法（Quinn） | 筹备中 |

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>完全 QR · 两平面交线与 R 的棋盘结构</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 本页 = NLA-09，合并第三次测试第 5 题（完全 QR 求交线）与第 4 题（R 的棋盘结构）。
+     两题同属「完全 QR 的副产品」这一条线，拆开反而割裂。
+  2. 3D 场景自实现正交投影（yaw/pitch 旋转 + 正交投影），不引第三方库。
+     两个平面都过原点，交线是 x 轴；法向量由完全 QR 的第 3 列给出（即两方向向量的叉积方向）。
+  3. 棋盘结构的构造有一个坑：奇数列之间并不互相正交，若直接对原始奇列顺序投影，
+     残差会留下 1e-1 量级的分量（实测）。必须先把奇列正交化成同 span 的正交基，再用它投影偶列。
+     verify_midterm.js 第 4 节记录了这次踩坑。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
+.crumb{font-size:13px;margin:0 0 16px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
+.sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
+.sheet .cell:last-child{border-right:none}
+.sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
+.sheet .v{font-size:14.5px;margin:0;font-weight:600}
+.sheet .no{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;color:var(--cinn)}
+h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
+.tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:#EEF3F8;color:var(--steel)}
+h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+h3{font-size:15px;font-weight:680;margin:26px 0 8px}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:4px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
+  margin:22px 0;padding:18px 20px 20px}
+.lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
+.lab-head .t{font-size:15.5px;font-weight:680}
+.lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+.lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
+canvas{display:block;width:100%;height:auto;background:var(--card);
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
+.ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
+.ctrl label{color:var(--ink2);white-space:nowrap}
+input[type=range]{width:150px;accent-color:var(--cinn)}
+button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  border-radius:7px;padding:5px 13px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:none;border-radius:0;padding:5px 12px}
+.seg button.on{background:var(--steel);color:#fff}
+.readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
+.ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
+  border-bottom:1px dotted var(--grid);padding:3px 0}
+.ro .k{color:var(--ink2)}
+.ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
+.eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
+  border-radius:0 8px 8px 0;font-size:14px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+.note.a{border-left-color:var(--amber);background:#FBF6E7}
+.note .h{font-weight:680;display:block;margin-bottom:2px}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
+table.tb{border-collapse:collapse;margin:14px 0;font-size:14px;width:100%}
+table.tb td,table.tb th{border:1px solid var(--line);padding:6px 12px;text-align:left;vertical-align:top}
+table.tb th{background:#F2F5F8;font-weight:650;text-align:center;white-space:nowrap}
+table.tb td.c{text-align:center}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--ink2)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:22px 0 0;flex-wrap:wrap}
+.pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
+.pager a:hover{text-decoration:underline}
+.hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
+
+<div class="sheet">
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-09</p></div>
+  <div class="cell" style="flex:2 1 240px"><p class="k">主题</p><p class="v">完全 QR · 交线与棋盘结构</p></div>
+  <div class="cell"><p class="k">出处</p><p class="v">第三次测试第 4、5 题</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+</div>
+
+<h1>完全 QR 的两个副产品：法向量，和一张棋盘</h1>
+<p class="lead">第三次测试有两道题的答案藏在同一个地方：<strong>完全 QR 的第 \(k\) 列，是前 \(k-1\) 列张成空间的正交补方向</strong>。第 5 题用它求两平面交线（第 3 列 = 法向量），第 4 题用它看 \(\hat R\) 的稀疏结构（奇偶正交导致棋盘格）。这一页把两件事放在一起讲，因为破题只需要记住那一句话。</p>
+
+<h2><span class="no">01</span>核心一句话</h2>
+<div class="note b">
+<span class="h">完全 QR 的正交补性质</span>
+设 \(A\in\mathbb{C}^{m\times n}\) 列满秩，做<strong>完全</strong> QR：\(A=QR\)，其中 \(Q\) 是 \(m\times m\) 酉阵、\(R\) 是 \(m\times n\) 上梯形。则 \(Q\) 的前 \(n\) 列张成 \(\mathcal{C}(A)\)，<strong>后 \(m-n\) 列张成 \(\mathcal{C}(A)^\perp\)</strong>。<br>
+在 \(\mathbb{R}^3\) 里取两条方向向量拼成 \(3\times2\) 的 \(A\)，则 \(Q\) 的第 3 列 \(q_3\perp\mathcal{C}(A)\)，正是这两条向量所张平面的<strong>法向量</strong>。
+</div>
+
+<h2><span class="no">02</span>沙盘：两平面与它们的交线</h2>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">完全 QR 求交线</span><span class="tag">第三次第 5 题</span></div>
+  <p class="lab-sub">两个过原点的平面：\(P^{(1)}=\langle x^{(1)},y^{(1)}\rangle=\mathrm{span}\{(1,0,0),(0,1,0)\}\)，\(P^{(2)}=\langle x^{(2)},y^{(2)}\rangle=\mathrm{span}\{(1,0,0),(1,1,1)\}\)。拖动画面可旋转视角。虚线是各自平面的法向量（完全 QR 的第 3 列），绿线是交线方向。</p>
+
+  <canvas id="cv3d" width="720" height="440"></canvas>
+
+  <div class="ctrls">
+    <button id="b-n1">法向量 n⁽¹⁾</button>
+    <button id="b-n2">法向量 n⁽²⁾</button>
+    <button id="b-line">交线 v</button>
+    <button id="b-reset">重置视角</button>
+  </div>
+
+  <div class="readouts">
+    <div class="ro"><span class="k">n⁽¹⁾（Q₁ 第 3 列）</span><span class="v" id="r-n1">(0, 0, 1)</span></div>
+    <div class="ro"><span class="k">n⁽²⁾（Q₂ 第 3 列）</span><span class="v" id="r-n2">(0, −0.7071, 0.7071)</span></div>
+    <div class="ro"><span class="k">交线方向 n⁽¹⁾×n⁽²⁾</span><span class="v" id="r-v">(1, 0, 0)</span></div>
+    <div class="ro"><span class="k">‖v‖</span><span class="v" id="r-vn">1.000000</span></div>
+    <div class="ro"><span class="k">n⁽¹⁾·n⁽²⁾</span><span class="v" id="r-dot">0.0000</span></div>
+    <div class="ro"><span class="k">视角（yaw, pitch）</span><span class="v" id="r-cam">−32°, 22°</span></div>
+  </div>
+  <p class="hint">两法向量夹角 45°，点积为 0 是因为这里恰好正交吗？不是——本题 \(n^{(1)}\cdot n^{(2)}=0\) 纯属巧合（\(\cos90°\)）。一般两平面不垂直时点积不为零，交线方向仍由叉积给出。</p>
+</section>
+
+<div class="note g">
+<span class="h">解题步骤（照这个写就能拿分）</span>
+<ol style="margin:6px 0 0">
+  <li>把 \(x^{(1)},y^{(1)}\) 拼成 \(A_1\in\mathbb{R}^{3\times2}\)，做<strong>完全</strong> QR：\(A_1=Q_1R_1\)，\(Q_1\in\mathbb{R}^{3\times3}\)。</li>
+  <li>取 \(n^{(1)}=Q_1(:,3)\)——它正交于 \(\mathcal{C}(A_1)=P^{(1)}\)，即 \(P^{(1)}\) 的法向量。同理得 \(n^{(2)}\)。</li>
+  <li>把 \(n^{(1)},n^{(2)}\) 拼成 \(B\in\mathbb{R}^{3\times2}\)，再做完全 QR：\(B=Q_BR_B\)，取 \(v=Q_B(:,3)\)。</li>
+  <li>\(v\perp n^{(1)}\) 且 \(v\perp n^{(2)}\)，故 \(v\) 同时平行于两个平面，即交线方向。<strong>非零向量 \(v\) 就是答案</strong>（交线上的点因两平面过原点而可取原点）。</li>
+</ol>
+</div>
+
+<h2><span class="no">03</span>R 的棋盘结构</h2>
+
+<p>第三次第 4 题：设 \(A\) 的第 \(1,3,5,\dots\) 列与第 \(2,4,6,\dots\) 列两两正交，\(A\) 列满秩。问约化 QR \(A=\hat Q\hat R\) 中 \(\hat R\) 有什么特殊性质？</p>
+
+<p>答案：<strong>\(\hat R\) 只可能在 \(j-i\) 为偶数的位置非零</strong>，即</p>
+<div class="eq">$$r_{ij}\ne0\ \Longrightarrow\ i\equiv j\ (\mathrm{mod}\ 2).$$</div>
+
+<div class="note">
+<span class="h">归纳证明（三步，要能默写）</span>
+记 \(a_j\) 为 \(A\) 的第 \(j\) 列，\(q_j\) 为 \(\hat Q\) 的第 \(j\) 列。<br>
+<strong>1.</strong> \(q_1\propto a_1\)，只由第 1 列（奇）张成。<br>
+<strong>2.</strong> \(q_2\propto a_2-\mathrm{proj}_{q_1}a_2=a_2-\mathrm{proj}_{a_1}a_2\)。因为 \(a_2\perp a_1\)（奇偶不同），投影为 0，故 \(q_2\propto a_2\)，只由第 2 列（偶）张成。<br>
+<strong>3.</strong> 归纳：设 \(q_1,\dots,q_{j-1}\) 中，下标为奇的只由奇列张成、为偶的只由偶列张成。则 \(q_j\propto a_j-\sum_{i<j}(q_i^*a_j)q_i\)。若 \(i\) 与 \(j\) 奇偶不同，则 \(q_i\) 由与 \(j\) 不同奇偶的列张成，而 \(a_j\) 与那些列全部正交，故 \(q_i^*a_j=0\)。于是只剩同奇偶的项，\(q_j\) 只由与 \(j\) 同奇偶的列张成。<br>
+<strong>结论</strong>：\(r_{ij}=q_i^*a_j\)，若 \(i,j\) 奇偶不同则为 0。\(\hat R\) 上三角，所以图案是「棋盘格」：主对角、次对角、隔一条对角…… 才有非零元。
+</div>
+
+<section class="lab" id="lab-board">
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">满足条件 vs 不满足条件</span><span class="tag">第三次第 4 题</span></div>
+  <p class="lab-sub">同一个 \(8\times6\) 矩阵、同样的 MGS 算法，唯一区别是列之间是否满足「奇偶正交」。灰色格表示该位置为 0（到 \(10^{-13}\) 以下），色块深浅表示 \(|r_{ij}|\) 的大小。切换两种矩阵，看棋盘图案怎么出现。</p>
+
+  <canvas id="cvR" width="720" height="360"></canvas>
+
+  <div class="ctrls">
+    <span class="seg" id="seg-mode">
+      <button data-m="odd" class="on">奇偶列正交</button><button data-m="rand">普通随机矩阵</button>
+    </span>
+    <span class="mono" style="font-size:12.5px;color:#5A6B7C">奇距位置最大 |r|：<b id="v-oddmax">0.0e+0</b></span>
+  </div>
+  <p class="hint">左图是 \(\hat R\)（\(6\times6\) 上三角），右图是 \(A\) 的列间内积矩阵（灰=0）。右图能直接看出「奇偶两组之间全为零」这个前提是否成立。</p>
+</section>
+
+<div class="note a">
+<span class="h">实测数据（verify_midterm.js 第 4 节）</span>
+\(8\times6\) 随机矩阵，奇数列与偶数列强制正交后做 MGS：奇距位置的最大 \(|r_{ij}|=2.9\times10^{-16}\)（机器精度级），偶距 6 个位置全部非零。\(\hat R\) 长这样：
+<pre style="margin:8px 0;font-size:12.5px;line-height:1.7;overflow-x:auto"> 0.92    ·    -0.15    ·     0.08    ·
+  ·     0.44    ·    -0.29    ·    -0.59
+  ·      ·     0.77    ·     0.50    ·
+  ·      ·      ·     0.56    ·    -0.22
+  ·      ·      ·      ·     0.81    ·
+  ·      ·      ·      ·      ·     0.61</pre>
+</div>
+
+<div class="note">
+<span class="h">构造这种矩阵时踩过的坑（值得记一笔）</span>
+想造一个「奇偶列正交」的矩阵，直觉做法是：先生成奇数列，再让每个偶数列对<strong>原始</strong>奇数列逐个投影。这样是错的——<strong>奇数列之间并不互相正交</strong>，对 \(a_1\) 投影会破坏刚对 \(a_0\) 建立的正交性，残差会留下 \(10^{-1}\) 量级的分量（实测 \(a_0\cdot a_1=-0.109\)）。<br>
+正确做法：先把奇数列<strong>正交化</strong>成同一 span 的正交基，再用这组正交基去投影偶列。或者用对偶基/两次正交化。这个坑在数值上很容易被忽略，因为「理论上正交」和「浮点上正交」是两件事。
+</div>
+
+<h2><span class="no">04</span>两题共用的一句话</h2>
+<div class="eq">$$\boxed{\ \text{完全 QR 的第 }k\text{ 列 }=\text{ 前 }k-1\text{ 列张成空间的正交补方向}\ }$$</div>
+<p>第 5 题用它求法向量（第 3 列 \(\perp\) 前 2 列），第 4 题用它解释 \(\hat R\) 的零元（\(q_i^*a_j=0\) 当奇偶不同）。考场上如果看到「求交线」「求法向量」「正交补」「\(\hat R\) 有什么性质」，先想这一句。</p>
+
+<div class="pager">
+  <a href="./Givens与Householder-旋转反射与flop账本.html">← NLA-08 Givens 与 Householder</a>
+  <a href="./期中复习-指南.html">期中复习指南 →</a>
+</div>
+
+<footer>
+<p>题目取自第三次测试第 4、5 题。3D 场景为自实现正交投影；棋盘结构由页内真实 MGS 计算，构造细节见 <span class="mono">verify_midterm.js</span> 第 4 节。</p>
+<p>目录：math_visualization/site/numerical_linear_algebra/ · 图号 NLA-09</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const D2R = Math.PI/180;
+
+  // ================= 3D 场景 =================
+  const cv = $('cv3d');
+  const dpr = window.devicePixelRatio||1;
+  const CW = 720, CH = 440;
+  cv.width = CW*dpr; cv.height = CH*dpr;
+  cv.style.width = CW+'px'; cv.style.maxWidth='100%';
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  let yaw = -32*D2R, pitch = 22*D2R;
+  const scale = 108, ox = CW/2, oy = CH/2 + 14;
+
+  let showN1 = true, showN2 = true, showLine = true;
+
+  function proj(p){
+    const cy=Math.cos(yaw), sy=Math.sin(yaw);
+    const x1 = cy*p[0] - sy*p[1];
+    const y1 = sy*p[0] + cy*p[1];
+    const z1 = p[2];
+    const cp=Math.cos(pitch), sp=Math.sin(pitch);
+    // 屏幕上方向 = y1·sin(pitch) + z·cos(pitch)：
+    // pitch=0（水平看）时 z 朝上；pitch=90°（俯视）时 y 朝上。z 必须朝上，否则法向量会画反。
+    const y2 = y1*sp + z1*cp;
+    const z2 = y1*cp - z1*sp;   // 深度：越大越远
+    return [ox + x1*scale, oy - y2*scale, z2];
+  }
+
+  // 平面 1: span{(1,0,0),(0,1,0)} —— z = 0
+  const P1u = [1,0,0], P1w = [0,1,0];
+  // 平面 2: span{(1,0,0),(1,1,1)}
+  const P2u = [1,0,0], P2w = [1/Math.sqrt(3), 1/Math.sqrt(3), 1/Math.sqrt(3)];
+
+  function planeCorners(u,w,h){
+    return [
+      [ (u[0]+w[0])*h, (u[1]+w[1])*h, (u[2]+w[2])*h],
+      [ (u[0]-w[0])*h, (u[1]-w[1])*h, (u[2]-w[2])*h],
+      [(-u[0]-w[0])*h, (-u[1]-w[1])*h, (-u[2]-w[2])*h],
+      [(-u[0]+w[0])*h, (-u[1]+w[1])*h, (-u[2]+w[2])*h]
+    ];
+  }
+
+  function drawPlane(u,w,h,fill,stroke){
+    const pts = planeCorners(u,w,h).map(proj);
+    ctx.beginPath();
+    pts.forEach((p,i)=> i? ctx.lineTo(p[0],p[1]) : ctx.moveTo(p[0],p[1]));
+    ctx.closePath();
+    ctx.fillStyle=fill; ctx.fill();
+    ctx.strokeStyle=stroke; ctx.lineWidth=1.6; ctx.stroke();
+  }
+
+  function arrow3(a,b,color,label,dash){
+    const A=proj(a), B=proj(b);
+    ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.4;
+    if(dash) ctx.setLineDash([6,5]);
+    ctx.beginPath(); ctx.moveTo(A[0],A[1]); ctx.lineTo(B[0],B[1]); ctx.stroke();
+    ctx.setLineDash([]);
+    const dx=B[0]-A[0], dy=B[1]-A[1], ang=Math.atan2(dy,dx), hl=11;
+    ctx.beginPath();
+    ctx.moveTo(B[0],B[1]);
+    ctx.lineTo(B[0]-hl*Math.cos(ang-0.38), B[1]-hl*Math.sin(ang-0.38));
+    ctx.lineTo(B[0]-hl*Math.cos(ang+0.38), B[1]-hl*Math.sin(ang+0.38));
+    ctx.closePath(); ctx.fill();
+    if(label){
+      ctx.font='600 12.5px ui-monospace,Consolas,monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      const px=B[0]+16*Math.cos(ang), py=B[1]+16*Math.sin(ang);
+      const tw=ctx.measureText(label).width;
+      ctx.fillStyle='rgba(255,255,255,.92)';
+      ctx.fillRect(px-tw/2-3,py-9,tw+6,18);
+      ctx.fillStyle=color; ctx.fillText(label,px,py);
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,CW,CH);
+
+    // 坐标轴
+    const axes=[[[2.2,0,0],'x'],[[0,2.2,0],'y'],[[0,0,2.2],'z']];
+    ctx.strokeStyle='#DDE4EB'; ctx.lineWidth=1.4;
+    for(const [v,name] of axes){
+      const a=proj([0,0,0]), b=proj(v);
+      ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+      ctx.font='600 12px ui-monospace,Consolas,monospace';
+      ctx.fillStyle='#A8B4C0'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(name, b[0]+9, b[1]-8);
+    }
+
+    // 平面（先画 P2，再画 P1，让水平的 z=0 在上层）
+    drawPlane(P2u,P2w,1.45,'rgba(138,109,31,.10)','#C9A94A');
+    drawPlane(P1u,P1w,1.55,'rgba(47,93,138,.09)','#7FA0C0');
+
+    // 方向向量
+    arrow3([0,0,0],[1.45,0,0],'#5A6B7C','x⁽¹⁾=x⁽²⁾');
+    arrow3([0,0,0],[0,1.4,0],'#5A6B7C','y⁽¹⁾');
+    arrow3([0,0,0],[1.05,1.05,1.05],'#8A6D1F','y⁽²⁾');
+
+    // 法向量
+    if(showN1) arrow3([0,0,0],[0,0,1.35],'#2F5D8A','n⁽¹⁾',true);
+    if(showN2){
+      const k=1.35/Math.SQRT2;
+      arrow3([0,0,0],[0,-k,k],'#B04A2F','n⁽²⁾',true);
+    }
+    // 交线（标签放左端，避开右下角的 x 方向标签）
+    if(showLine){
+      const a=proj([-1.95,0,0]), b=proj([1.95,0,0]);
+      ctx.strokeStyle='#1F7A4D'; ctx.lineWidth=3.4;
+      ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+      ctx.font='600 13px ui-monospace,Consolas,monospace';
+      ctx.textAlign='right'; ctx.textBaseline='middle';
+      const tw = ctx.measureText('v 交线').width;
+      ctx.fillStyle='rgba(255,255,255,.9)';
+      ctx.fillRect(a[0]-tw-14, a[1]-9, tw+8, 18);
+      ctx.fillStyle='#1F7A4D';
+      ctx.fillText('v 交线', a[0]-8, a[1]);
+    }
+
+    // 原点
+    const o = proj([0,0,0]);
+    ctx.fillStyle='#22303F'; ctx.beginPath(); ctx.arc(o[0],o[1],3.2,0,7); ctx.fill();
+
+    $('r-cam').textContent = `${Math.round(yaw/D2R)}°, ${Math.round(pitch/D2R)}°`;
+  }
+
+  // 拖动旋转
+  let drag=false, lx=0, ly=0;
+  cv.addEventListener('pointerdown',e=>{ drag=true; lx=e.clientX; ly=e.clientY; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove',e=>{
+    if(!drag) return;
+    yaw += (e.clientX-lx)*0.008;
+    pitch += (e.clientY-ly)*0.008;
+    pitch = Math.max(-1.35, Math.min(1.35, pitch));
+    lx=e.clientX; ly=e.clientY; draw();
+  });
+  cv.addEventListener('pointerup',()=>{ drag=false; });
+  cv.addEventListener('pointercancel',()=>{ drag=false; });
+
+  $('b-n1').addEventListener('click',()=>{ showN1=!showN1; draw(); });
+  $('b-n2').addEventListener('click',()=>{ showN2=!showN2; draw(); });
+  $('b-line').addEventListener('click',()=>{ showLine=!showLine; draw(); });
+  $('b-reset').addEventListener('click',()=>{ yaw=-32*D2R; pitch=22*D2R; draw(); });
+
+  draw();
+
+  // ================= 棋盘结构 =================
+  const cvR = $('cvR');
+  const dpr2 = window.devicePixelRatio||1;
+  const RW = 720, RH = 360;
+  cvR.width = RW*dpr2; cvR.height = RH*dpr2;
+  cvR.style.width = RW+'px'; cvR.style.maxWidth='100%';
+  const rc = cvR.getContext('2d');
+  rc.setTransform(dpr2,0,0,dpr2,0,0);
+
+  const MR = 8, NR = 6;
+  const dot = (u,v)=>u.reduce((s,x,i)=>s+x*v[i],0);
+
+  function makeMatrix(oddMode){
+    let seed = 20261021;
+    const rnd = ()=>{ seed = (seed*1103515245+12345) % 2147483648; return seed/2147483648-0.5; };
+    const oddRaw=[], evenRaw=[];
+    for(let t=0;t<3;t++){ oddRaw.push(Array.from({length:MR},()=>rnd())); evenRaw.push(Array.from({length:MR},()=>rnd())); }
+    // 奇列正交化（同 span 的正交基）
+    const oddOrtho=[];
+    for(let t=0;t<3;t++){
+      let v=oddRaw[t].slice();
+      for(const o of oddOrtho){ const c=dot(v,o)/dot(o,o); v=v.map((x,i)=>x-c*o[i]); }
+      oddOrtho.push(v);
+    }
+    let even=evenRaw;
+    if(oddMode){
+      even = evenRaw.map(v0=>{
+        let v=v0.slice();
+        for(const o of oddOrtho){ const c=dot(v,o)/dot(o,o); v=v.map((x,i)=>x-c*o[i]); }
+        return v;
+      });
+    }
+    const A = Array.from({length:MR},()=>new Array(NR).fill(0));
+    for(let t=0;t<3;t++) for(let i=0;i<MR;i++){ A[i][2*t]=oddRaw[t][i]; A[i][2*t+1]=even[t][i]; }
+    return A;
+  }
+
+  function mgsQR(A){
+    const m=A.length, n=A[0].length;
+    const cols = Array.from({length:n},(_,j)=>A.map(r=>r[j]));
+    const Qc=[], R=Array.from({length:n},()=>new Array(n).fill(0));
+    for(let j=0;j<n;j++){
+      let v=cols[j].slice();
+      for(let i=0;i<j;i++){ const r=dot(Qc[i],cols[j]); R[i][j]=r; v=v.map((x,k)=>x-r*Qc[i][k]); }
+      const nr=Math.sqrt(dot(v,v)); R[j][j]=nr; Qc.push(v.map(x=>x/nr));
+    }
+    return R;
+  }
+
+  let mode='odd';
+  let Rmat = mgsQR(makeMatrix(true));
+
+  function drawR(){
+    rc.clearRect(0,0,RW,RH);
+    const n=NR;
+    const cellW=44, cellH=40;
+    const gx=54, gy=64;
+
+    // 标题
+    rc.font='600 13px system-ui';
+    rc.fillStyle='#22303F'; rc.textAlign='left'; rc.textBaseline='middle';
+    rc.fillText('R̂（约化 QR 的上三角）', gx-10, 24);
+    rc.fillStyle='#5A6B7C'; rc.font='12px ui-monospace,Consolas,monospace';
+    rc.fillText('行 i ↓ / 列 j →', gx-10, 44);
+
+    // 列标
+    rc.font='600 11.5px ui-monospace,Consolas,monospace';
+    rc.textAlign='center';
+    for(let j=0;j<n;j++){
+      rc.fillStyle='#8A96A3';
+      rc.fillText('j='+(j+1), gx+j*cellW+cellW/2, gy-14);
+    }
+
+    let maxAbs=0;
+    for(let i=0;i<n;i++) for(let j=0;j<n;j++) maxAbs=Math.max(maxAbs,Math.abs(Rmat[i][j]));
+
+    let oddMax=0;
+    for(let i=0;i<n;i++){
+      rc.fillStyle='#8A96A3'; rc.textAlign='right'; rc.textBaseline='middle';
+      rc.fillText('i='+(i+1), gx-10, gy+i*cellH+cellH/2);
+      for(let j=0;j<n;j++){
+        const x=gx+j*cellW, y=gy+i*cellH;
+        const v=Rmat[i][j];
+        const isLower = j<i;
+        if(isLower){
+          rc.fillStyle='#F4F6F8'; rc.fillRect(x,y,cellW-2,cellH-2);
+          continue;
+        }
+        const isZero = Math.abs(v) < 1e-13;
+        const oddGap = ((j-i)%2)!==0;
+        if(oddGap) oddMax=Math.max(oddMax,Math.abs(v));
+        if(isZero){
+          rc.fillStyle='#EDEFF2'; rc.fillRect(x,y,cellW-2,cellH-2);
+          rc.strokeStyle='#DDE2E8'; rc.lineWidth=1; rc.strokeRect(x+0.5,y+0.5,cellW-3,cellH-3);
+          rc.fillStyle='#B9C4CF'; rc.font='600 13px ui-monospace,Consolas,monospace';
+          rc.textAlign='center'; rc.textBaseline='middle';
+          rc.fillText('·', x+cellW/2-1, y+cellH/2);
+        } else {
+          const t = Math.min(1, Math.abs(v)/maxAbs);
+          const r = Math.round(255 - t*95);
+          const g = Math.round(252 - t*135);
+          const b = Math.round(247 - t*110);
+          rc.fillStyle = `rgb(${r},${g},${b})`;
+          rc.fillRect(x,y,cellW-2,cellH-2);
+          rc.strokeStyle='#DDE2E8'; rc.lineWidth=1; rc.strokeRect(x+0.5,y+0.5,cellW-3,cellH-3);
+          rc.fillStyle = t>0.55? '#fff':'#22303F';
+          rc.font='600 11.5px ui-monospace,Consolas,monospace';
+          rc.textAlign='center'; rc.textBaseline='middle';
+          rc.fillText(v.toFixed(2), x+cellW/2-1, y+cellH/2);
+        }
+      }
+    }
+
+    $('v-oddmax').textContent = oddMax.toExponential(1);
+
+    // 右侧：列内积矩阵
+    const A = makeMatrix(mode==='odd');
+    const gx2 = gx + n*cellW + 96;
+    const cw2 = 30, ch2 = 40;
+    rc.font='600 13px system-ui'; rc.fillStyle='#22303F'; rc.textAlign='left';
+    rc.fillText('AᵀA 的零元分布（灰=0）', gx2-6, 24);
+
+    const cols = Array.from({length:NR},(_,j)=>A.map(r=>r[j]));
+    let mx2=0;
+    for(let i=0;i<NR;i++) for(let j=0;j<NR;j++) mx2=Math.max(mx2,Math.abs(dot(cols[i],cols[j])));
+
+    for(let i=0;i<NR;i++){
+      rc.fillStyle='#8A96A3'; rc.font='600 11px ui-monospace,Consolas,monospace';
+      rc.textAlign='right'; rc.textBaseline='middle';
+      rc.fillText(''+(i+1), gx2-8, gy+i*ch2+ch2/2);
+      for(let j=0;j<NR;j++){
+        const x=gx2+j*cw2, y=gy+i*ch2;
+        const val = dot(cols[i],cols[j]);
+        const isZero = Math.abs(val) < 1e-12;
+        if(isZero){ rc.fillStyle='#EDEFF2'; }
+        else {
+          const t=Math.min(1,Math.abs(val)/mx2);
+          rc.fillStyle = `rgba(47,93,138,${0.12+t*0.62})`;
+        }
+        rc.fillRect(x,y,cw2-2,ch2-2);
+        if(!isZero){
+          rc.fillStyle='#fff'; rc.font='600 9px ui-monospace,Consolas,monospace';
+          rc.textAlign='center'; rc.textBaseline='middle';
+          rc.fillText(val.toFixed(1), x+cw2/2-1, y+ch2/2);
+        }
+      }
+    }
+    // 说明
+    rc.font='11.5px system-ui'; rc.fillStyle='#5A6B7C'; rc.textAlign='left';
+    rc.fillText(mode==='odd' ? '奇列 ⊥ 偶列：右图四块「异组」全灰' : '普通矩阵：右图几乎全蓝，无结构',
+      gx2-6, gy+NR*ch2+22);
+  }
+
+  document.querySelectorAll('#seg-mode button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('#seg-mode button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      mode = b.dataset.m;
+      Rmat = mgsQR(makeMatrix(mode==='odd'));
+      drawR();
+    });
+  });
+
+  drawR();
+})();
+</script>
+</body>
+</html>

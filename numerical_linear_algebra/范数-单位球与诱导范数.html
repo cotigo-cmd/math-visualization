@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>范数 · 单位球与诱导范数 · 数值线性代数</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 本页 = 数值线性代数系列第 2 页（图号 NLA-02），教材 Lecture 3（书页 17–24）。
+  2. 版式身份「制图台」与全系列一致；公式规则、canvas 规则同 NLA-01 页注释。
+  3. 读数闸门：verify_readout_norm.js（工作区根）。2×2 的 σ₁/σ₂ 用 AᵀA 特征值闭式，
+     与独立重算比对；本页埋了 κ₂(A)=σ₁/σ₂ 的伏笔（Lecture 12 回收）。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
+.crumb{font-size:13px;margin:0 0 16px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
+.sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
+.sheet .cell:last-child{border-right:none}
+.sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
+.sheet .v{font-size:14.5px;margin:0;font-weight:600}
+.sheet .no{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;color:var(--cinn)}
+h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
+.tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:#EEF3F8;color:var(--steel)}
+h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:4px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
+  margin:22px 0;padding:18px 20px 20px}
+.lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
+.lab-head .t{font-size:15.5px;font-weight:680}
+.lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+.lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
+canvas{display:block;width:100%;height:auto;background:var(--card);
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
+.ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
+.ctrl label{color:var(--ink2);white-space:nowrap}
+.ctrl .nm{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
+input[type=range]{width:104px;accent-color:var(--cinn)}
+button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  border-radius:7px;padding:5px 13px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:none;border-radius:0;padding:5px 12px}
+.seg button.on{background:var(--steel);color:#fff}
+.readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 18px}
+.ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
+  border-bottom:1px dotted var(--grid);padding:3px 0}
+.ro .k{color:var(--ink2)}
+.ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
+.eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
+  border-radius:0 8px 8px 0;font-size:14px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
+table.tb{border-collapse:collapse;margin:12px 0;font-size:14px}
+table.tb td,table.tb th{border:1px solid var(--line);padding:5px 14px;text-align:center}
+table.tb th{background:var(--card);font-weight:600}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--ink2)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
+.pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
+.pager a:hover{text-decoration:underline}
+.hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="../index.html">数值线性代数</a></p>
+
+<div class="sheet">
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-02</p></div>
+  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">范数 · 单位球与诱导范数</p></div>
+  <div class="cell"><p class="k">教材</p><p class="v">Lecture 3 · 书页 17–24</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+</div>
+
+<h1>范数：给「大小」一把尺子</h1>
+<p class="lead">近似与收敛在整个数值线性代数里都要用「距离」来衡量，而距离由范数给出。本页把教材的静态插图全部做成可拖动的：单位球随 \(p\) 变形，矩阵把单位球抌成别的形状，诱导范数就是「最大拉伸倍率」——一把能量进矩阵的尺子。</p>
+<p class="hint">约定同 NLA-01：实矩阵、实向量。读数由 <span class="mx">verify_readout_norm.js</span> 实测。</p>
+
+<h2><span class="no">01</span>向量范数：单位球的形状</h2>
+<p>范数是满足三条公理的长度函数 \(\|\cdot\|:\mathbb{R}^m\to\mathbb{R}\)：正定、三角不等式、齐次：</p>
+<div class="eq">$$ \|x\|&gt;0\ (x\ne 0),\qquad \|x+y\|\le \|x\|+\|y\|,\qquad \|\alpha x\|=|\alpha|\,\|x\|. \tag{3.1} $$</div>
+<p>最重要的一族是 \(p\)-范数（\(1\le p&lt;\infty\)）及其极限 \(p=\infty\)：</p>
+<div class="eq">$$ \|x\|_1=\sum_{i=1}^m |x_i|,\qquad \|x\|_2=\Big(\sum_{i=1}^m |x_i|^2\Big)^{1/2},\qquad \|x\|_\infty=\max_{1\le i\le m}|x_i|. \tag{3.2} $$</div>
+<p>每种范数都有一个<strong>单位球</strong> \(\{x:\|x\|\le 1\}\)，形状就是范数的「名片」：1-范数是菱形（教材调侃它被航空公司用来规定行李箱尺寸），2-范数是圆，\(\infty\)-范数是正方形；\(p=4\) 的超椭圆正是斯德哥尔摩 Sergel 广场的形状（诗人 Piet Hein 推广它为会议桌造型）。</p>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">单位球画廊：拖动点 x，看三种范数同时报数</span><span class="tag">(3.2)</span></div>
+  <p class="lab-sub">灰菱形 = 1-范数单位球，绿圆 = 2-范数，蓝方块 = \(\infty\)-范数。拖动点 \(x\)（朱砂），读数给出三个范数的值与所在的球。滑杆 \(p\) 画出连续变化的 \(p\)-范数单位球（红色细线）：\(p\to\infty\) 时它收敛到正方形。</p>
+  <canvas id="cv-ball" width="600" height="420"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>\(p\)</label><input type="range" id="s-p" min="1" max="8" step="0.1" value="3"><span class="nm" id="v-p"></span></div>
+    <span class="seg" id="p-quick">
+      <button data-p="1">p=1</button><button data-p="2">p=2</button><button data-p="4">p=4</button><button data-p="inf">p=∞</button>
+    </span>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">‖x‖₁</span><span class="v" id="ro-n1"></span></div>
+    <div class="ro"><span class="k">‖x‖₂</span><span class="v" id="ro-n2"></span></div>
+    <div class="ro"><span class="k">‖x‖∞</span><span class="v" id="ro-ninf"></span></div>
+    <div class="ro"><span class="k">x 在哪个单位球内</span><span class="v" id="ro-ballin"></span></div>
+  </div>
+  <p class="hint">加权范数 \(\|x\|_W=\|Wx\|\)（3.3）只是把单位球做一次线性变换——本页不展开，记住「范数 = 单位球的形状」即可。</p>
+</section>
+
+<h2><span class="no">02</span>诱导矩阵范数：最大拉伸倍率</h2>
+<p>矩阵也可以看作 \(mn\) 维向量来量长度，但真正有用的是<strong>诱导范数</strong>：把矩阵看成作用在范数空间之间的算子，量它最多能把向量拉长多少倍：</p>
+<div class="eq">$$ \|A\|_{(m,n)}=\sup_{x\ne 0}\frac{\|Ax\|_{(m)}}{\|x\|_{(n)}}=\sup_{\|x\|_{(n)}=1}\|Ax\|_{(m)}. \tag{3.5–3.6} $$</div>
+<p>第二个等号用了齐次性：只需看单位球上的像。三个经典结果都有闭式：</p>
+<div class="eq">$$ \|A\|_1=\max_{1\le j\le n}\|a_j\|_1\ (\text{最大列和}),\qquad \|A\|_\infty=\max_{1\le i\le m}\sum_{j=1}^n |a_{ij}|\ (\text{最大行和}), \tag{3.9–3.10} $$</div>
+<p>而 2-范数没有这么便宜的公式，它等于最大奇异值 \(\|A\|_2=\sigma_1\)（Lecture 5 定理 5.3 才证明；本页先用 2×2 的闭式算出数值，SVD 页再讲几何）。</p>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">复现教材图 3.1：同一个矩阵，三把尺子</span><span class="tag">Example 3.1 · Figure 3.1</span></div>
+  <p class="lab-sub">\(A=\begin{psmallmatrix}1&amp;2\\0&amp;2\end{psmallmatrix}\)。每幅左半边是单位球，右半边是它的像，虚线标出被拉伸最厉害的方向及其放大倍率。注意三个范数选出的是<strong>不同的</strong>「最坏向量」：1-范数选 \(e_2\)，\(\infty\)-范数选 \((1,1)^{\mathrm{T}}\)，2-范数选某个中间方向。</p>
+  <canvas id="cv-f31" width="720" height="250"></canvas>
+  <div class="readouts">
+    <div class="ro"><span class="k">‖A‖₁（最大列和）</span><span class="v" id="ro-f31-1"></span></div>
+    <div class="ro"><span class="k">‖A‖₂（=σ₁）</span><span class="v" id="ro-f31-2"></span></div>
+    <div class="ro"><span class="k">‖A‖∞（最大行和）</span><span class="v" id="ro-f31-inf"></span></div>
+    <div class="ro"><span class="k">2-范数最坏向量 v₁</span><span class="v" id="ro-v1"></span></div>
+    <div class="ro"><span class="k">‖A·v₁‖₂ / ‖v₁‖₂</span><span class="v" id="ro-amp"></span></div>
+    <div class="ro"><span class="k">σ₂（最小奇异值）</span><span class="v" id="ro-sig2"></span></div>
+  </div>
+</section>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 03</span><span class="t">矩阵范数实验台：四个范数同时报</span><span class="tag">(3.9)(3.10)(3.16)(5.3)</span></div>
+  <p class="lab-sub">四个滑杆改 \(A\) 的元素。左图画单位圆（灰）与它的像（朱砂椭圆），并标出 2-范数的最坏方向 \(v_1\)；读数给出四种范数与条件数伏笔 \(\kappa_2(A)=\sigma_1/\sigma_2\)。右侧「乘旋转」演示定理 3.1：2-范数与 Frobenius 范数在酉相乘下不变，1-范数却会变。</p>
+  <canvas id="cv-norm" width="600" height="380"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>a₁₁</label><input type="range" id="s-m11" min="-3" max="3" step="0.1" value="1.2"><span class="nm" id="v-m11"></span></div>
+    <div class="ctrl"><label>a₁₂</label><input type="range" id="s-m12" min="-3" max="3" step="0.1" value="0.4"><span class="nm" id="v-m12"></span></div>
+    <div class="ctrl"><label>a₂₁</label><input type="range" id="s-m21" min="-3" max="3" step="0.1" value="-0.9"><span class="nm" id="v-m21"></span></div>
+    <div class="ctrl"><label>a₂₂</label><input type="range" id="s-m22" min="-3" max="3" step="0.1" value="1.1"><span class="nm" id="v-m22"></span></div>
+    <div class="ctrl"><label>旋转 φ</label><input type="range" id="s-phi" min="0" max="360" step="1" value="0"><span class="nm" id="v-phi"></span></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">‖A‖₁</span><span class="v" id="ro-norm1"></span></div>
+    <div class="ro"><span class="k">‖A‖∞</span><span class="v" id="ro-norminf"></span></div>
+    <div class="ro"><span class="k">‖A‖₂ = σ₁</span><span class="v" id="ro-norm2"></span></div>
+    <div class="ro"><span class="k">‖A‖_F</span><span class="v" id="ro-normF"></span></div>
+    <div class="ro"><span class="k">σ₁ / σ₂ / κ₂(A)</span><span class="v" id="ro-sigs"></span></div>
+    <div class="ro"><span class="k">φ=0° 对照 ‖A‖₂ / ‖A‖_F</span><span class="v" id="ro-invar"></span></div>
+  </div>
+  <p class="hint">旋转 φ 作用为显示 \(Q_\varphi A\)。读数最后一栏始终显示 φ=0° 的原始值用于对照：\(\|Q_\varphi A\|_2=\|A\|_2\)、\(\|Q_\varphi A\|_F=\|A\|_F\) 精确成立，而 \(\|Q_\varphi A\|_1\) 一般会变——定理 3.1 只对 2-范数和 Frobenius 范数作出承诺。</p>
+</section>
+
+<h2><span class="no">03</span>Hölder / Cauchy–Schwarz 与 Frobenius</h2>
+<p>内积可以用 \(p\)-范数夹住（Hölder，\(1/p+1/q=1\)），\(p=q=2\) 就是 Cauchy–Schwarz：</p>
+<div class="eq">$$ |x^{\mathrm{T}}y|\le \|x\|_p\,\|y\|_q,\qquad |x^{\mathrm{T}}y|\le \|x\|_2\,\|y\|_2. \tag{3.11–3.12} $$</div>
+<p>两个界都紧：\(y\) 与 \(x\) 平行时取等号。非诱导范数里最重要的是 Frobenius 范数——把矩阵摊平成长向量的 2-范数：</p>
+<div class="eq">$$ \|A\|_F=\Big(\sum_{i,j}|a_{ij}|^2\Big)^{1/2}=\sqrt{\operatorname{tr}(A^{\mathrm{T}}A)}=\Big(\sum_j \|a_j\|_2^2\Big)^{1/2}. \tag{3.16–3.18} $$</div>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 04</span><span class="t">Cauchy–Schwarz 的紧性：什么时候取等号</span><span class="tag">(3.12)</span></div>
+  <p class="lab-sub">固定 \(x=(1.2,\,0.9)^{\mathrm{T}}\)，拖动 \(y\)。读数给出 \(|x^{\mathrm{T}}y|\)、上界 \(\|x\|_2\|y\|_2\) 与它们的比值——永远不超过 1，且仅当 \(y\propto x\) 时等于 1。点「平行/垂直」按钮直接看两种极端。</p>
+  <canvas id="cv-cs" width="600" height="330"></canvas>
+  <div class="ctrls">
+    <button id="b-par">y ∥ x（取等）</button>
+    <button id="b-perp">y ⟂ x（另一边极端）</button>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">|xᵀy|</span><span class="v" id="ro-cs-num"></span></div>
+    <div class="ro"><span class="k">‖x‖₂‖y‖₂（上界）</span><span class="v" id="ro-cs-den"></span></div>
+    <div class="ro"><span class="k">比值（≤1）</span><span class="v" id="ro-cs-ratio"></span></div>
+    <div class="ro"><span class="k">y 与 x 的夹角</span><span class="v" id="ro-cs-ang"></span></div>
+  </div>
+</section>
+
+<h2><span class="no">04</span>本页小结与习题</h2>
+<ul>
+  <li><strong>范数 = 单位球的形状</strong>；\(p\)-范数族从菱形连续变形到正方形，2-范数是中间那个圆。</li>
+  <li><strong>诱导矩阵范数 = 最大拉伸倍率</strong> \(\sup_{\|x\|=1}\|Ax\|\)。1-范数是最大列和、\(\infty\)-范数是最大行和（都有闭式），2-范数 = \(\sigma_1\)（SVD 页揭晓）。</li>
+  <li><strong>Frobenius 范数</strong>不诱导自向量范数，但计算最便宜，且与 2-范数共享酉不变性（定理 3.1）。</li>
+  <li><strong>Cauchy–Schwarz 紧</strong>：\(y\propto x\) 取等；这条不等式是后面所有「投影 = 最佳近似」论证的发动机。</li>
+</ul>
+<div class="note b"><strong>习题 3.2（谱半径 ≤ 任意诱导范数）</strong>：设 \(\lambda\) 是 \(A\) 的特征值，\(Ax=\lambda x\) 且 \(\|x\|=1\)，则 \(|\lambda|=\|\lambda x\|=\|Ax\|\le \|A\|\)。注意 \(\rho(A)\le\|A\|\) 对任意诱导范数成立，但一般取不到等号（如 \(\begin{psmallmatrix}0&amp;1\\0&amp;0\end{psmallmatrix}\)：\(\rho=0\) 而范数为 1）。</div>
+<div class="note"><strong>伏笔</strong>：实验 03 的 \(\kappa_2(A)=\sigma_1/\sigma_2\) 就是条件数——单位球被抌得越「扁」，误差放大越狠。这是 Lecture 12 整讲的主题，也是粗网格修正科研里误差分析的原型。</div>
+
+<div class="pager">
+  <a href="线性映射-矩阵向量乘积与正交性.html">← 上一页 · 线性映射</a>
+  <a href="SVD-几何与低秩近似.html">下一页 · SVD →</a>
+</div>
+
+<footer>
+<p>教材引用：Trefethen &amp; Bau, <em>Numerical Linear Algebra</em>, Lecture 3（书页 17–24）。图 3.1 的三个读数（4 / 2.9208 / 3）与教材一致；2×2 的 \(\sigma\) 用 \(A^{\mathrm{T}}A\) 特征值闭式独立重算。</p>
+<p>本页全部读数由工作区根脚本 <span class="mx">verify_readout_norm.js</span> 与 <span class="mx">smoke_dom.js</span> 实测；公式经 <span class="mx">verify_formulas.js</span> 本地编译 0 failed。</p>
+</footer>
+
+</div>
+
+<script>
+"use strict";
+function fmt(x, d){ if(!isFinite(x)) return "—"; d=(d===undefined)?3:d;
+  if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
+  return x.toFixed(d); }
+function mapper(cv, cx, cy, s){
+  return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
+           x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
+}
+function grid(ctx, cx, cy, s, xmin, xmax, ymin, ymax){
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
+    ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
+  for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
+    ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
+  ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
+  ctx.restore();
+}
+function arrow(ctx, x1, y1, x2, y2, color, w, dash){
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+  const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
+  if(L>1){ const h=Math.min(9, L*0.28);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
+    ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
+    ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+function vec(ctx, m, v, color, w, dash){ arrow(ctx, m.X(0), m.Y(0), m.X(v[0]), m.Y(v[1]), color, w, dash); }
+function dot(ctx, x, y, color, r){ ctx.save(); ctx.fillStyle=color;
+  ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
+function label(ctx, txt, x, y, color, size, align){
+  ctx.save(); ctx.fillStyle=color||"#22303F";
+  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+  ctx.fillText(txt, x, y); ctx.restore();
+}
+function pt2world(cv, m, e){
+  const r = cv.getBoundingClientRect();
+  return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
+}
+function makeDrag(cv, m, get, set){
+  let dragging=false;
+  cv.addEventListener("pointerdown", function(e){
+    const w=pt2world(cv,m,e), g=get();
+    if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.6){ dragging=true;
+      cv.setPointerCapture(e.pointerId); set(w); }
+  });
+  cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
+  cv.addEventListener("pointerup", function(){ dragging=false; });
+  cv.addEventListener("pointerleave", function(){ dragging=false; });
+}
+const $ = function(id){ return document.getElementById(id); };
+/* 2×2 奇异值/向量闭式（AᵀA 特征值） */
+function sv2(A){
+  const a=A[0][0], b=A[0][1], c=A[1][0], d=A[1][1];
+  const m11=a*a+c*c, m12=a*b+c*d, m22=b*b+d*d;
+  const tr=m11+m22, det=m11*m22-m12*m12;
+  const disc=Math.max(0, tr*tr-4*det);
+  const l1=(tr+Math.sqrt(disc))/2, l2=(tr-Math.sqrt(disc))/2;
+  const s1=Math.sqrt(Math.max(0,l1)), s2=Math.sqrt(Math.max(0,l2));
+  /* v1: (m11-l1)v1 + m12 v2 = 0 → v = [m12, l1-m11] */
+  let v1=[m12, l1-m11];
+  if(Math.hypot(v1[0],v1[1])<1e-14) v1=[1,0];
+  const L=Math.hypot(v1[0],v1[1]); v1=[v1[0]/L, v1[1]/L];
+  const u1=[(a*v1[0]+b*v1[1])/(s1||1), (c*v1[0]+d*v1[1])/(s1||1)];
+  return {s1:s1, s2:s2, v1:v1, u1:u1};
+}
+
+/* ================= 实验 01 · 单位球画廊 ================= */
+const cvB = $("cv-ball"), WB=600, HB=420;
+const mB = mapper(cvB, 300, 215, 108);
+const stateB = { x:[0.62, 0.35], p:3 };
+function normp(v, p){
+  if(p===Infinity) return Math.max(Math.abs(v[0]), Math.abs(v[1]));
+  return Math.pow(Math.pow(Math.abs(v[0]),p)+Math.pow(Math.abs(v[1]),p), 1/p);
+}
+function drawBall(){
+  const ctx=cvB.getContext("2d"); ctx.clearRect(0,0,WB,HB);
+  grid(ctx, mB.X(0), mB.Y(0), 108, -2.7, 2.7, -3.85, 3.85);
+  /* 1-范数菱形 */
+  ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(mB.X(1),mB.Y(0)); ctx.lineTo(mB.X(0),mB.Y(1));
+  ctx.lineTo(mB.X(-1),mB.Y(0)); ctx.lineTo(mB.X(0),mB.Y(-1)); ctx.closePath(); ctx.stroke(); ctx.restore();
+  /* ∞-范数方块 */
+  ctx.save(); ctx.strokeStyle="#2F5D8A"; ctx.lineWidth=2;
+  ctx.strokeRect(mB.X(-1), mB.Y(1), 108*2, 108*2); ctx.restore();
+  /* 2-范数圆 */
+  ctx.save(); ctx.strokeStyle="#1F7A4D"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(mB.X(0), mB.Y(0), 108, 0, 7); ctx.stroke(); ctx.restore();
+  /* p-范数球 */
+  ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=1.8;
+  ctx.beginPath();
+  for(let i=0;i<=200;i++){ const t=i/200*2*Math.PI;
+    const cx=Math.cos(t), sy=Math.sin(t);
+    const sc=1/normp([cx,sy], stateB.p);
+    const px=mB.X(cx*sc), py=mB.Y(sy*sc);
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+  ctx.closePath(); ctx.stroke(); ctx.restore();
+  label(ctx, "‖·‖₁", mB.X(1.02), mB.Y(0.13), "#5A6B7C", 12.5);
+  label(ctx, "‖·‖₂", mB.X(0.74), mB.Y(-0.72), "#1F7A4D", 12.5);
+  label(ctx, "‖·‖∞", mB.X(1.04), mB.Y(-1.06), "#2F5D8A", 12.5);
+  label(ctx, "‖·‖ₚ (p="+fmt(stateB.p,1)+")", mB.X(-2.62), mB.Y(1.62), "#B04A2F", 12.5);
+  /* x */
+  const x=stateB.x;
+  vec(ctx, mB, x, "#B04A2F", 3.2);
+  dot(ctx, mB.X(x[0]), mB.Y(x[1]), "#B04A2F", 5);
+  label(ctx, "x", mB.X(x[0])+8, mB.Y(x[1])-9, "#B04A2F", 13.5);
+  $("v-p").textContent = (stateB.p>=8?"∞":fmt(stateB.p,1));
+  const n1=Math.abs(x[0])+Math.abs(x[1]), n2=Math.hypot(x[0],x[1]), ni=Math.max(Math.abs(x[0]),Math.abs(x[1]));
+  $("ro-n1").textContent=fmt(n1,4); $("ro-n2").textContent=fmt(n2,4); $("ro-ninf").textContent=fmt(ni,4);
+  const inside=[]; if(n1<=1) inside.push("₁"); if(n2<=1) inside.push("₂"); if(ni<=1) inside.push("∞");
+  $("ro-ballin").textContent = inside.length? "‖·‖"+inside.join(", ‖·‖") : "（都在球外）";
+}
+$("s-p").addEventListener("input", function(){ stateB.p=parseFloat(this.value); drawBall(); });
+$("p-quick").addEventListener("click", function(e){
+  const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.p) return;
+  stateB.p = (t.dataset.p==="inf") ? 8 : parseFloat(t.dataset.p);
+  $("s-p").value=stateB.p; drawBall();
+});
+makeDrag(cvB, mB, function(){ return stateB.x; }, function(w){
+  stateB.x=[Math.max(-2.6,Math.min(2.6,w[0])), Math.max(-2.6,Math.min(2.6,w[1]))]; drawBall(); });
+$("v-p").textContent=fmt(stateB.p,1); drawBall();
+
+/* ================= 实验 02 · 图 3.1 复刻 ================= */
+const cvF = $("cv-f31"), WF=720, HF=250;
+const AF = [[1,2],[0,2]];
+function drawF31(){
+  const ctx=cvF.getContext("2d"); ctx.clearRect(0,0,WF,HF);
+  const sv=sv2(AF);
+  const panels=[
+    {t:"1-范数", val:4, ball:function(t){ return [Math.sign(Math.cos(t))*(1-Math.abs(Math.sin(t))), Math.sign(Math.sin(t))*(1-Math.abs(Math.cos(t)))]; },
+     win:[1,0], amp:4, col:"#B04A2F"},
+    {t:"2-范数", val:sv.s1, ball:function(t){ return [Math.cos(t), Math.sin(t)]; },
+     win:sv.v1, amp:sv.s1, col:"#1F7A4D"},
+    {t:"∞-范数", val:3, ball:function(t){ return [Math.cos(t)>=0?1:-1, Math.sin(t)>=0?1:-1]; },
+     win:[1,1], amp:3, col:"#2F5D8A"}
+  ];
+  panels.forEach(function(P, idx){
+    const ox=idx*240;
+    /* 标题 */
+    label(ctx, P.t+"  ‖A‖ = "+fmt(P.val,4), ox+120, 18, "#22303F", 13.5, "center");
+    const cxL=ox+58, cxR=ox+182, cy=138, s=34;
+    /* 左：单位球 */
+    grid(ctx, cxL, cy, s, -1.6, 1.6, -2.2, 2.2);
+    ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.lineWidth=1.8;
+    ctx.beginPath();
+    for(let i=0;i<=64;i++){ const t=i/64*2*Math.PI; const b=P.ball(t);
+      const px=cxL+b[0]*s, py=cy-b[1]*s; if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+    /* 左：最坏向量 */
+    arrow(ctx, cxL, cy, cxL+P.win[0]/Math.hypot(P.win[0],P.win[1])*s, cy-P.win[1]/Math.hypot(P.win[0],P.win[1])*s, P.col, 2.2, [5,4]);
+    label(ctx, "输入", cxL, cy+2.2*s+14, "#5A6B7C", 11.5, "center");
+    /* 右：像 */
+    grid(ctx, cxR, cy, s, -1.6, 1.6, -2.2, 2.2);
+    ctx.save(); ctx.strokeStyle=P.col; ctx.lineWidth=2.2;
+    ctx.beginPath();
+    for(let i=0;i<=64;i++){ const t=i/64*2*Math.PI; const b=P.ball(t);
+      const q=[AF[0][0]*b[0]+AF[0][1]*b[1], AF[1][0]*b[0]+AF[1][1]*b[1]];
+      const px=cxR+q[0]*s, py=cy-q[1]*s; if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+    const w=[AF[0][0]*P.win[0]+AF[0][1]*P.win[1], AF[1][0]*P.win[0]+AF[1][1]*P.win[1]];
+    arrow(ctx, cxR, cy, cxR+w[0]*s, cy-w[1]*s, P.col, 2.4, [5,4]);
+    label(ctx, "像", cxR, cy+2.2*s+14, "#5A6B7C", 11.5, "center");
+    label(ctx, "×"+fmt(P.amp,4), cxR+w[0]*s+6, cy-w[1]*s-10, P.col, 12);
+  });
+  $("ro-f31-1").textContent=fmt(4,4);
+  $("ro-f31-2").textContent=fmt(sv.s1,4);
+  $("ro-f31-inf").textContent=fmt(3,4);
+  $("ro-v1").textContent="("+fmt(sv.v1[0],3)+", "+fmt(sv.v1[1],3)+")";
+  const w=[AF[0][0]*sv.v1[0]+AF[0][1]*sv.v1[1], AF[1][0]*sv.v1[0]+AF[1][1]*sv.v1[1]];
+  $("ro-amp").textContent=fmt(Math.hypot(w[0],w[1]),4);
+  $("ro-sig2").textContent=fmt(sv.s2,4);
+}
+drawF31();
+
+/* ================= 实验 03 · 矩阵范数实验台 ================= */
+const cvN = $("cv-norm"), WN=600, HN=380;
+const mN = mapper(cvN, 170, 190, 42);
+const stateN = { m11:1.2, m12:0.4, m21:-0.9, m22:1.1, phi:0 };
+function matN(){
+  let A=[[stateN.m11, stateN.m12],[stateN.m21, stateN.m22]];
+  const t=stateN.phi*Math.PI/180, c=Math.cos(t), s=Math.sin(t);
+  const Q=[[c,-s],[s,c]];
+  const QA=[[Q[0][0]*A[0][0]+Q[0][1]*A[1][0], Q[0][0]*A[0][1]+Q[0][1]*A[1][1]],
+            [Q[1][0]*A[0][0]+Q[1][1]*A[1][0], Q[1][0]*A[0][1]+Q[1][1]*A[1][1]]];
+  return {A:A, QA:QA};
+}
+function drawNorm(){
+  const ctx=cvN.getContext("2d"); ctx.clearRect(0,0,WN,HN);
+  grid(ctx, mN.X(0), mN.Y(0), 42, -3.9, 11.6, -4.4, 4.4);
+  const M=matN(), A=M.A, Q=M.QA;
+  const sv=sv2(A);
+  /* 单位圆 */
+  ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([6,5]); ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.arc(mN.X(0), mN.Y(0), 42, 0, 7); ctx.stroke();
+  ctx.setLineDash([]); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2.4;
+  ctx.beginPath();
+  for(let i=0;i<=90;i++){ const t=i/90*2*Math.PI;
+    const px=Q[0][0]*Math.cos(t)+Q[0][1]*Math.sin(t), py=Q[1][0]*Math.cos(t)+Q[1][1]*Math.sin(t);
+    if(i===0) ctx.moveTo(mN.X(px), mN.Y(py)); else ctx.lineTo(mN.X(px), mN.Y(py)); }
+  ctx.stroke(); ctx.restore();
+  label(ctx, "单位圆 S", mN.X(0.74), mN.Y(-0.98), "#5A6B7C", 12);
+  label(ctx, (stateN.phi===0?"A":"QφA")+" 的像", mN.X(2.6), mN.Y(2.2), "#B04A2F", 12);
+  /* 最坏方向 v1（在输入空间）及其像 */
+  vec(ctx, mN, sv.v1, "#1F7A4D", 2.2, [5,4]);
+  label(ctx, "v₁", mN.X(sv.v1[0])+6, mN.Y(sv.v1[1])-9, "#1F7A4D", 12);
+  const w=[Q[0][0]*sv.v1[0]+Q[0][1]*sv.v1[1], Q[1][0]*sv.v1[0]+Q[1][1]*sv.v1[1]];
+  vec(ctx, mN, w, "#1F7A4D", 3.2);
+  label(ctx, "σ₁·u₁", mN.X(w[0])+7, mN.Y(w[1])+13, "#1F7A4D", 12);
+  /* 读数 */
+  const colSum=function(Mx){ return Math.max(Math.abs(Mx[0][0])+Math.abs(Mx[1][0]), Math.abs(Mx[0][1])+Math.abs(Mx[1][1])); };
+  const rowSum=function(Mx){ return Math.max(Math.abs(Mx[0][0])+Math.abs(Mx[0][1]), Math.abs(Mx[1][0])+Math.abs(Mx[1][1])); };
+  const fro=function(Mx){ return Math.sqrt(Mx[0][0]*Mx[0][0]+Mx[0][1]*Mx[0][1]+Mx[1][0]*Mx[1][0]+Mx[1][1]*Mx[1][1]); };
+  $("v-m11").textContent=fmt(stateN.m11,2); $("v-m12").textContent=fmt(stateN.m12,2);
+  $("v-m21").textContent=fmt(stateN.m21,2); $("v-m22").textContent=fmt(stateN.m22,2);
+  $("v-phi").textContent=stateN.phi+"°";
+  $("ro-norm1").textContent=fmt(colSum(Q),4);
+  $("ro-norminf").textContent=fmt(rowSum(Q),4);
+  $("ro-norm2").textContent=fmt(sv.s1,4);
+  $("ro-normF").textContent=fmt(fro(Q),4);
+  $("ro-sigs").textContent=fmt(sv.s1,3)+" / "+fmt(sv.s2,3)+" / "+fmt(sv.s1/(sv.s2||1e-12),3);
+  $("ro-invar").textContent=fmt(sv.s1,4)+" / "+fmt(fro(A),4);
+}
+[["s-m11","m11"],["s-m12","m12"],["s-m21","m21"],["s-m22","m22"],["s-phi","phi"]].forEach(function(p){
+  $(p[0]).addEventListener("input", function(){ stateN[p[1]]=parseFloat(this.value); drawNorm(); });
+});
+drawNorm();
+
+/* ================= 实验 04 · Cauchy–Schwarz ================= */
+const cvC = $("cv-cs"), WC=600, HC=330;
+const mC = mapper(cvC, 170, 165, 92);
+const stateC = { x:[1.2,0.9], y:[-0.9,1.7] };
+function drawCS(){
+  const ctx=cvC.getContext("2d"); ctx.clearRect(0,0,WC,HC);
+  grid(ctx, mC.X(0), mC.Y(0), 92, -1.8, 4.7, -3.5, 3.5);
+  const x=stateC.x, y=stateC.y;
+  arrow(ctx, mC.X(0), mC.Y(0), mC.X(x[0]*4), mC.Y(x[1]*4), "#2F5D8A", 1.4, [6,5]);
+  vec(ctx, mC, x, "#2F5D8A", 3.2); label(ctx, "x", mC.X(x[0])+8, mC.Y(x[1])-9, "#2F5D8A", 13.5);
+  vec(ctx, mC, y, "#B04A2F", 3.2); label(ctx, "y", mC.X(y[0])+8, mC.Y(y[1])+13, "#B04A2F", 13.5);
+  /* 投影 */
+  const coef=(x[0]*y[0]+x[1]*y[1])/(x[0]*x[0]+x[1]*x[1]);
+  const proj=[coef*x[0], coef*x[1]];
+  arrow(ctx, mC.X(proj[0]), mC.Y(proj[1]), mC.X(y[0]), mC.Y(y[1]), "#1F7A4D", 2.4, [6,4]);
+  dot(ctx, mC.X(proj[0]), mC.Y(proj[1]), "#1F7A4D", 4);
+  label(ctx, "y−proj ⟂ x", mC.X((proj[0]+y[0])/2)+8, mC.Y((proj[1]+y[1])/2), "#1F7A4D", 12);
+  const num=Math.abs(x[0]*y[0]+x[1]*y[1]);
+  const den=Math.hypot(x[0],x[1])*Math.hypot(y[0],y[1]);
+  const ang=Math.acos(Math.max(-1,Math.min(1,(x[0]*y[0]+x[1]*y[1])/den)));
+  $("ro-cs-num").textContent=fmt(num,4);
+  $("ro-cs-den").textContent=fmt(den,4);
+  $("ro-cs-ratio").textContent=fmt(num/den,4);
+  $("ro-cs-ang").textContent=fmt(ang*180/Math.PI,2)+"°";
+}
+function setY(kind){
+  const x=stateC.x, L=Math.hypot(x[0],x[1]);
+  stateC.y = (kind==="par") ? [x[0]/L*1.9, x[1]/L*1.9] : [-x[1]/L*1.9, x[0]/L*1.9];
+  drawCS();
+}
+$("b-par").onclick=function(){ setY("par"); };
+$("b-perp").onclick=function(){ setY("perp"); };
+makeDrag(cvC, mC, function(){ return stateC.y; }, function(w){
+  stateC.y=[Math.max(-3,Math.min(3,w[0])), Math.max(-3,Math.min(3,w[1]))]; drawCS(); });
+drawCS();
+</script>
+</body>
+</html>

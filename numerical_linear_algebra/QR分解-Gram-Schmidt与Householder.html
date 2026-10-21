@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR 分解 · Gram-Schmidt 与 Householder · 数值线性代数</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 本页 = 数值线性代数系列第 5 页（图号 NLA-05），教材 Lecture 7–8、10（书页 48–76）。
+     Lecture 9 是 MATLAB 编程讲，无新数学，不独立成页。
+  2. 实验 02 的 CGS/MGS 是页面内真实双精度运算（JS number 即 double），不是模拟。
+     测试矩阵 A=[[1,1,0.3],[ε,0,0.2],[0,ε,1]]；差异体现在新生成配对 q₂ᵀq₃。
+  3. 读数闸门：verify_readout_qr.js（工作区根）。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
+.crumb{font-size:13px;margin:0 0 16px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
+.sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
+.sheet .cell:last-child{border-right:none}
+.sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
+.sheet .v{font-size:14.5px;margin:0;font-weight:600}
+.sheet .no{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;color:var(--cinn)}
+h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
+.tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:#EEF3F8;color:var(--steel)}
+h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:4px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
+  margin:22px 0;padding:18px 20px 20px}
+.lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
+.lab-head .t{font-size:15.5px;font-weight:680}
+.lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+.lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
+canvas{display:block;width:100%;height:auto;background:var(--card);
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
+.ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
+.ctrl label{color:var(--ink2);white-space:nowrap}
+.ctrl .nm{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
+input[type=range]{width:130px;accent-color:var(--cinn)}
+button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  border-radius:7px;padding:5px 13px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:none;border-radius:0;padding:5px 12px}
+.seg button.on{background:var(--steel);color:#fff}
+.readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px 18px}
+.ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
+  border-bottom:1px dotted var(--grid);padding:3px 0}
+.ro .k{color:var(--ink2)}
+.ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
+.eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
+  border-radius:0 8px 8px 0;font-size:14px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
+table.tb{border-collapse:collapse;margin:12px 0;font-size:14px}
+table.tb td,table.tb th{border:1px solid var(--line);padding:5px 14px;text-align:center}
+table.tb th{background:var(--card);font-weight:600}
+table.mx{border-collapse:collapse;margin:10px auto;font-family:ui-monospace,Consolas,monospace;font-size:13.5px}
+table.mx td{border:1px solid var(--line);padding:4px 10px;text-align:right;min-width:44px}
+table.mx td.chg{background:#FBF3E2;font-weight:700;color:#7A5B12}
+table.mx td.zero{color:#B04A2F;font-weight:700}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--ink2)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
+.pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
+.pager a:hover{text-decoration:underline}
+.hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="../index.html">数值线性代数</a></p>
+
+<div class="sheet">
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-05</p></div>
+  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">QR 分解 · Gram-Schmidt 与 Householder</p></div>
+  <div class="cell"><p class="k">教材</p><p class="v">Lecture 7–8、10 · 书页 48–76</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+</div>
+
+<h1>QR 分解：正交化的两条道路</h1>
+<p class="lead">教材原话：「数值线性代数中有一个算法思想比所有其他思想都重要——QR 分解。」它的目标是给矩阵换一组正交基：让第 \(j\) 个正交向量张成与前 \(j\) 列相同的子空间。Gram-Schmidt 从列出发做「三角正交化」，Householder 从行出发做「正交三角化」——前者输在数值稳定性，后者赢。本页把两者的差异做成可实测的实验。</p>
+<p class="hint">约定同前：实矩阵。实验 02 的两种算法都是页面内真实双精度运算（JavaScript 的 number 就是 IEEE double），不是模拟误差。读数由 <span class="mx">verify_readout_qr.js</span> 实测。</p>
+
+<h2><span class="no">01</span>逐列子空间链与 QR</h2>
+<p>QR 关心的不是矩阵整体，而是逐列子空间链：</p>
+<div class="eq">$$ (a_1)\subset(a_1,a_2)\subset(a_1,a_2,a_3)\subset\cdots $$</div>
+<p>目标是构造正交单位向量 \(q_j\) 使得 \((q_1,\dots,q_j)=(a_1,\dots,a_j)\)。写成矩阵就是缩减 QR：\(A=\hat Q\hat R\)，\(\hat Q\) 列正交、\(\hat R\) 上三角；补全 \(m-n\) 列得到完全 QR \(A=QR\)（\(Q\) 为 \(m\times m\) 正交矩阵）。Gram-Schmidt 的迭代公式：</p>
+<div class="eq">$$ v_j=a_j-(q_1^{\mathrm{T}}a_j)q_1-\cdots-(q_{j-1}^{\mathrm{T}}a_j)q_{j-1},\qquad r_{ij}=q_i^{\mathrm{T}}a_j,\qquad r_{jj}=\|v_j\|_2,\qquad q_j=v_j/r_{jj}. \tag{7.5–7.8} $$</div>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">GS 分步沙盘：两次投影造一组正交基</span><span class="tag">Algorithm 7.1</span></div>
+  <p class="lab-sub">拖动 \(a_1,a_2\)（两个箭头的尖端）。播放分三步：① \(q_1=a_1/\|a_1\|\)；② 把 \(a_2\) 减去它在 \(q_1\) 上的投影，剩余部分与 \(q_1\) 垂直；③ 归一化得 \(q_2\)。读数给出 \(Q,R\) 与正交性核对 \(q_1^{\mathrm{T}}q_2\)。「近平行」预设让两列夹角只有 1°，直观看到 \(R\) 的对角元差异。</p>
+  <canvas id="cv-gs" width="600" height="400"></canvas>
+  <div class="ctrls">
+    <button id="b-playgs">▶ 播放三步</button>
+    <button id="b-stepgs">单步</button>
+    <button id="b-resetgs">重置</button>
+    <span class="seg" id="gs-presets">
+      <button data-p="gen" class="on">一般</button><button data-p="near">近平行 1°</button><button data-p="orth">已正交</button>
+    </span>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">q₁</span><span class="v" id="ro-q1"></span></div>
+    <div class="ro"><span class="k">q₂</span><span class="v" id="ro-q2"></span></div>
+    <div class="ro"><span class="k">R = [[r₁₁, r₁₂], [0, r₂₂]]</span><span class="v" id="ro-R"></span></div>
+    <div class="ro"><span class="k">q₁ᵀq₂（应为 0）</span><span class="v" id="ro-gsq"></span></div>
+    <div class="ro"><span class="k">a₁ 与 a₂ 夹角</span><span class="v" id="ro-gsang"></span></div>
+    <div class="ro"><span class="k">阶段</span><span class="v" id="ro-gsstage"></span></div>
+  </div>
+</section>
+
+<h2><span class="no">02</span>经典 vs 修正：数值上不等价</h2>
+<p>两种写法在数学上等价，运算顺序不同。用投影算子语言（Lecture 6）：经典 GS 对 \(a_j\) 一次施加秩 \(m-(j-1)\) 投影 \(P_j=I-Q_{j-1}Q_{j-1}^{\mathrm{T}}\)；修正 GS 把它拆成 \(j-1\) 个秩 \(m-1\) 投影顺序施加：</p>
+<div class="eq">$$ v_j^{(1)}=a_j,\qquad v_j^{(i+1)}=P_{q_i}v_j^{(i)}=v_j^{(i)}-(q_i^{\mathrm{T}}v_j^{(i)})q_i. \tag{8.6–8.7} $$</div>
+<p>差别 onlyin 一处：经典算法的系数 \(r_{ij}=q_i^{\mathrm{T}}a_j\) 用<strong>原始列</strong>，修正算法用<strong>已更新的列</strong>。列与列近乎平行时，经典算法在 \(a_j-\sum r_{ij}q_i\) 里发生大抵消，\(q_j\) 带着沿旧方向的污染；这个污染又通过「用原始列算系数」传给后面的列。下面的实验台直接量这个差距。</p>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">正交性流失：CGS vs MGS 实测</span><span class="tag">Lectures 7–8</span></div>
+  <p class="lab-sub">固定 \(a_1=(1,\varepsilon,0)^{\mathrm{T}}\)、\(a_2=(1,0,\varepsilon)^{\mathrm{T}}\)（夹角随 \(\varepsilon\) 缩小）、\(a_3=(0.3,0.2,1)^{\mathrm{T}}\)。拖动 \(\varepsilon\) 滑杆，两种算法在页面内真实双精度下运算。关键读数不是最大正交误差（被两算法相同的 \(q_1^{\mathrm{T}}q_2\) 垄断），而是<strong>新生成配对</strong> \(q_2^{\mathrm{T}}q_3\)：MGS 保持机器精度，CGS 把污染传下去。双对数图给出两种算法随 \(\varepsilon\) 的全貌。</p>
+  <canvas id="cv-loss" width="640" height="210"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>ε =</label><input type="range" id="s-eps" min="0" max="130" step="1" value="70"><span class="nm" id="v-eps"></span></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">|q₁ᵀq₂|：CGS / MGS</span><span class="v" id="ro-q12"></span></div>
+    <div class="ro"><span class="k">|q₂ᵀq₃|：CGS / MGS</span><span class="v" id="ro-q23"></span></div>
+    <div class="ro"><span class="k">max|QᵀQ−I|：CGS / MGS</span><span class="v" id="ro-orth"></span></div>
+    <div class="ro"><span class="k">max|A−QR|：CGS / MGS</span><span class="v" id="ro-rec"></span></div>
+  </div>
+  <p class="hint">两种算法的<strong>重构误差都是 0</strong>——QR 分解本身是准的，坏掉的是 \(Q\) 的正交性；而 \(Q\) 的正交性正是最小二乘稳定性的命门（Lecture 19 展开）。双对数图里 MGS（绿）全程贴在机器精度 \(2.22\times10^{-16}\) 上；CGS（红）在 \(\varepsilon\approx10^{-8}\) 附近升到 \(2.5\times10^{-9}\)，\(\varepsilon\) 更小时两列几乎重合、矩阵数值秩亏损，差距反而收窄——但 MGS 在任何 \(\varepsilon\) 下都不掉出机器精度。</p>
+</section>
+
+<h2><span class="no">03</span>Householder 反射：稳定的三角化</h2>
+<p>另一条路从左乘正交矩阵出发：选 \(Q_k\) 把第 \(k\) 列的对角线以下清零，且不破坏已有的零。二维原型就是关于超平面的反射：</p>
+<div class="eq">$$ F=I-\frac{2vv^{\mathrm{T}}}{v^{\mathrm{T}}v},\qquad Fx=-\operatorname{sign}(x_1)\|x\|_2e_1,\qquad v=\operatorname{sign}(x_1)\|x\|_2e_1+x. \tag{10.4–10.5} $$</div>
+<p>把 \(x\) 反射到 \(\pm\|x\|e_1\) 有两只「镜子」（教材图 10.2）。数值稳定性要求选<strong>反射距离远</strong>的那只：\(v=\operatorname{sign}(x_1)\|x\|e_1+x\) 保证 \(\|v\|\ge\|x\|\)，避免相近数相减的抵消；另一只的 \(\|v\|\) 在 \(x\approx\|x\|e_1\) 时趋于 0。</p>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 03</span><span class="t">反射镜：选远的那只</span><span class="tag">(10.4)(10.5)</span></div>
+  <p class="lab-sub">拖动 \(x\)。绿直线是镜面 \(H\perp v\)，红虚线是「近处的靶」\(\operatorname{sign}(x_1)\|x\|e_1\)。读数比较两只镜子的法向量长度——页面实现的 \(v\) 恒满足 \(\|v\|\ge\|x\|\)，另一只（\(v'=\operatorname{sign}(x_1)\|x\|e_1-x\)）在 \(x\) 贴近 \(e_1\) 时可以任意小。把 \(x\) 拖到正横轴附近看抵消警告。</p>
+  <canvas id="cv-house" width="600" height="380"></canvas>
+  <div class="ctrls">
+    <span class="seg" id="hx-presets">
+      <button data-p="gen" class="on">一般</button><button data-p="near">贴近 e₁</button><button data-p="neg">x₁&lt;0</button>
+    </span>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">v = sign(x₁)‖x‖e₁ + x</span><span class="v" id="ro-hv"></span></div>
+    <div class="ro"><span class="k">‖v‖（已选，≥‖x‖）</span><span class="v" id="ro-hvn"></span></div>
+    <div class="ro"><span class="k">‖v′‖（未选）</span><span class="v" id="ro-hvn2"></span></div>
+    <div class="ro"><span class="k">Fx</span><span class="v" id="ro-hfx"></span></div>
+    <div class="ro"><span class="k">max|F²−I|</span><span class="v" id="ro-hidem"></span></div>
+    <div class="ro"><span class="k">det F / σ₁(F)</span><span class="v" id="ro-hdet"></span></div>
+  </div>
+</section>
+
+<h2><span class="no">04</span>三角化动画与两种哲学</h2>
+<p>完整算法（Algorithm 10.1）对 \(k=1,\dots,n\)：取 \(x=A_{k:m,k}\)，构造 \(v_k\)，用 \(A_{k:m,k:n}\leftarrow A_{k:m,k:n}-2v_k(v_k^{\mathrm{T}}A_{k:m,k:n})/(v_k^{\mathrm{T}}v_k)\) 更新子块。\(Q\) 不必显式形成——需要 \(Q^*b\) 时按同样顺序施加到 \(b\) 上（Algorithm 10.2）。</p>
+
+<section class="lab">
+  <div class="lab-head"><span class="no">实验 04</span><span class="t">4×3 三角化：零如何逐列出现</span><span class="tag">(10.1) · Algorithm 10.1</span></div>
+  <p class="lab-sub">点「下一步」施加一次 Householder 反射。米黄底是刚被改动的元素，红色 0 是新引入的零。三步之后 \(Q_3Q_2Q_1A=R\) 上三角，读数核对 \(Q^{\mathrm{T}}A=R\) 与 \(Q\) 的正交性。</p>
+  <div id="mx-holder" style="display:flex;justify-content:center"></div>
+  <div class="ctrls" style="justify-content:center">
+    <button id="b-hprev">← 上一步</button>
+    <button id="b-hnext">下一步 →</button>
+    <button id="b-hreset">重置</button>
+    <span class="seg" id="tri-presets">
+      <button data-p="a" class="on">矩阵 A</button><button data-p="b">矩阵 B</button>
+    </span>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">max|R 对角线以下|</span><span class="v" id="ro-hsub"></span></div>
+    <div class="ro"><span class="k">max|QᵀA − R|</span><span class="v" id="ro-hqr"></span></div>
+    <div class="ro"><span class="k">max|QᵀQ − I|</span><span class="v" id="ro-hq"></span></div>
+    <div class="ro"><span class="k">当前步</span><span class="v" id="ro-hstep"></span></div>
+  </div>
+</section>
+
+<h2><span class="no">05</span>本页小结与习题</h2>
+<ul>
+  <li><strong>QR = 正交化的列空间链</strong>：\((q_1,\dots,q_j)=(a_1,\dots,a_j)\)；缩减/完全两种形式；对角线为正时唯一（定理 7.2）。</li>
+  <li><strong>经典 GS 不稳定，修正 GS 稳定</strong>：差别只在系数用原始列还是更新列；实验 02 实测——\(q_2^{\mathrm{T}}q_3\) 上 CGS 传污染（\(\sim\varepsilon\kappa_2\)），MGS 保持机器精度。两者的重构误差都是 0，坏的是正交性。</li>
+  <li><strong>Householder = 正交三角化</strong>：反射器 \(F=I-2vv^{\mathrm{T}}/v^{\mathrm{T}}v\) 是正交矩阵；选 \(\operatorname{sign}(x_1)\|x\|e_1+x\) 保稳定；\(Q\) 隐式施加，\(O(mn)\) 而不是 \(O(mn^2)\)。</li>
+  <li><strong>代价</strong>（渐近 flop）：GS \(\sim 2mn^2\)（8.9），Householder \(\sim 2mn^2-\tfrac23n^3\)（10.9）——后者略廉且稳定，是最常用的 QR 引擎。</li>
+</ul>
+<div class="note b"><strong>习题 10.1（反射器的本征性状）</strong>：特征值 \(1\)（重 \(m-1\)）与 \(-1\)（重 1）——镜面内的向量不动、法向反向；\(\det F=-1\)；全部奇异值为 1（正交矩阵）。实验 03 的二维读数正是 \(m=2\) 的情形：\(\sigma_1=\sigma_2=1\)、\(\det=-1\)。</div>
+<div class="note"><strong>习题 7.5（b）</strong>：若 \(R\) 有 \(k\) 个非零对角元，则 \(\operatorname{rank}(A)=k\)——上三角的秩恰是对角线上非零元个数（可逐列归纳）。这与 SVD 页的「数奇异值定秩」是同一件事的两种代价。</div>
+<div class="note g"><strong>下一页</strong>：工具齐了——Lecture 11 最小二乘。QR 的全部意义在于：把最小二乘化归为解一个三角方程组，而且比正规方程稳。</div>
+
+<div class="pager">
+  <a href="投影算子-正交与斜投影.html">← 上一页 · 投影算子</a>
+  <a href="最小二乘-几何与三种解法.html">下一页 · 最小二乘 →</a>
+</div>
+
+<footer>
+<p>教材引用：Trefethen &amp; Bau, <em>Numerical Linear Algebra</em>, Lecture 7–8、10（书页 48–76）。实验 02 的测试矩阵与算法均为本站构造（教材只说 CGS 不稳定、MGS 稳定，未给此例的全部数字）；所有数字由页面实时双精度运算产生，闸门独立重算。</p>
+<p>本页全部读数由工作区根脚本 <span class="mx">verify_readout_qr.js</span> 与 <span class="mx">smoke_dom.js</span> 实测；公式经 <span class="mx">verify_formulas.js</span> 本地编译 0 failed。</p>
+</footer>
+
+</div>
+
+<script>
+"use strict";
+function fmt(x, d){ if(!isFinite(x)) return "—"; d=(d===undefined)?3:d;
+  if(x===0) return (0).toFixed(d);
+  if(Math.abs(x)>=1e5||Math.abs(x)<1e-4) return x.toExponential(2);
+  return x.toFixed(d); }
+function mapper(cv, cx, cy, s){
+  return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
+           x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
+}
+function grid(ctx, cx, cy, s, xmin, xmax, ymin, ymax){
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
+    ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
+  for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
+    ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
+  ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
+  ctx.restore();
+}
+function arrow(ctx, x1, y1, x2, y2, color, w, dash){
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+  const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
+  if(L>1){ const h=Math.min(9, L*0.28);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
+    ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
+    ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+function vec(ctx, m, v, color, w, dash){ arrow(ctx, m.X(0), m.Y(0), m.X(v[0]), m.Y(v[1]), color, w, dash); }
+function dot(ctx, x, y, color, r){ ctx.save(); ctx.fillStyle=color;
+  ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
+function label(ctx, txt, x, y, color, size, align){
+  ctx.save(); ctx.fillStyle=color||"#22303F";
+  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+  ctx.fillText(txt, x, y); ctx.restore();
+}
+function pt2world(cv, m, e){
+  const r = cv.getBoundingClientRect();
+  return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
+}
+function makeDrag(cv, m, get, set){
+  let dragging=false;
+  cv.addEventListener("pointerdown", function(e){
+    const w=pt2world(cv,m,e), g=get();
+    if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.6){ dragging=true;
+      cv.setPointerCapture(e.pointerId); set(w); }
+  });
+  cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
+  cv.addEventListener("pointerup", function(){ dragging=false; });
+  cv.addEventListener("pointerleave", function(){ dragging=false; });
+}
+const $ = function(id){ return document.getElementById(id); };
+
+/* ================= 实验 01 · GS 分步沙盘 ================= */
+const cvG = $("cv-gs"), WG=600, HG=400;
+const mG = mapper(cvG, 180, 205, 62);
+const stateG = { a1:[1.7,0.6], a2:[-0.4,1.6], stage:3, timer:null };
+function gsCompute(){
+  const a1=stateG.a1, a2=stateG.a2;
+  const r11=Math.hypot(a1[0],a1[1]);
+  const q1=[a1[0]/r11, a1[1]/r11];
+  const r12=q1[0]*a2[0]+q1[1]*a2[1];
+  const v2=[a2[0]-r12*q1[0], a2[1]-r12*q1[1]];
+  const r22=Math.hypot(v2[0],v2[1]);
+  const q2=[v2[0]/r22, v2[1]/r22];
+  return {q1:q1, q2:q2, r11:r11, r12:r12, r22:r22, v2:v2};
+}
+function drawGS(){
+  const ctx=cvG.getContext("2d"); ctx.clearRect(0,0,WG,HG);
+  grid(ctx, mG.X(0), mG.Y(0), 62, -2.9, 7.4, -6.2, 6.2);
+  const G=gsCompute(), P=stateG.stage;
+  /* 列 */
+  vec(ctx, mG, stateG.a1, "#B04A2F", 2.6);
+  label(ctx, "a₁", mG.X(stateG.a1[0])+8, mG.Y(stateG.a1[1])-9, "#B04A2F", 13);
+  vec(ctx, mG, stateG.a2, "#2F5D8A", 2.6);
+  label(ctx, "a₂", mG.X(stateG.a2[0])+8, mG.Y(stateG.a2[1])+13, "#2F5D8A", 13);
+  dot(ctx, mG.X(stateG.a1[0]), mG.Y(stateG.a1[1]), "#B04A2F", 5);
+  dot(ctx, mG.X(stateG.a2[0]), mG.Y(stateG.a2[1]), "#2F5D8A", 5);
+  if(P>=0){
+    vec(ctx, mG, G.q1, "#B04A2F", 3.4);
+    label(ctx, "q₁ = a₁/‖a₁‖", mG.X(G.q1[0])+8, mG.Y(G.q1[1])+15, "#B04A2F", 12);
+  }
+  if(P>=1){
+    /* a₂ 在 q₁ 上的投影（虚线） */
+    const pr=[G.r12*G.q1[0], G.r12*G.q1[1]];
+    arrow(ctx, mG.X(stateG.a2[0]), mG.Y(stateG.a2[1]), mG.X(pr[0]), mG.Y(pr[1]), "#9AA7B4", 1.8, [5,4]);
+    vec(ctx, mG, pr, "#2F5D8A", 2.0, [6,4]);
+    label(ctx, "(q₁ᵀa₂)q₁", mG.X(pr[0])+8, mG.Y(pr[1])+14, "#2F5D8A", 11.5);
+  }
+  if(P>=2){
+    vec(ctx, mG, G.v2, "#1F7A4D", 3.0);
+    label(ctx, "v₂ ⟂ q₁", mG.X(G.v2[0])+8, mG.Y(G.v2[1])-9, "#1F7A4D", 12.5);
+    vec(ctx, mG, G.q2, "#1F7A4D", 3.4);
+    label(ctx, "q₂", mG.X(G.q2[0])+8, mG.Y(G.q2[1])+14, "#1F7A4D", 13);
+  }
+  /* 直角标记 */
+  if(P>=2 && Math.hypot(G.v2[0],G.v2[1])>0.15){
+    const l=Math.hypot(G.q1[0],G.q1[1]), u=[G.q1[0]/l,G.q1[1]/l], q=[-u[1],u[0]];
+    ctx.save(); ctx.strokeStyle="#8A6D1F"; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(mG.X(u[0]*0.18), mG.Y(u[1]*0.18));
+    ctx.lineTo(mG.X(u[0]*0.18+q[0]*0.18), mG.Y(u[1]*0.18+q[1]*0.18));
+    ctx.lineTo(mG.X(q[0]*0.18), mG.Y(q[1]*0.18));
+    ctx.stroke(); ctx.restore();
+  }
+  $("ro-q1").textContent="("+fmt(G.q1[0],3)+", "+fmt(G.q1[1],3)+")";
+  $("ro-q2").textContent="("+fmt(G.q2[0],3)+", "+fmt(G.q2[1],3)+")";
+  $("ro-R").textContent="[["+fmt(G.r11,3)+", "+fmt(G.r12,3)+"], [0, "+fmt(G.r22,3)+"]]";
+  $("ro-gsq").textContent=fmt(G.q1[0]*G.q2[0]+G.q1[1]*G.q2[1],6);
+  const ang=Math.acos(Math.max(-1,Math.min(1,(stateG.a1[0]*stateG.a2[0]+stateG.a1[1]*stateG.a2[1])/
+    (Math.hypot(stateG.a1[0],stateG.a1[1])*Math.hypot(stateG.a2[0],stateG.a2[1])))));
+  $("ro-gsang").textContent=fmt(ang*180/Math.PI,3)+"°";
+  $("ro-gsstage").textContent=["① q₁ = a₁/‖a₁‖","② 减去 q₁ 上的投影","③ q₂ = v₂/‖v₂‖"][P];
+}
+$("b-playgs").onclick=function(){
+  if(stateG.timer){ clearInterval(stateG.timer); stateG.timer=null; }
+  stateG.stage=0; drawGS();
+  stateG.timer=setInterval(function(){
+    stateG.stage++;
+    if(stateG.stage>2){ clearInterval(stateG.timer); stateG.timer=null; }
+    drawGS();
+  }, 850);
+};
+$("b-stepgs").onclick=function(){ if(stateG.timer){clearInterval(stateG.timer);stateG.timer=null;}
+  stateG.stage=(stateG.stage+1)%3; drawGS(); };
+$("b-resetgs").onclick=function(){ if(stateG.timer){clearInterval(stateG.timer);stateG.timer=null;}
+  stateG.stage=2; drawGS(); };
+const PRESETS_G = {
+  gen:{a1:[1.7,0.6], a2:[-0.4,1.6]},
+  near:{a1:[2.0,0.0], a2:[2.0*Math.cos(0.01745), 2.0*Math.sin(0.01745)]},
+  orth:{a1:[1.8,0.0], a2:[0.0,1.5]}
+};
+$("gs-presets").addEventListener("click", function(e){
+  const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.p) return;
+  const p=PRESETS_G[t.dataset.p]; if(!p) return;
+  stateG.a1=p.a1.slice(); stateG.a2=p.a2.slice();
+  if(stateG.timer){clearInterval(stateG.timer);stateG.timer=null;}
+  stateG.stage=2; drawGS();
+});
+makeDrag(cvG, mG, function(){ return stateG.a1; }, function(w){
+  stateG.a1=[Math.max(-2.5,Math.min(2.5,w[0])), Math.max(-2.5,Math.min(2.5,w[1]))];
+  if(stateG.timer){clearInterval(stateG.timer);stateG.timer=null;} stateG.stage=2; drawGS(); });
+makeDrag(cvG, mG, function(){ return stateG.a2; }, function(w){
+  stateG.a2=[Math.max(-2.5,Math.min(2.5,w[0])), Math.max(-2.5,Math.min(2.5,w[1]))];
+  if(stateG.timer){clearInterval(stateG.timer);stateG.timer=null;} stateG.stage=2; drawGS(); });
+drawGS();
+
+/* ================= 实验 02 · CGS vs MGS ================= */
+/* 两种算法都是真实双精度运算 */
+function cgsQR(A){
+  const m=A.length, n=A[0].length;
+  const Q=[], R=[]; for(let i=0;i<n;i++) R.push(new Array(n).fill(0));
+  for(let j=0;j<n;j++){
+    const v=A.map(function(r){ return r[j]; });      /* 原始列的副本 */
+    for(let i=0;i<j;i++){
+      let s=0; for(let k=0;k<m;k++) s+=Q[i][k]*A[k][j];   /* 系数用原始列 */
+      R[i][j]=s;
+      for(let k=0;k<m;k++) v[k]-=s*Q[i][k];
+    }
+    let nrm=0; for(let k=0;k<m;k++) nrm+=v[k]*v[k];
+    R[j][j]=Math.sqrt(nrm);
+    Q.push(v.map(function(x){ return x/R[j][j]; }));
+  }
+  return {Q:Q, R:R};
+}
+function mgsQR(A){
+  const m=A.length, n=A[0].length;
+  const Q=[]; for(let j=0;j<n;j++){ const c=[]; for(let i=0;i<m;i++) c.push(A[i][j]); Q.push(c); }
+  const R=[]; for(let i=0;i<n;i++) R.push(new Array(n).fill(0));
+  for(let i=0;i<n;i++){
+    let nrm=0; for(let k=0;k<m;k++) nrm+=Q[i][k]*Q[i][k];
+    R[i][i]=Math.sqrt(nrm);
+    for(let k=0;k<m;k++) Q[i][k]/=R[i][i];
+    for(let j=i+1;j<n;j++){
+      let s=0; for(let k=0;k<m;k++) s+=Q[i][k]*Q[j][k];   /* 系数用当前列 */
+      R[i][j]=s;
+      for(let k=0;k<m;k++) Q[j][k]-=s*Q[i][k];
+    }
+  }
+  return {Q:Q, R:R};
+}
+function orthMax(Q){ let s=0; const n=Q.length;
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++){ let d=0;
+    for(let k=0;k<Q[0].length;k++) d+=Q[i][k]*Q[j][k];
+    s=Math.max(s, Math.abs(d-((i===j)?1:0))); }
+  return s; }
+function recMax(A, Q, R){ let s=0;
+  for(let i=0;i<A.length;i++) for(let j=0;j<A[0].length;j++){ let d=A[i][j];
+    for(let k=0;k<Q.length;k++) d-=Q[k][i]*R[k][j];
+    s=Math.max(s, Math.abs(d)); }
+  return s; }
+function pair(Q,i,j){ let s=0; for(let k=0;k<Q[0].length;k++) s+=Q[i][k]*Q[j][k]; return Math.abs(s); }
+const stateE = { eps:1e-8 };
+function buildA(eps){ return [[1,1,0.3],[eps,0,0.2],[0,eps,1]]; }
+function drawLoss(){
+  const eps=stateE.eps, A=buildA(eps);
+  const c=cgsQR(A), g=mgsQR(A);
+  $("v-eps").textContent=eps.toExponential(1);
+  $("ro-q12").textContent=fmt(pair(c.Q,0,1),2)+" / "+fmt(pair(g.Q,0,1),2);
+  $("ro-q23").textContent=fmt(pair(c.Q,1,2),2)+" / "+fmt(pair(g.Q,1,2),2);
+  $("ro-orth").textContent=fmt(orthMax(c.Q),2)+" / "+fmt(orthMax(g.Q),2);
+  $("ro-rec").textContent=fmt(recMax(A,c.Q,c.R),2)+" / "+fmt(recMax(A,g.Q,g.R),2);
+  /* 双对数图 */
+  const cv=$("cv-loss"), ctx=cv.getContext("2d");
+  const W=cv.width, H=cv.height, pl=46, pr=10, pt=12, pb=26;
+  ctx.clearRect(0,0,W,H);
+  const eMin=-1, eMax=-14;           /* ε 指数范围 */
+  const yMin=-17, yMax=-1;           /* 误差指数范围 */
+  function X(e){ return pl+(e-eMin)/(eMax-eMin)*(W-pl-pr); }
+  function Y(l){ return pt+(yMax-l)/(yMax-yMin)*(H-pt-pb); }
+  /* 网格 */
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  for(let e=eMin;e>=eMax;e-=2){ ctx.beginPath(); ctx.moveTo(X(e),pt); ctx.lineTo(X(e),H-pb); ctx.stroke(); }
+  for(let l=yMax;l>=yMin;l-=4){ ctx.beginPath(); ctx.moveTo(pl,Y(l)); ctx.lineTo(W-pr,Y(l)); ctx.stroke(); }
+  ctx.restore();
+  /* 轴标签 */
+  for(let e=eMin;e>=eMax;e-=3) label(ctx, "1e"+e, X(e), H-pb+12, "#5A6B7C", 10, "center");
+  for(let l=yMax;l>=yMin;l-=4) label(ctx, "1e"+l, pl-6, Y(l), "#5A6B7C", 10, "right");
+  label(ctx, "ε", W-pr-2, H-pb+12, "#5A6B7C", 10, "right");
+  label(ctx, "|q₂ᵀq₃|", pl-6, pt+2, "#5A6B7C", 10, "right");
+  /* 机器精度线 */
+  ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([5,4]); ctx.lineWidth=1.3;
+  ctx.beginPath(); ctx.moveTo(pl, Y(-16.2)); ctx.lineTo(W-pr, Y(-16.2)); ctx.stroke(); ctx.restore();
+  label(ctx, "机器精度 2.2e-16", W-pr-2, Y(-16.2)-8, "#5A6B7C", 10, "right");
+  /* 两条曲线 */
+  function curve(algo, color){
+    ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=2.2; ctx.beginPath();
+    let first=true;
+    for(let s=0;s<=130;s+=2){
+      const ep=Math.pow(10, -1-s/10);
+      const M=algo(buildA(ep));
+      const val=Math.max(1e-17, pair(M.Q,1,2));
+      const px=X(Math.log10(val)*0 + (-1-s/10)), py=Y(Math.log10(val));
+      if(first){ ctx.moveTo(px,py); first=false; } else ctx.lineTo(px,py);
+    }
+    ctx.stroke(); ctx.restore();
+  }
+  curve(cgsQR, "#B04A2F");
+  curve(mgsQR, "#1F7A4D");
+  label(ctx, "CGS", X(-3.2), Y(-4.2), "#B04A2F", 12);
+  label(ctx, "MGS", X(-9.5), Y(-16.4), "#1F7A4D", 12);
+  /* 当前 ε 标记 */
+  const cx=X(Math.log10(eps)), cy=Y(Math.log10(Math.max(1e-17, pair(cgsQR(buildA(eps)).Q,1,2))));
+  dot(ctx, cx, cy, "#B04A2F", 4.5);
+  ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.setLineDash([3,3]); ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(cx,pt); ctx.lineTo(cx,H-pb); ctx.stroke(); ctx.restore();
+}
+$("s-eps").addEventListener("input", function(){
+  const s=parseFloat(this.value);
+  stateE.eps=Math.pow(10, -1-s/10);
+  drawLoss();
+});
+drawLoss();
+
+/* ================= 实验 03 · Householder 反射镜 ================= */
+const cvH = $("cv-house"), WH=600, HH=380;
+const mH = mapper(cvH, 200, 195, 78);
+const stateH = { x:[1.5,0.9] };
+function houseData(x){
+  const nx=Math.hypot(x[0],x[1]);
+  const s=(x[0]>=0)?1:-1;
+  const v=[s*nx+x[0], x[1]];
+  const vv=v[0]*v[0]+v[1]*v[1];
+  const F=[[1-2*v[0]*v[0]/vv, -2*v[0]*v[1]/vv],[-2*v[1]*v[0]/vv, 1-2*v[1]*v[1]/vv]];
+  const v2=[s*nx-x[0], -x[1]];       /* 另一只镜子：sign(x₁)‖x‖e₁ − x */
+  return {nx:nx, s:s, v:v, F:F, v2:v2, target:[-s*nx, 0]};
+}
+function drawHouse(){
+  const ctx=cvH.getContext("2d"); ctx.clearRect(0,0,WH,HH);
+  grid(ctx, mH.X(0), mH.Y(0), 78, -2.6, 5.4, -4.8, 4.8);
+  const H=houseData(stateH.x);
+  /* 镜面 H ⟂ v（过原点的直线） */
+  const R=3.4, u=[H.v[0]/Math.hypot(H.v[0],H.v[1]), H.v[1]/Math.hypot(H.v[0],H.v[1])];
+  ctx.save(); ctx.strokeStyle="#1F7A4D"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(mH.X(-u[1]*R), mH.Y(u[0]*R)); ctx.lineTo(mH.X(u[1]*R), mH.Y(-u[0]*R)); ctx.stroke();
+  ctx.restore();
+  label(ctx, "镜面 H ⟂ v", mH.X(u[1]*1.25), mH.Y(-u[0]*1.25), "#1F7A4D", 12.5);
+  /* 靶点 ±‖x‖e₁ */
+  vec(ctx, mH, [H.nx,0], "#9AA7B4", 1.6, [6,4]);
+  label(ctx, "+‖x‖e₁", mH.X(H.nx)+6, mH.Y(0)-11, "#9AA7B4", 11.5);
+  vec(ctx, mH, [-H.nx,0], "#B04A2F", 2.2, [6,4]);
+  label(ctx, "−sign(x₁)‖x‖e₁（靶）", mH.X(-H.nx)-6, mH.Y(0)+14, "#B04A2F", 11.5, "right");
+  /* x, v, Fx */
+  vec(ctx, mH, stateH.x, "#22303F", 3.2);
+  dot(ctx, mH.X(stateH.x[0]), mH.Y(stateH.x[1]), "#22303F", 5);
+  label(ctx, "x", mH.X(stateH.x[0])+8, mH.Y(stateH.x[1])-9, "#22303F", 13.5);
+  vec(ctx, mH, H.v, "#2F5D8A", 2.6, [6,4]);
+  label(ctx, "v", mH.X(H.v[0])+8, mH.Y(H.v[1])+13, "#2F5D8A", 12.5);
+  const fx=[H.F[0][0]*stateH.x[0]+H.F[0][1]*stateH.x[1], H.F[1][0]*stateH.x[0]+H.F[1][1]*stateH.x[1]];
+  vec(ctx, mH, fx, "#B04A2F", 3.2);
+  dot(ctx, mH.X(fx[0]), mH.Y(fx[1]), "#B04A2F", 5);
+  label(ctx, "Fx", mH.X(fx[0])+8, mH.Y(fx[1])+13, "#B04A2F", 13.5);
+  /* 读数 */
+  $("ro-hv").textContent="("+fmt(H.v[0],3)+", "+fmt(H.v[1],3)+")";
+  $("ro-hvn").textContent=fmt(Math.hypot(H.v[0],H.v[1]),4);
+  $("ro-hvn2").textContent=fmt(Math.hypot(H.v2[0],H.v2[1]),4);
+  $("ro-hfx").textContent="("+fmt(fx[0],4)+", "+fmt(fx[1],4)+")";
+  const F2=[[H.F[0][0]*H.F[0][0]+H.F[0][1]*H.F[1][0], H.F[0][0]*H.F[0][1]+H.F[0][1]*H.F[1][1]],
+            [H.F[1][0]*H.F[0][0]+H.F[1][1]*H.F[1][0], H.F[1][0]*H.F[0][1]+H.F[1][1]*H.F[1][1]]];
+  $("ro-hidem").textContent=fmt(Math.max(Math.abs(F2[0][0]-1),Math.abs(F2[0][1]),Math.abs(F2[1][0]),Math.abs(F2[1][1]-1)),6);
+  $("ro-hdet").textContent=fmt(H.F[0][0]*H.F[1][1]-H.F[0][1]*H.F[1][0],4)+" / "+fmt(1,4);
+}
+const PRESETS_H = { gen:[1.5,0.9], near:[2.2,0.03], neg:[-1.4,0.8] };
+$("hx-presets").addEventListener("click", function(e){
+  const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.p) return;
+  stateH.x=PRESETS_H[t.dataset.p].slice(); drawHouse();
+});
+makeDrag(cvH, mH, function(){ return stateH.x; }, function(w){
+  stateH.x=[Math.max(-2.2,Math.min(2.2,w[0])), Math.max(-2.2,Math.min(2.2,w[1]))]; drawHouse(); });
+drawHouse();
+
+/* ================= 实验 04 · 三角化动画 ================= */
+const TRI_MATS = {
+  a:[[1.2,0.8,0.4],[0.5,-1.1,0.7],[-0.3,0.6,1.3],[0.9,0.2,-0.5]],
+  b:[[2.0,-0.6,0.5],[-1.2,1.4,-0.8],[0.4,0.9,1.1],[0.7,-0.3,-1.0]]
+};
+const stateT = { mat:"a", step:0, work:null, vs:[], changed:null };
+function cloneM(M){ return M.map(function(r){ return r.slice(); }); }
+function houseStep(M, k, vs){
+  const m=M.length, n=M[0].length;
+  const x=[]; for(let i=k;i<m;i++) x.push(M[i][k]);
+  const nx=Math.sqrt(x.reduce(function(s,v){ return s+v*v; },0));
+  const s=(x[0]>=0)?1:-1;
+  const v=x.map(function(xi,i){ return (i===0? s*nx+x[0] : xi); });
+  const vv=v.reduce(function(s,vi){ return s+vi*vi; },0);
+  /* 更新子块 A[k:m, k:n] */
+  for(let j=k;j<n;j++){
+    let d=0; for(let i=k;i<m;i++) d+=v[i-k]*M[i][j];
+    const f=2*d/vv;
+    for(let i=k;i<m;i++) M[i][j]-=f*v[i-k];
+  }
+  vs.push(v);
+  return M;
+}
+function formQ(vs, m){
+  /* Q = Q₁Q₂…Qₙ，逐列应用 Algorithm 10.3（逆序） */
+  const Q=[]; for(let i=0;i<m;i++){ const r=[]; for(let j=0;j<m;j++) r.push(i===j?1:0); Q.push(r); }
+  for(let col=0;col<m;col++){
+    const b=[]; for(let i=0;i<m;i++) b.push(i===col?1:0);
+    for(let k=vs.length-1;k>=0;k--){
+      const v=vs[k];
+      let d=0; for(let i=k;i<m;i++) d+=v[i-k]*b[i];
+      const f=2*d/(v.reduce(function(s,vi){ return s+vi*vi; },0));
+      for(let i=k;i<m;i++) b[i]-=f*v[i-k];
+    }
+    for(let i=0;i<m;i++) Q[i][col]=b[i];
+  }
+  return Q;
+}
+function renderMatrix(){
+  const M=stateT.work, ch=stateT.changed;
+  let html='<table class="mx">';
+  for(let i=0;i<M.length;i++){
+    html+='<tr>';
+    for(let j=0;j<M[0].length;j++){
+      let cls='', txt=M[i][j].toFixed(3);
+      if(i>j && Math.abs(M[i][j])<5e-16){ cls=' class="zero"'; txt='0'; }
+      else if(ch && ch[i][j]){ cls=' class="chg"'; }
+      html+='<td'+cls+'>'+txt+'</td>';
+    }
+    html+='</tr>';
+  }
+  html+='</table>';
+  $("mx-holder").innerHTML=html;
+}
+function updateTri(){
+  const M=stateT.work;
+  let sub=0; for(let i=0;i<M.length;i++) for(let j=0;j<Math.min(i,M[0].length);j++) sub=Math.max(sub, Math.abs(M[i][j]));
+  $("ro-hsub").textContent=fmt(sub,2);
+  $("ro-hstep").textContent="k = "+stateT.step+" / 3";
+  if(stateT.step>=3){
+    const A=cloneM(TRI_MATS[stateT.mat]);
+    const Q=formQ(stateT.vs, A.length);
+    /* R = QᵀA（用当前 work 的上三角即可，但要独立核对：重新算 QᵀA_original） */
+    let e1=0;
+    for(let i=0;i<A.length;i++) for(let j=0;j<A[0].length;j++){
+      let d=0; for(let k=0;k<A.length;k++) d+=Q[k][i]*A[k][j];
+      const r=(i<=j)? stateT.work[i][j] : 0;
+      e1=Math.max(e1, Math.abs(d-r));
+    }
+    let e2=0;
+    for(let i=0;i<Q.length;i++) for(let j=0;j<Q.length;j++){
+      let d=0; for(let k=0;k<Q.length;k++) d+=Q[k][i]*Q[k][j];
+      e2=Math.max(e2, Math.abs(d-((i===j)?1:0)));
+    }
+    $("ro-hqr").textContent=fmt(e1,2);
+    $("ro-hq").textContent=fmt(e2,2);
+  } else {
+    $("ro-hqr").textContent="—"; $("ro-hq").textContent="—";
+  }
+  renderMatrix();
+}
+$("b-hnext").onclick=function(){
+  if(stateT.step>=3) return;
+  const before=cloneM(stateT.work);
+  houseStep(stateT.work, stateT.step, stateT.vs);
+  const ch=[]; for(let i=0;i<stateT.work.length;i++){ ch.push([]);
+    for(let j=0;j<stateT.work[0].length;j++) ch[i].push(stateT.work[i][j]!==before[i][j]); }
+  stateT.changed=ch;
+  stateT.step++;
+  updateTri();
+};
+$("b-hprev").onclick=function(){
+  if(stateT.step<=0) return;
+  const target=stateT.step-1;          /* 先记住目标，resetTri 会把 step 清零 */
+  resetTri();
+  for(let s=0;s<target;s++) $("b-hnext").onclick();
+  updateTri();
+};
+$("b-hreset").onclick=function(){ resetTri(); updateTri(); };
+function resetTri(){
+  stateT.step=0; stateT.work=cloneM(TRI_MATS[stateT.mat]);
+  stateT.vs=[]; stateT.changed=null;
+}
+$("tri-presets").addEventListener("click", function(e){
+  const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.p) return;
+  stateT.mat=t.dataset.p; resetTri(); updateTri();
+});
+resetTri(); updateTri();
+</script>
+</body>
+</html>

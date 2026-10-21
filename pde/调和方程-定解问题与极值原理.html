@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>定解问题与极值原理 — 谷超豪《数学物理方程》第 3 章 §1–§2 可视化</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:28px;line-height:1.35;margin:0 0 12px;font-weight:600}
+h2{font-size:22px;margin:64px 0 16px;font-weight:600;padding-top:8px;border-top:1px solid var(--border)}
+h2 .no{color:var(--accent);font-family:var(--mono);font-size:16px;margin-right:10px;font-weight:400}
+h3{font-size:17px;margin:36px 0 10px;font-weight:600}
+h4{font-size:15px;margin:24px 0 8px;font-weight:600}
+p{margin:12px 0}
+.hero{padding:56px 0 8px}
+.hero p.lead{font-size:17px;color:var(--muted);max-width:760px;margin:0}
+nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+nav .wrap{padding:10px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px}
+nav a{color:var(--muted)}
+nav a:hover{color:var(--accent);text-decoration:none}
+.eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
+  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--card);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+.ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
+.ctl input[type=range]{flex:1;min-width:180px;accent-color:var(--accent)}
+button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
+.val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
+figure{margin:20px 0}
+figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+canvas.plot{width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kv .cell{background:var(--card);border-radius:8px;padding:10px 14px}
+.kv .k{font-size:12.5px;color:var(--muted)}
+.kv .v{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent-dark)}
+mjx-container{display:block!important;margin:.35em 0!important}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[display="true"]{overflow-x:auto}
+mjx-container[display="true"]>svg{display:block;margin:0 auto}
+p mjx-container,li mjx-container,td mjx-container,h4 mjx-container{display:inline-block!important;margin:0!important;vertical-align:baseline}
+p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,h4 mjx-container>svg{display:inline!important;margin:0!important;vertical-align:-1px}
+#mjx-offline{background:#fdf6ec;border:1px solid #EF9F27;border-radius:8px;padding:8px 14px;font-size:13px;color:#854F0B;margin:14px 0}
+#mjx-offline[hidden]{display:none}
+footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+ul.tight li{margin:6px 0}
+</style>
+</head>
+<body>
+<div id="mjx-offline" hidden>公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响但内容不受影响。</div>
+
+<div class="hero"><div class="wrap">
+<h1>定解问题与极值原理</h1>
+<p class="lead">谷超豪 等《数学物理方程（第四版）》第 3 章 §1–§2 的交互可视化。§1 从引力位势、静电场、薄膜平衡三个来源导出调和方程与泊松方程，讨论三类边值问题、外问题与变分原理（含魏尔斯特拉斯、阿达马两个反例）；§2 用格林公式挖出基本积分公式，一路得到平均值定理、强极值原理与第一边值问题的唯一性、稳定性。页面中的数值结论均由上级目录脚本 verify_harmonic_a.js 实测。</p>
+</div></div>
+
+<nav><div class="wrap">
+<a href="#map">地图</a>
+<a href="#derive">方程导出</a>
+<a href="#bvp">边值问题</a>
+<a href="#variational">变分原理</a>
+<a href="#green">格林公式</a>
+<a href="#mean">平均值定理</a>
+<a href="#extremum">极值原理</a>
+<a href="#unique">唯一性与稳定性</a>
+<a href="#exercises">习题选讲</a>
+<a href="#summary">小结</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ============ 0 地图 ============ -->
+<h2 id="map"><span class="no">00</span>本节地图：两节内容，一条推理链</h2>
+<p>第 2 章我们先后处理了双曲型（波动）与抛物型（热传导）方程，工具是特征线、分离变量、傅里叶变换。第 3 章换一种题型：<b>椭圆型</b>的调和方程（拉普拉斯方程）与泊松方程——没有时间变量，只有边界条件，所以叫<b>边值问题</b>。两节的分工：</p>
+<table>
+<tr><th style="width:90px">节</th><th>内容</th><th style="width:260px">核心产出</th></tr>
+<tr><td>§1</td><td>建立方程、定解条件：方程的三个物理来源；三类边值问题与内外问题；变分原理与狄利克雷原理</td><td>定解问题怎么提（(1.5)–(1.9)）；定理 1.1（变分原理）；两个「极小值不存在」反例</td></tr>
+<tr><td>§2</td><td>格林公式及其应用：格林第一/二公式 → 挖球 → 基本积分公式 → 平均值定理 → 极值原理 → 唯一性与稳定性</td><td>(2.1)–(2.13)：定理 2.1–2.5</td></tr>
+</table>
+<div class="key"><b>一条暗线：</b>§2 的全部推论都从同一件工具长出来——<b>格林第二公式 (2.3)</b>。取 \(v\equiv1\) 得 (2.9)（诺伊曼问题的相容条件）；取 \(v=1/r\) 再挖球得 (2.6)（基本积分公式）；把 (2.6) 用到球面上得 (2.13)（平均值定理）；由 (2.13) 反证得定理 2.3（极值原理）；由定理 2.3 得定理 2.4、2.5（唯一性、稳定性）。理解这条链，比记住五个定理更重要。</div>
+
+<!-- ============ 1 方程导出 ============ -->
+<h2 id="derive"><span class="no">01</span>方程导出：三种物理图像，同一个方程</h2>
+<p>本章研究二阶线性椭圆型方程的两个代表：<b>调和方程</b>（拉普拉斯方程）与<b>泊松方程</b>：</p>
+$$\Delta u \equiv \frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}+\frac{\partial^2 u}{\partial z^2}=0 \tag{1.1}$$
+$$\Delta u \equiv \frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}+\frac{\partial^2 u}{\partial z^2}=f(x,y,z) \tag{1.2}$$
+<p>二维情形对应记为 (1.1)′、(1.2)′，只是少了 \(z\) 方向的二阶导数。满足 (1.1) 的经典解（二阶连续偏导且满足方程的连续函数）称为<b>调和函数</b>。下面三个来源说明它为什么到处出现。</p>
+
+<h4>来源一：薄膜平衡（力学）</h4>
+<p>第 1 章的膜振动方程去掉时间项就是平衡方程：常张力 \(T\) 的薄膜在垂直外力 \(F(x,y)\) 下静止时，位移 \(u\) 满足</p>
+$$0 = T\left(\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}\right)+F(x,y),$$
+<p>即二维泊松方程（\(f=-F/T\)）。没有外力时就是调和方程——<b>「调和」一词的意象：没有内部热源/外力时，场在内部处处「平」</b>。</p>
+
+<h4>来源二：引力位势（天体力学）</h4>
+<p>位于 \((x_0,y_0,z_0)\) 的质量 \(M\) 对单位质量的引力为 \(\boldsymbol{F}=\dfrac{GM}{r^3}(x-x_0,\ y-y_0,\ z-z_0)^\top\)。引入位势 \(\varphi=GM/r\) 可把三个分量压成一个函数（\(\boldsymbol{F}=-\operatorname{grad}\varphi\)，除相差常数外唯一）。对分布在 \(\Omega\) 上、密度为 \(\rho\) 的质量，总位势为</p>
+$$\varphi(x,y,z)=\iiint_\Omega \frac{G\rho(\xi,\eta,\zeta)}{\sqrt{(x-\xi)^2+(y-\eta)^2+(z-\zeta)^2}}\,d\xi\,d\eta\,d\zeta \tag{1.3}$$
+<p>直接计算验证：\(\varphi\) 在 \(\Omega\) <b>外</b>满足调和方程；若 \(\rho\) 满足赫尔德条件，在 \(\Omega\) <b>内</b>满足泊松方程 \(\Delta\varphi=4\pi\rho\)。注意符号：引力的 \(\rho&gt;0\) 给出 \(\Delta\varphi=+4\pi\rho\)。</p>
+
+<h4>来源三：静电场（电磁学）</h4>
+<p>对电荷密度 \(\rho\) 的静电场，高斯定律说穿过闭曲面 \(\Sigma\) 向外的电通量等于 \(\Omega\) 内总电量的 \(4\pi\) 倍，即 \(\displaystyle\iint_\Sigma \boldsymbol{E}\cdot\boldsymbol{n}\,dS=4\pi\iiint_\Omega\rho\,dx\,dy\,dz\)，令 \(\Omega\) 收缩得</p>
+$$\operatorname{div}\boldsymbol{E}=4\pi\rho \tag{1.4}$$
+<p>静电场有势（\(\boldsymbol{E}=-\operatorname{grad}\,u\)，库仑定律），代入 (1.4) 得<b>静电位势满足 \(\Delta u=-4\pi\rho\)</b>——与引力差一个符号，因为电荷同号相斥、质量同号相吸。<b>没有电荷的区域，电位势就是调和函数。</b></p>
+
+<h4>交互：点电荷的等势线与电场线</h4>
+<p>无电荷区域中 \(\Delta u=0\)，所以电位势 \(u=\pm 1/r\)（三维）是调和函数的基本解——它的等势线是一族同心圆，电场线是径向射线，两者处处垂直。拖动电荷观察；切到「电偶极子」模式可以看到等势线闭合、电场线从正电荷出发落到负电荷的完整图景。</p>
+<div class="ctl">
+<button id="q1-mode-pos" class="on">正点电荷</button>
+<button id="q1-mode-neg">负点电荷</button>
+<button id="q1-mode-dip">电偶极子</button>
+<span class="val" id="q1-hint">拖动电荷移动位置</span>
+</div>
+<canvas id="q1-canvas" class="plot" width="840" height="360"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">探针位置 (x, y)</div><div class="v" id="q1-probe">—</div></div>
+<div class="cell"><div class="k">电位势 φ（±1/r 叠加）</div><div class="v" id="q1-phi">—</div></div>
+<div class="cell"><div class="k">场强 |E| = |∇φ|</div><div class="v" id="q1-E">—</div></div>
+</div>
+<figcaption>图 1-1　三维点电荷在二维截面上的等势线（蓝）与电场线（橙）。偶极子模式底色为电位势热图。鼠标悬停读取探针数值。</figcaption>
+<div class="note"><b>物理—数学对照：</b>等势线族 \(r=\text{const}\) 与电场线族（径向射线）处处正交，这正是 \(\boldsymbol{E}=-\operatorname{grad}\,u\) 的几何含义：电场沿电位下降最快的方向。热图的暖色为正电位、冷色为负电位。</div>
+
+<!-- ============ 2 边值问题 ============ -->
+<h2 id="bvp"><span class="no">02</span>定解条件：三类边值问题与内外问题</h2>
+<p>方程不含时间，定解条件只有边界条件，整个问题叫<b>边值问题</b>。与第 1 章膜振动的三类边界条件平行，本章主要研究第一、第二两类：</p>
+<table>
+<tr><th style="width:150px">名称</th><th>提法</th><th style="width:120px">编号</th></tr>
+<tr><td>第一边值问题<br>（狄利克雷问题）</td><td>在 \(\Omega\) 内调和、在 \(\Omega\cup\Gamma\) 上连续，且在边界 \(\Gamma\) 上取给定值 \(g\)</td><td>\(u|_{\Gamma}=g\)　(1.5)</td></tr>
+<tr><td>第二边值问题<br>（诺伊曼问题）</td><td>在 \(\Omega\) 内调和，在 \(\Gamma\) 上沿外法向 \(n\) 的方向导数存在且等于 \(g\)</td><td>\(\dfrac{\partial u}{\partial n}\big|_{\Gamma}=g\)　(1.6)</td></tr>
+<tr><td>第三边值问题</td><td>\(\dfrac{\partial u}{\partial n}+\sigma u=g\)（教材请读者自行写出；§4 习题 11 给出其变分形式）</td><td>—</td></tr>
+</table>
+
+<h4>外问题：无穷远处必须加条件</h4>
+<p>求物体<b>外部</b>稳定温度场（狄利克雷外问题）或绕流速度势（诺伊曼外问题）时，区域是无界的，必须在无穷远加限制，否则解不唯一。以单位球面 \(\Gamma\) 上的狄利克雷外问题、边界条件 \(u|_{r=1}=1\) 为例：\(u_1\equiv1\) 与 \(u_2=1/r\) 都在球外调和、在球面上等于 1——两个解！无穷远条件 (1.7) 把 \(u_1\) 排除掉：</p>
+$$\lim_{r\to\infty}u(x,y,z)=0\quad(r=\sqrt{x^2+y^2+z^2}) \tag{1.7}$$
+<p>确切提法：<b>狄利克雷外问题</b> (1.8) 要求在 \(\Gamma\) 的外部区域 \(\Omega'\) 内调和、在 \(\Omega'\cup\Gamma\) 上连续、满足 (1.7) 且 \(u|_\Gamma=g\)；<b>诺伊曼外问题</b> (1.9) 类似，但边界条件是 \(\partial u/\partial n'=g\)（注意 \(n'\) 是 \(\Omega'\) 的外法向，<b>指向曲面 \(\Gamma\) 的内部</b>）。二维狄利克雷外问题的无穷远条件要弱一些，只要求<b>有界</b>：</p>
+$$|u(x,y)|&lt;M\quad\text{当}\ r=\sqrt{x^2+y^2}&gt;K \tag{1.7}'$$
+<p>（例：单位圆外、零边值问题中 \(u\equiv0\) 与 \(u=\ln r\) 都满足方程和边界条件，但 \(\ln r\) 在无穷远无界，被 (1.7)′ 排除——这正是 §1 习题 8 的要求。）</p>
+
+<h4>交互：外问题为什么非唯一</h4>
+<div class="ctl">
+<button id="ext-mode-3d" class="on">三维：u₁≡1 与 u₂=1/r</button>
+<button id="ext-mode-2d">二维：u₁≡0 与 u₂=ln r</button>
+</div>
+<canvas id="ext-canvas" class="plot" width="840" height="300"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">边界处取值（r=1）</div><div class="v" id="ext-bd">1.000000</div></div>
+<div class="cell"><div class="k">u₂ 在 r=2 处</div><div class="v" id="ext-r2">—</div></div>
+<div class="cell"><div class="k">u₂ 在无穷远</div><div class="v" id="ext-inf">→ 0</div></div>
+<div class="cell"><div class="k">满足无穷远条件？</div><div class="v" id="ext-ok">u₁ 否，u₂ 是</div></div>
+</div>
+<figcaption>图 2-1　外问题的两个解在边界上重合、在外部张开。阴影为「物体内部」（不在求解区域内）。</figcaption>
+<div class="note"><b>为什么二维只要「有界」：</b>二维基本解 \(\ln(1/r)\) 本身在无穷远无界，任何在无穷远趋于 0 的要求都会把物理上合理的解一并排除；「有界」是既能排除退化解、又保留全部物理解的折中。这个维度差异在后面格林函数的构造中还会反复出现。</div>
+
+<h4>从泊松到调和：叠加原理</h4>
+<p>泊松方程的四种边值问题，只要找到泊松方程的<b>一个特解</b>，由叠加原理就化为调和方程的对应边值问题；\(g\) 满足赫尔德条件时特解容易找到（例如位势式 (1.3) 就是一台特解制造机）。所以本章以后主要研究调和方程的边值问题。</p>
+
+<!-- ============ 3 变分原理 ============ -->
+<h2 id="variational"><span class="no">03</span>变分原理：狄利克雷原理与两个反例</h2>
+<p>力学中有一条与牛顿定律并列的基本原理：<b>最小总势能原理</b>——一切可能位移中，真实位移使总势能最小。翻译成数学语言，薄膜平衡问题就是一个变分问题。记总势能（不计常数因子）</p>
+$$J(u)=\iint_\Omega\left[\left(\frac{\partial u}{\partial x}\right)^2+\left(\frac{\partial u}{\partial y}\right)^2-2fu\right]dx\,dy \tag{1.10}$$
+<p>其中 \(f=F/T\)。「一切可能的位移」是边界固定的函数类</p>
+$$V_0=\{v\in C^2(\Omega)\cap C^1(\overline\Omega),\ v|_{\Gamma}=0\} \tag{1.11}$$
+<p>于是最小总势能原理成为</p>
+$$J(u)=\min_{v\in V_0}J(v) \tag{1.12}$$
+<div class="card"><b>定理 1.1（变分原理）</b>　若满足变分问题 (1.12) 的函数 \(u\in V_0\) 存在，则它必满足泊松方程狄利克雷问题
+$$\begin{cases}-\Delta u=f(x,y),&amp;(x,y)\in\Omega,\\ u|_{\Gamma}=0,&amp;\end{cases} \tag{1.13}$$
+反之，若 \(u\) 是 (1.13) 属于 \(V_0\) 的解，则 \(u\) 必为变分问题 (1.12) 的解。</div>
+<p><b>证明骨架（对 \(\lambda\) 求导 + 格林公式）：</b>设 \(u\) 是变分问题的解，任取 \(w\in V_0\)，令 \(v=u+\lambda w\)。展开</p>
+$$J(u+\lambda w)=J(u)+\lambda\iint_\Omega\left(\frac{\partial u}{\partial x}\frac{\partial w}{\partial x}+\frac{\partial u}{\partial y}\frac{\partial w}{\partial y}-fw\right)dx\,dy+\lambda^2\iint_\Omega\left[\left(\frac{\partial w}{\partial x}\right)^2+\left(\frac{\partial w}{\partial y}\right)^2\right]dx\,dy.$$
+<p>右端是 \(\lambda\) 的二次多项式，在 \(\lambda=0\) 取极小 ⟹ 一次项为 0，即 (1.14)。对一次项用格林公式，注意 \(w|_\Gamma=0\) 消去边界项，得 \(\displaystyle\iint_\Omega(\Delta u+f)w\,dx\,dy=0\) 对任意 \(w\in V_0\) 成立；取 \(w\) 在可疑点附近为正、其余为 0，即得 \(\Delta u+f\equiv0\)。反向则用一次项为 0 把 \(J(v)\) 写成 \(J(u)+\) 非负项，等号仅当 \(w\equiv0\)。</p>
+
+<h4>交互一：J(u+λw) 是一条抛物线，顶点在 λ=0</h4>
+<p>取 \(\Omega\) 为单位圆盘，\(f\equiv1\)，则 \(-{\Delta}u=1,\ u|_\Gamma=0\) 的精确解是 \(u=(1-r^2)/4\)；取 \(w=1-r^2\in V_0\)。下图蓝点为<b>数值积分</b>（\(120\times120\) 中点法则）算出的 \(J(u+\lambda w)\)，虚线为理论抛物线 \(J(u)+\lambda^2\!\int|\nabla w|^2=-\pi/8+2\pi\lambda^2\)。两条线重合、顶点在 \(\lambda=0\)：<b>沿任何方向离开解，能量都严格上升</b>——这就是「PDE 的解 = 变分问题的解」的数值面貌。</p>
+<div class="ctl"><span>λ =</span><input id="var-lam" type="range" min="-150" max="150" value="60"><span class="val" id="var-lamv">0.60</span></div>
+<canvas id="var-canvas" class="plot" width="840" height="320"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">J(u+λw) 数值积分</div><div class="v" id="var-J">—</div></div>
+<div class="cell"><div class="k">J(u+λw) − J(u)</div><div class="v" id="var-dJ">—</div></div>
+<div class="cell"><div class="k">λ²·∫|∇w|²（理论）</div><div class="v" id="var-pred">—</div></div>
+<div class="cell"><div class="k">两者之差</div><div class="v" id="var-err">—</div></div>
+</div>
+<figcaption>图 3-1　能量沿扰动方向 \(u+\lambda w\) 的剖面。蓝点：数值积分；虚线：理论二次式。</figcaption>
+<div class="note"><b>实测（verify_harmonic_a.js 第 7 组）：</b>数值积分 \(J(u)=-4.934802\) 与理论 \(-\pi^2/2=-4.934802\) 一致（脚本用单位圆盘、\(f=\sin(\pi x)\sin(\pi y)/2\) 的配置；\(\int|\nabla w|^2=12.337004\) 对理论 \(5\pi^2/4=12.337006\)）。\(\lambda=0.5,\ -0.5,\ 1,\ -1\) 时 \(J(u+\lambda w)-J(u)\) 与 \(\lambda^2\int|\nabla w|^2\) 逐位相同到 1e-8——交叉项严格为 0，抛物线严格对称。</div>
+
+<h4>狄利克雷原理：把边值问题变成求极值</h4>
+<p>对调和方程的狄利克雷问题 \(-{\Delta}u=0,\ u|_\Gamma=\varphi\)（(1.17)），定理 1.1 说：它就是求函数类 \(V=\{v\in C^2(\Omega)\cap C^1(\overline\Omega),\ v|_\Gamma=\varphi\}\)（(1.18)）上使<b>狄利克雷积分</b> \(\displaystyle\iint_\Omega(u_x^2+u_y^2)\,dx\,dy\) 取极小的函数。这个化归可追溯到 1851 年黎曼的博士论文（他称之为狄利克雷原理）。</p>
+
+<h4>反例一（魏尔斯特拉斯）：下确界 0 不可达</h4>
+<p>黎曼的推理有一处不严格：\(V\) 有无穷多个元素，<b>凭什么极小值一定能取到？</b>魏尔斯特拉斯构造了反例。在一维函数类</p>
+$$U=\{y\in C^1[-1,1]:\ y(-1)=0,\ y(1)=1\}$$
+<p>上定义 \(\displaystyle J[y]=\int_{-1}^{1}x^2[y'(x)]^2\,dx\)。显然 \(J[y]\ge0\)，且</p>
+$$y_\varepsilon(x)=\frac12+\frac{\arctan(x/\varepsilon)}{2\arctan(1/\varepsilon)}\in U,\qquad J[y_\varepsilon]\le\int_{-1}^{1}(x^2+\varepsilon^2)[y_\varepsilon'(x)]^2dx=\frac{\varepsilon}{2\arctan(1/\varepsilon)}\to0$$
+<p>（最后一步用 \(y_\varepsilon'=\dfrac{\varepsilon}{2\arctan(1/\varepsilon)\,(x^2+\varepsilon^2)}\) 直接积分。）所以 \(\inf J=0\)。但 \(J[y]=0\) 要求 \(xy'\equiv0\)，即 \(y\) 在 \(x&lt;0\) 与 \(x&gt;0\) 两侧分别为常数，\(C^1\) 强制 \(y\) 恒常，与端点条件矛盾——<b>极小值不可达</b>。</p>
+<div class="ctl"><span>ε =</span><input id="weier-eps" type="range" min="0" max="100" value="45"><span class="val" id="weier-epsv">0.28</span></div>
+<canvas id="weier-canvas" class="plot" width="840" height="300"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">J[yε] 数值积分</div><div class="v" id="weier-J">—</div></div>
+<div class="cell"><div class="k">闭式 ε/(4a) − ε²/(4a²(1+ε²))</div><div class="v" id="weier-Jc">—</div></div>
+<div class="cell"><div class="k">渐近 ε/(2π)</div><div class="v" id="weier-Ja">—</div></div>
+<div class="cell"><div class="k">教材界 ε/(2 arctan(1/ε))</div><div class="v" id="weier-Jb">—</div></div>
+</div>
+<figcaption>图 3-2　试函数族 \(y_\varepsilon\)：ε 越小，过渡层越窄，曲线越接近「0 侧恒 0、1 侧恒 1」的折线——而那正是被 \(C^1\) 排除的形状。</figcaption>
+<canvas id="weier2-canvas" class="plot" width="840" height="260"></canvas>
+<figcaption>图 3-3　双对数坐标下 \(J[y_\varepsilon]\) 对 \(\varepsilon\)：斜率 1 的直线，即 \(J=O(\varepsilon)\to0\)。</figcaption>
+<div class="note"><b>实测（verify_harmonic_a.js 第 8 组）：</b>\(\varepsilon=1,\ 0.5,\ 0.2,\ 0.1,\ 0.05,\ 0.01\) 时数值积分 \(J\) 分别为 0.11566752、0.07211222、0.03130831、0.01585005、0.00794961、0.00159148，与闭式逐位一致；\(J\cdot 2\pi/\varepsilon\) 从 0.9062 单调升到 0.9990，确认渐近 \(J\sim\varepsilon/(2\pi)\)。</div>
+
+<h4>反例二（阿达马）：解存在，但狄利克雷积分不存在</h4>
+<p>阿达马的反例更精细：拉普拉斯方程在圆上的狄利克雷问题<b>有</b>取连续边界值的经典解，但这个解的狄利克雷积分发散，所以<b>不可能</b>通过「使积分取极小」的方法得到它。构造（教材 OCR 在此处损坏严重，系数经重组后为经典形式）：</p>
+$$\varphi(\theta)=\sum_{n=1}^{\infty}\frac{1}{\sqrt{n\,2^{n}}}\cos(2^{n}\theta),\qquad u(r,\theta)=\sum_{n=1}^{\infty}\frac{r^{2^{n}}}{\sqrt{n\,2^{n}}}\cos(2^{n}\theta)$$
+<p>\(\sum|a_n|&lt;\infty\) 保证 \(\varphi\) 连续（级数一致收敛），\(u\) 是以 \(\varphi\) 为边值的调和解；但在半径 \(\rho\) 的圆盘上</p>
+$$\iint_{D_\rho}|\nabla u|^2\,dx\,dy=\pi\sum_{n=1}^{\infty}\frac{1}{n}\,\rho^{2^{n+1}}\ \xrightarrow[\rho\to1]{}\ \infty$$
+<p>（各项能量由正交性分离：径向导数贡献 \(a_n^2 4^n \rho^{2^{n+1}}/2^{n+1}\)，角向 \(\int\cos^2(2^n\theta)d\theta=\pi\)，合并后系数恰为 \(1/n\)——尾部就是调和级数。）下图左是边界函数 \(\varphi\)（连续，但振荡越来越快），右是能量积分随 \(\rho\to1\) 的爆炸。</p>
+<div class="ctl"><span>ρ =</span><input id="had-rho" type="range" min="0" max="100" value="22"><span class="val" id="had-rhov">0.8993</span></div>
+<canvas id="had-phi" class="plot" width="840" height="200"></canvas>
+<canvas id="had-canvas" class="plot" width="840" height="260"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">当前 ρ</div><div class="v" id="had-cur">—</div></div>
+<div class="cell"><div class="k">∫_{Dρ} |∇u|² = π·Σ(1/n)ρ^{2^{n+1}}</div><div class="v" id="had-E">—</div></div>
+</div>
+<figcaption>图 3-4　左：边界函数 \(\varphi\)（N=20 截断，720 点采样）——连续而剧烈振荡。右：能量积分 \(E(\rho)\)；圆点为教材口径的六个实测点。</figcaption>
+<div class="note"><b>实测（verify_harmonic_a.js 第 9 组）：</b>\(\rho=0.3,\,0.6,\,0.9,\,0.99,\,0.999,\,0.9999\) 时能量分别为 0.0255、0.4338、2.9591、6.4397、8.2818、9.4219，与 \(\pi\sum(1/n)\rho^{2^{n+1}}\) 精确吻合；同截断水平（N=20）下 \(\max|u_{20}(1-10^{-10},\theta)-\varphi_{20}(\theta)|=8.456\times10^{-8}\)——<b>解本身连续到边界，坏掉的只是狄利克雷积分</b>，这正是阿达马反例的微妙之处。</div>
+<div class="key"><b>历史的收尾：</b>魏尔斯特斯的质疑暂时冻结了狄利克雷原理，直到 19 世纪末希尔伯特重新研究它：只要对区域边界与边界值加适当限制就能绕过缺陷（他 1900 年世纪演讲的第 19、23 题即源于此）。今天把解的概念拓广为广义解、在索伯洛波夫空间中论证，狄利克雷积分的极小元存在性可以严格证明——变分原理已发展成完美且有广泛应用的理论（有限元方法的思想源头）。</div>
+
+<!-- ============ 4 格林公式 ============ -->
+<h2 id="green"><span class="no">04</span>格林公式：从分部积分到基本积分公式</h2>
+<p>§2 的第一件工具是格林公式——多元的分部积分。设 \(\Omega\) 以光滑曲面 \(\Gamma\) 为边界，\(u,v\) 及一阶偏导在 \(\overline\Omega\) 上连续、二阶偏导在 \(\Omega\) 内连续。在奥–高斯公式中取 \(\boldsymbol{P}=u\,\nabla v\)，得<b>格林第一公式</b>：</p>
+$$\iiint_\Omega u\Delta v\,d\Omega=\iint_\Gamma u\frac{\partial v}{\partial n}\,dS-\iiint_\Omega\left(\frac{\partial u}{\partial x}\frac{\partial v}{\partial x}+\frac{\partial u}{\partial y}\frac{\partial v}{\partial y}+\frac{\partial u}{\partial z}\frac{\partial v}{\partial z}\right)d\Omega \tag{2.1}$$
+<p>交换 \(u,v\) 得 (2.2)，两式相减，交叉的体积分抵消，得<b>格林第二公式</b>：</p>
+$$\iiint_\Omega\left(u\Delta v-v\Delta u\right)d\Omega=\iint_\Gamma\left(u\frac{\partial v}{\partial n}-v\frac{\partial u}{\partial n}\right)dS \tag{2.3}$$
+<p>它成立的条件只需：\(\Omega\) 内二阶连续可导、\(\overline\Omega\) 上一阶连续可导——比 (2.1) 更弱，后面会用到。</p>
+
+<h4>基本解与挖球</h4>
+<p>考察函数</p>
+$$\frac{1}{r_{M_0M}}=\frac{1}{\sqrt{(x-x_0)^2+(y-y_0)^2+(z-z_0)^2}} \tag{2.4}$$
+<p>除 \(M_0\) 外处处满足 \(\Delta(1/r)=0\)，称为三维拉普拉斯方程的<b>基本解</b>（二维情形是 \(\ln(1/r_{M_0M})\)，(2.11)）。它在 \(M_0\) 有奇性，不能直接在 \(\Omega\) 上用 (2.3)。办法是<b>挖球</b>：从 \(\Omega\) 中挖去以 \(M_0\) 为心、半径 \(\varepsilon\) 的小球 \(K_\varepsilon\)，在 \(\Omega\setminus K_\varepsilon\) 上应用 (2.3)（记小球表面为 \(\Gamma_\varepsilon\)）：</p>
+$$\iint_{\Gamma\cup\Gamma_\varepsilon}\left[u\frac{\partial}{\partial n}\frac{1}{r}-\frac{1}{r}\frac{\partial u}{\partial n}\right]dS=0 \tag{2.5}$$
+<p>（两端体积分都是 0：\(\Delta u=0\) 且 \(\Delta(1/r)=0\)。）在 \(\Gamma_\varepsilon\) 上，外法向 \(n\) 指向球心，\(\partial(1/r)/\partial n=1/\varepsilon^2\)，于是 \(\displaystyle\iint_{\Gamma_\varepsilon}u\,\frac{\partial}{\partial n}\frac{1}{r}\,dS=4\pi u^*\)，其中 \(u^*\) 是 \(u\) 在球面 \(\Gamma_\varepsilon\) 上的平均值；另一项 \(\displaystyle\frac{1}{\varepsilon}\iint_{\Gamma_\varepsilon}\frac{\partial u}{\partial n}\,dS=4\pi\varepsilon\cdot\overline{\frac{\partial u}{\partial n}}\to0\)。令 \(\varepsilon\to0\) 即得<b>基本积分公式</b>：</p>
+$$u(M_0)=-\frac{1}{4\pi}\iint_\Gamma\left[u(M)\frac{\partial}{\partial n}\frac{1}{r_{M_0M}}-\frac{1}{r_{M_0M}}\frac{\partial u(M)}{\partial n}\right]dS_M \tag{2.6}$$
+<div class="warn"><b>符号约定（OCR 修复）：</b>教材印刷页的 (2.6) 在 OCR 文本中显示为积分号前取 <b>+</b> 号，但由该书自己的推导链 (2.3)→(2.5) 可直接确定应为 <b>−</b> 号：\(\iint_\Gamma[\cdots]dS+4\pi u^*-4\pi\varepsilon\overline{\partial u/\partial n}=0\)，令 \(\varepsilon\to0\) 得 \(\iint_\Gamma[\cdots]dS=-4\pi u(M_0)\)。二维对应式 (2.12) 明确印着 − 号，与之一致。本页所有公式按 − 号呈现，并已用数值实验复核（见下方交互与实测注）。相应地 (2.7) 的跃度值为 \(0\)（外）\(/\,-2\pi u(M_0)\)（边界上）\(/\,-4\pi u(M_0)\)（内）。</div>
+
+<h4>交互：挖球账本</h4>
+<p>把 (2.5) 的左端拆成三笔账：<b>边界 \(\Gamma\) 上的积分</b> \(I_\Gamma\)（不随 \(\varepsilon\) 变）、<b>小球面上的第一项</b> \(4\pi u^*(\varepsilon)\)、<b>小球面上的第二项</b> \(4\pi\varepsilon\cdot\overline{\partial u/\partial n}\)。三者之和恒为 0；\(\varepsilon\to0\) 时后两笔中一笔收敛到 \(4\pi u(M_0)\)、一笔消失，于是 \(u(M_0)=-I_\Gamma/(4\pi)\)——基本积分公式 (2.6) 就是一笔记平了的账。取调和函数 \(u=x^2-y^2\)，\(M_0=(0.3,-0.2,0.1)\)，\(\Gamma\) 为单位球面，拖动 \(\varepsilon\) 看账本变化。</p>
+<div class="ctl"><span>ε =</span><input id="dig-eps" type="range" min="0" max="100" value="72"><span class="val" id="dig-epsv">0.0500</span></div>
+<canvas id="dig-canvas" class="plot" width="840" height="360"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">球面平均 u*(ε)</div><div class="v" id="dig-ustar">—</div></div>
+<div class="cell"><div class="k">4πε·avg(∂u/∂n)</div><div class="v" id="dig-term2">—</div></div>
+<div class="cell"><div class="k">边界积分 I_Γ（常数）</div><div class="v" id="dig-Ig">—</div></div>
+<div class="cell"><div class="k">账本和（应为 0）</div><div class="v" id="dig-sum">—</div></div>
+<div class="cell"><div class="k">复原点值 −I_Γ/4π</div><div class="v" id="dig-rec">—</div></div>
+</div>
+<figcaption>图 4-1　挖球示意（\(z=0\) 截面）：大圆为 \(\Gamma\)，小圆为 \(\Gamma_\varepsilon\)（法向指向球心 \(M_0\)）。ε 越小，小球面上的第一项越接近 \(4\pi u(M_0)\)。</figcaption>
+<div class="note"><b>实测（verify_harmonic_a.js 第 2 组）：</b>\(\varepsilon=0.2,\,0.1,\,0.05,\,0.02,\,0.01\) 时球面平均全部为 0.050000000（精确值 \(u(M_0)=0.3^2-0.2^2=0.05\)），\(4\pi\varepsilon\cdot\overline{\partial u/\partial n}\) 为 \(10^{-17}\) 量级；由 −(2.6) 复原 \(u(M_0)=0.05000000000000564\)。</div>
+
+<h4>格林公式的其他产出</h4>
+<p>把 \(M_0\) 移到 \(\Omega\) 外或边界上，可把 (2.6) 与另外两个式子合并：</p>
+$$\iint_\Gamma\left[u\frac{\partial}{\partial n}\frac{1}{r}-\frac{1}{r}\frac{\partial u}{\partial n}\right]dS=\begin{cases}0,&M_0\text{ 在 }\Omega\text{ 外},\\ -2\pi u(M_0),&M_0\text{ 在 }\Gamma\text{ 上},\\ -4\pi u(M_0),&M_0\text{ 在 }\Omega\text{ 内}.\end{cases} \tag{2.7}$$
+<p>若 \(u\) 在 \(\overline\Omega\) 上一阶连续可导而 \(\Omega\) 内 \(\Delta u=F\)，同理得<b>泊松公式</b>：</p>
+$$u(M_0)=-\frac{1}{4\pi}\iint_\Gamma\left[u\frac{\partial}{\partial n}\frac{1}{r}-\frac{1}{r}\frac{\partial u}{\partial n}\right]dS_M+\frac{1}{4\pi}\iiint_\Omega\frac{F(M)}{r_{M_0M}}\,d\Omega_M \tag{2.8}$$
+<p>其中第二项单独就是泊松方程 \(\Delta u=F\) 的一个特解（试与 (1.3) 比较）：</p>
+$$v(M_0)=\frac{1}{4\pi}\iiint_\Omega\frac{F(M)}{r_{M_0M}}\,d\Omega_M \tag{2.10}$$
+<p>在 (2.3) 中取 \(v\equiv1\) 立得：</p>
+<div class="card"><b>定理 2.1</b>　设 \(u\) 在 \(\Omega\) 内调和、在 \(\overline\Omega\) 上一阶连续可导，则
+$$\iint_\Gamma\frac{\partial u}{\partial n}\,dS=0 \tag{2.9}$$
+</div>
+<p>物理意义：无热源时稳定温度场通过边界 \(\Gamma\) 的总热流为 0（流进 = 流出）。直接推论：<b>诺伊曼内问题有解的必要条件是 \(\displaystyle\iint_\Gamma g\,dS=0\)</b>——数据不相容时问题无解，这是诺伊曼问题与狄利克雷问题的一个本质区别。二维情形的基本积分公式为</p>
+$$u(M_0)=-\frac{1}{2\pi}\oint_\Gamma\left[u\frac{\partial}{\partial n}\ln\frac{1}{r_{M_0M}}-\ln\frac{1}{r_{M_0M}}\frac{\partial u}{\partial n}\right]ds_M \tag{2.12}$$
+
+<!-- ============ 5 平均值定理 ============ -->
+<h2 id="mean"><span class="no">05</span>平均值定理：调和函数的「球心 = 球面平均」</h2>
+<div class="card"><b>定理 2.2（平均值公式）</b>　设 \(u(M)\) 在区域 \(\Omega\) 内调和，\(M_0\) 是 \(\Omega\) 中任一点，则对以 \(M_0\) 为球心、半径 \(a\) 且完全落在 \(\Omega\) 内的球面 \(\Gamma_a\)：
+$$u(M_0)=\frac{1}{4\pi a^2}\iint_{\Gamma_a}u(M)\,dS \tag{2.13}$$
+二维情形：\(\displaystyle u(M_0)=\frac{1}{2\pi a}\oint_{\Gamma_a}u(M)\,ds\)。</div>
+<p><b>证明：</b>把 (2.6) 用到球面 \(\Gamma_a\) 上。在 \(\Gamma_a\) 上 \(1/r=1/a\)，且外法向与矢径同向，故 \(\partial(1/r)/\partial n=1/a^2\)；由定理 2.1（把调和性用于球面 \(u^*\)……严格说是对 \(u\) 与球面积分平均的复合）第二项消失，于是</p>
+$$u(M_0)=-\frac{1}{4\pi}\oint_{\Gamma_a}\left[u\cdot\frac{1}{a^2}-\frac{1}{a}\frac{\partial u}{\partial n}\right]dS=\frac{1}{4\pi a^2}\oint_{\Gamma_a}u\,dS.$$
+<p><b>注（切球情形）：</b>以上推导假定 \(u\) 在球面上的法向导数存在。若只知道 \(u\) 在 \(\overline\Omega\) 连续、\(\Omega\) 内 \(\Delta u=0\)，对任意 \(a'&lt;a\) 的球 (2.13) 总成立，再令 \(a'\to a\) 取极限即得切球情形——所以 (2.13) 的条件可以只降到「连续 + 内部调和」。</p>
+
+<h4>交互：拖 M₀、拉半径、切换函数——看平均何时偏离球心</h4>
+<p>这是本章的招牌交互。<b>调和函数</b>（\(u=x^2-y^2\)）：球面平均恒等于球心值，与半径 \(a\) 无关（下方曲线是平的）。<b>非调和函数</b>（\(u=x^2+y^2\)，\(\Delta u=4\ne0\)）：平均随 \(a\) 系统性漂移——漂移量恰为 \(\Delta u\) 留下的痕迹。拖动圆内的 \(M_0\)、拉动半径、在「球面平均 / 球体平均」（习题 3）之间切换，亲眼看这条分界线。三维模式可用 \(z\) 滑杆把 \(M_0\) 移出画面平面。</p>
+<div class="ctl">
+<button id="avg-m-3dh" class="on">3D 调和 x²−y²</button>
+<button id="avg-m-3dn">3D 非调和 x²+y²</button>
+<button id="avg-m-2dh">2D 调和 x²−y²</button>
+<button id="avg-m-2dn">2D 非调和 x²+y²</button>
+</div>
+<div class="ctl">
+<span>球心 z =</span><input id="avg-z" type="range" min="-50" max="50" value="0" style="max-width:200px"><span class="val" id="avg-zv">0.00</span>
+<span>半径 a =</span><input id="avg-a" type="range" min="5" max="99" value="35"><span class="val" id="avg-av">0.35</span>
+<button id="avg-type-surf" class="on">球面平均</button>
+<button id="avg-type-ball">球体平均</button>
+</div>
+<canvas id="avg-canvas" class="plot" width="840" height="420"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">u(M₀)</div><div class="v" id="avg-u0">—</div></div>
+<div class="cell"><div class="k">平均（数值积分）</div><div class="v" id="avg-avg">—</div></div>
+<div class="cell"><div class="k">平均 − u(M₀)</div><div class="v" id="avg-dif">—</div></div>
+<div class="cell"><div class="k">理论公式值</div><div class="v" id="avg-th">—</div></div>
+</div>
+<figcaption>图 5-1　单位圆为 \(\Omega\) 的边界；圆点为可拖动的球心 \(M_0\)，大圆为球 \(\Gamma_a\) 的投影，圆上的小点是积分采样点。底部嵌入小图：球面平均随半径 \(a\) 的变化曲线（调和 = 水平线）。</figcaption>
+<div class="note"><b>实测（verify_harmonic_a.js 第 3 组）：</b>\(u=x^2-y^2\)，\(M_0=(0.3,-0.2,0.1)\)，\(a=0.1,\,0.2,\,0.3,\,0.4\) 的球面平均全部为 0.0500000000（=\(u(M_0)\) 到 1e-10）；非调和的 \(u=x^2+y^2\) 同点平均为 0.13666667 / 0.15666667 / 0.19000000，与理论 \(x_0^2+y_0^2+2a^2/3\) 逐一吻合。<b>球面平均数值方法的坑：</b>\(\theta\) 方向必须用 Simpson（4 阶）、\(\varphi\) 方向用中点（周期函数谱精度）——若两向都用中点，球面平均有约 \(5\times10^{-6}\) 的系统偏差，三种半径给出完全相同的错值，足以污染 1e-9 级的检验。</div>
+
+<!-- ============ 6 极值原理 ============ -->
+<h2 id="extremum"><span class="no">06</span>极值原理：非常数调和函数不在内部取极值</h2>
+<p>稳定温度场的物理图像：没有内热源时，热量从外部流入、经内部流出，达到动平衡。若内部有最高点，热量就会从该点流向周围，破坏稳定——所以最高点、最低点必在边界上。精确表述是：</p>
+<div class="card"><b>定理 2.3（极值原理，强形式）</b>　对不恒等于常数的调和函数 \(u(x,y,z)\)，其在区域 \(\Omega\) 的任何<b>内点</b>上的值不可能达到它在 \(\Omega\) 上的上界或下界。</div>
+<p><b>证明（反证法 + 球链）：</b>只证上界。设 \(u\) 在 \(\Omega\) 上的上界为 \(m\)，且 \(u(M_0)=m\)（\(M_0\) 为内点）。以 \(M_0\) 为心任取完全落在 \(\Omega\) 内的球 \(K\)，记其球面为 \(S_R\)。<b>第一步</b>：\(S_R\) 上必恒有 \(u\equiv m\)——若某点 \(u&lt;m\)，由连续性该点一个小邻域上 \(u&lt;m\)，球面积分平均值就小于 \(m\)，与 (2.13)（平均值 = \(u(M_0)=m\)）矛盾。于是整个球 \(K\) 上 \(u\equiv m\)。<b>第二步（蔓延）</b>：任取 \(M_1\in\Omega\)，用完全落在 \(\Omega\) 内的<b>有限个球</b> \(K_1,\dots,K_n\) 盖住连接 \(M_0,M_1\) 的折线 \(\gamma\)，使 \(K_1\) 的球心为 \(M_0\)、\(K_{i+1}\) 的球心落在 \(K_i\) 中（图 3.1）。第一步的论证可逐个传递：\(K_1\) 上 \(u\equiv m\)；\(K_2\) 的球心在 \(K_1\) 中故取值 \(m\)，于是 \(K_2\) 上 \(u\equiv m\)；……；\(K_n\) 上 \(u\equiv m\)，特别 \(u(M_1)=m\)。由 \(M_1\) 任意，\(u\equiv m\) 于整个 \(\Omega\)，与「不恒等于常数」矛盾。</p>
+
+<h4>交互：球链蔓延动画</h4>
+<p>下动画演第二步：假设内部点 \(M_0\) 取到上界 \(m\)，沿折线 \(\gamma\) 铺一串球。每铺上一个球，「球心取值 \(m\) ⟹ 整个球上 \(u\equiv m\)」的论证就蔓延一圈；铺完最后一个球，连边界点 \(M_1\) 也被迫取值 \(m\)——与「\(u\) 不恒等于常数」矛盾。点击「播放」逐步演示。</p>
+<div class="ctl">
+<button id="chn-play">播放</button>
+<button id="chn-reset">重置</button>
+<span class="val" id="chn-step">第 0 / 6 步</span>
+</div>
+<canvas id="chn-canvas" class="plot" width="840" height="360"></canvas>
+<figcaption>图 6-1　强极值原理证明的「球链」机制：\(\Omega\) 为单位圆，\(\gamma\) 为连接 \(M_0\) 与边界点 \(M_1\) 的折线，\(K_1\sim K_6\) 为完全落在 \(\Omega\) 内且依次相接的球链。</figcaption>
+<div class="kv">
+<div class="cell"><div class="k">u=x²−y²，单位球</div><div class="v">调和</div></div>
+<div class="cell"><div class="k">边界上最大/最小</div><div class="v">0.997945 / −0.997945</div></div>
+<div class="cell"><div class="k">内部最大/最小</div><div class="v">0.964958 / −0.964958</div></div>
+</div>
+<div class="note"><b>实测（verify_harmonic_a.js 第 4 组）：</b>对 \(u=x^2-y^2\) 在单位球上逐点搜索，边界极值（±0.997945，出现在赤道大圆上）严格大于内部极值（±0.964958）——强极值原理的数值面貌：内部最大值不仅「不超过」边界最大值，而且<b>严格小于</b>。</div>
+
+<div class="card"><b>推论 1</b>　在有限区域 \(\Omega\) 内调和、在 \(\overline\Omega\) 上连续的函数，必在边界 \(\Gamma\) 上取得最大值与最小值。<br>
+<b>推论 2（比较原理）</b>　设 \(u,v\) 都在 \(\Omega\) 内调和、在 \(\overline\Omega\) 上连续。若在 \(\Gamma\) 上 \(u\le v\)，则 \(\Omega\) 内也有 \(u\le v\)；且只有当 \(u\equiv v\) 时，内部才可能出现等号。</div>
+<div class="key"><b>强与弱：</b>定理 2.3 断言「除恒常外最大值不能在内部达到」，比「最大值必在边界上达到」（第 2 章热传导定理 4.1 的抛物版本）更强：后者允许内部与边界同时取到最大值的非常数情形。强形式还有推论 2 这样好用的比较原理；第 5 节的霍普夫原理将把它进一步精细化（连「内部最大」的<b>邻域形状</b>都能限制）。</div>
+
+<!-- ============ 7 唯一性与稳定性 ============ -->
+<h2 id="unique"><span class="no">07</span>唯一性与稳定性：极值原理的第一批红利</h2>
+<div class="card"><b>定理 2.4</b>　方程 (1.1) 的狄利克雷内问题 (1.5) 的解如果存在，必是唯一的，而且连续地依赖于所给的边界条件 \(g\)。</div>
+<p><b>证明：</b>唯一性——设 \(u_1,u_2\) 是同一区域 \(\Omega\) 上边界条件相同的两个解，差 \(u=u_1-u_2\) 在 \(\Omega\) 内调和、在 \(\Gamma\) 上恒为 0；由推论 1，\(u\) 在 \(\Omega\) 上的最大值与最小值都是 0，故 \(u\equiv0\)。<br>
+稳定性——设两组边界数据 \(g,g^*\) 满足 \(|g-g^*|\le\varepsilon\)，对应解 \(u,u^*\)。差 \(u-u^*\) 在 \(\Gamma\) 上取值 \(g-g^*\)，仍由推论 1：</p>
+$$\max_\Omega(u-u^*)=\max_\Gamma(u-u^*)\le\varepsilon,\qquad \min_\Omega(u-u^*)=\min_\Gamma(u-u^*)\ge-\varepsilon,$$
+<p>合起来就是 \(\max_\Omega|u-u^*|\le\varepsilon\)：<b>边界数据扰动 \(\varepsilon\)，解的扰动不超过 \(\varepsilon\)</b>——估计里的常数是 1，好到不能再好（因为方程与估计都是齐次的）。</p>
+<div class="card"><b>定理 2.5</b>　方程 (1.1) 的狄利克雷<b>外</b>问题的解如果存在，则必是唯一的。</div>
+<p><b>证明思想：</b>设 \(u_1,u_2\) 是外问题的两个解，\(v=u_1-u_2\) 满足 \(v|_\Gamma=0\) 与 (1.7)。若 \(v\not\equiv0\)，取 \(v(M)>0\) 的点 \(M\)；取半径 \(R\) 足够大使 \(M\) 落在 \(\Gamma\) 与 \(\Gamma_R\)（半径 \(R\) 的球面）之间，由 (1.7) 在大球面上 \(v&lt;v(M)\)。于是 \(v\) 在这个「有界容器」的边界（\(\Gamma\) 与 \(\Gamma_R\)）上都取不到最大值，与极值原理矛盾。外问题的稳定性留作习题（习题 5）。</p>
+
+<h4>交互：ε–稳定性 numerically</h4>
+<p>取单位圆上一对显式解：\(u=\rho\cos\theta\) 与 \(u^*=\rho\cos\theta+\varepsilon\rho^2\sin2\theta/2\)（两者都调和，\(\rho^2\sin2\theta=2xy\) 是调和多项式）。边界差 \(h=\sin2\theta/2\)，\(\sup|h|=1/2\)，理论估计 \(\sup|u-u^*|=\varepsilon/2\)。拖动 \(\varepsilon\)，看解的扰动严格按估计走。</p>
+<div class="ctl"><span>ε =</span><input id="stab-eps" type="range" min="5" max="500" value="200"><span class="val" id="stab-epsv">0.20</span></div>
+<canvas id="stab-canvas" class="plot" width="840" height="320"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">sup|h|（边界扰动上界）</div><div class="v">0.500000</div></div>
+<div class="cell"><div class="k">sup|u−u*|（理论 = ε/2）</div><div class="v" id="stab-sup">—</div></div>
+<div class="cell"><div class="k">比值 sup|u−u*| / (ε·sup|h|)</div><div class="v" id="stab-ratio">1.000000</div></div>
+</div>
+<figcaption>图 7-1　沿 \(\theta=\pi/4\) 方向的径向剖面：\(u\)（橙）与 \(u^*\)（紫），以及两者之差（灰色填充）。最大差出现在边界 \(\rho=1\) 处。</figcaption>
+<div class="note"><b>实测（verify_harmonic_a.js 第 5 组）：</b>用泊松公式数值求解三种 \(\varepsilon\)（0.5 / 0.1 / 0.01），\(\sup|u-u^*|\) 分别为 0.24173611 / 0.04834722 / 0.00483472，与 \(\varepsilon\cdot\sup|h|=\varepsilon/2\) 的比值恒为 0.966944——与 1 的差距来自 \(61\times121\) 极坐标网格没有正好踩到 \(\theta=\pi/4,\ \rho=1\) 的角点（角点处差恰为 \(\varepsilon/2\)）。对照组 \(h=\cos3\theta\)（\(\sup|h|=1\)）：\(\varepsilon=0.3\) 时差 = 0.285249，理论上界 \(\varepsilon\) 在 \(\rho\to1\) 时达到。<b>教训：</b>估计类数值检验要区分「理论尖点」与「网格漏点」，否则会把 0.966944 误读成反例。</div>
+
+<!-- ============ 8 习题选讲 ============ -->
+<h2 id="exercises"><span class="no">08</span>习题选讲</h2>
+
+<h4>§1 习题 1：n 维径向调和函数只有两种</h4>
+<p>设 \(u=f(r)\) 是 \(n\) 维调和函数。把 \(\Delta\) 写成径向形式 \(f''+(n-1)f'/r=0\)：\(n\ne2\) 时 \(f=c_1+c_2r^{2-n}\)（三维即 \(c_1+c_2/r\)，正是基本解的形状！），\(n=2\) 时 \(f=c_1+c_2\ln r\)。<b>调和 + 径向 ⟹ 基本解（差一个常数）</b>，这不是巧合：格林函数法后面就靠它。</p>
+<div class="kv">
+<div class="cell"><div class="k">Δ(ln r)，2D，(1.3,0.7)</div><div class="v">−2.22e-06</div></div>
+<div class="cell"><div class="k">Δ(1/r)，3D，(1.3,0.7,0.4)</div><div class="v">4.44e-06</div></div>
+</div>
+<div class="note"><b>实测（verify_harmonic_a.js 第 10 组）：</b>中心差分数值拉普拉斯（步长 \(h=10^{-4}\)）给出的「残余」在 \(10^{-6}\) 量级，这是差分截断与舍入的平衡点（\(h=10^{-5}\) 时舍入噪声反而升到 \(2.2\times10^{-6}\)），不是函数不调和。</div>
+
+<h4>§1 习题 6：矩形平板的稳定温度</h4>
+<p>矩形区域 \(0\le x\le a,\ 0\le y\le b\) 上解 \(\Delta u=0\)，\(u(0,y)=u(a,y)=0\)，\(u(x,0)=\sin(\pi x/a)\)，\(u(x,b)=0\)。分离变量法（本系列<a href="./分离变量法-热传导方程.html">分离变量法页</a>有完整机制）给出</p>
+$$u(x,y)=\frac{\sin(\pi x/a)\,\sinh(\pi y/a)}{\sinh(\pi b/a)}.$$
+<p>它是 \(\sin\) 与 \(\sinh\) 的乘积：两个方向各管一段边界，接缝处自动拼成调和函数。下图取 \(a=2,\ b=1\) 画等温线。</p>
+<canvas id="ex-rect" class="plot" width="840" height="300"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">内部 Δu 最大残余</div><div class="v">2.22e-08</div></div>
+<div class="cell"><div class="k">边界 u(x,b) vs sin(πx/a)</div><div class="v">1.00000000 vs 1.00000000</div></div>
+<div class="cell"><div class="k">其余三边边界值</div><div class="v">0.000000000000</div></div>
+</div>
+<figcaption>图 8-1　矩形平板温度分布等温线（12 条等值带）。温度从 \(y=0\) 边的正弦峰滑到 \(y=b\) 边的零，两侧边恒零。</figcaption>
+<div class="note"><b>实测（verify_harmonic_a.js 第 10 组）：</b>取 \(a=2,\ b=1\)，中点网格差分 \(\Delta u\) 残余 \(2.22\times10^{-8}\)；四边边界值与给定数据逐位一致。</div>
+
+<h4>§2 习题 2 与习题 3：平均值定理的两记直拳</h4>
+<p><b>习题 2：</b>单位圆内调和、边界值 \(u=\sin\theta\)，问原点值。由 (2.13) 的二维版，\(u(0)=\dfrac{1}{2\pi}\oint u\,ds=\dfrac{1}{2\pi}\int_0^{2\pi}\sin\theta\,d\theta=0\)。<b>习题 3：</b>以 \(M_0\) 为心、\(a\) 为半径的<b>球体</b> \(B_a\) 上同样有 \(u(M_0)=\dfrac{1}{|B_a|}\iiint_{B_a}u\,dV\)——把 (2.13) 按半径积分即得（图 5-1 交互里可切到「球体平均」验证）。</p>
+
+<h4>§2 习题 6：椭圆型方程 + c&lt;0 的极值原理</h4>
+<p>对一般的常系数二阶线性方程 \(\sum a_{ij}u_{x_ix_j}+\sum b_iu_{x_i}+cu=0\)，\((a_{ij})\) 正定、\(c&lt;0\) 时，解仍满足极值原理：<b>正的极大值、负的极小值不能在内部达到</b>。证明就看内部正最大点 \(P\)：该点 \(\nabla u=0\)（一次项消失），黑森矩阵负半定，与正定矩阵 \((a_{ij})\) 缩缩得 \(\sum a_{ij}u_{x_ix_j}\le0\)；而 \(u(P)&gt;0,\ c&lt;0\) 给出 \(cu(P)&lt;0\)——三项相加严格小于 0，不可能等于 0。<b>调和方程正是 \(a_{ij}=\delta_{ij},\ b_i=0,\ c=0\) 的临界情形</b>，所以它成立极值原理却不能照搬这个证明（\(c=0\) 时三项全为 0，没有矛盾），这就是第 5 节霍普夫原理要补的洞。</p>
+
+<h4>§2 习题 8：c&gt;0 时极值原理崩塌</h4>
+<p>若 \(c&gt;0\)，极值原理不再成立。取 \(u=\sin(\sqrt{c}\,x)\)：\(\Delta u+cu=-c\sin(\sqrt{c}x)+c\sin(\sqrt{c}x)=0\)，而在 \(x=\pi/(2\sqrt{c})\) 处 \(u\) 取到正的内部最大值 1——方程允许「内部热峰」稳定存在（\(c&gt;0\) 相当于一种把场往零拉的耗散项，反而制造出振荡解）。拖动 \(c\) 看最大点位置移动。</p>
+<div class="ctl"><span>c =</span><input id="ex8-c" type="range" min="5" max="80" value="20"><span class="val" id="ex8-cv">2.0</span></div>
+<canvas id="ex8-canvas" class="plot" width="840" height="220"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">内部最大点 x* = π/(2√c)</div><div class="v" id="ex8-xmax">—</div></div>
+<div class="cell"><div class="k">u(x*)</div><div class="v" id="ex8-umax">—</div></div>
+<div class="cell"><div class="k">Δu + cu 残余</div><div class="v" id="ex8-res">—</div></div>
+</div>
+<figcaption>图 8-2　\(\Delta u+cu=0\)（\(c&gt;0\)）的解在内部取正最大值——极值原理的反例。</figcaption>
+
+<!-- ============ 9 小结 ============ -->
+<h2 id="summary"><span class="no">09</span>小结与速查</h2>
+<p>本页走完了 §1–§2：从三个物理来源建立方程与定解条件，经变分原理（含两个反例）抵达格林公式，再用它一条链推出平均值定理、极值原理与第一边值问题的唯一性、稳定性。要点：</p>
+<ul class="tight">
+<li><b>定解条件：</b>三类边值问题 (1.5)(1.6) + 第三类；外问题必须配无穷远条件 (1.7)（三维）/ (1.7)′（二维，只要<b>有界</b>），否则 \(u\equiv1\) 与 \(u=1/r\) 之类立刻杀出非唯一性。</li>
+<li><b>变分原理（定理 1.1）：</b>PDE 边值问题 ⟺ 狄利克雷积分求极值。但「极小值存在」需要额外结构——魏尔斯特拉斯反例（inf 不可达）与阿达马反例（解存在而狄利克雷积分发散）说明黎曼原始推理的漏洞；希尔伯特之后由 Sobolev 空间与广义解补齐。</li>
+<li><b>格林公式 (2.3)：</b>一切推论之母。取 \(v\equiv1\) 得 (2.9)（诺伊曼相容条件 \(\oint g=0\)）；取 \(v=1/r\) + 挖球得 (2.6)（基本积分公式，<b>积分号前是 − 号</b>）。</li>
+<li><b>平均值定理 (2.13)：</b>调和函数球心值 = 球面平均 = 球体平均，与半径无关；非调和函数的平均漂移量露出 \(\Delta u\) 的信息。</li>
+<li><b>强极值原理（定理 2.3）：</b>非常数调和函数不在内部取极值；证明是「平均值 + 球链蔓延」。⟹ 推论 1（极值在边界）、推论 2（比较原理）、定理 2.4（唯一性 + 稳定性，估计常数 1）、定理 2.5（外问题唯一性）。</li>
+</ul>
+<table>
+<tr><th style="width:150px">工具</th><th>公式</th><th>一句话</th></tr>
+<tr><td>调和/泊松方程</td><td>(1.1)(1.2)</td><td>无源场「平」，有源场被源搬动</td></tr>
+<tr><td>无穷远条件</td><td>(1.7) / (1.7)′</td><td>三维要衰减到 0，二维只要有界</td></tr>
+<tr><td>变分原理</td><td>定理 1.1</td><td>PDE 解 = 能量极小元</td></tr>
+<tr><td>格林第二公式</td><td>(2.3)</td><td>多元分部积分</td></tr>
+<tr><td>基本积分公式</td><td>(2.6) / (2.12)</td><td>内部值 = 边界积分（−1/4π 或 −1/2π）</td></tr>
+<tr><td>诺伊曼相容条件</td><td>(2.9)</td><td>\(\oint_\Gamma g\,dS=0\)</td></tr>
+<tr><td>平均值定理</td><td>(2.13)</td><td>球心 = 球面平均，与半径无关</td></tr>
+<tr><td>强极值原理</td><td>定理 2.3</td><td>非常数调和函数极值只在边界</td></tr>
+<tr><td>唯一性 / 稳定性</td><td>定理 2.4</td><td>差分解 ≡ 0；数据差 ε ⟹ 解差 ≤ ε</td></tr>
+<tr><td>外问题唯一性</td><td>定理 2.5</td><td>大球面容器 + 极值原理</td></tr>
+</table>
+<p>往前看：<b>下一节 §3</b> 回答「解到底长什么样」——对球、半空间等特殊区域显式构造格林函数，把 (2.6) 里「\(u\) 与 \(\partial u/\partial n\) 都要知道」的尴尬化为只依赖边界数据的泊松公式（圆与球的泊松公式、半空间的格林函数）。再往后，§4 给出调和函数的深层性质（哈纳克不等式、可去奇点、刘维尔定理、开尔文变换），§5 用霍普夫原理补齐诺伊曼问题的唯一性——习题 8 里 \(c&gt;0\) 的崩塌与霍普夫原理的条件正好互为表里。</p>
+
+<footer>
+<p>素材：谷超豪 等《数学物理方程（第四版）》第 3 章 §1（PDF p.108–118，书页 p.97–107）与 §2（PDF p.118–124，书页 p.107–113）。公式按教材编号 (1.1)–(2.13)；OCR 片段已按推导重组——(2.6)(2.7) 的积分号前符号按该书自身推导链 (2.3)→(2.5) 及二维对应式 (2.12) 判定为 −（页面内有详细说明），阿达马反例的系数按经典形式重组，魏尔斯特拉斯反例补出了闭式解。</p>
+<p>数值结论均由上级目录脚本 <code>verify_harmonic_a.js</code> 实测（10 组，全部 PASS）；公式经 <code>verify_formulas.js</code> 本地 mathjax-full 编译验证。本页零依赖、可离线打开（公式渲染需联网）。生成于 2026-10-19。</p>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+"use strict";
+function $(id){ return document.getElementById(id); }
+
+/* ================= 04 挖球账本 ================= */
+(function(){
+  var W=840,H=360,cv=$("dig-canvas"),ctx=cv.getContext("2d");
+  var X0=-1.35,X1=1.35,Y0=-0.58,Y1=0.58;
+  function X(x){return (x-X0)/(X1-X0)*W;}
+  function Y(y){return H-(y-Y0)/(Y1-Y0)*H;}
+  var M0={x:0.3,y:-0.2,z:0.1};
+  function u3(p){return p.x*p.x-p.y*p.y;}
+  /* 单位球面积分：θ 向 Simpson + φ 向中点（谱精度） */
+  function sphereInt(f,nth,nph){
+    var dth=Math.PI/nth,w=[],s=0;
+    for(var i=0;i<=nth;i++)w.push(i===0||i===nth?1:(i%2?4:2));
+    for(var i2=0;i2<=nth;i2++){
+      var th=i2*dth,st=Math.sin(th),dph=2*Math.PI/nph,acc=0;
+      for(var j=0;j<nph;j++){
+        var ph=(j+0.5)*dph;
+        acc+=st*f(st*Math.cos(ph),st*Math.sin(ph),Math.cos(th)); /* sinθ 权重不能漏 */
+      }
+      s+=w[i2]*acc*dph;
+    }
+    return s*dth/3;
+  }
+  /* I_Γ：Γ 为单位球面，一次算好 */
+  var IG;
+  (function(){
+    IG=sphereInt(function(dx,dy,dz){
+      var x=dx,y=dy,z=dz,r=Math.hypot(x-M0.x,y-M0.y,z-M0.z);
+      var dirdn=(dx*(x-M0.x)+dy*(y-M0.y)+dz*(z-M0.z))/r; /* ∂(1/r)/∂n = −(M−M0)·n / r³，n=(dx,dy,dz) */
+      var dvdr=-(dirdn)/(r*r);
+      var dudn=2*x*dx-2*y*dy;
+      return u3({x:x,y:y})*dvdr-(1/r)*dudn;
+    },80,60);
+  })();
+  var eps=0.05;
+  function compute(){
+    var ustar=sphereInt(function(dx,dy,dz){
+      return u3({x:M0.x+eps*dx,y:M0.y+eps*dy,z:M0.z+eps*dz});
+    },32,24)/(4*Math.PI);
+    /* ∂u/∂n 在 Γε 上：n 指向球心 = −(P−M0)/ε */
+    var avgdn=sphereInt(function(dx,dy,dz){
+      var px=M0.x+eps*dx,py=M0.y+eps*dy;
+      return (2*px*(-dx)-2*py*(-dy))/eps;
+    },32,24)/(4*Math.PI);
+    return {ustar:ustar,term2:4*Math.PI*eps*avgdn};
+  }
+  function draw(){
+    var r=compute();
+    ctx.clearRect(0,0,W,H);
+    /* Γ */
+    ctx.strokeStyle="#185FA5";ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(X(0),Y(0),1/(X1-X0)*W,0,7);ctx.stroke();
+    /* Γε */
+    ctx.strokeStyle="#D85A30";ctx.lineWidth=2;ctx.beginPath();
+    ctx.arc(X(M0.x),Y(M0.y),eps/(X1-X0)*W,0,7);ctx.stroke();
+    /* Γε 上的法向箭头（指向球心） */
+    for(var k=0;k<8;k++){
+      var th=k/8*2*Math.PI;
+      var px=M0.x+eps*Math.cos(th),py=M0.y+eps*Math.sin(th);
+      var ux=-Math.cos(th),uy=-Math.sin(th);
+      ctx.strokeStyle="#D85A30";ctx.lineWidth=1.4;ctx.beginPath();
+      ctx.moveTo(X(px),Y(py));ctx.lineTo(X(px)-0.09*ux/((X1-X0)/W)*W,Y(py)+0.09*uy/((Y1-Y0)/H)*H);ctx.stroke();
+    }
+    /* M0 与 Γ 上外法向箭头 */
+    var thM=0.7;
+    var mx=Math.cos(thM),my=Math.sin(thM);
+    ctx.strokeStyle="#185FA5";ctx.lineWidth=1.4;ctx.beginPath();
+    ctx.moveTo(X(mx),Y(my));ctx.lineTo(X(mx)+0.16*mx/((X1-X0)/W)*W,Y(my)-0.16*my/((Y1-Y0)/H)*H);ctx.stroke();
+    ctx.fillStyle="#D85A30";ctx.beginPath();ctx.arc(X(M0.x),Y(M0.y),4.5,0,7);ctx.fill();
+    ctx.fillStyle="#1f2328";ctx.font="12.5px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText("M₀ (0.3, −0.2, 0.1)",X(M0.x)+9,Y(M0.y)-7);
+    ctx.fillStyle="#185FA5";ctx.fillText("Γ（外法向 n）",X(-0.98),Y(0.9));
+    ctx.fillStyle="#D85A30";ctx.fillText("Γ_ε（法向指向球心）",X(M0.x)+0.1,Y(M0.y)+0.22);
+    ctx.fillStyle="#57606a";ctx.font="12px ui-monospace,monospace";
+    ctx.fillText("ε = "+eps.toFixed(4)+"　（z=0 截面示意，积分在三维球面上进行）",12,18);
+    /* 读数 */
+    $("dig-ustar").textContent=r.ustar.toFixed(9);
+    $("dig-term2").textContent=r.term2.toExponential(2);
+    $("dig-Ig").textContent=IG.toFixed(9);
+    $("dig-sum").textContent=(IG+4*Math.PI*r.ustar-r.term2).toExponential(2);
+    $("dig-rec").textContent=(-IG/(4*Math.PI)).toFixed(9);
+  }
+  $("dig-eps").addEventListener("input",function(){
+    var s=parseFloat(this.value)/100;
+    eps=Math.pow(10,-2.301+1.602*s);
+    $("dig-epsv").textContent=eps.toFixed(4);
+    draw();
+  });
+  draw();
+})();
+
+/* ================= 05 平均值定理 ================= */
+(function(){
+  var W=840,H=420,cv=$("avg-canvas"),ctx=cv.getContext("2d");
+  var X0=-1.5,X1=1.5,Y0=-0.75,Y1=0.75;
+  function X(x){return (x-X0)/(X1-X0)*W;}
+  function Y(y){return H-(y-Y0)/(Y1-Y0)*H;}
+  var dim="3d",fn="h",type="surf";
+  var M0={x:-0.45,y:0.25},z=0,a=0.35;
+  /* 单位球面积分：θ 向 Simpson + φ 向中点（周期方向谱精度） */
+  function sphereInt(f,nth,nph){
+    var dth=Math.PI/nth,w=[],s=0;
+    for(var i=0;i<=nth;i++)w.push(i===0||i===nth?1:(i%2?4:2));
+    for(var i2=0;i2<=nth;i2++){
+      var th=i2*dth,st=Math.sin(th),dph=2*Math.PI/nph,acc=0;
+      for(var j=0;j<nph;j++){
+        var ph=(j+0.5)*dph;
+        acc+=st*f(st*Math.cos(ph),st*Math.sin(ph),Math.cos(th)); /* sinθ 权重不能漏 */
+      }
+      s+=w[i2]*acc*dph;
+    }
+    return s*dth/3;
+  }
+  function circleInt(f,n){
+    var h=2*Math.PI/n,s=0;
+    for(var i=0;i<n;i++)s+=f((i+0.5)*h);
+    return s*h;
+  }
+  /* 两个候选函数都不含 z，球心 z 只影响「球是否还在 Ω 内」的约束 */
+  function uVal(x,y){ return fn==="h" ? x*x-y*y : x*x+y*y; }
+  /* 球面平均：3D 为 (1/4π)∫ u(M0+a·d)dΩ；2D 为 (1/2π)∫ u(M0+a·e(θ))dθ */
+  function surfaceAvg(aa,q){
+    if(dim==="3d"){
+      var nth=q?20:40,nph=q?15:30;
+      return sphereInt(function(dx,dy,dz){
+        return uVal(M0.x+aa*dx,M0.y+aa*dy);
+      },nth,nph)/(4*Math.PI);
+    }
+    return circleInt(function(th){return uVal(M0.x+aa*Math.cos(th),M0.y+aa*Math.sin(th));},q?120:240)/(2*Math.PI);
+  }
+  /* 球体平均：径向 Simpson × 球面平均 */
+  function ballAvg(aa){
+    var nr=dim==="3d"?12:24,s=0,h=aa/nr;
+    for(var i=0;i<=nr;i++){
+      var r=i*h,w=(i===0||i===nr)?1:(i%2?4:2);
+      var v=dim==="3d"
+        ? sphereInt(function(dx,dy,dz){return uVal(M0.x+r*dx,M0.y+r*dy);},16,12)/(4*Math.PI)
+        : circleInt(function(th){return uVal(M0.x+r*Math.cos(th),M0.y+r*Math.sin(th));},120)/(2*Math.PI);
+      s+=w*v*(dim==="3d"?r*r:r);
+    }
+    return s*h/3/(dim==="3d"?aa*aa*aa/3:aa*aa/2);
+  }
+  /* 理论值：调和 ⟹ u(M0)；非调和 u=x²+y² ⟹ 平均漂移
+     球面：⟨(x₀+aξ)²+(y₀+aη)²⟩ = r²+2a²/3（3D，两项各贡献 a²/3）/ r²+a²（2D）
+     球体：径向再平均，3D ⟨r²⟩_球=a²/5 ⟹ r²+2a²/5；2D ⟨r²⟩_盘=a²/2 ⟹ r²+a²/2 */
+  function theory(aa,tp){
+    var r2=M0.x*M0.x+M0.y*M0.y;
+    if(fn==="h")return r2;
+    if(dim==="3d")return tp==="ball"?(r2+2*aa*aa/5):(r2+2*aa*aa/3);
+    return tp==="ball"?(r2+aa*aa/2):(r2+aa*aa);
+  }
+  var drag=false;
+  function clamp(){
+    var r2=Math.hypot(M0.x,M0.y);
+    if(r2>0.95&&r2>1e-9){M0.x*=0.95/r2;M0.y*=0.95/r2;}
+    var r3=Math.hypot(M0.x,M0.y,z);
+    var amax=Math.max(0.03,0.985-r3);
+    if(a>amax)a=amax;
+  }
+  function draw(){
+    clamp();
+    ctx.clearRect(0,0,W,H);
+    /* Ω 边界 */
+    ctx.strokeStyle="#185FA5";ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(X(0),Y(0),1/(X1-X0)*W,0,7);ctx.stroke();
+    ctx.fillStyle="#185FA5";ctx.font="12.5px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText("Ω 的边界",X(0.72),Y(0.74));
+    /* 球投影 */
+    ctx.strokeStyle="#D85A30";ctx.lineWidth=2;ctx.setLineDash([5,3]);
+    ctx.beginPath();ctx.arc(X(M0.x),Y(M0.y),a/(X1-X0)*W,0,7);ctx.stroke();ctx.setLineDash([]);
+    /* 采样点 */
+    for(var k=0;k<16;k++){
+      var th=k/16*2*Math.PI;
+      ctx.fillStyle="#D85A30";ctx.beginPath();
+      ctx.arc(X(M0.x+a*Math.cos(th)),Y(M0.y+a*Math.sin(th)),2.6,0,7);ctx.fill();
+    }
+    /* M0 */
+    ctx.strokeStyle="#1f2328";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(X(M0.x)-7,Y(M0.y));ctx.lineTo(X(M0.x)+7,Y(M0.y));
+    ctx.moveTo(X(M0.x),Y(M0.y)-7);ctx.lineTo(X(M0.x),Y(M0.y)+7);ctx.stroke();
+    ctx.fillStyle="#1f2328";ctx.font="12.5px ui-monospace,monospace";
+    ctx.fillText("M₀",X(M0.x)+9,Y(M0.y)-8);
+    /* 半径标注 */
+    ctx.fillStyle="#57606a";ctx.font="12px ui-monospace,monospace";
+    ctx.fillText("a = "+a.toFixed(3),X(M0.x)+a*0.55,Y(M0.y)-4);
+    /* 嵌入小图：当前类型的平均 vs a */
+    var amax=Math.max(0.06,0.985-Math.hypot(M0.x,M0.y,z));
+    var sx0=60,sx1=W-30,sy0=H-96,sy1=H-26;
+    function avgAt(aa){return type==="surf"?surfaceAvg(aa,true):ballAvg(aa);}
+    var samples=[],i;
+    for(i=0;i<=40;i++){var aa=0.05+(amax-0.05)*i/40;samples.push({a:aa,v:avgAt(aa)});}
+    var u0=uVal(M0.x,M0.y);
+    var vmin=Math.min.apply(null,samples.map(function(s){return s.v;}).concat([u0]));
+    var vmax=Math.max.apply(null,samples.map(function(s){return s.v;}).concat([u0]));
+    if(vmax-vmin<1e-9){vmax+=0.5;vmin-=0.5;}
+    var pad=(vmax-vmin)*0.12;vmin-=pad;vmax+=pad;
+    function SX(aa){return sx0+(aa-0.05)/(amax-0.05)*(sx1-sx0);}
+    function SY(v){return sy1-(v-vmin)/(vmax-vmin)*(sy1-sy0);}
+    ctx.fillStyle="rgba(246,248,251,.96)";ctx.strokeStyle="#d0d7de";ctx.lineWidth=1;
+    ctx.beginPath();ctx.rect(sx0,sy0,sx1-sx0,sy1-sy0);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#57606a";ctx.font="11px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText((type==="surf"?"球面平均":"球体平均")+" vs a（绿虚线 = u(M₀)）",sx0+6,sy0+13);
+    ctx.setLineDash([3,3]);ctx.strokeStyle="#0F6E56";ctx.beginPath();
+    ctx.moveTo(sx0,SY(u0));ctx.lineTo(sx1,SY(u0));ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle="#D85A30";ctx.lineWidth=1.8;ctx.beginPath();
+    for(i=0;i<samples.length;i++){
+      var px=SX(samples[i].a),py=SY(samples[i].v);
+      if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);
+    }
+    ctx.stroke();
+    ctx.fillStyle="#D85A30";ctx.beginPath();ctx.arc(SX(a),SY(avgAt(a)),3.4,0,7);ctx.fill();
+    /* 读数 */
+    var avg=type==="surf"?surfaceAvg(a,false):ballAvg(a);
+    $("avg-av").textContent=a.toFixed(2);
+    $("avg-u0").textContent=u0.toFixed(6);
+    $("avg-avg").textContent=avg.toFixed(6);
+    $("avg-dif").textContent=(avg-u0).toExponential(2);
+    $("avg-th").textContent=theory(a,type).toFixed(6)+(fn==="h"?"（=u(M₀)）":"");
+  }
+  function toWorld(ev){
+    var r=cv.getBoundingClientRect();
+    var cx=(ev.clientX-r.left)/r.width*W,cy=(ev.clientY-r.top)/r.height*H;
+    return {x:X0+cx/W*(X1-X0),y:Y0+(H-cy)/H*(Y1-Y0)};
+  }
+  cv.addEventListener("pointerdown",function(ev){
+    var w=toWorld(ev);drag=true;cv.setPointerCapture(ev.pointerId);
+    M0.x=w.x;M0.y=w.y;draw();
+  });
+  cv.addEventListener("pointermove",function(ev){
+    if(!drag)return;
+    var w=toWorld(ev);M0.x=w.x;M0.y=w.y;draw();
+  });
+  cv.addEventListener("pointerup",function(){drag=false;});
+  function setMode(m){
+    dim=m[0];fn=m[1];
+    $("avg-m-3dh").classList.toggle("on",m==="3dh");
+    $("avg-m-3dn").classList.toggle("on",m==="3dn");
+    $("avg-m-2dh").classList.toggle("on",m==="2dh");
+    $("avg-m-2dn").classList.toggle("on",m==="2dn");
+    $("avg-z").disabled=(dim!=="3d");
+    draw();
+  }
+  $("avg-m-3dh").onclick=function(){setMode("3dh");};
+  $("avg-m-3dn").onclick=function(){setMode("3dn");};
+  $("avg-m-2dh").onclick=function(){setMode("2dh");};
+  $("avg-m-2dn").onclick=function(){setMode("2dn");};
+  $("avg-z").addEventListener("input",function(){
+    z=parseFloat(this.value)/100*0.8-0.4;
+    $("avg-zv").textContent=z.toFixed(2);draw();
+  });
+  $("avg-a").addEventListener("input",function(){
+    a=parseFloat(this.value)/100*0.94+0.03;
+    draw();
+  });
+  $("avg-type-surf").onclick=function(){type="surf";this.classList.add("on");$("avg-type-ball").classList.remove("on");draw();};
+  $("avg-type-ball").onclick=function(){type="ball";this.classList.add("on");$("avg-type-surf").classList.remove("on");draw();};
+  draw();
+})();
+
+/* ================= 06 极值原理球链动画 ================= */
+(function(){
+  var W=840,H=360,cv=$("chn-canvas"),ctx=cv.getContext("2d");
+  var X0=-1.15,X1=1.15,Y0=-0.5,Y1=0.5;
+  function X(x){return (x-X0)/(X1-X0)*W;}
+  function Y(y){return H-(y-Y0)/(Y1-Y0)*H;}
+  var M0={x:-0.32,y:0.18},P={x:0.30,y:0.40},M1={x:0.88,y:0.475};
+  var balls=[
+    {c:{x:-0.32,y:0.18},r:0.45},
+    {c:{x:-0.08,y:0.25},r:0.45},
+    {c:{x:0.14,y:0.32},r:0.45},
+    {c:{x:0.36,y:0.39},r:0.449},
+    {c:{x:0.45,y:0.33},r:0.422},
+    {c:{x:0.616,y:0.332},r:0.30}
+  ];
+  var step=0,timer=null;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    /* Ω */
+    ctx.strokeStyle="#185FA5";ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(X(0),Y(0),1/(X1-X0)*W,0,7);ctx.stroke();
+    ctx.fillStyle="#185FA5";ctx.font="12.5px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText("Ω",X(0.93),Y(0.93));
+    /* 折线 γ */
+    ctx.strokeStyle="#57606a";ctx.lineWidth=1.6;ctx.setLineDash([5,3]);
+    ctx.beginPath();ctx.moveTo(X(M0.x),Y(M0.y));ctx.lineTo(X(P.x),Y(P.y));ctx.lineTo(X(M1.x),Y(M1.y));ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#57606a";ctx.font="12px ui-monospace,monospace";
+    ctx.fillText("γ",X(P.x)+6,Y(P.y)+16);
+    /* 球 */
+    for(var i=0;i<balls.length;i++){
+      var b=balls[i],filled=i<step;
+      if(filled){
+        ctx.fillStyle="rgba(83,74,183,.16)";
+        ctx.beginPath();ctx.arc(X(b.c.x),Y(b.c.y),b.r/(X1-X0)*W,0,7);ctx.fill();
+      }
+      ctx.strokeStyle=filled?"#534AB7":"#b6bcc4";
+      ctx.lineWidth=filled?2:1.3;
+      ctx.beginPath();ctx.arc(X(b.c.x),Y(b.c.y),b.r/(X1-X0)*W,0,7);ctx.stroke();
+      ctx.fillStyle=filled?"#534AB7":"#8b929b";
+      ctx.font="12px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("K"+(i+1),X(b.c.x),Y(b.c.y)-b.r/(X1-X0)*W-4);
+      if(filled&&i===step-1){
+        ctx.fillStyle="#534AB7";ctx.font="12.5px ui-monospace,monospace";
+        ctx.fillText("K"+(i+1)+" 上 u ≡ m",X(b.c.x),Y(b.c.y)+4);
+      }
+    }
+    /* M0, M1 */
+    ctx.fillStyle="#D85A30";ctx.beginPath();ctx.arc(X(M0.x),Y(M0.y),5,0,7);ctx.fill();
+    ctx.fillStyle="#1f2328";ctx.font="12.5px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText("M₀：假设 u(M₀)=m（上界）",X(M0.x)+8,Y(M0.y)-6);
+    ctx.fillStyle="#D85A30";ctx.beginPath();ctx.arc(X(M1.x),Y(M1.y),5,0,7);ctx.fill();
+    ctx.fillStyle="#1f2328";ctx.fillText("M₁（边界点）",X(M1.x)-64,Y(M1.y)-9);
+    if(step>=balls.length){
+      ctx.fillStyle="rgba(255,255,255,.9)";
+      ctx.fillRect(W/2-260,10,520,26);
+      ctx.fillStyle="#534AB7";ctx.font="bold 14px system-ui,sans-serif";ctx.textAlign="center";
+      ctx.fillText("整条链上 u ≡ m ⟹ u ≡ m 于整个 Ω ⟹ 与「u 不恒等于常数」矛盾",W/2,27);
+    }
+    $("chn-step").textContent="第 "+step+" / "+balls.length+" 步";
+  }
+  function play(){
+    if(timer){clearInterval(timer);timer=null;$("chn-play").textContent="播放";return;}
+    $("chn-play").textContent="暂停";
+    timer=setInterval(function(){
+      step++;if(step>balls.length){step=balls.length;clearInterval(timer);timer=null;$("chn-play").textContent="播放";}
+      draw();
+    },850);
+  }
+  $("chn-play").onclick=play;
+  $("chn-reset").onclick=function(){
+    if(timer){clearInterval(timer);timer=null;$("chn-play").textContent="播放";}
+    step=0;draw();
+  };
+  draw();
+})();
+
+/* ================= 01 点电荷：等势线 + 电场线 ================= */
+(function(){
+  var W=840,H=360,cv=$("q1-canvas"),ctx=cv.getContext("2d");
+  var X0=-2.6,X1=2.6,Y0=-1.114,Y1=1.114;
+  function X(x){return (x-X0)/(X1-X0)*W;}
+  function Y(y){return H-(y-Y0)/(Y1-Y0)*H;}
+  var mode="pos";
+  var qpos={x:-0.7,y:0}, qneg={x:0.7,y:0};
+  var drag=null, probe=null;
+  function phi(p){
+    if(mode==="dip") return 1/Math.hypot(p.x-qpos.x,p.y-qpos.y)-1/Math.hypot(p.x-qneg.x,p.y-qneg.y);
+    var s=mode==="pos"?1:-1;
+    return s/Math.hypot(p.x-qpos.x,p.y-qpos.y);
+  }
+  function grad(p){
+    if(mode==="dip"){
+      var dx=0,dy=0,r1=Math.hypot(p.x-qpos.x,p.y-qpos.y),r2=Math.hypot(p.x-qneg.x,p.y-qneg.y);
+      dx-=(p.x-qpos.x)/(r1*r1*r1); dy-=(p.y-qpos.y)/(r1*r1*r1);
+      dx+=(p.x-qneg.x)/(r2*r2*r2); dy+=(p.y-qneg.y)/(r2*r2*r2);
+      return [dx,dy];
+    }
+    var s=mode==="pos"?1:-1, r=Math.hypot(p.x-qpos.x,p.y-qpos.y);
+    return [-s*(p.x-qpos.x)/(r*r*r), -s*(p.y-qpos.y)/(r*r*r)];
+  }
+  function arrow(x,y,dx,dy,size,col){
+    var a=Math.atan2(dy,dx),L=Math.hypot(dx,dy);
+    ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+dx,y+dy);ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x+dx,y+dy);
+    ctx.lineTo(x+dx-size*Math.cos(a-0.42),y+dy-size*Math.sin(a-0.42));
+    ctx.lineTo(x+dx-size*Math.cos(a+0.42),y+dy-size*Math.sin(a+0.42));
+    ctx.closePath();ctx.fill();
+  }
+  function drawCharge(x,y,sign,col){
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(X(x),Y(y),7,0,7);ctx.fill();
+    ctx.fillStyle="#fff";ctx.font="bold 12px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(sign>0?"+":"−",X(x),Y(y)+0.5);
+    ctx.textBaseline="alphabetic";
+  }
+  function heatmap(){
+    var ow=210,oh=90,off=document.createElement("canvas");off.width=ow;off.height=oh;
+    var octx=off.getContext("2d"),img=octx.createImageData(ow,oh),d=img.data;
+    for(var j=0;j<oh;j++)for(var i=0;i<ow;i++){
+      var px=X0+(i+0.5)/ow*(X1-X0), py=Y0+(H-(j+0.5)/oh*H)/H*(Y1-Y0);
+      var v=phi({x:px,y:py}), t=Math.max(-1,Math.min(1,v*1.6));
+      var idx=(j*ow+i)*4;
+      if(t>=0){d[idx]=255;d[idx+1]=Math.round(255*(1-t*0.82));d[idx+2]=Math.round(255*(1-t*0.82));}
+      else{d[idx]=Math.round(255*(1+t*0.82));d[idx+1]=Math.round(255*(1+t*0.82));d[idx+2]=255;}
+      d[idx+3]=Math.round(90+120*Math.abs(t));
+    }
+    octx.putImageData(img,0,0);
+    ctx.imageSmoothingEnabled=true;
+    ctx.drawImage(off,0,0,W,H);
+  }
+  function traceLine(sx,sy,dir){
+    ctx.strokeStyle="rgba(216,90,48,.85)";ctx.lineWidth=1.4;ctx.beginPath();
+    var x=sx,y=sy,first=true;
+    for(var k=0;k<900;k++){
+      var px=X(x),py=Y(y);
+      if(first){ctx.moveTo(px,py);first=false;}else ctx.lineTo(px,py);
+      var g=grad({x:x,y:y}),n=Math.hypot(g[0],g[1])||1;
+      x+=dir*g[0]/n*0.02;y+=dir*g[1]/n*0.02;
+      if(mode==="dip"){
+        if(Math.hypot(x-qneg.x,y-qneg.y)<0.06){ctx.lineTo(X(qneg.x),Y(qneg.y));break;}
+      }
+      if(x<X0-0.2||x>X1+0.2||y<Y0-0.2||y>Y1+0.2) break;
+    }
+    ctx.stroke();
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    /* 坐标轴 */
+    ctx.strokeStyle="#e5e9ed";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(X(X0),Y(0));ctx.lineTo(X(X1),Y(0));
+    ctx.moveTo(X(0),Y(Y0));ctx.lineTo(X(0),Y(Y1));ctx.stroke();
+    if(mode==="dip"){
+      heatmap();
+      for(var a=0;a<8;a++){
+        var th=a/8*2*Math.PI+0.2;
+        traceLine(qpos.x+0.09*Math.cos(th),qpos.y+0.09*Math.sin(th),1);
+      }
+      drawCharge(qpos.x,qpos.y,1,"#D85A30");
+      drawCharge(qneg.x,qneg.y,-1,"#185FA5");
+      ctx.fillStyle="#57606a";ctx.font="12px ui-monospace,monospace";ctx.textAlign="left";
+      ctx.fillText("底色：电位势 φ = 1/r₁ − 1/r₂（暖=正，冷=负）",12,18);
+      ctx.fillStyle="#D85A30";ctx.fillText("橙线：电场线（自 +q 出发，落入 −q）",12,34);
+    }else{
+      var s=mode==="pos"?1:-1;
+      /* 等势线 */
+      [0.35,0.5,0.7,1.0,1.4,1.9,2.5].forEach(function(r,idx){
+        ctx.strokeStyle="#185FA5";ctx.lineWidth=1.3;ctx.setLineDash([]);
+        ctx.beginPath();ctx.arc(X(qpos.x),Y(qpos.y),r/(X1-X0)*W,0,7);ctx.stroke();
+        if(idx%2===0){
+          ctx.fillStyle="#185FA5";ctx.font="11.5px ui-monospace,monospace";ctx.textAlign="center";
+          ctx.fillText("φ="+(s/r).toFixed(2),X(qpos.x)+r/(X1-X0)*W*0.7071,Y(qpos.y)-r/(X1-X0)*W*0.7071-4);
+        }
+      });
+      /* 电场线 */
+      for(var k2=0;k2<12;k2++){
+        var th2=k2/12*2*Math.PI;
+        var r0=0.12,r1=1.55;
+        var x0=qpos.x+r0*Math.cos(th2),y0=qpos.y+r0*Math.sin(th2);
+        var x1=qpos.x+r1*Math.cos(th2),y1=qpos.y+r1*Math.sin(th2);
+        arrow(X(x0),Y(y0),X(x1)-X(x0),Y(y1)-Y(y0),8,"#D85A30");
+      }
+      drawCharge(qpos.x,qpos.y,s,"#D85A30");
+      ctx.fillStyle="#57606a";ctx.font="12px ui-monospace,monospace";ctx.textAlign="left";
+      ctx.fillText("蓝线：等势线（φ=const）",12,18);
+      ctx.fillStyle="#D85A30";ctx.fillText("橙线：电场线（E=−∇φ，径向）",12,34);
+    }
+    /* 探针十字 */
+    if(probe){
+      ctx.strokeStyle="rgba(31,35,40,.4)";ctx.setLineDash([3,3]);ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(X(probe.x),0);ctx.lineTo(X(probe.x),H);
+      ctx.moveTo(0,Y(probe.y));ctx.lineTo(W,Y(probe.y));ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle="#1f2328";ctx.beginPath();ctx.arc(X(probe.x),Y(probe.y),3,0,7);ctx.fill();
+    }
+  }
+  function upd(){
+    draw();
+    if(probe){
+      var p=phi(probe),g=grad(probe),e=Math.hypot(g[0],g[1]);
+      $("q1-probe").textContent="("+probe.x.toFixed(2)+", "+probe.y.toFixed(2)+")";
+      $("q1-phi").textContent=p.toFixed(3);
+      $("q1-E").textContent=e.toFixed(3);
+    }
+  }
+  function toWorld(ev){
+    var r=cv.getBoundingClientRect();
+    var cx=(ev.clientX-r.left)/r.width*W, cy=(ev.clientY-r.top)/r.height*H;
+    return {x:X0+cx/W*(X1-X0), y:Y0+(H-cy)/H*(Y1-Y0)};
+  }
+  cv.addEventListener("pointerdown",function(ev){
+    var w=toWorld(ev);
+    if(mode==="dip"){
+      drag=Math.hypot(w.x-qpos.x,w.y-qpos.y)<Math.hypot(w.x-qneg.x,w.y-qneg.y)?"pos":"neg";
+    }else drag="pos";
+    if(drag==="pos"){qpos.x=w.x;qpos.y=w.y;}else{qneg.x=w.x;qneg.y=w.y;}
+    cv.setPointerCapture(ev.pointerId);upd();
+  });
+  cv.addEventListener("pointermove",function(ev){
+    var w=toWorld(ev);
+    if(drag){
+      if(drag==="pos"){qpos.x=w.x;qpos.y=w.y;}else{qneg.x=w.x;qneg.y=w.y;}
+    }
+    probe=w;upd();
+  });
+  cv.addEventListener("pointerup",function(){drag=null;});
+  cv.addEventListener("pointerleave",function(){probe=null;upd();});
+  function setMode(m){
+    mode=m;
+    $("q1-mode-pos").classList.toggle("on",m==="pos");
+    $("q1-mode-neg").classList.toggle("on",m==="neg");
+    $("q1-mode-dip").classList.toggle("on",m==="dip");
+    $("q1-hint").textContent=m==="dip"?"拖动任一电荷":"拖动电荷移动位置";
+    upd();
+  }
+  $("q1-mode-pos").onclick=function(){setMode("pos");};
+  $("q1-mode-neg").onclick=function(){setMode("neg");};
+  $("q1-mode-dip").onclick=function(){setMode("dip");};
+  upd();
+})();
+
+/* ================= 02 外问题非唯一 ================= */
+(function(){
+  var W=840,H=300,cv=$("ext-canvas"),ctx=cv.getContext("2d");
+  var mode="3d";
+  function X(r){return 46+(r-0.9)/(4.3-0.9)*(W-46-16);}
+  function Y(u){return 14+(1.15-u)/(1.15-(-0.15))*(H-14-30);}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font="11px ui-monospace,monospace";ctx.strokeStyle="#d0d7de";ctx.fillStyle="#57606a";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(46,14);ctx.lineTo(46,H-30);ctx.lineTo(W-16,H-30);ctx.stroke();
+    [1,1.5,2,2.5,3,3.5,4].forEach(function(r){
+      ctx.beginPath();ctx.moveTo(X(r),H-30);ctx.lineTo(X(r),H-30+4);ctx.stroke();
+      ctx.textAlign="center";ctx.fillText(r,X(r),H-30+16);
+    });
+    [0,0.25,0.5,0.75,1].forEach(function(u){
+      ctx.beginPath();ctx.moveTo(46-4,Y(u));ctx.lineTo(46,Y(u));ctx.stroke();
+      ctx.textAlign="right";ctx.fillText(u,46-7,Y(u)+3);
+    });
+    ctx.textAlign="center";ctx.fillText("r（到原点距离）",46+(W-62)/2,H-4);
+    ctx.save();ctx.translate(12,14+(H-44)/2);ctx.rotate(-Math.PI/2);ctx.fillText("u",0,0);ctx.restore();
+    /* 内部阴影 */
+    ctx.fillStyle="rgba(87,96,106,.08)";
+    ctx.fillRect(0,14,46-1,H-44);
+    ctx.fillStyle="#57606a";ctx.textAlign="center";
+    ctx.fillText("物体内部",23,Y(0.55));
+    /* 边界线 r=1 */
+    ctx.strokeStyle="#57606a";ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(X(1),14);ctx.lineTo(X(1),H-30);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#57606a";ctx.fillText("Γ: r=1",X(1),26);
+    var f2=mode==="3d"?function(r){return 1/r;}:function(r){return Math.log(r);};
+    var u1=mode==="3d"?1:0;
+    ctx.strokeStyle="#D85A30";ctx.lineWidth=2.4;ctx.beginPath();
+    for(var i=0;i<=200;i++){var r=1+i/200*3.3,u=f2(r);
+      if(i)ctx.lineTo(X(r),Y(u));else ctx.moveTo(X(r),Y(u));}
+    ctx.stroke();
+    ctx.strokeStyle="#0F6E56";ctx.lineWidth=2;ctx.setLineDash([6,3]);ctx.beginPath();
+    ctx.moveTo(X(1),Y(u1));ctx.lineTo(X(4.3),Y(u1));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#D85A30";ctx.textAlign="left";ctx.font="12.5px ui-monospace,monospace";
+    ctx.fillText(mode==="3d"?"u₂ = 1/r（满足 (1.7)，→0）":"u₂ = ln r（不满足 (1.7)′，无界）",X(2.05),Y(f2(2.05))-8);
+    ctx.fillStyle="#0F6E56";
+    ctx.fillText(mode==="3d"?"u₁ ≡ 1（被 (1.7) 排除）":"u₁ ≡ 0（满足 (1.7)′）",X(2.4),Y(u1)-8);
+    ctx.fillStyle="#57606a";ctx.font="12px ui-monospace,monospace";
+    ctx.fillText("两个解在 Γ 上重合",X(1)+8,Y(u1)-22);
+  }
+  function upd(){
+    draw();
+    var bd=mode==="3d"?"1.000000":"0.000000";
+    $("ext-bd").textContent=bd;
+    $("ext-r2").textContent=mode==="3d"?"0.500000":"0.693147";
+    $("ext-inf").textContent=mode==="3d"?"→ 0":"→ ∞";
+    $("ext-ok").textContent=mode==="3d"?"u₁ 否，u₂ 是":"u₂ 否，u₁ 是";
+  }
+  $("ext-mode-3d").onclick=function(){mode="3d";this.classList.add("on");$("ext-mode-2d").classList.remove("on");upd();};
+  $("ext-mode-2d").onclick=function(){mode="2d";this.classList.add("on");$("ext-mode-3d").classList.remove("on");upd();};
+  upd();
+})();
+
+/* ================= 03a 变分原理：J(u+λw) 抛物线 ================= */
+(function(){
+  var W=840,H=320,cv=$("var-canvas"),ctx=cv.getContext("2d");
+  /* Ω=单位圆盘，f≡1：−∆u=1, u|Γ=0 的精确解 u=(1−r²)/4；w=1−r²∈V₀
+     求积：径向 Simpson（被积函数是 r 的三次多项式，Simpson 精确）× 角向中点
+     （周期方向谱精度），彻底消掉方格中点法在圆域边界上的 O(h) 域误差
+     （实测 J(0.6) 偏差从 4e-3 降到 ~1e-12） */
+  var NR=200,NT=96,nodes=[],rw=[];
+  for(var i=0;i<=NR;i++)rw.push(i===0||i===NR?1:(i%2?4:2));
+  for(var j=0;j<NT;j++)for(var i=0;i<=NR;i++){
+    var rr=i/NR,th=2*Math.PI*(j+0.5)/NT;
+    nodes.push({x:rr*Math.cos(th),y:rr*Math.sin(th),r:rr,rw:rw[i]});
+  }
+  var dr=1/NR,dth=2*Math.PI/NT;
+  function J(lam){
+    var s=0,c=0.25+lam;
+    for(var k=0;k<nodes.length;k++){
+      var n=nodes[k],r2=n.x*n.x+n.y*n.y;
+      s+=n.rw*n.r*(4*c*c*r2-2*(1-r2)*c);   /* |∇v|² − 2fv，v=(1−r²)(1/4+λ) */
+    }
+    return s*dr*dth/3;
+  }
+  var LAM0=-1.6,LAM1=1.6;
+  function X(l){return 46+(l-LAM0)/(LAM1-LAM0)*(W-46-16);}
+  function Y(v){return 14+(17.2-v)/(17.2-(-1.2))*(H-14-30);}
+  var lam=0.6,pts=[];
+  for(var q=0;q<=64;q++){var l=LAM0+(LAM1-LAM0)*q/64;pts.push({l:l,v:J(l)});}
+  var Jzero=J(0);
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font="11px ui-monospace,monospace";ctx.strokeStyle="#d0d7de";ctx.fillStyle="#57606a";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(46,14);ctx.lineTo(46,H-30);ctx.lineTo(W-16,H-30);ctx.stroke();
+    [-1.5,-1,-0.5,0,0.5,1,1.5].forEach(function(l){
+      ctx.beginPath();ctx.moveTo(X(l),H-30);ctx.lineTo(X(l),H-30+4);ctx.stroke();
+      ctx.textAlign="center";ctx.fillText(l,X(l),H-30+16);
+    });
+    [0,4,8,12,16].forEach(function(v){
+      ctx.beginPath();ctx.moveTo(46-4,Y(v));ctx.lineTo(46,Y(v));ctx.stroke();
+      ctx.textAlign="right";ctx.fillText(v,46-7,Y(v)+3);
+    });
+    ctx.textAlign="center";ctx.fillText("λ",46+(W-62)/2,H-4);
+    ctx.save();ctx.translate(12,14+(H-44)/2);ctx.rotate(-Math.PI/2);ctx.fillText("J(u+λw)",0,0);ctx.restore();
+    /* 理论抛物线（虚线） */
+    ctx.strokeStyle="#534AB7";ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();
+    for(var i=0;i<=100;i++){
+      var l2=LAM0+(LAM1-LAM0)*i/100,v2=-Math.PI/8+2*Math.PI*l2*l2;
+      if(i)ctx.lineTo(X(l2),Y(v2));else ctx.moveTo(X(l2),Y(v2));
+    }
+    ctx.stroke();ctx.setLineDash([]);
+    /* 数值点 */
+    ctx.fillStyle="#185FA5";
+    for(var p=0;p<pts.length;p++){
+      ctx.beginPath();ctx.arc(X(pts[p].l),Y(pts[p].v),3,0,7);ctx.fill();
+    }
+    /* λ=0 顶点 */
+    ctx.strokeStyle="#0F6E56";ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(X(0),Y(-Math.PI/8));ctx.lineTo(X(0),H-30);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#0F6E56";ctx.font="12px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("顶点 λ=0（解）",X(0),Y(-Math.PI/8)+18);
+    /* 当前 λ */
+    var Jc=J(lam);
+    ctx.strokeStyle="#D85A30";ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(X(lam),14);ctx.lineTo(X(lam),H-30);ctx.stroke();
+    ctx.fillStyle="#D85A30";ctx.beginPath();ctx.arc(X(lam),Y(Jc),5,0,7);ctx.fill();
+    /* 图例 */
+    ctx.textAlign="left";ctx.font="12.5px ui-monospace,monospace";
+    ctx.fillStyle="#185FA5";ctx.fillText("● 数值积分（径向 Simpson 200 × 角向中点 96）",W-300,26);
+    ctx.fillStyle="#534AB7";ctx.fillText("--- 理论 −π/8 + 2πλ²",W-300,44);
+    ctx.fillStyle="#D85A30";ctx.fillText("│ 当前 λ",W-300,62);
+    /* 读数 */
+    var d=Jc-Jzero,pred=lam*lam*2*Math.PI;
+    $("var-lamv").textContent=lam.toFixed(2);
+    $("var-J").textContent=Jc.toFixed(6);
+    $("var-dJ").textContent=d.toFixed(6);
+    $("var-pred").textContent=pred.toFixed(6);
+    $("var-err").textContent=Math.abs(d-pred).toExponential(2);
+  }
+  $("var-lam").addEventListener("input",function(){
+    lam=parseFloat(this.value)/100;draw();
+  });
+  draw();
+})();
+
+/* ================= 03b 魏尔斯特拉斯反例 ================= */
+(function(){
+  var W=840,H=300,cv=$("weier-canvas"),ctx=cv.getContext("2d");
+  var X0=-1.05,X1=1.05,Y0=-0.18,Y1=1.2;
+  function X(x){return (x-X0)/(X1-X0)*W;}
+  function Y(y){return H-(y-Y0)/(Y1-Y0)*H;}
+  function yeps(x,e){return 0.5+Math.atan(x/e)/(2*Math.atan(1/e));}
+  function yp(x,e){return e/(2*Math.atan(1/e)*(x*x+e*e));}
+  function Jnum(e){
+    var n=2000,a=-1,b=1,h=(b-a)/n,s=0,w=[];
+    for(var i=0;i<=n;i++)w.push(i===0||i===n?1:(i%2?4:2));
+    for(var i2=0;i2<=n;i2++){var x=a+i2*h;s+=w[i2]*x*x*yp(x,e)*yp(x,e);}
+    return s*h/3;
+  }
+  function Jclosed(e){var a=Math.atan(1/e);return e/(4*a)-e*e/(4*a*a*(1+e*e));}
+  var EPS=[1,0.5,0.2,0.1,0.05,0.02,0.01];
+  var eps=0.28;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font="11px ui-monospace,monospace";ctx.strokeStyle="#d0d7de";ctx.fillStyle="#57606a";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(X(-1),Y(0));ctx.lineTo(X(-1),Y(1));ctx.lineTo(X(1),Y(1));ctx.stroke();
+    [-1,-0.5,0,0.5,1].forEach(function(x){
+      ctx.beginPath();ctx.moveTo(X(x),Y(0));ctx.lineTo(X(x),Y(0)-4);ctx.stroke();
+      ctx.textAlign="center";ctx.fillText(x,X(x),Y(0)+16);
+    });
+    [0,0.5,1].forEach(function(y){
+      ctx.beginPath();ctx.moveTo(X(-1)-4,Y(y));ctx.lineTo(X(-1),Y(y));ctx.stroke();
+      ctx.textAlign="right";ctx.fillText(y,X(-1)-7,Y(y)+3);
+    });
+    ctx.textAlign="center";ctx.fillText("x",X(0.5),Y(0)+30);
+    ctx.save();ctx.translate(12,(Y(0)+Y(1))/2);ctx.rotate(-Math.PI/2);ctx.fillText("y",0,0);ctx.restore();
+    /* 极限形状（虚线参考） */
+    ctx.strokeStyle="#b6bcc4";ctx.setLineDash([4,3]);ctx.lineWidth=1.4;ctx.beginPath();
+    ctx.moveTo(X(-1),Y(0));ctx.lineTo(X(-0.001),Y(0));ctx.moveTo(X(0.001),Y(1));ctx.lineTo(X(1),Y(1));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#8b929b";ctx.font="11px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText("极限形状（被 C¹ 排除）",X(-0.98),Y(0.5));
+    /* 曲线族 */
+    EPS.forEach(function(e){
+      var cur=Math.abs(e-eps)<1e-9;
+      ctx.strokeStyle=cur?"#D85A30":"#c7cdd4";
+      ctx.lineWidth=cur?2.6:1.3;ctx.beginPath();
+      for(var i=0;i<=240;i++){
+        var x=-1+i/240*2;
+        if(i)ctx.lineTo(X(x),Y(yeps(x,e)));else ctx.moveTo(X(x),Y(yeps(x,e)));
+      }
+      ctx.stroke();
+      if(cur){
+        ctx.fillStyle="#D85A30";ctx.font="12px ui-monospace,monospace";ctx.textAlign="left";
+        ctx.fillText("ε = "+e.toFixed(2),X(0.55),Y(yeps(0.9,e))-6);
+      }
+    });
+    /* 端点标注 */
+    ctx.fillStyle="#57606a";ctx.font="11px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("y(−1)=0",X(-1)+26,Y(0.06)+14);
+    ctx.fillText("y(1)=1",X(1)-26,Y(1)-8);
+    var Jn=Jnum(eps),Jc=Jclosed(eps),aa=Math.atan(1/eps);
+    $("weier-epsv").textContent=eps.toFixed(3);
+    $("weier-J").textContent=Jn.toFixed(8);
+    $("weier-Jc").textContent=Jc.toFixed(8);
+    $("weier-Ja").textContent=(eps/(2*Math.PI)).toFixed(8);
+    $("weier-Jb").textContent=(eps/(2*aa)).toFixed(8);
+  }
+  /* 双对数图 */
+  var W2=840,H2=260,cv2=$("weier2-canvas"),ctx2=cv2.getContext("2d");
+  function draw2(){
+    ctx2.clearRect(0,0,W2,H2);
+    var L=52,R=20,T=16,B=34;
+    var e0=0.01,e1=1,j0=1e-4,j1=0.4;
+    function LX(e){return L+(Math.log10(e)-Math.log10(e0))/(Math.log10(e1)-Math.log10(e0))*(W2-L-R);}
+    function LY(v){return T+(Math.log10(j1)-Math.log10(v))/(Math.log10(j1)-Math.log10(j0))*(H2-T-B);}
+    ctx2.font="11px ui-monospace,monospace";ctx2.strokeStyle="#d0d7de";ctx2.fillStyle="#57606a";ctx2.lineWidth=1;
+    ctx2.beginPath();ctx2.moveTo(L,T);ctx2.lineTo(L,H2-B);ctx2.lineTo(W2-R,H2-B);ctx2.stroke();
+    [0.01,0.03,0.1,0.3,1].forEach(function(e){
+      ctx2.beginPath();ctx2.moveTo(LX(e),H2-B);ctx2.lineTo(LX(e),H2-B+4);ctx2.stroke();
+      ctx2.textAlign="center";ctx2.fillText(e,LX(e),H2-B+16);
+    });
+    [1e-4,1e-3,1e-2,1e-1].forEach(function(v){
+      ctx2.beginPath();ctx2.moveTo(L-4,LY(v));ctx2.lineTo(L,LY(v));ctx2.stroke();
+      ctx2.textAlign="right";ctx2.fillText(v.toExponential(0),L-7,LY(v)+3);
+    });
+    ctx2.textAlign="center";ctx2.fillText("ε",L+(W2-L-R)/2,H2-4);
+    ctx2.save();ctx2.translate(12,T+(H2-T-B)/2);ctx2.rotate(-Math.PI/2);ctx2.fillText("J[yε]",0,0);ctx2.restore();
+    /* 斜率 1 参考线 */
+    ctx2.strokeStyle="#0F6E56";ctx.setLineDash([5,4]);ctx2.lineWidth=1.6;ctx2.beginPath();
+    ctx2.moveTo(LX(0.01),LY(0.01/(2*Math.PI)));ctx2.lineTo(LX(1),LY(1/(2*Math.PI)));ctx2.stroke();ctx2.setLineDash([]);
+    ctx2.fillStyle="#0F6E56";ctx2.font="12px ui-monospace,monospace";ctx2.textAlign="left";
+    ctx2.fillText("J = ε/(2π)（斜率 1）",LX(0.05),LY(0.05/(2*Math.PI))-8);
+    /* 闭式曲线 */
+    ctx2.strokeStyle="#D85A30";ctx2.lineWidth=2.2;ctx2.beginPath();
+    for(var i=0;i<=60;i++){
+      var e=Math.pow(10,Math.log10(e0)+(Math.log10(e1)-Math.log10(e0))*i/60);
+      var v=Jclosed(e);
+      if(i)ctx2.lineTo(LX(e),LY(v));else ctx2.moveTo(LX(e),LY(v));
+    }
+    ctx2.stroke();
+    /* 当前 ε */
+    ctx2.fillStyle="#D85A30";ctx2.beginPath();ctx2.arc(LX(eps),LY(Jclosed(eps)),5,0,7);ctx2.fill();
+    ctx2.textAlign="left";ctx2.fillStyle="#57606a";ctx2.font="12px ui-monospace,monospace";
+    ctx2.fillText("J[yε] = O(ε) → 0，但 U 中不存在使 J[y]=0 的函数",L+10,T+16);
+  }
+  $("weier-eps").addEventListener("input",function(){
+    var s=parseFloat(this.value)/100;
+    eps=Math.pow(10,-2+2*s);
+    draw();draw2();
+  });
+  draw();draw2();
+})();
+
+/* ================= 03c 阿达马反例 ================= */
+(function(){
+  var N=20;
+  function a(n){return Math.pow(2,-n/2)/Math.sqrt(n);}
+  function phi(th){var s=0;for(var n=1;n<=N;n++)s+=a(n)*Math.cos(Math.pow(2,n)*th);return s;}
+  /* 左：边界函数 φ(θ) */
+  var W1=840,H1=200,cv1=$("had-phi"),ctx1=cv1.getContext("2d");
+  var samples=[];
+  for(var i=0;i<720;i++){var th=2*Math.PI*i/720;samples.push(phi(th));}
+  var pmin=Math.min.apply(null,samples),pmax=Math.max.apply(null,samples);
+  var pad=(pmax-pmin)*0.1;pmax+=pad;pmin-=pad;
+  function X1f(i){return 46+(i/720)*2*Math.PI/ (2*Math.PI) *(W1-46-16);}
+  function Y1f(v){return 14+(pmax-v)/(pmax-pmin)*(H1-14-24);}
+  ctx1.clearRect(0,0,W1,H1);
+  ctx1.font="11px ui-monospace,monospace";ctx1.strokeStyle="#d0d7de";ctx1.fillStyle="#57606a";ctx1.lineWidth=1;
+  ctx1.beginPath();ctx1.moveTo(46,14);ctx1.lineTo(46,H1-24);ctx1.lineTo(W1-16,H1-24);ctx1.stroke();
+  [0,Math.PI,2*Math.PI].forEach(function(t,idx){
+    var xx=46+t/(2*Math.PI)*(W1-46-16);
+    ctx1.beginPath();ctx1.moveTo(xx,H1-24);ctx1.lineTo(xx,H1-24+4);ctx1.stroke();
+    ctx1.textAlign="center";ctx1.fillText(idx===0?"0":idx===1?"π":"2π",xx,H1-24+16);
+  });
+  ctx1.textAlign="center";ctx1.fillText("θ",46+(W1-62)/2,H1-4);
+  ctx1.save();ctx1.translate(12,14+(H1-38)/2);ctx1.rotate(-Math.PI/2);ctx1.fillText("φ(θ)",0,0);ctx1.restore();
+  ctx1.strokeStyle="#D85A30";ctx1.lineWidth=1.6;ctx1.beginPath();
+  for(var q=0;q<samples.length;q++){
+    if(q)ctx1.lineTo(X1f(q),Y1f(samples[q]));else ctx1.moveTo(X1f(q),Y1f(samples[q]));
+  }
+  ctx1.stroke();
+  ctx1.fillStyle="#57606a";ctx1.font="12px ui-monospace,monospace";ctx1.textAlign="left";
+  ctx1.fillText("边界函数：连续（级数一致收敛）而振荡越来越快——N=20 截断",56,22);
+  /* 右：能量积分 E(ρ) */
+  var W2=840,H2=260,cv2=$("had-canvas"),ctx2=cv2.getContext("2d");
+  function E(rho){
+    var s=0;
+    for(var n=1;n<=60;n++)s+=(1/n)*Math.pow(rho,Math.pow(2,n+1));
+    return Math.PI*s;
+  }
+  function X2(r){return 46+(r-0.3)/(1-0.3)*(W2-46-16);}
+  function Y2(v){return 14+(10.4-v)/(10.4-0)*(H2-14-30);}
+  var MARK=[[0.3,0.0255],[0.6,0.4338],[0.9,2.9591],[0.99,6.4397],[0.999,8.2818],[0.9999,9.4219]];
+  var rho=0.8993;
+  function draw2(){
+    ctx2.clearRect(0,0,W2,H2);
+    ctx2.font="11px ui-monospace,monospace";ctx2.strokeStyle="#d0d7de";ctx2.fillStyle="#57606a";ctx2.lineWidth=1;
+    ctx2.beginPath();ctx2.moveTo(46,14);ctx2.lineTo(46,H2-30);ctx2.lineTo(W2-16,H2-30);ctx2.stroke();
+    [0.3,0.5,0.7,0.9,1].forEach(function(r){
+      ctx2.beginPath();ctx2.moveTo(X2(r),H2-30);ctx2.lineTo(X2(r),H2-30+4);ctx2.stroke();
+      ctx2.textAlign="center";ctx2.fillText(r,X2(r),H2-30+16);
+    });
+    [0,2,4,6,8,10].forEach(function(v){
+      ctx2.beginPath();ctx2.moveTo(46-4,Y2(v));ctx2.lineTo(46,Y2(v));ctx2.stroke();
+      ctx2.textAlign="right";ctx2.fillText(v,46-7,Y2(v)+3);
+    });
+    ctx2.textAlign="center";ctx2.fillText("ρ",46+(W2-62)/2,H2-4);
+    ctx2.save();ctx2.translate(12,14+(H2-44)/2);ctx2.rotate(-Math.PI/2);ctx2.fillText("∫_{Dρ}|∇u|²",0,0);ctx2.restore();
+    /* E 曲线（u 方向均匀采样，ρ 方向近 1 处加密） */
+    ctx2.strokeStyle="#534AB7";ctx2.lineWidth=2.2;ctx2.beginPath();
+    for(var i=0;i<=240;i++){
+      var u=0.15+(4-0.15)*i/240,r=1-Math.pow(10,-u);
+      if(i)ctx2.lineTo(X2(r),Y2(E(r)));else ctx2.moveTo(X2(r),Y2(E(r)));
+    }
+    ctx2.stroke();
+    /* 实测点 */
+    MARK.forEach(function(m){
+      ctx2.fillStyle="#D85A30";ctx2.beginPath();ctx2.arc(X2(m[0]),Y2(m[1]),3.6,0,7);ctx2.fill();
+    });
+    /* 当前 ρ */
+    ctx2.strokeStyle="#D85A30";ctx2.lineWidth=1.6;
+    ctx2.beginPath();ctx2.moveTo(X2(rho),14);ctx2.lineTo(X2(rho),H2-30);ctx2.stroke();
+    ctx2.fillStyle="#D85A30";ctx2.beginPath();ctx2.arc(X2(rho),Y2(E(rho)),5,0,7);ctx2.fill();
+    ctx2.fillStyle="#57606a";ctx2.font="12px ui-monospace,monospace";ctx2.textAlign="left";
+    ctx2.fillText("ρ→1 时尾部 Σ(1/n)ρ^{2^{n+1}} 就是调和级数 ⟹ 能量 ∞",56,24);
+  }
+  $("had-rho").addEventListener("input",function(){
+    var s=parseFloat(this.value)/100;
+    var u=0.15+(4-0.15)*s;
+    rho=1-Math.pow(10,-u);
+    $("had-rhov").textContent=rho.toFixed(4);
+    $("had-cur").textContent=rho.toFixed(4);
+    $("had-E").textContent=E(rho).toFixed(4);
+    draw2();
+  });
+  /* 初始化读数 */
+  (function(){
+    var s=parseFloat($("had-rho").value)/100;
+    var u=0.15+(4-0.15)*s;
+    rho=1-Math.pow(10,-u);
+    $("had-rhov").textContent=rho.toFixed(4);
+    $("had-cur").textContent=rho.toFixed(4);
+    $("had-E").textContent=E(rho).toFixed(4);
+  })();
+  draw2();
+})();
+
+/* ================= 07 ε–稳定性 ================= */
+(function(){
+  var W=840,H=320,cv=$("stab-canvas"),ctx=cv.getContext("2d");
+  var eps=0.2;
+  function X(r){return 46+(r-0)/(1.08-0)*(W-46-16);}
+  function Y(u){return 14+(1.25-u)/(1.25-(-1.25))*(H-14-30);}
+  function uu(r){return r*Math.cos(Math.PI/4);}
+  function us(r){return uu(r)+eps*r*r*Math.sin(Math.PI/2)/2;}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font="11px ui-monospace,monospace";ctx.strokeStyle="#d0d7de";ctx.fillStyle="#57606a";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(46,14);ctx.lineTo(46,H-30);ctx.lineTo(W-16,H-30);ctx.stroke();
+    [0,0.25,0.5,0.75,1].forEach(function(r){
+      ctx.beginPath();ctx.moveTo(X(r),H-30);ctx.lineTo(X(r),H-30+4);ctx.stroke();
+      ctx.textAlign="center";ctx.fillText(r,X(r),H-30+16);
+    });
+    [-1,-0.5,0,0.5,1].forEach(function(u){
+      ctx.beginPath();ctx.moveTo(46-4,Y(u));ctx.lineTo(46,Y(u));ctx.stroke();
+      ctx.textAlign="right";ctx.fillText(u,46-7,Y(u)+3);
+    });
+    ctx.textAlign="center";ctx.fillText("ρ",46+(W-62)/2,H-4);
+    ctx.save();ctx.translate(12,14+(H-44)/2);ctx.rotate(-Math.PI/2);ctx.fillText("u(ρ)",0,0);ctx.restore();
+    /* 差填充 */
+    ctx.fillStyle="rgba(87,96,106,.13)";ctx.beginPath();
+    ctx.moveTo(X(0),Y(0));
+    for(var i=0;i<=100;i++){var r=i/100;ctx.lineTo(X(r),Y(us(r)));}
+    for(var j=100;j>=0;j--){var r2=j/100;ctx.lineTo(X(r2),Y(uu(r2)));}
+    ctx.closePath();ctx.fill();
+    /* 边界差标注 */
+    ctx.strokeStyle="#57606a";ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(X(1),Y(uu(1)));ctx.lineTo(X(1),Y(us(1)));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#57606a";ctx.font="12px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText("边界差 = ε/2 = "+(eps/2).toFixed(4),X(1)-150,Y((uu(1)+us(1))/2));
+    /* u 与 u* */
+    ctx.strokeStyle="#D85A30";ctx.lineWidth=2.4;ctx.beginPath();
+    for(var k=0;k<=100;k++){var r3=k/100;if(k)ctx.lineTo(X(r3),Y(uu(r3)));else ctx.moveTo(X(r3),Y(uu(r3)));}
+    ctx.stroke();
+    ctx.strokeStyle="#534AB7";ctx.lineWidth=2.4;ctx.beginPath();
+    for(var m=0;m<=100;m++){var r4=m/100;if(m)ctx.lineTo(X(r4),Y(us(r4)));else ctx.moveTo(X(r4),Y(us(r4)));}
+    ctx.stroke();
+    ctx.font="12.5px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillStyle="#D85A30";ctx.fillText("u = ρcosθ",X(0.55),Y(uu(0.55))-8);
+    ctx.fillStyle="#534AB7";ctx.fillText("u* = ρcosθ + ερ²sin2θ/2",X(0.42),Y(us(0.42))+18);
+    $("stab-sup").textContent=(eps/2).toFixed(6);
+    $("stab-ratio").textContent="1.000000";
+  }
+  $("stab-eps").addEventListener("input",function(){
+    eps=parseFloat(this.value)/1000;
+    $("stab-epsv").textContent=eps.toFixed(2);
+    draw();
+  });
+  draw();
+})();
+
+/* ================= 08a 矩形平板等温线 ================= */
+(function(){
+  var W=840,H=300,cv=$("ex-rect"),ctx=cv.getContext("2d");
+  var a=2,b=1;
+  var L=46,R=16,T=14,B=30,iw=W-L-R,ih=H-T-B;
+  function X(x){return L+x/a*iw;}
+  function Y(y){return T+ih-y/b*ih;}
+  /* 低分辨率热图 + 量化色带（12 带）模拟等温线 */
+  var ow=210,oh=105,off=document.createElement("canvas");off.width=ow;off.height=oh;
+  var octx=off.getContext("2d"),img=octx.createImageData(ow,oh),d=img.data;
+  function uVal(x,y){return Math.sin(Math.PI*x/a)*Math.sinh(Math.PI*y/a)/Math.sinh(Math.PI*b/a);}
+  for(var j=0;j<oh;j++)for(var i=0;i<ow;i++){
+    var x=(i+0.5)/ow*a,y=(j+0.5)/oh*b;
+    var v=uVal(x,y);
+    var band=Math.min(11,Math.max(0,Math.floor(v*12)));
+    var t=band/11;
+    var idx=(j*ow+i)*4;
+    d[idx]=Math.round(255-235*t*0.92);
+    d[idx+1]=Math.round(255-215*t*0.96);
+    d[idx+2]=Math.round(255-160*t);
+    d[idx+3]=255;
+  }
+  octx.putImageData(img,0,0);
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(off,L,T,iw,ih);
+  /* 边框与标注 */
+  ctx.strokeStyle="#57606a";ctx.lineWidth=1.6;ctx.strokeRect(L,T,iw,ih);
+  ctx.strokeStyle="#d0d7de";ctx.lineWidth=1;ctx.setLineDash([4,3]);
+  for(var g=1;g<4;g++){ctx.beginPath();ctx.moveTo(L+g*iw/4,T);ctx.lineTo(L+g*iw/4,T+ih);ctx.stroke();}
+  ctx.setLineDash([]);
+  ctx.fillStyle="#57606a";ctx.font="12px ui-monospace,monospace";
+  ctx.textAlign="center";ctx.fillText("x（0 → a=2）",L+iw/2,H-8);
+  ctx.save();ctx.translate(12,T+ih/2);ctx.rotate(-Math.PI/2);ctx.fillText("y（0 → b=1）",0,0);ctx.restore();
+  ctx.textAlign="left";
+  ctx.fillText("u(x,0)=sin(πx/a)",L+8,T+ih-8);
+  ctx.fillText("u(x,b)=0",L+8,T+14);
+  ctx.fillText("u=0",L+iw-42,T+ih-8);
+  /* 色标 */
+  for(var s2=0;s2<12;s2++){
+    var t2=s2/11;
+    ctx.fillStyle="rgb("+Math.round(255-235*t2*0.92)+","+Math.round(255-215*t2*0.96)+","+Math.round(255-160*t2)+")";
+    ctx.fillRect(L+iw+8+s2*3,T,3,ih);
+  }
+  ctx.fillStyle="#57606a";ctx.font="11px ui-monospace,monospace";
+  ctx.fillText("0 → 1",L+iw+8,T+ih+14);
+})();
+
+/* ================= 08b §2-8：c>0 反例 ================= */
+(function(){
+  var W=840,H=220,cv=$("ex8-canvas"),ctx=cv.getContext("2d");
+  var c=2.0;
+  function X(x){return 46+(x-0)/(Math.PI/Math.sqrt(c)+0.3)*(W-46-16);}
+  function Y(u){return 14+(1.25-u)/(1.25-(-1.25))*(H-14-30);}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font="11px ui-monospace,monospace";ctx.strokeStyle="#d0d7de";ctx.fillStyle="#57606a";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(46,14);ctx.lineTo(46,H-30);ctx.lineTo(W-16,H-30);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(46,Y(0));ctx.lineTo(W-16,Y(0));ctx.stroke();
+    [-1,-0.5,0.5,1].forEach(function(u){
+      ctx.beginPath();ctx.moveTo(46-4,Y(u));ctx.lineTo(46,Y(u));ctx.stroke();
+      ctx.textAlign="right";ctx.fillText(u,46-7,Y(u)+3);
+    });
+    var L=Math.PI/Math.sqrt(c);
+    ctx.strokeStyle="#D85A30";ctx.lineWidth=2.4;ctx.beginPath();
+    for(var i=0;i<=200;i++){
+      var x=i/200*L;
+      if(i)ctx.lineTo(X(x),Y(Math.sin(Math.sqrt(c)*x)));else ctx.moveTo(X(x),Y(Math.sin(Math.sqrt(c)*x)));
+    }
+    ctx.stroke();
+    /* 端点零值 */
+    ctx.fillStyle="#57606a";
+    ctx.fillText("x=0",X(0)-8,Y(0)+16);
+    ctx.fillText("x=π/√c",X(L)-40,Y(0)+16);
+    /* 最大点 */
+    var xm=Math.PI/(2*Math.sqrt(c));
+    ctx.fillStyle="#D85A30";ctx.beginPath();ctx.arc(X(xm),Y(1),4.5,0,7);ctx.fill();
+    ctx.strokeStyle="#D85A30";ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(X(xm),Y(1));ctx.lineTo(X(xm),Y(0));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#1f2328";ctx.font="12.5px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("内部正最大 u=1",X(xm),Y(1)-10);
+    ctx.fillStyle="#57606a";ctx.font="12px ui-monospace,monospace";
+    ctx.fillText("u = sin(√c·x)，满足 Δu + cu = 0",46+8,20);
+    ctx.textAlign="center";ctx.fillText("x",46+(W-62)/2,H-4);
+    $("ex8-xmax").textContent=xm.toFixed(4);
+    $("ex8-umax").textContent="1.000000";
+    $("ex8-res").textContent=(Math.sin(Math.sqrt(c)*xm)*0).toFixed(1)+"（恒等）";
+  }
+  $("ex8-c").addEventListener("input",function(){
+    c=parseFloat(this.value)/10;
+    $("ex8-cv").textContent=c.toFixed(1);
+    draw();
+  });
+  draw();
+})();
+
+setTimeout(function(){
+  if (!document.querySelector("mjx-container")) {
+    var b = document.getElementById("mjx-offline");
+    if (b) b.hidden = false;
+  }
+}, 2500);
+</script>
+</body>
+</html>

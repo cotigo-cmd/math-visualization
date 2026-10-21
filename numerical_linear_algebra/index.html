@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数值线性代数 · 可视化系列</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 本站是「数学可视化」门户的一个学科：本目录 = site/numerical_linear_algebra/，
+     上级 site/index.html 是全站总导航（六学科卡片）。页面全部放在本目录，直接编辑，无副本。
+  2. 新增页面：把做好的 .html 放进本目录，在下方加一张 <a class="card"> 卡片，href 写相对路径。
+  3. 规划中的章节：把对应卡片从 .planned 改成 <a> 并填 href。
+  4. 更新线上：对整个 math_visualization/site/ 目录重新发布（app 已存在，链接不变，内容覆盖）。
+  5. 验证脚本在 math_visualization/ 根（相对路径 ../../verify_formulas.js），改完公式后跑一遍再发布。
+  6. 版式身份「制图台」：暖纸底 + 深墨 + 朱砂/钢青 + 等宽数字 + 图签（NLA-01…NLA-06）。全系列统一。
+-->
+<style>
+:root{
+  --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --card:#f6f8fa;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--text);
+  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:60px 20px 60px}
+.crumb{font-size:13px;margin:0 0 18px}
+.crumb a{color:var(--accent);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+h1{font-size:27px;margin:0 0 8px;font-weight:600}
+p.lead{color:var(--muted);font-size:15.5px;margin:0 0 12px}
+h2{font-size:14px;font-weight:600;color:var(--muted);margin:40px 0 14px;
+  letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:8px}
+a.card,.card{display:block;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:18px 22px;margin:0 0 12px;text-decoration:none;color:var(--text)}
+a.card:hover{border-color:var(--accent)}
+.card .t{font-size:16.5px;font-weight:600;color:var(--accent-dark);margin:0 0 4px}
+.card .d{font-size:13.5px;color:var(--muted);margin:0}
+.tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
+  border-radius:5px;padding:1px 8px;margin-right:10px;vertical-align:2px;font-weight:500}
+.tag.live{background:#E1F5EE;color:#085041}
+.tag.plan{background:#F1EFE8;color:#5F5E5A}
+.tag.ch{background:var(--accent-soft);color:var(--accent-dark)}
+.card.planned{opacity:.62}
+footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--border);
+  font-size:13px;color:var(--muted)}
+footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
+  border:1px solid var(--border);border-radius:4px;padding:0 5px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a></p>
+<h1>数值线性代数 · 可视化系列</h1>
+<p class="lead">Trefethen &amp; Bau《Numerical Linear Algebra》（SIAM，1997）40 讲的配套交互教学页。每个页面零依赖、可离线打开（公式渲染需联网）；本阶段已覆盖 Lecture 1–11（矩阵—向量乘积、正交性、范数、SVD、投影算子、QR、最小二乘）。版式身份「制图台」：图签 + 等宽读数 + 全部数值结论本地实测。</p>
+
+<h2>第一部分 · 基础（Lectures 1–5）</h2>
+<a class="card" href="./线性映射-矩阵向量乘积与正交性.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">L1–2</span>线性映射 · 矩阵—向量乘积与正交性</p>
+<p class="d">列组合机器（(1.2) 四步动画 + 行/列双读对账）· 函数的列（Vandermonde 连续版）· 亏秩矩阵的值域锁定与零空间巡游 · 正交分解沙盘（(2.6) 三块 + 勾股账本）· 正交矩阵保距保角（旋转/反射/剪切三模式，埋 SVD 伏笔）</p>
+</a>
+<a class="card" href="./范数-单位球与诱导范数.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">L3</span>范数 · 单位球与诱导范数</p>
+<p class="d">单位球画廊（p 从菱形连续变形到方块，三范数同屏报数）· 教材图 3.1 三联复刻（4 / 2.9208 / 3，三种范数选出不同的最坏向量）· 矩阵范数实验台（最大列和/行和/σ₁/Frobenius + κ₂ 伏笔 + 酉不变性对账）· Cauchy–Schwarz 紧性实验</p>
+</a>
+<a class="card" href="./SVD-几何与低秩近似.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">L4–5</span>SVD · 几何与低秩近似</p>
+<p class="d">三步透镜（Vᵀ→Σ→U 播放，图 4.1 式样，含秩 1 退化与旋转 90° 特例）· 秩-k 近似实验室（36×36 图矩阵，单边 Jacobi 实时 SVD；Eckart–Young 两等式实测，QR 截断对照；四张图有效秩 36/10/2/1）· SVD vs 特征分解三差异</p>
+</a>
+
+<h2>第二部分 · QR 与最小二乘（Lectures 6–11）</h2>
+<a class="card" href="./投影算子-正交与斜投影.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">L6</span>投影算子 · 正交与斜投影</p>
+<p class="d">影子实验室（斜投影 P=u₁wᵀ/(wᵀu₁)，幂等/对称/正交三账本，⊥ 锁定后 ‖P‖₂=1）· ℝ³ 平面投影面板（(6.13) 逐元素对账 + 勾股 + tr P=2）· 反射器 I−2P（保距/酉性/det，Householder 伏笔）· 习题 6.5 ‖P‖₂≥1 证明要点</p>
+</a>
+<a class="card" href="./QR分解-Gram-Schmidt与Householder.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">L7/8/10</span>QR 分解 · Gram-Schmidt 与 Householder</p>
+<p class="d">GS 分步沙盘（两步投影造正交基，R 矩阵实时）· 正交性流失实测（CGS vs MGS 真实双精度：q₁ᵀq₂ 两算法相同、新配对 q₂ᵀq₃ 上 MGS 保持机器精度而 CGS 传污染；双对数全貌图）· Householder 反射镜（选远镜面的 ‖v‖≥‖x‖ 论证）· 4×3 三角化动画（Qₖ 逐列引入零，QᵀA=R 核对）</p>
+</a>
+<a class="card" href="./最小二乘-几何与三种解法.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">L11</span>最小二乘 · 几何与三种解法</p>
+<p class="d">拟合实验台（11 个可拖点，残差⊥列空间逐项可测：Aᵀr=0；方波插值 vs LS 对比教材图 11.1/11.2）· 图 11.3 几何示意（勾股账本）· 构造解标度实验室（确切解已知，四解法实时运算：正规方程 ~ε·κ²、QR/SVD ~ε·κ 实测）· 习题 11.3 复刻（四方法红笔标错表）</p>
+</a>
+
+<h2>后续章节</h2>
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L12</span>条件数的几何</p>
+<p class="d">2×2 矩阵把单位圆映成椭圆，轴比就是 κ——误差放大的线性原型，直通粗网格修正科研的误差分析。本系列各页的 κ₂ 读数在此收拢。（可视化增益 + 科研连接度最高，参照清单排第一）</p>
+</div>
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L32–40</span>共轭梯度与预条件子</p>
+<p class="d">CG 的 Krylov 空间几何、预条件子的作用——与「神经网络修正粗网格解」的科研完全同构（粗网格修正 ≈ 空间预条件）。</p>
+</div>
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L13–19</span>浮点灾难与抵消 · 最小二乘的稳定性</p>
+<p class="d">机器精度探测、相近数相减的误差爆炸；QR/SVD 解最小二乘为何稳（NLA-06 实验 03 的续篇）。</p>
+</div>
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L20–23</span>直接法：高斯消元到 Cholesky</p>
+<p class="d">消元的矩阵语言（初等矩阵乘积）、选主元、三角求解的稳定性。</p>
+</div>
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L24–31</span>特征值算法与 SVD 计算</p>
+<p class="d">Hessenberg 化 → 移位 QR → 收敛动态过程；单边 Jacobi 与分治 SVD（NLA-03 实验台的内核升级）。</p>
+</div>
+
+<footer>
+<p>添加新页面：把 .html 放入本目录，在 index.html 对应章节加一张卡片，随全站重新发布即可（本页 HTML 注释里有详细维护说明）。</p>
+<p>目录：math_visualization/site/numerical_linear_algebra/ · 发布根：math_visualization/site/ · 验证脚本在工作区根（相对路径 ../../） · 教材引用单位「Trefethen &amp; Bau, Lecture N」，书页 = PDF 页 − 15 · 2026-10-19 建站，Lecture 1–11 六页上线</p>
+</footer>
+
+</div>
+</body>
+</html>

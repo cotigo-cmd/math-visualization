@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>卷积与热传导方程 — 从直觉到柯西问题</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:30px;line-height:1.35;margin:0 0 12px;font-weight:600}
+h2{font-size:22px;margin:64px 0 16px;font-weight:600;padding-top:8px;border-top:1px solid var(--border)}
+h2 .no{color:var(--accent);font-family:var(--mono);font-size:16px;margin-right:10px;font-weight:400}
+h3{font-size:17px;margin:36px 0 10px;font-weight:600}
+p{margin:12px 0}
+small{color:var(--muted)}
+.hero{padding:56px 0 8px}
+.hero p.lead{font-size:17px;color:var(--muted);max-width:720px;margin:0}
+nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+nav .wrap{padding:10px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px}
+nav a{color:var(--muted)}
+nav a:hover{color:var(--accent);text-decoration:none}
+.eq{font-family:Georgia,"Times New Roman","Songti SC",serif;font-size:17.5px;text-align:center;
+  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+.eq.left{text-align:left}
+sub,sup{font-size:.72em;line-height:0}
+.f{font-family:Georgia,"Times New Roman",serif;font-style:italic}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
+.grid6{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:20px 0}
+.def{background:var(--purple-soft);border:0.5px solid #AFA9EC;border-radius:10px;padding:14px 16px}
+.def h4{margin:0 0 4px;font-size:14px;color:#26215C;font-weight:600}
+.def .formula{font-family:var(--mono);font-size:12.5px;color:#3C3489;margin:6px 0}
+.def .use{font-size:12.5px;color:var(--muted);margin:0}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--card);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+.timeline{list-style:none;margin:20px 0;padding:0 0 0 26px;border-left:2px solid #AFA9EC}
+.timeline li{position:relative;margin:0 0 14px;padding-left:14px}
+.timeline li::before{content:"";position:absolute;left:-31px;top:9px;width:8px;height:8px;
+  border-radius:50%;background:var(--purple)}
+.timeline .yr{font-family:var(--mono);font-size:13px;color:var(--purple);font-weight:600;margin-right:8px}
+.timeline .who{font-weight:600}
+.timeline .what{color:var(--muted);font-size:14px}
+.ctl{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:14px 0;font-size:14px}
+.ctl input[type=range]{flex:1;min-width:200px;accent-color:var(--accent)}
+button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
+.val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
+figure{margin:20px 0}
+figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+canvas.plot{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+.cbar{height:10px;border-radius:5px;margin:6px 0 2px;
+  background:linear-gradient(90deg,#05040f,#123a8f,#1a9e8f,#c9d41f,#f0761b,#e22212,#f5d7d3)}
+.legend{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-family:var(--mono)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kv .cell{background:var(--card);border-radius:8px;padding:10px 14px}
+.kv .k{font-size:12.5px;color:var(--muted)}
+.kv .v{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent-dark)}
+footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);
+  font-size:13px;color:var(--muted)}
+.tag{display:inline-block;font-family:var(--mono);font-size:12px;background:var(--accent-soft);
+  color:var(--accent-dark);border-radius:5px;padding:1px 8px;margin-right:6px}
+ul.tight li{margin:6px 0}
+mjx-container{display:block!important;margin:.35em 0!important}
+mjx-container[display="true"]>svg{display:block;margin:0 auto}
+p mjx-container,li mjx-container,td mjx-container,h4 mjx-container{display:inline-block!important;margin:0!important;vertical-align:baseline}
+p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,h4 mjx-container>svg{display:inline!important;margin:0!important;vertical-align:-1px}
+#mjx-offline{background:#fdf6ec;border:1px solid #EF9F27;border-radius:8px;padding:8px 14px;font-size:13px;color:#854F0B;margin:14px 0}
+#mjx-offline[hidden]{display:none}
+</style>
+</head>
+<body>
+<div id="mjx-offline" hidden>公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响但内容不受影响。</div>
+
+<div class="hero"><div class="wrap">
+<h1>卷积与热传导方程</h1>
+<p class="lead">从一个动作讲起：把一个函数翻转过来，在另一个函数上慢慢滑，每滑到一处就量一下重叠了多少。这个动作先出现在概率论的「独立误差求和」里，最终成为求解热传导方程柯西问题的钥匙。本页把直觉、历史、定义、可视化和完整推导做成一体；公式由 MathJax 渲染（首次打开需联网），交互部分零依赖、离线可用。</p>
+</div></div>
+
+<nav><div class="wrap">
+<a href="#history">历史</a>
+<a href="#definitions">六种定义</a>
+<a href="#mechanical">机械法交互</a>
+<a href="#probability">概率视角</a>
+<a href="#heat">热方程柯西问题</a>
+<a href="#solver1d">一维求解器</a>
+<a href="#solver2d">二维热扩散</a>
+<a href="#properties">性质与联系</a>
+<a href="#summary">速查表</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ============ 0 总览 ============ -->
+<h2><span class="no">00</span>一页总览：三条线索</h2>
+<div class="grid6">
+<div class="def"><h4>卷积是什么</h4>
+<p class="formula">$$(f*g)(t)=\int_{\mathbb{R}} f(\tau)\,g(t-\tau)\,\mathrm{d}\tau$$</p>
+<p class="use">翻转 → 平移 → 加权求和。连续、离散、周期、概率、分布，都是同一个动作。</p></div>
+<div class="def"><h4>卷积怎么算</h4>
+<p class="formula">$$\mathcal{F}[f*g]=\hat{f}\cdot\hat{g}$$</p>
+<p class="use">时域重叠 ↔ 频域乘积：机械法看重叠；Laplace / Fourier 变换把它变成乘法，这是求解 PDE 的关键招。</p></div>
+<div class="def"><h4>卷积用在哪</h4>
+<p class="formula">$$u(x,t)=(K_t*u_0)(x)$$</p>
+<p class="use">热传导方程柯西问题的解：高斯热核与初始温度的卷积。</p></div>
+</div>
+<p>阅读顺序建议：先玩 <a href="#mechanical">机械法交互</a> 建立动作直觉，再读 <a href="#heat">热方程推导</a>，最后用 <a href="#solver1d">一维求解器</a> 和 <a href="#solver2d">二维热扩散</a> 验证「解 = 卷积」这句话到底意味着什么。</p>
+
+<!-- ============ 1 历史 ============ -->
+<h2 id="history"><span class="no">01</span>历史：从级数技巧到通用语言</h2>
+<p>卷积没有单一发明者，概念是逐步成形的。下面是几个关键节点：</p>
+<ul class="timeline">
+<li><span class="yr">1748</span><span class="who">Euler</span> <span class="what">处理级数相乘时，系数已隐含「折积」结构</span></li>
+<li><span class="yr">1774–1812</span><span class="who">Laplace</span> <span class="what">用积分求独立误差之和的分布，卷积进入概率论</span></li>
+<li><span class="yr">1811 / 1822</span><span class="who">Fourier</span> <span class="what">热方程的解 = 高斯核与初始温度的卷积；得奖论文与《热的解析理论》</span></li>
+<li><span class="yr">1833</span><span class="who">Duhamel</span> <span class="what">非齐次问题的卷积解（Duhamel 原理）</span></li>
+<li><span class="yr">1880s</span><span class="who">Volterra</span> <span class="what">在积分方程理论中系统研究卷积</span></li>
+<li><span class="yr">1926–1937</span><span class="who">Wiener · Doetsch</span> <span class="what">函数代数与 Laplace 变换的系统化</span></li>
+<li><span class="yr">1945–1950</span><span class="who">Schwartz</span> <span class="what">分布论使卷积适用于广义函数（包括 δ 函数）</span></li>
+<li><span class="yr">1989 年以后</span><span class="who">LeCun 等</span> <span class="what">数字信号处理与 CNN 卷积层，卷积成为工程通用语</span></li>
+</ul>
+<div class="note">1811 与 1822 的交叠值得注意：Fourier 在热传导工作中实际写出的解，正是<strong>高斯核对初始温度的卷积</strong>。这是「卷积作为物理传播过程」的原型，也预示了后来 Green 函数的思想——本页第 5 节会完整重现这条推导线。</div>
+
+<!-- ============ 2 定义 ============ -->
+<h2 id="definitions"><span class="no">02</span>定义的多种方式：一个结构，六种写法</h2>
+<p>所有场景的共同点：<strong>翻转 → 平移 → 加权求和</strong>（积分号或求和号）。写法不同，本质相同。</p>
+<div class="grid6">
+<div class="def"><h4>连续函数</h4>
+<p class="formula">$$(f*g)(t)=\int_{\mathbb{R}^n} f(\tau)\,g(t-\tau)\,\mathrm{d}\tau$$</p>
+<p class="use">信号、热方程、LTI 系统</p></div>
+<div class="def"><h4>离散序列</h4>
+<p class="formula">$$(a*b)_n=\sum_{k} a_k\, b_{\,n-k}$$</p>
+<p class="use">FIR 滤波、时间序列</p></div>
+<div class="def"><h4>周期 / DFT</h4>
+<p class="formula">$$c_n=\sum_{k=0}^{N-1} a_k\, b_{(n-k)\bmod N}$$</p>
+<p class="use">循环卷积、FFT 加速</p></div>
+<div class="def"><h4>概率密度</h4>
+<p class="formula">$$f_{X+Y}(t)=(f_X*f_Y)(t)$$</p>
+<p class="use">独立随机变量之和</p></div>
+<div class="def"><h4>测度 / 群</h4>
+<p class="formula">$$(\mu*\nu)(A)=\int \mu(A-y)\,\mathrm{d}\nu(y)$$</p>
+<p class="use">抽象调和分析</p></div>
+<div class="def"><h4>分布</h4>
+<p class="formula">$$\langle f*g,\varphi\rangle=\langle f,\varphi(\cdot+\cdot)\rangle$$</p>
+<p class="use">Schwartz 分布论</p></div>
+</div>
+<div class="warn"><strong>两个易错点。</strong>① 定义里是 \(g(t-\tau)\)，<strong>先翻转后平移</strong>；写成 \(g(\tau-t)\) 只在 \(g\) 对称时才等价。② 概率场景里被卷积的是<strong>密度函数</strong>，不是随机变量本身。</div>
+
+<!-- ============ 3 机械法交互 ============ -->
+<h2 id="mechanical"><span class="no">03</span>可视化 I：机械法（交互）</h2>
+<p>最经典的可视化：把核 \(g\) 翻转、随 \(t\) 平移、与 \(f\) 逐点相乘、再积分。下面板是积分结果的累积曲线。拖动 \(t\) 看三个面板如何联动，核可在矩形窗与高斯之间切换：矩形 × 矩形得梯形（等宽时退化成三角形），高斯 × 矩形得平滑台阶。</p>
+
+<div class="ctl">
+<span>t = <span class="val" id="m-t">2.00</span></span>
+<input type="range" id="m-slider" min="0" max="400" value="200" aria-label="平移量 t">
+<button id="m-rect" class="on">矩形窗</button>
+<button id="m-gauss">高斯核</button>
+<span class="val" id="m-conv">(f*g)(2.00) = 0.400</span>
+</div>
+
+<figure>
+<svg id="m-svg" viewBox="0 0 680 300" width="100%" role="img">
+<title>卷积的机械可视化</title>
+<desc>三个面板：原始函数 f 与核 g，翻转平移后的乘积，以及积分结果曲线</desc>
+<text x="60" y="18" font-size="12" fill="#57606a">f(τ) 蓝色实线（窗 [1,2]） · g(τ) 灰色虚线</text>
+<text x="60" y="88" font-size="12" fill="#57606a">翻转平移 g(t−τ) · 阴影 = 乘积 f(τ)·g(t−τ)</text>
+<text x="60" y="158" font-size="12" fill="#57606a">积分结果 (f*g)(t)</text>
+<line x1="60" y1="30" x2="620" y2="30" stroke="#F1EFE8" stroke-width="0.5"/>
+<line x1="60" y1="75" x2="620" y2="75" stroke="#D3D1C7" stroke-width="0.5"/>
+<path id="m-f1" d="" stroke="#185FA5" stroke-width="1.5" fill="none"/>
+<path id="m-g1" d="" stroke="#888780" stroke-width="1.5" fill="none" stroke-dasharray="5 4"/>
+<line x1="60" y1="100" x2="620" y2="100" stroke="#F1EFE8" stroke-width="0.5"/>
+<line x1="60" y1="145" x2="620" y2="145" stroke="#D3D1C7" stroke-width="0.5"/>
+<path id="m-f2" d="" stroke="#185FA5" stroke-width="1.5" fill="none"/>
+<path id="m-gf" d="" stroke="#185FA5" stroke-width="2" fill="none"/>
+<path id="m-prod" d="" fill="#B5D4F4"/>
+<line x1="60" y1="190" x2="620" y2="190" stroke="#F1EFE8" stroke-width="0.5"/>
+<line x1="60" y1="235" x2="620" y2="235" stroke="#D3D1C7" stroke-width="0.5"/>
+<path id="m-conv-curve" d="" stroke="#0C447C" stroke-width="2" fill="none"/>
+<line id="m-vline" x1="270" y1="190" x2="270" y2="235" stroke="#888780" stroke-width="0.5" stroke-dasharray="3 3"/>
+<circle id="m-dot" cx="270" cy="217" r="4.5" fill="#185FA5"/>
+<line x1="60" y1="235" x2="60" y2="239" stroke="#B4B2A9" stroke-width="0.5"/>
+<line x1="200" y1="235" x2="200" y2="239" stroke="#B4B2A9" stroke-width="0.5"/>
+<line x1="340" y1="235" x2="340" y2="239" stroke="#B4B2A9" stroke-width="0.5"/>
+<line x1="480" y1="235" x2="480" y2="239" stroke="#B4B2A9" stroke-width="0.5"/>
+<line x1="620" y1="235" x2="620" y2="239" stroke="#B4B2A9" stroke-width="0.5"/>
+<text x="60" y="252" font-size="11" fill="#57606a" text-anchor="middle">0</text>
+<text x="200" y="252" font-size="11" fill="#57606a" text-anchor="middle">1</text>
+<text x="340" y="252" font-size="11" fill="#57606a" text-anchor="middle">2</text>
+<text x="480" y="252" font-size="11" fill="#57606a" text-anchor="middle">3</text>
+<text x="620" y="252" font-size="11" fill="#57606a" text-anchor="middle">4</text>
+<text x="640" y="238" font-size="11" fill="#57606a">τ</text>
+</svg>
+<figcaption>三个面板：原始 f 与 g；翻转平移后的 g(t−τ) 与乘积（阴影）；逐点积分的结果曲线</figcaption>
+</figure>
+
+<!-- ============ 4 概率视角 ============ -->
+<h2 id="probability"><span class="no">04</span>可视化 II：概率视角</h2>
+<p>同一个动作，概率论里的读法：\(f_{X+Y}(t)\) 在 \(t\) 处的高度，就是两个密度曲线重叠的面积。均匀 + 均匀得三角形分布；离散版本就是两个骰子——和为 7 的组合最多（6/36），所以峰在 7。</p>
+<figure>
+<svg viewBox="0 0 680 250" width="100%" role="img">
+<title>卷积的概率视角</title>
+<desc>两个均匀分布卷积成三角形分布：翻转滑动、重叠面积、结果密度</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<text x="40" y="24" font-size="15" font-weight="500" fill="#26215C">概率视角：X+Y 的密度 = 两个密度的卷积</text>
+<text x="40" y="46" font-size="12" font-weight="500" fill="#26215C">f_X, f_Y ~ U[0,1]</text>
+<rect x="40" y="70" width="150" height="80" fill="#B5D4F4" stroke="#185FA5" stroke-width="1"/>
+<rect x="40" y="70" width="150" height="80" fill="none" stroke="#185FA5" stroke-width="1" stroke-dasharray="5 4"/>
+<text x="45" y="64" font-size="12" fill="#185FA5">f_X(τ)</text>
+<text x="120" y="64" font-size="12" fill="#185FA5">f_Y(τ)</text>
+<line x1="40" y1="150" x2="190" y2="150" stroke="#D3D1C7" stroke-width="0.5"/>
+<text x="40" y="166" font-size="11" fill="#57606a" text-anchor="middle">0</text>
+<text x="190" y="166" font-size="11" fill="#57606a" text-anchor="middle">1</text>
+<line x1="198" y1="110" x2="242" y2="110" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="250" y="46" font-size="12" font-weight="500" fill="#26215C">翻转滑到 t = 0.7</text>
+<rect x="250" y="70" width="150" height="80" fill="#B5D4F4" stroke="#185FA5" stroke-width="1"/>
+<rect x="250" y="70" width="150" height="80" fill="none" stroke="#185FA5" stroke-width="1" stroke-dasharray="5 4"/>
+<rect x="295" y="70" width="105" height="80" fill="#85B7EB"/>
+<text x="347" y="112" font-size="12" font-weight="500" fill="#0C447C" text-anchor="middle">重叠 0.7</text>
+<line x1="250" y1="150" x2="400" y2="150" stroke="#D3D1C7" stroke-width="0.5"/>
+<text x="250" y="166" font-size="11" fill="#57606a" text-anchor="middle">0</text>
+<text x="400" y="166" font-size="11" fill="#57606a" text-anchor="middle">1</text>
+<text x="250" y="186" font-size="12" fill="#57606a">重叠长度 = f_{X+Y}(t)</text>
+<line x1="428" y1="110" x2="462" y2="110" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="470" y="46" font-size="12" font-weight="500" fill="#26215C">f_{X+Y}：三角形</text>
+<path d="M470 150 L555 70 L640 150 Z" fill="#EEEDFE" stroke="#534AB7" stroke-width="1.5"/>
+<line x1="470" y1="150" x2="640" y2="150" stroke="#D3D1C7" stroke-width="0.5"/>
+<line x1="529.5" y1="94" x2="529.5" y2="150" stroke="#888780" stroke-width="0.5" stroke-dasharray="3 3"/>
+<circle cx="529.5" cy="94" r="4" fill="#534AB7"/>
+<text x="536" y="90" font-size="12" fill="#3C3489">0.7</text>
+<text x="470" y="166" font-size="11" fill="#57606a" text-anchor="middle">0</text>
+<text x="555" y="166" font-size="11" fill="#57606a" text-anchor="middle">1</text>
+<text x="640" y="166" font-size="11" fill="#57606a" text-anchor="middle">2</text>
+<text x="40" y="208" font-size="12" fill="#57606a">每个 t 处问一句：有多少对 (x, y) 加起来等于 t？这个「数证据」的高度就是卷积值。</text>
+<text x="40" y="230" font-size="12" fill="#57606a">离散同构：两个骰子点数之和，7 的组合最多（6/36），所以峰在 7。</text>
+</svg>
+<figcaption>重叠面积读法：两个均匀密度卷积成三角形分布</figcaption>
+</figure>
+
+<!-- ============ 5 热方程柯西问题 ============ -->
+<h2 id="heat"><span class="no">05</span>热传导方程的柯西问题：Fourier 变换 + 卷积</h2>
+
+<h3>5.1 问题陈述</h3>
+<p>给定初始温度分布 \(u_0(x)\)，求整个空间 \(\mathbb{R}^n\) 上的温度演化：</p>
+<div class="eq">$$\begin{cases}\dfrac{\partial u}{\partial t}=\Delta u, & x\in\mathbb{R}^n,\ t>0,\\[6pt] u(x,0)=u_0(x).\end{cases}$$</div>
+<p>「柯西问题」指只有初始条件、没有边界条件——想象初始热量分布在一张无限大的金属平面上自由扩散。</p>
+
+<h3>5.2 Fourier 变换求解</h3>
+<p>采用约定 \(\hat{f}(\xi)=\int_{\mathbb{R}^n} e^{-ix\cdot\xi} f(x)\,\mathrm{d}x\)，逆变换带因子 \((2\pi)^{-n}\)。三步：</p>
+<p><strong>第一步，对 PDE 两边取 Fourier 变换</strong>（\(x \to \xi\)）。利用 \(\mathcal{F}[\partial_t u]=\partial_t \hat{u}\) 和 \(\mathcal{F}[\Delta u]=-|\xi|^2 \hat{u}\)，偏微分方程变成关于 \(\xi\) 的常微分方程：</p>
+<div class="eq">$$\frac{\partial \hat{u}}{\partial t}=-|\xi|^2\,\hat{u}(\xi,t)$$</div>
+<p><strong>第二步，解这个 ODE</strong>（\(\xi\) 固定的指数衰减方程）：</p>
+<div class="eq">$$\hat{u}(\xi,t)=e^{-|\xi|^2 t}\,\hat{u}_0(\xi)$$</div>
+<p><strong>第三步，逆变换 + 卷积定理</strong>。卷积定理说 \(\mathcal{F}[f*g]=\hat{f}\cdot\hat{g}\)，所以「变换域的乘积」变回时域就是卷积：</p>
+<div class="eq">$$u(x,t)=\mathcal{F}^{-1}\!\left[e^{-|\xi|^2 t}\right]*u_0(x)$$</div>
+<p>剩下的纯计算是求 \(e^{-|\xi|^2 t}\) 的逆变换。用一维高斯变换 \(\int e^{-x^2/4t} e^{-i\xi x}\,\mathrm{d}x=\sqrt{4\pi t}\,e^{-\xi^2 t}\)，得到<strong>热核</strong>（heat kernel）：</p>
+<div class="eq">$$K_t(x)=(4\pi t)^{-n/2} e^{-|x|^2/(4t)},\qquad \int_{\mathbb{R}^n} K_t(x)\,\mathrm{d}x=1$$</div>
+<p>于是柯西问题的解写成一个漂亮的卷积：</p>
+<div class="eq" style="font-size:19px;background:var(--accent-soft)">$$u(x,t)=\int_{\mathbb{R}^n} K_t(x-y)\,u_0(y)\,\mathrm{d}y=(K_t*u_0)(x)$$</div>
+
+<h3>5.3 解的几何意义：又见翻转滑动</h3>
+<p>把 \(K_t(x-y)\) 看成 \(y\) 的函数：它是一个中心在 \(x\)、标准差 \(\sigma=\sqrt{2t}\) 的高斯「探照灯」。当 \(x\) 滑动时，这盏灯扫过初始温度 \(u_0\)，每走到一处就用高斯权重对附近温度加权平均——这正是第 3 节机械法里的卷积动作，只不过核从矩形窗换成了高斯。</p>
+<ul class="tight">
+<li>\(t\) 小：高斯窄而高，解几乎就是初始温度的「小半径平均」，仍保有 \(u_0\) 的形状；</li>
+<li>\(t\) 大：高斯宽而矮，解被抹平，趋于常数（总热量守恒时趋于平均值）；</li>
+<li>任何 \(t>0\)，核都是 \(C^\infty\) 的——所以哪怕 \(u_0\) 是方波，解也立刻变光滑。</li>
+</ul>
+
+<!-- ============ 6 一维求解器 ============ -->
+<h2 id="solver1d"><span class="no">06</span>交互：一维热方程求解器</h2>
+<p>选一个初始温度，拖动 \(t\)，看 \(u(\cdot,t)=K_t*u_0\) 的演化。右下小图是当前热核 \(K_t(x)\) 的形状。数值方法就是直接按定义做卷积积分（网格 512 点，\(x\in[-8,8]\)），并把「总热量守恒」作为数值检验显示出来。</p>
+
+<div class="ctl">
+<button id="h1-rect" class="on">方波</button>
+<button id="h1-gauss">高斯包</button>
+<button id="h1-double">双热点</button>
+<button id="h1-tri">三角波</button>
+<span style="margin-left:auto">t = <span class="val" id="h1-t">0.50</span></span>
+<input type="range" id="h1-slider" min="20" max="200" value="50" step="1" style="max-width:280px" aria-label="时间 t">
+<button id="h1-play">播放</button>
+</div>
+
+<figure>
+<canvas id="h1-canvas" class="plot" width="840" height="300"></canvas>
+<figcaption>灰色虚线 = 初始温度 u₀；橙红实线 = 当前解 u(·,t)；小图 = 热核 K_t(x)</figcaption>
+</figure>
+
+<div class="kv">
+<div class="cell"><div class="k">峰值温度</div><div class="v" id="h1-peak">—</div></div>
+<div class="cell"><div class="k">总热量 ∫u dx</div><div class="v" id="h1-mass">—</div></div>
+<div class="cell"><div class="k">守恒相对误差</div><div class="v" id="h1-err">—</div></div>
+<div class="cell"><div class="k">有效扩散宽度 σ=√(2t)</div><div class="v" id="h1-sigma">—</div></div>
+</div>
+<div class="note" id="h1-note">数值验证（本页同参数实测，脚本 <code>verify_conv.js</code>）：方波初值与解析 erf 解的 L∞ 误差为 6.9×10⁻⁴ ~ 1.7×10⁻³；高斯初值与解析解一致到机器精度（10⁻¹⁶）；半群性质 K₁*K₁ = K₂ 的 L∞ 差为 2.6×10⁻⁸；二维可分离卷积与直接卷积的 L∞ 差为 4.4×10⁻¹⁶。守恒误差 ≤ 0.012% 且随 t 增大而增大——这是计算域截断（域外热量丢失）的真实效应，恰是「柯西问题假设全空间」与「有限计算域」之间的差别，不是离散化缺陷。</div>
+
+<!-- ============ 7 二维热扩散 ============ -->
+<h2 id="solver2d"><span class="no">07</span>交互：二维热扩散（芯片散热意象）</h2>
+<p>把同样的卷积搬到二维：\(u_{t+\Delta t}=K_{\Delta t}*u_t\)，即每一步都用可分离高斯核对当前温度场做一次卷积。预设初值对应芯片散热里常见的图案：单热点、双热点、条带、随机热源。</p>
+<div class="note">说明：此 demo 模拟<strong>全平面自由扩散</strong>（柯西问题）。画布边缘按 0 处理，相当于边界持续吸热，中心区域在演示时间内不受影响——这正是有限芯片封装与无限大平面假设的差别。</div>
+
+<div class="ctl">
+<button id="h2-single" class="on">单热点</button>
+<button id="h2-double">双热点</button>
+<button id="h2-strip">条带</button>
+<button id="h2-rand">随机热源</button>
+<button id="h2-play">播放</button>
+<button id="h2-step">单步</button>
+<button id="h2-reset">重置</button>
+<span style="margin-left:auto">t = <span class="val" id="h2-t">0.0</span></span>
+</div>
+
+<figure>
+<canvas id="h2-canvas" class="plot" width="128" height="128" style="max-width:520px;margin:0 auto"></canvas>
+<div class="cbar" style="max-width:520px;margin:10px auto 0"></div>
+<div class="legend" style="max-width:520px;margin:0 auto"><span>冷 0</span><span id="h2-scale">1.0</span><span>热</span></div>
+<figcaption>128 × 128 网格，每步 Δt = 0.5，可分离高斯卷积；颜色量程固定，便于观察峰值衰减</figcaption>
+</figure>
+
+<div class="kv" style="max-width:520px;margin:0 auto">
+<div class="cell"><div class="k">当前峰值</div><div class="v" id="h2-peak">—</div></div>
+<div class="cell"><div class="k">总热量（相对初始）</div><div class="v" id="h2-mass">—</div></div>
+<div class="cell"><div class="k">已完成步数</div><div class="v" id="h2-steps">0</div></div>
+</div>
+
+<!-- ============ 8 性质与联系 ============ -->
+<h2 id="properties"><span class="no">08</span>解的性质，以及与其他问题的联系</h2>
+<table>
+<tr><th style="width:150px">性质</th><th>内容</th><th>直觉来源</th></tr>
+<tr><td>卷积半群</td><td>\(K_t*K_s=K_{t+s}\)</td><td>先扩散 s 再扩散 t，等于一次扩散 t+s——两步卷积合成一步</td></tr>
+<tr><td>瞬时光滑</td><td>\(t>0\) 时 \(u\in C^\infty\)，即使 \(u_0\) 间断</td><td>与 \(C^\infty\) 的高斯核卷积，等于无穷次加权平均</td></tr>
+<tr><td>质量守恒</td><td>\(\int u(x,t)\,\mathrm{d}x=\int u_0(x)\,\mathrm{d}x\)</td><td>热核积分为 1：加权平均不改变总量</td></tr>
+<tr><td>极值原理</td><td>\(\min u_0\le u\le \max u_0\)</td><td>平均值介于原值之间</td></tr>
+<tr><td>无限传播速度</td><td>\(t>0\) 时任意远处 \(u>0\)</td><td>高斯核拖尾处处为正，与波动方程的有限传播形成对比</td></tr>
+</table>
+
+<h3>非齐次问题：Duhamel 原理</h3>
+<p>若有热源 \(f(x,t)\)，即 \(\partial_t u=\Delta u+f\)，解是初始项与源项的叠加，每一项都是卷积：</p>
+<div class="eq">$$u(x,t)=(K_t*u_0)(x)+\int_0^t \bigl(K_{t-s}*f(\cdot,s)\bigr)(x)\,\mathrm{d}s$$</div>
+<p>把 \(f(\cdot,s)\,\mathrm{d}s\) 看成 \(s\) 时刻注入的微小初始热量，各自按热核扩散后再叠加——线性叠加原理 + 半群结构。</p>
+
+<h3>抛物 vs 双曲：与波动方程对比</h3>
+<table>
+<tr><th></th><th>热方程（抛物型）</th><th>波动方程（双曲型）</th></tr>
+<tr><td>核</td><td>高斯，支集全空间</td><td>球壳（Huygens 原理），支集球面</td></tr>
+<tr><td>奇性</td><td>瞬时抹平</td><td>沿特征线保留</td></tr>
+<tr><td>传播</td><td>无限速度</td><td>有限速度</td></tr>
+<tr><td>信息流</td><td>单向衰减、不可逆</td><td>振荡、可逆</td></tr>
+</table>
+
+<h3>与积分方程、与你的科研的联系</h3>
+<p>卷积是积分方程的自然语言。解第二类 Fredholm 方程 \((I-K)u=f\) 的 Neumann 级数</p>
+<div class="eq">$$u=f+Kf+K^2f+K^3f+\cdots$$</div>
+<p>每一项都是卷积核的反复作用——可看成「反复用核对 f 做修正」的迭代。轻量神经网络修正粗网格解的工作里，粗网格求解器提供基准、网络学习修正量，与该迭代在结构上同构：线性原型的反复卷积，换成学出来的非线性算子。差别在于热核是已知解析的全局平滑器，而网络要学的是那个「对的」算子。这页的两个求解器，正是这套直觉的线性玩具版。</p>
+
+<!-- ============ 9 速查表 ============ -->
+<h2 id="summary"><span class="no">09</span>总结速查表</h2>
+<table>
+<tr><th style="width:190px">条目</th><th>内容</th></tr>
+<tr><td>卷积定义（连续）</td><td>\((f*g)(t)=\int f(\tau)\,g(t-\tau)\,\mathrm{d}\tau\)，先翻转后平移</td></tr>
+<tr><td>卷积定理</td><td>\(\mathcal{F}[f*g]=\hat{f}\cdot\hat{g}\)；\(\mathcal{L}\) 变换同理——求解 PDE 的关键招</td></tr>
+<tr><td>热方程柯西问题</td><td>\(\partial_t u=\Delta u,\ u(x,0)=u_0(x)\)</td></tr>
+<tr><td>Fourier 空间解</td><td>\(\hat{u}(\xi,t)=e^{-|\xi|^2 t}\,\hat{u}_0(\xi)\)</td></tr>
+<tr><td>热核</td><td>\(K_t(x)=(4\pi t)^{-n/2} e^{-|x|^2/(4t)}\)，\(\int K_t=1\)，\(\sigma=\sqrt{2t}\)</td></tr>
+<tr><td>显式解</td><td>\(u(x,t)=(K_t*u_0)(x)=\int K_t(x-y)\,u_0(y)\,\mathrm{d}y\)</td></tr>
+<tr><td>半群</td><td>\(K_t*K_s=K_{t+s}\)；Duhamel 原理处理源项</td></tr>
+<tr><td>核心性质</td><td>瞬时光滑、质量守恒、极值原理、无限传播速度</td></tr>
+</table>
+
+<footer>
+<p>本页交互为零依赖原生 JS + Canvas / SVG；公式由 MathJax 3（cdnjs CDN）渲染，离线打开时公式退化为 LaTeX 源码显示，交互功能不受影响。</p>
+<p>生成于 2026-10-16 · 数学可视化工作室 · 配套主题：卷积 → 热核 → 粗网格修正中的迭代结构</p>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+"use strict";
+/* ================= 交互 I：机械法 ================= */
+(function(){
+var mode = "rect";
+var X = function(t){ return 60 + t * 140; };
+var f = function(t){ return (t >= 1 && t <= 2) ? 1 : 0; };
+var g = function(t){
+  if (mode === "rect") return (t >= 0.8 && t <= 1.2) ? 1 : 0;
+  return Math.exp(-Math.pow(t - 1, 2) / 0.125);
+};
+var conv = function(t){
+  var s = 0;
+  for (var i = 0; i <= 2000; i++){ var a = i * 0.002; s += f(a) * g(t - a) * 0.002; }
+  return s;
+};
+function path(fn, base){
+  var d = "";
+  for (var i = 0; i <= 400; i++){
+    var t = i * 0.01;
+    d += (i ? "L" : "M") + X(t).toFixed(1) + " " + (base - fn(t) * 45).toFixed(1);
+  }
+  return d;
+}
+function prodPath(t){
+  var d = "M" + X(0).toFixed(1) + " 145";
+  for (var i = 0; i <= 400; i++){
+    var a = i * 0.01;
+    d += "L" + X(a).toFixed(1) + " " + (145 - f(a) * g(t - a) * 45).toFixed(1);
+  }
+  return d + "L" + X(4).toFixed(1) + " 145Z";
+}
+var $ = function(id){ return document.getElementById(id); };
+function drawStatic(){
+  $("m-f1").setAttribute("d", path(f, 75));
+  $("m-f2").setAttribute("d", path(f, 145));
+  $("m-g1").setAttribute("d", path(g, 75));
+  $("m-conv-curve").setAttribute("d", path(conv, 235));
+}
+function upd(){
+  var t = $("m-slider").value / 100;
+  $("m-gf").setAttribute("d", path(function(a){ return g(t - a); }, 145));
+  $("m-prod").setAttribute("d", prodPath(t));
+  var c = conv(t), px = X(t);
+  $("m-vline").setAttribute("x1", px); $("m-vline").setAttribute("x2", px);
+  $("m-dot").setAttribute("cx", px); $("m-dot").setAttribute("cy", 235 - c * 45);
+  $("m-t").textContent = t.toFixed(2);
+  $("m-conv").textContent = "(f*g)(" + t.toFixed(2) + ") = " + c.toFixed(3);
+}
+$("m-slider").addEventListener("input", upd);
+$("m-rect").onclick = function(){ mode = "rect"; setMode(this, $("m-gauss")); };
+$("m-gauss").onclick = function(){ mode = "gauss"; setMode(this, $("m-rect")); };
+function setMode(on, off){ on.classList.add("on"); off.classList.remove("on"); drawStatic(); upd(); }
+drawStatic(); upd();
+})();
+
+/* ================= 交互 II：一维热方程求解器 ================= */
+(function(){
+var $ = function(id){ return document.getElementById(id); };
+var N = 512, X0 = -8, X1 = 8, dx = (X1 - X0) / (N - 1);
+var xs = new Float64Array(N), u0 = new Float64Array(N), u = new Float64Array(N);
+for (var i = 0; i < N; i++) xs[i] = X0 + i * dx;
+var current = "rect", playing = false, raf = 0;
+
+function setU0(kind){
+  current = kind;
+  for (var i = 0; i < N; i++){
+    var x = xs[i], v = 0;
+    if (kind === "rect") v = (x >= -1 && x <= 1) ? 1 : 0;
+    else if (kind === "gauss") v = Math.exp(-x * x / 0.5);
+    else if (kind === "double") v = 0.9 * Math.exp(-Math.pow(x + 2, 2) / 0.18) + Math.exp(-Math.pow(x - 2, 2) / 0.18);
+    else if (kind === "tri") v = Math.max(0, 1 - Math.abs(x) / 1.5);
+    u0[i] = v;
+  }
+}
+function kernel(t){
+  var k = new Float64Array(N), c = 1 / Math.sqrt(4 * Math.PI * t);
+  for (var i = 0; i < N; i++){
+    var d = xs[i];
+    k[i] = c * Math.exp(-d * d / (4 * t));
+  }
+  return k;
+}
+function solve(t){
+  var c = 1 / Math.sqrt(4 * Math.PI * t);
+  var kd = new Float64Array(2 * N - 1);
+  for (var d = -(N - 1); d <= N - 1; d++){
+    var xx = d * dx;
+    kd[d + N - 1] = c * Math.exp(-xx * xx / (4 * t));
+  }
+  var s;
+  for (var i = 0; i < N; i++){
+    s = 0;
+    for (var j = 0; j < N; j++) s += kd[i - j + N - 1] * u0[j] * dx;
+    u[i] = s;
+  }
+}
+var cv = document.getElementById("h1-canvas"), ctx = cv.getContext("2d");
+function draw(){
+  var W = cv.width, H = cv.height, L = 56, R = 14, T = 14, B = 30;
+  var pw = W - L - R, ph = H - T - B;
+  ctx.clearRect(0, 0, W, H);
+  var maxv = 1.05;
+  var PX = function(x){ return L + (x - X0) / (X1 - X0) * pw; };
+  var PY = function(v){ return T + ph - v / maxv * ph; };
+  ctx.strokeStyle = "#d0d7de"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, T + ph); ctx.lineTo(L + pw, T + ph); ctx.stroke();
+  ctx.font = "11px ui-monospace,monospace"; ctx.fillStyle = "#57606a";
+  [-8, -4, 0, 4, 8].forEach(function(gx){
+    ctx.fillText(gx, PX(gx) - 6, T + ph + 16);
+    ctx.beginPath(); ctx.moveTo(PX(gx), T + ph); ctx.lineTo(PX(gx), T + ph + 4); ctx.stroke();
+  });
+  [0, 0.5, 1].forEach(function(gy){
+    ctx.fillText(gy.toFixed(1), L - 26, PY(gy) + 4);
+    ctx.strokeStyle = "#f1efe8";
+    ctx.beginPath(); ctx.moveTo(L, PY(gy)); ctx.lineTo(L + pw, PY(gy)); ctx.stroke();
+  });
+  ctx.strokeStyle = "#888780"; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  for (var i = 0; i < N; i++){ var x = PX(xs[i]), y = PY(u0[i]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  for (var i2 = 0; i2 < N; i2++){ var x2 = PX(xs[i2]), y2 = PY(u[i2]); i2 ? ctx.lineTo(x2, y2) : ctx.moveTo(x2, y2); }
+  ctx.stroke();
+  var t = $("h1-slider").value / 100;
+  var kw = 190, kh = 84, kx = W - R - kw - 8, ky = T + 6;
+  ctx.fillStyle = "#f6f8fa"; ctx.strokeStyle = "#d0d7de";
+  ctx.fillRect(kx, ky, kw, kh); ctx.strokeRect(kx, ky, kw, kh);
+  var kk = kernel(t), kmax = 0;
+  for (var m = 0; m < N; m++) if (kk[m] > kmax) kmax = kk[m];
+  ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  for (var q = 0; q < N; q++){
+    var kx2 = kx + 4 + (xs[q] - X0) / (X1 - X0) * (kw - 8);
+    var ky2 = ky + kh - 8 - kk[q] / (kmax * 1.08) * (kh - 16);
+    q ? ctx.lineTo(kx2, ky2) : ctx.moveTo(kx2, ky2);
+  }
+  ctx.stroke();
+  ctx.fillStyle = "#57606a"; ctx.font = "11px sans-serif";
+  ctx.fillText("热核 K_t(x), σ=√(2t)=" + Math.sqrt(2 * t).toFixed(2), kx + 6, ky + 14);
+}
+function stats(){
+  var peak = 0, m0 = 0, m1 = 0;
+  for (var i = 0; i < N; i++){
+    if (u[i] > peak) peak = u[i];
+    m0 += u0[i] * dx; m1 += u[i] * dx;
+  }
+  var t = $("h1-slider").value / 100;
+  $("h1-peak").textContent = peak.toFixed(4);
+  $("h1-mass").textContent = m1.toFixed(4);
+  $("h1-err").textContent = (Math.abs(m1 - m0) / Math.max(m0, 1e-12) * 100).toFixed(3) + " %";
+  $("h1-sigma").textContent = Math.sqrt(2 * t).toFixed(3);
+  $("h1-t").textContent = t.toFixed(2);
+}
+function render(){ solve($("h1-slider").value / 100); draw(); stats(); }
+$("h1-slider").addEventListener("input", render);
+function pick(el){ $("h1-rect").classList.remove("on"); $("h1-gauss").classList.remove("on"); $("h1-double").classList.remove("on"); $("h1-tri").classList.remove("on"); el.classList.add("on"); }
+$("h1-rect").onclick = function(){ pick(this); setU0("rect"); render(); };
+$("h1-gauss").onclick = function(){ pick(this); setU0("gauss"); render(); };
+$("h1-double").onclick = function(){ pick(this); setU0("double"); render(); };
+$("h1-tri").onclick = function(){ pick(this); setU0("tri"); render(); };
+$("h1-play").onclick = function(){
+  playing = !playing;
+  this.textContent = playing ? "暂停" : "播放";
+  if (playing) tick();
+};
+function tick(){
+  if (!playing) return;
+  var v = parseFloat($("h1-slider").value);
+  v += 0.5; if (v > 200) v = 20;
+  $("h1-slider").value = v;
+  render();
+  raf = setTimeout(tick, 60);
+}
+setU0("rect"); render();
+})();
+
+/* ================= 交互 III：二维热扩散 ================= */
+(function(){
+var N = 128, DT = 0.5, SIGMA = Math.sqrt(2 * DT), R = Math.ceil(3 * SIGMA);
+var field = new Float32Array(N * N), init0 = new Float32Array(N * N);
+var t = 0, steps = 0, playing = false, timer = 0, initMax = 1;
+function kernel(){
+  var k = [], c = 1 / (SIGMA * Math.sqrt(2 * Math.PI)), s = 0;
+  for (var i = -R; i <= R; i++){ var v = c * Math.exp(-i * i / (2 * SIGMA * SIGMA)); k.push(v); s += v; }
+  for (var j = 0; j < k.length; j++) k[j] /= s;
+  return k;
+}
+var K = kernel();
+function convolveSep(src, dst){
+  var tmp = new Float32Array(N * N), i, j, d, v;
+  for (i = 0; i < N; i++) for (j = 0; j < N; j++){
+    v = 0;
+    for (d = -R; d <= R; d++){
+      var jj = j + d; if (jj < 0 || jj >= N) continue;
+      v += K[d + R] * src[i * N + jj];
+    }
+    tmp[i * N + j] = v;
+  }
+  for (i = 0; i < N; i++) for (j = 0; j < N; j++){
+    v = 0;
+    for (d = -R; d <= R; d++){
+      var ii = i + d; if (ii < 0 || ii >= N) continue;
+      v += K[d + R] * tmp[ii * N + j];
+    }
+    dst[i * N + j] = v;
+  }
+}
+function setInit(kind){
+  t = 0; steps = 0;
+  var i, x, y, v;
+  for (i = 0; i < N * N; i++) field[i] = 0;
+  if (kind === "single"){
+    for (y = 0; y < N; y++) for (x = 0; x < N; x++)
+      field[y * N + x] = Math.exp(-((x - 64) * (x - 64) + (y - 64) * (y - 64)) / (2 * 16));
+  } else if (kind === "double"){
+    for (y = 0; y < N; y++) for (x = 0; x < N; x++){
+      v = Math.exp(-((x - 44) * (x - 44) + (y - 64) * (y - 64)) / (2 * 12))
+        + Math.exp(-((x - 84) * (x - 84) + (y - 64) * (y - 64)) / (2 * 12));
+      field[y * N + x] = v * 0.7;
+    }
+  } else if (kind === "strip"){
+    for (y = 0; y < N; y++) for (x = 0; x < N; x++)
+      if (y >= 58 && y <= 70) field[y * N + x] = 0.9 * Math.exp(-(x - 64) * (x - 64) / 800);
+  } else {
+    var seeds = [[30, 30, 1], [90, 40, 0.8], [50, 90, 0.9], [100, 95, 0.7], [64, 60, 1]];
+    for (var s = 0; s < seeds.length; s++){
+      var cx = seeds[s][0], cy = seeds[s][1], amp = seeds[s][2], r2 = 100;
+      for (y = Math.max(0, cy - 12); y < Math.min(N, cy + 12); y++)
+        for (x = Math.max(0, cx - 12); x < Math.min(N, cx + 12); x++)
+          field[y * N + x] += amp * Math.exp(-((x - cx) * (x - cx) + (y - cy) * (y - cy)) / (2 * r2 / 4));
+    }
+  }
+  init0.set(field);
+  initMax = 0;
+  for (i = 0; i < N * N; i++) if (field[i] > initMax) initMax = field[i];
+  render();
+}
+var cv = document.getElementById("h2-canvas"), ctx = cv.getContext("2d");
+var img = ctx.createImageData(N, N);
+function heat(v){
+  var stops = [[0, 5, 4, 15], [0.2, 18, 58, 143], [0.4, 26, 158, 143], [0.6, 201, 212, 31], [0.8, 240, 118, 27], [1, 226, 34, 18]];
+  v = Math.max(0, Math.min(1, v));
+  for (var i = 0; i < stops.length - 1; i++){
+    if (v <= stops[i + 1][0]){
+      var a = stops[i], b = stops[i + 1], f = (v - a[0]) / (b[0] - a[0]);
+      return [a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f, a[3] + (b[3] - a[3]) * f];
+    }
+  }
+  return [226, 34, 18];
+}
+function render(){
+  var d = img.data, peak = 0, mass = 0;
+  for (var i = 0; i < N * N; i++){
+    var v = field[i], p = i * 4;
+    if (v > peak) peak = v;
+    mass += v;
+    var c = heat(v / initMax);
+    d[p] = c[0]; d[p + 1] = c[1]; d[p + 2] = c[2]; d[p + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  document.getElementById("h2-peak").textContent = (peak / initMax).toFixed(3);
+  var mass0 = 0;
+  for (var j = 0; j < N * N; j++) mass0 += init0[j];
+  document.getElementById("h2-mass").textContent = (mass / mass0 * 100).toFixed(1) + " %";
+  document.getElementById("h2-steps").textContent = steps;
+  document.getElementById("h2-t").textContent = (t).toFixed(1);
+}
+function step(){
+  var dst = new Float32Array(N * N);
+  convolveSep(field, dst);
+  field.set(dst);
+  t += DT; steps++;
+  render();
+}
+function play(){
+  playing = !playing;
+  document.getElementById("h2-play").textContent = playing ? "暂停" : "播放";
+  if (playing) timer = setInterval(step, 50);
+  else clearInterval(timer);
+}
+function pick(el){
+  document.getElementById("h2-single").classList.remove("on");
+  document.getElementById("h2-double").classList.remove("on");
+  document.getElementById("h2-strip").classList.remove("on");
+  document.getElementById("h2-rand").classList.remove("on");
+  el.classList.add("on");
+}
+document.getElementById("h2-single").onclick = function(){ pick(this); setInit("single"); };
+document.getElementById("h2-double").onclick = function(){ pick(this); setInit("double"); };
+document.getElementById("h2-strip").onclick = function(){ pick(this); setInit("strip"); };
+document.getElementById("h2-rand").onclick = function(){ pick(this); setInit("rand"); };
+document.getElementById("h2-play").onclick = play;
+document.getElementById("h2-step").onclick = step;
+document.getElementById("h2-reset").onclick = function(){
+  playing = false; clearInterval(timer);
+  document.getElementById("h2-play").textContent = "播放";
+  var kind = document.getElementById("h2-single").classList.contains("on") ? "single"
+    : document.getElementById("h2-double").classList.contains("on") ? "double"
+    : document.getElementById("h2-strip").classList.contains("on") ? "strip" : "rand";
+  setInit(kind);
+};
+setInit("single");
+})();
+
+setTimeout(function(){
+  if (!document.querySelector("mjx-container")) {
+    var b = document.getElementById("mjx-offline");
+    if (b) b.hidden = false;
+  }
+}, 2500);
+</script>
+</body>
+</html>

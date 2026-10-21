@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数学物理方程 · 可视化系列</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 本站是「数学可视化」门户（math-visualization.app.workbuddy.host）的一个学科：本目录 = site/pde/，
+     上级 site/index.html 是全站总导航（六学科卡片）。页面仍全部放在本目录，直接编辑，无副本。
+  2. 新增页面：把做好的 .html 放进本目录，然后在下方加一张 <a class="card"> 卡片，href 写相对路径。
+  3. 规划中的章节：把对应卡片从 .planned 改成 <a> 并填 href。
+  4. 更新线上：对整个 math_visualization/site/ 目录重新发布（app 已存在，链接不变，内容覆盖）。
+  5. 验证脚本在 math_visualization/ 根（相对路径 ../../verify_formulas.js），改完公式后跑一遍再发布。
+-->
+<style>
+:root{
+  --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --card:#f6f8fa;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--text);
+  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:60px 20px 60px}
+h1{font-size:27px;margin:0 0 8px;font-weight:600}
+p.lead{color:var(--muted);font-size:15.5px;margin:0 0 12px}
+h2{font-size:14px;font-weight:600;color:var(--muted);margin:40px 0 14px;
+  letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:8px}
+a.card,.card{display:block;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:18px 22px;margin:0 0 12px;text-decoration:none;color:var(--text)}
+a.card:hover{border-color:var(--accent)}
+.card .t{font-size:16.5px;font-weight:600;color:var(--accent-dark);margin:0 0 4px}
+.card .d{font-size:13.5px;color:var(--muted);margin:0}
+.tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,monospace;
+  border-radius:5px;padding:1px 8px;margin-right:10px;vertical-align:2px;font-weight:500}
+.tag.live{background:#E1F5EE;color:#085041}
+.tag.plan{background:#F1EFE8;color:#5F5E5A}
+.tag.ch{background:var(--accent-soft);color:var(--accent-dark)}
+.card.planned{opacity:.62}
+footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--border);
+  font-size:13px;color:var(--muted)}
+footer code{font-family:ui-monospace,monospace;background:var(--card);
+  border:1px solid var(--border);border-radius:4px;padding:0 5px;font-size:12px}
+.crumb{font-size:13px;margin:0 0 18px}
+.crumb a{color:var(--accent);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a></p>
+<h1>数学物理方程 · 可视化系列</h1>
+<p class="lead">谷超豪《数学物理方程（第四版）》的配套交互教学页。每个页面零依赖、可离线打开（公式渲染需联网）；内容按教材章节逐步补齐。</p>
+
+<h2>跨章基础工具</h2>
+<a class="card" href="./卷积与热传导方程.html">
+<p class="t"><span class="tag live">已上线</span>卷积与热传导方程</p>
+<p class="d">翻转—滑动的动作直觉 · 历史时间线 · 六种定义 · 机械法交互 · 热核导出柯西问题解 · 一维/二维求解器 · 与粗网格修正科研的联系</p>
+</a>
+
+<h2>第 2 章 · 热传导方程</h2>
+<a class="card" href="./分离变量法-热传导方程.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">§2</span>初边值问题的分离变量法</p>
+<p class="d">五步法地图 · 模态衰减实验室（对比弦振动）· 完整解动画与吉布斯抹平 · 第三类边界图解法求根 · Robin 与 Dirichlet 对比 · 圆板 Bessel 扩展</p>
+</a>
+<a class="card" href="./柯西问题-傅里叶变换.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">§3</span>柯西问题与傅里叶变换</p>
+<p class="d">频谱致密化动画（离散谱→连续谱）· 傅里叶五性质 · 变换机器三联交互（初值 / 频谱阻尼 / 解）· 泊松公式与热核展宽 · 杜哈梅原理与源项积累 · 存在性验证（t→0 收敛、ε-N 尾部账本）· 一般框架 u=K*φ</p>
+</a>
+<a class="card" href="./唯一性-稳定性-渐近性态.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">§4–5</span>唯一性、稳定性与渐近性态</p>
+<p class="d">极值原理交互（边界最大值）· ε-稳定性 · 第二类化第三类的变换技巧 · 柯西问题挤压论证 · Tychonoff 非唯一反例动画 · 指数衰减定速模态 · 指数 vs 代数衰减对比实验室 · 习题选讲</p>
+</a>
+
+<h2>第 1 章 · 波动方程</h2>
+<a class="card" href="./波动方程-达朗贝尔公式与驻波.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">§1–3</span>一维波动方程与达朗贝尔公式</p>
+<p class="d">微元段受力沙盘（弦振动方程导出）· 三类边界条件与反射 · 特征线网格 · 达朗贝尔求解器（四种初值预设 + 探针 + 依赖区间）· 依赖/决定/影响区域一图 · 固定端与自由端反射实验室 · 齐次化原理对账（数值积分 vs 闭式）· 驻波实验室与拨弦频谱 · 波动 vs 热传导对比实验室 · 习题选讲</p>
+</a>
+<a class="card" href="./高维波动方程-球平均法与泊松公式.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">§4</span>高维波动方程：球平均法与泊松公式</p>
+<p class="d">「降维机器」地图 · 膜振动方程导出 · 球平均法（把角度积分掉）· 三维泊松公式 · 降维法与二维泊松公式 · 非齐次方程与推迟势 · 习题选讲</p>
+</a>
+<a class="card" href="./高维波动方程-传播衰减与惠更斯原理.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">§5</span>传播、衰减与惠更斯原理</p>
+<p class="d">依赖/决定/影响区域与特征锥沙盘（2D 圆盘 vs 3D 球面）· 一维/二维/三维对比实验室（前/后阵面、尾迹、固定色标热图）· 衰减斜率实验室（0 / −1/2 / −1，实测）· 奇偶维数定理 · 习题 10 缩放生成元验证</p>
+</a>
+
+<h2>第 3 章 · 调和方程</h2>
+<a class="card" href="./调和方程-定解问题与极值原理.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">§1–2</span>定解问题与极值原理</p>
+<p class="d">三类方程与边值问题总览 · 点电荷等势线/电场线实验室 · 外问题非唯一反例（1/r 与 ln r）· 狄利克雷原理与 Weierstrass/Hadamard 两大反例动画 · 格林公式与挖球账本 · 平均值定理招牌交互（拖 M₀、球面/球体平均、调和与非调和四模式）· 球链蔓延证强极值 · ε-稳定性 · 习题选讲</p>
+</a>
+<a class="card" href="./调和方程-格林函数与泊松公式.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">§3</span>格林函数与泊松公式</p>
+<p class="d">格林函数三项分解实验室（拖 M₀ 看镜像点与球面零线）· 镜像点自动追踪（4πG≈0 实时核对）· 球泊松公式四预设热图与径向剖面 · 半空间求解器（②③ 闭式对账，① 高斯斑 Fourier 域独立复核）· 圆盘泊松与傅里叶级数逐位对账 · 泊松核→δ 三笔账 · 共形映射不变性 · 习题 7 残差热图</p>
+</a>
+<a class="card" href="./调和方程-深层性质与霍普夫原理.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">§4–5</span>深层性质与霍普夫原理</p>
+<p class="d">哈纳克不等式实验室与第二定理（增量夹逼）· 可去奇点判据标尺（3D 1/r vs 2D ln）· 解析性与幂级数收敛半径 · Liouville 与导数估计 · 霍普夫方向导数沙盘（拖 M₀ 与 ν）· 辅助函数 e^(−ar²) 的 a 阈值 · 诺伊曼解族的不变量 · Robin 退化反例构造器 · 习题选讲</p>
+</a>
+
+<h2>后续章节</h2>
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span>第 4 章 方程分类与总结 · 第 5 章 一阶方程组 · 第 6 章 广义函数 · 第 7 章 数值解</p>
+<p class="d">特征线可视化 · δ 函数与基本解 · 差分格式的 CFL 交互实验</p>
+</div>
+
+<footer>
+<p>添加新页面：把 .html 放入本目录，在 index.html 对应章节加一张卡片，随全站重新发布即可（本页 HTML 注释里有详细维护说明）。</p>
+<p>目录：math_visualization/site/pde/ · 发布根：math_visualization/site/ · 验证脚本在工作区根（相对路径 ../../） · 生成于 2026-10-16，最近更新 2026-10-19（第 1 章 §1–§3、§4 页上线）</p>
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>球平均法与泊松公式 — 谷超豪《数学物理方程》§4 可视化</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:28px;line-height:1.35;margin:0 0 12px;font-weight:600}
+h2{font-size:22px;margin:64px 0 16px;font-weight:600;padding-top:8px;border-top:1px solid var(--border)}
+h2 .no{color:var(--accent);font-family:var(--mono);font-size:16px;margin-right:10px;font-weight:400}
+h3{font-size:17px;margin:36px 0 10px;font-weight:600}
+p{margin:12px 0}
+.hero{padding:56px 0 8px}
+.hero p.lead{font-size:17px;color:var(--muted);max-width:760px;margin:0}
+nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+nav .wrap{padding:10px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px}
+nav a{color:var(--muted)}
+nav a:hover{color:var(--accent);text-decoration:none}
+.eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
+  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--card);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+.ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
+.ctl input[type=range]{flex:1;min-width:180px;accent-color:var(--accent)}
+button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
+.val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
+figure{margin:20px 0}
+figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+canvas.plot{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+canvas.hm{width:100%;aspect-ratio:1/1;height:auto;max-width:560px;background:#fff;border:1px solid var(--border);border-radius:8px;display:block;margin:0 auto;cursor:crosshair}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kv .cell{background:var(--card);border-radius:8px;padding:10px 14px}
+.kv .k{font-size:12.5px;color:var(--muted)}
+.kv .v{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent-dark)}
+mjx-container{display:block!important;margin:.35em 0!important}
+mjx-container[display="true"]>svg{display:block;margin:0 auto}
+p mjx-container,li mjx-container,td mjx-container,h4 mjx-container{display:inline-block!important;margin:0!important;vertical-align:baseline}
+p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,h4 mjx-container>svg{display:inline!important;margin:0!important;vertical-align:-1px}
+#mjx-offline{background:#fdf6ec;border:1px solid #EF9F27;border-radius:8px;padding:8px 14px;font-size:13px;color:#854F0B;margin:14px 0}
+#mjx-offline[hidden]{display:none}
+footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+ul.tight li{margin:6px 0}
+</style>
+</head>
+<body>
+<div id="mjx-offline" hidden>公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响但内容不受影响。</div>
+
+<div class="hero"><div class="wrap">
+<h1>高维波动方程：球平均法与泊松公式</h1>
+<p class="lead">谷超豪 等《数学物理方程（第四版）》第 1 章 §4 的交互可视化。一维的达朗贝尔公式为什么不能平移到高维？泊松的办法是「先对球面取平均，把角度积分掉」：球平均函数满足一个一维形式的方程，于是整台求解机器退化回 §2。本页把这条流水线、三维泊松公式、降维法得到的二维公式、以及非齐次的推迟势全部做成可动手的求解器，每个读数都与一条独立路线对账。</p>
+</div></div>
+
+<nav><div class="wrap">
+<a href="#map">本节地图</a>
+<a href="#derive">方程导出</a>
+<a href="#sphereavg">球平均法</a>
+<a href="#poisson3">三维泊松公式</a>
+<a href="#descent">降维法与二维</a>
+<a href="#retarded">推迟势</a>
+<a href="#exercises">习题选讲</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ============ 0 地图 ============ -->
+<h2 id="map"><span class="no">00</span>本节地图：一台「降维机器」</h2>
+<p>§4 的全部技术内容是一条流水线：把高维柯西问题的解在一个球面上取平均，球平均满足的方程只含径向变量，于是问题退化成一维波动方程——用 §2 的达朗贝尔公式解完再令半径趋于零，就得到三维泊松公式。把它当「高一维问题的解」用，又白捡二维公式（降维法）；非齐次项走齐次化原理，得到推迟势。</p>
+
+<figure>
+<svg viewBox="0 0 680 300" width="100%" role="img">
+<title>球平均法流水线</title>
+<desc>三维柯西问题经球平均退化为一维波动方程，达朗贝尔公式解出后取极限得泊松公式；降维法得二维公式；齐次化原理得推迟势</desc>
+<defs>
+<marker id="ar4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<g font-family="system-ui,sans-serif">
+<rect x="14" y="24" width="180" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="104" y="46" font-size="13" font-weight="500" fill="#26215C" text-anchor="middle">三维柯西问题 (4.14)</text>
+<text x="104" y="65" font-size="11.5" fill="#3C3489" text-anchor="middle">u_tt = a²Δu，初值 φ, ψ</text>
+<line x1="194" y1="52" x2="238" y2="52" stroke="#185FA5" stroke-width="1.4" marker-end="url(#ar4)"/>
+<text x="216" y="42" font-size="11" fill="#185FA5" text-anchor="middle">球平均</text>
+<rect x="242" y="24" width="180" height="56" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="332" y="46" font-size="13" font-weight="500" fill="#0C447C" text-anchor="middle">Mu：一维波动方程</text>
+<text x="332" y="65" font-size="11.5" fill="#185FA5" text-anchor="middle">(Mu)_tt = a²[(Mu)_rr+2/r (Mu)_r]</text>
+<line x1="422" y1="52" x2="466" y2="52" stroke="#185FA5" stroke-width="1.4" marker-end="url(#ar4)"/>
+<rect x="470" y="24" width="196" height="56" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="568" y="46" font-size="13" font-weight="500" fill="#0C447C" text-anchor="middle">v = r·Mu → 达朗贝尔</text>
+<text x="568" y="65" font-size="11.5" fill="#185FA5" text-anchor="middle">§2 的机器直接复用</text>
+<line x1="568" y1="80" x2="568" y2="118" stroke="#185FA5" stroke-width="1.4" marker-end="url(#ar4)"/>
+<text x="576" y="102" font-size="11" fill="#185FA5">r→0 取极限</text>
+<rect x="470" y="122" width="196" height="52" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.6"/>
+<text x="568" y="142" font-size="13" font-weight="500" fill="#085041" text-anchor="middle">三维泊松公式 (4.30)</text>
+<text x="568" y="161" font-size="11.5" fill="#0F6E56" text-anchor="middle">Kirchhoff 形式 (5.7)</text>
+<line x1="470" y1="148" x2="428" y2="148" stroke="#0F6E56" stroke-width="1.4" marker-end="url(#ar4)"/>
+<text x="449" y="138" font-size="11" fill="#0F6E56" text-anchor="middle">降维法</text>
+<rect x="242" y="122" width="182" height="52" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.6"/>
+<text x="333" y="142" font-size="13" font-weight="500" fill="#085041" text-anchor="middle">二维泊松公式 (4.40)</text>
+<text x="333" y="161" font-size="11.5" fill="#0F6E56" text-anchor="middle">球面投影成圆盘</text>
+<line x1="332" y1="80" x2="332" y2="118" stroke="#D85A30" stroke-width="1.4" marker-end="url(#ar4)"/>
+<text x="340" y="102" font-size="11" fill="#D85A30">非齐次 f</text>
+<rect x="242" y="196" width="182" height="52" rx="8" fill="#FAECE7" stroke="#D85A30" stroke-width="0.6"/>
+<text x="333" y="216" font-size="13" font-weight="500" fill="#712D17" text-anchor="middle">齐次化原理 (4.46)</text>
+<text x="333" y="235" font-size="11.5" fill="#A04A22" text-anchor="middle">推迟势 (4.47)</text>
+<rect x="14" y="196" width="180" height="52" rx="8" fill="#F6F8FA" stroke="#57606a" stroke-width="0.6"/>
+<text x="104" y="216" font-size="13" font-weight="500" fill="#1f2328" text-anchor="middle">本页全部取 a = 1</text>
+<text x="104" y="235" font-size="11.5" fill="#57606a" text-anchor="middle">公式里的 a 随时代入即可</text>
+</g>
+</svg>
+<figcaption>图 0-1　§4 主流水线：蓝=球平均法主线，绿=降维法，红=非齐次项。</figcaption>
+</figure>
+
+<div class="key"><b>本页与系列另两页的分工：</b>《一维波动方程与达朗贝尔公式》（§1–3，另页）讲特征线、行波与反射；本页证明「高维没有达朗贝尔公式，但有球平均法」——依赖区域从区间变成球面/圆盘，全部后果都从这一点长出来（详见<a href="./高维波动方程-传播衰减与惠更斯原理.html">§5 配套页</a>：惠更斯原理与波的弥散）。</div>
+
+<!-- ============ 1 导出 ============ -->
+<h2 id="derive"><span class="no">01</span>从弦到膜、到声：方程的导出与定解条件</h2>
+<p>膜是「二维的弦」：厚度可忽略、面密度 \(\rho\) 恒定、柔软不抗弯、在垂直平衡位置的方向作微小振动。与弦的推导完全平行——取一小块膜 \(\Delta\)，算边界上张力 \(T\) 的垂直分量与外力在 \((t,t+\Delta t)\) 内的冲量，令其等于动量变化，用格林公式把边界积分换成面积积分，由 \(\Delta\) 与时间段的任意性得到</p>
+$$\frac{\partial^2 u}{\partial t^2}=\frac{T}{\rho}\left(\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}\right)+\frac{F(x,y,t)}{\rho},\qquad a^2=\frac{T}{\rho},\ f=\frac{F}{\rho} \tag{4.3}$$
+<p>即<b>膜振动方程（二维波动方程）</b>。\(f=0\) 时为齐次方程 (4.4)。声波在空气中的小扰动则由流体力学方程组（连续性方程 + 动量守恒 + \(p=f(\rho)\)）线性化得到同一个方程（教材 §4 扩展阅读），\(\delta\rho\)、\(\delta p\) 与速度各分量都满足三维波动方程——这就是同一数学模型横跨膜、声、电磁波的原因。</p>
+
+<h3>定解条件</h3>
+<p>与弦振动一样，只有初始位移不够（两张相同的膜，一张有初速一张静止，运动截然不同），初始条件取一对：</p>
+$$u(x,y,0)=\varphi(x,y),\qquad \frac{\partial u}{\partial t}(x,y,0)=\psi(x,y) \tag{4.5}$$
+<p>边界条件仍是三类（记膜的边界曲线为 \(\Gamma\)，\(\mathbf n\) 为外法向）：</p>
+<table>
+<tr><th style="width:110px">类型</th><th>提法</th><th>物理图像</th></tr>
+<tr><td>第一类 (4.6)</td><td>\(u\big|_{\Gamma}=0\) 或 \(u\big|_{\Gamma}=\mu(x,y,t)\)</td><td>边界固定，或按已知规律运动</td></tr>
+<tr><td>第二类 (4.7)(4.8)</td><td>\(\dfrac{\partial u}{\partial n}\Big|_{\Gamma}=0\) 或 \(=\mu(x,y,t)\)</td><td>边界可在光滑柱面上自由滑动（无摩擦）</td></tr>
+<tr><td>第三类 (4.9)(4.10)</td><td>\(\left(\dfrac{\partial u}{\partial n}+\sigma u\right)\Big|_{\Gamma}=0\) 或 \(=\mu\)</td><td>边界固定在弹性支承上</td></tr>
+</table>
+<p>无界域上只给初始条件，就是<b>柯西问题</b>（二维 (4.11)，三维 (4.12)(4.13)(4.14)）：</p>
+$$\left\{\begin{array}{ll} u_{tt}=a^2(u_{xx}+u_{yy}+u_{zz}), & \mathbf x\in\mathbb R^3,\ t>0\\[2mm] u(\mathbf x,0)=\varphi(\mathbf x),\quad u_t(\mathbf x,0)=\psi(\mathbf x), & \mathbf x\in\mathbb R^3 \end{array}\right. \tag{4.14}$$
+<div class="note"><b>本节的主角是柯西问题。</b>有界域上的初边值问题可以走分离变量法（§3 的机器对膜照样适用，只需把圆盘的固有函数换成 Bessel 函数），但柯西问题没有边界可依赖，必须正面求解——这正是球平均法登场的理由。</div>
+
+<!-- ============ 2 球平均法 ============ -->
+<h2 id="sphereavg"><span class="no">02</span>球平均法：把角度积分掉</h2>
+<h3>2.1　球对称情形：\(v=ru\) 的戏法</h3>
+<p>若初始资料只依赖 \(r=|\mathbf x|\)，可寻求 \(u=u(r,t)\)。三维拉普拉斯算子在径向函数上化为 \(u_{rr}+\dfrac{2}{r}u_r\)，于是</p>
+$$\frac{\partial^2 u}{\partial t^2}=a^2\left(\frac{\partial^2 u}{\partial r^2}+\frac{2}{r}\frac{\partial u}{\partial r}\right) \tag{4.15}$$
+<p>比一维波动方程多了一阶项。但令 \(v=ru\)，一阶项被精确吸收：</p>
+$$\frac{\partial^2 v}{\partial t^2}=a^2\frac{\partial^2 v}{\partial r^2}$$
+<p>与一维波动方程形式完全相同，直接用达朗贝尔公式解 \(v\)，再除以 \(r\)。<b>这是全节的种子</b>：径向情形能化成一维，靠的就是「乘以 \(r\)」把几何因子吸收掉。</p>
+
+<h3>2.2　一般情形：球平均函数</h3>
+<p>对一般初始资料，泊松的想法是对解取球面平均。设 \(h\) 是 \(\mathbb R^3\) 上足够光滑的函数，定义它以 \(\mathbf x\) 为球心、\(r\) 为半径的<b>球平均</b></p>
+$$Mh(\mathbf x,r)=\frac{1}{4\pi r^2}\iint_{S_r(\mathbf x)}h\,\mathrm dS=\frac{1}{4\pi}\iint_{S_1(\mathbf x)}h(\mathbf x+r\boldsymbol\alpha)\,\mathrm d\omega \tag{4.16, 4.19}$$
+<p>其中 \(\boldsymbol\alpha=(\alpha_1,\alpha_2,\alpha_3)\) 是单位球面上的变动点。它的性质由一条引理锁定：</p>
+<div class="card">
+<p style="margin:0 0 8px"><b>引理 4.1</b>　设 \(h\in C^2\)，则 \(Mh\) 也二阶连续可导，且满足</p>
+$$\frac{\partial^2 Mh}{\partial r^2}+\frac{2}{r}\frac{\partial Mh}{\partial r}=\Delta Mh,\qquad Mh\big|_{r=0}=h(\mathbf x),\quad \frac{\partial Mh}{\partial r}\Big|_{r=0}=0 \tag{4.17, 4.18}$$
+</div>
+<p>证明就是课本式演算：把 (4.19) 对 \(x_i\) 求导两次相加得 \(\Delta Mh\) 是 \(\Delta h\) 的球平均 (4.20)；对 \(r\) 求导一次用格林公式换成球体平均 (4.22)，再求导一次得 (4.23)，三者相减即得方程。下面交互把这条引理<b>数值兑现</b>：左边是径向二阶导，右边是空间方向的拉普拉斯，两条路各自独立算出来应当相等。</p>
+
+<div class="ctl">
+<span>球心 \(\mathbf x=(x_1,x_2,0)\)：在左图拖动</span>
+<span style="margin-left:14px">球半径 \(r\)</span>
+<input id="sa-r" type="range" min="10" max="300" value="120">
+<span class="val" id="sa-rv">r = 1.20</span>
+</div>
+<div class="ctl">
+<span style="margin-right:6px">被平均函数 \(h\)：</span>
+<button class="hp on" data-h="quad">二次型 \(x_1^2+x_2^2\)</button>
+<button class="hp" data-h="gauss">高斯团 \(e^{-|\mathbf x|^2/2}\)</button>
+<button class="hp" data-h="lin">斜置一次 \(x_1+x_2\)</button>
+</div>
+<canvas id="sa-canvas" class="plot" width="840" height="300"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">\(h(\mathbf x)\)（r→0 极限）</div><div class="v" id="sa-h0">—</div></div>
+<div class="cell"><div class="k">\(Mh(\mathbf x,r)\)</div><div class="v" id="sa-mh">—</div></div>
+<div class="cell"><div class="k">引理左边 \((Mh)_{rr}+\frac{2}{r}(Mh)_r\)</div><div class="v" id="sa-lhs">—</div></div>
+<div class="cell"><div class="k">引理右边 \(\Delta Mh\)</div><div class="v" id="sa-rhs">—</div></div>
+<div class="cell"><div class="k">两边差</div><div class="v" id="sa-err">—</div></div>
+</div>
+<div class="note"><b>实测备注（verify_readout_w4.js）：</b>三种 \(h\)、多个球心位置下引理两边之差：二次型 preset <b>6.0e-10</b>（理论值两边都精确等于 \(\Delta(x_1^2+x_2^2)=4\)）、线性 preset <b>1.3e-9</b>、高斯 preset 最差 <b>1.6e-7</b>。右边的 \(\Delta Mh\) 由球心三个方向的有限差分算出，左边的径向二阶导由 \(r\pm10^{-3}\) 的球平均差分算出——两条路只共享「球面积分」这一个工具，不共享任何化简。高斯 preset 的球平均另有解析闭式 \(e^{-(|\mathbf x|^2+r^2)/2}\dfrac{\sinh(r|\mathbf x|)}{r|\mathbf x|}\)，页面读数（0.6351）与闭式（0.63509）一致。</div>
+
+<h3>2.3　从 \(Mu\) 到达朗贝尔</h3>
+<p>设 \(u\) 是柯西问题 (4.14) 的解，对它关于 \(\mathbf x\) 取球平均 \(Mu(\mathbf x,r,t)\) (4.24)。由方程本身，</p>
+$$\frac{\partial^2 Mu}{\partial t^2}=a^2\left(\frac{\partial^2 Mu}{\partial r^2}+\frac{2}{r}\frac{\partial Mu}{\partial r}\right),\qquad Mu\big|_{t=0}=M\varphi,\quad \frac{\partial Mu}{\partial t}\Big|_{t=0}=M\psi \tag{4.25--4.27}$$
+<p>引理 4.1 还说 \(Mh\) 可以往 \(r&lt;0\) 作偶延拓且保持 \(C^2\)。把 \(Mu\)（连同 \(M\varphi,M\psi\)）偶延拓后视 \(\mathbf x\) 为参数、令 \(v=rMu\)，则</p>
+$$\frac{\partial^2 v}{\partial t^2}=a^2\frac{\partial^2 v}{\partial r^2},\qquad v\big|_{t=0}=rM\varphi(\mathbf x,r),\quad \frac{\partial v}{\partial t}\Big|_{t=0}=rM\psi(\mathbf x,r) \tag{4.28, 4.29}$$
+<p>于是一维波动方程的达朗贝尔公式直接给出</p>
+$$v=\frac{1}{2}\big[(r+at)M\varphi(\mathbf x,r+at)+(r-at)M\varphi(\mathbf x,r-at)\big]+\frac{1}{2a}\int_{r-at}^{r+at}\xi M\psi(\mathbf x,\xi)\,\mathrm d\xi \tag{4.31}$$
+<p>除以 \(r\) 并令 \(r\to0\)（偶延拓保证两侧极限相同），两个括号的差商收敛到 \(\dfrac{\partial}{\partial t}\big[tM\varphi(\mathbf x,at)\big]\)，积分项收敛到 \(tM\psi(\mathbf x,at)\)：</p>
+$$u(\mathbf x,t)=\frac{\partial}{\partial t}\big[tM\varphi(\mathbf x,at)\big]+tM\psi(\mathbf x,at) \tag{4.33}$$
+
+<!-- ============ 3 三维泊松公式 ============ -->
+<h2 id="poisson3"><span class="no">03</span>三维泊松公式</h2>
+<p>把 (4.33) 里的球平均写回球面积分，就是本节的主定理：</p>
+<div class="card">
+<p style="margin:0 0 8px"><b>定理 4.1</b>　设 \(\varphi\in C^3,\ \psi\in C^2\)，则三维波动方程柯西问题 (4.14) 存在唯一解</p>
+$$u(\mathbf x,t)=\frac{\partial}{\partial t}\left(\frac{1}{4\pi a^2t}\iint_{S_{at}^M}\varphi\,\mathrm dS\right)+\frac{1}{4\pi a^2t}\iint_{S_{at}^M}\psi\,\mathrm dS \tag{4.30}$$
+<p style="margin:8px 0 0">其中 \(S_{at}^M\) 是以 \(\mathbf x\) 为球心、\(at\) 为半径的球面。(4.30) 称为<b>泊松公式</b>。</p>
+</div>
+<p>对第一项内的球面积分求导（半径增长率是 \(a\)，被积函数沿 \(\mathbf M'- \mathbf x\) 方向的变化率是 \(\nabla\varphi\)），可改写成不含 \(t\)-导数的 <b>Kirchhoff 形式</b>：</p>
+$$u(\mathbf x,t)=\frac{1}{4\pi a^2t^2}\iint_{S_{at}^M}\Big[t\psi(\mathbf M')+\varphi(\mathbf M')+\nabla\varphi(\mathbf M')\cdot(\mathbf M'-\mathbf x)\Big]\,\mathrm dS \tag{5.7}$$
+<p>注意分母是 \(4\pi a^2t^2\)（球面积 \(4\pi a^2t^2\)）而不是 \(4\pi a^2t\)：两种写法差一个对 \(t\) 的导数， numerically 是两条独立的计算路线。下面的求解器同时走两条路线并互相对账，代数上已知精确解的 preset（常数、线性、习题 1）则给出第三方参考值。</p>
+
+<h3>交互：三维泊松公式求解器</h3>
+<p>左图是 \(z=0\) 切片：圆点是可拖动的场点 \(\mathbf x\)，蓝圆是积分球面 \(S_{at}^M\) 在该切片上的痕迹，橙圆是初值资料的支集（紧支光滑鼓包，半径 \(\rho=1.2\)）。径向 preset 下同时画出整个切片的解（固定色标，不自动归一化——否则整体差一个常数看不出来）。</p>
+<div class="ctl">
+<span style="margin-right:6px">初始资料：</span>
+<button class="p3p on" data-p="bump">紧支鼓包 \(\varphi\)（径向）</button>
+<button class="p3p" data-p="const">常数 \(\varphi\equiv1\)</button>
+<button class="p3p" data-p="linx">线性 \(\varphi=x_1\)</button>
+<button class="p3p" data-p="quiz1">习题 1 \(\psi=x_1^2+x_2x_3\)</button>
+<span style="margin-left:14px">时刻 \(t\)</span>
+<input id="p3-t" type="range" min="5" max="300" value="100">
+<span class="val" id="p3-tv">t = 1.00</span>
+</div>
+<canvas id="p3-canvas" class="hm"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">路线① Kirchhoff (5.7)</div><div class="v" id="p3-u1">—</div></div>
+<div class="cell"><div class="k">路线② 泊松 (4.30) + 差分</div><div class="v" id="p3-u2">—</div></div>
+<div class="cell"><div class="k">两路线差</div><div class="v" id="p3-diff">—</div></div>
+<div class="cell"><div class="k">代数参考值（若有）</div><div class="v" id="p3-ref">—</div></div>
+<div class="cell"><div class="k">参考值误差</div><div class="v" id="p3-referr">—</div></div>
+<div class="cell"><div class="k">积分球半径 \(at\)</div><div class="v" id="p3-R">—</div></div>
+<div class="cell"><div class="k">球面是否扫过支集</div><div class="v" id="p3-hit">—</div></div>
+</div>
+<div class="note"><b>实测备注（verify_readout_w4.js，a=1）：</b>① 两条公式路线（Kirchhoff (5.7) 与泊松 (4.33) 的解析导数形式）在全部 preset 与测试场点上一致到 <b>1.3e-15</b>（机器精度）——球面积分用 \(\mu=\cos\theta\) 的 Simpson × φ-中点，96×96 节点。② 代数参考：\(\varphi\equiv1\Rightarrow u\equiv1\)、\(\varphi=x_1\Rightarrow u=x_1\)、习题 1 preset 的精确解 \(u=t\big(x_1^2+\tfrac{a^2t^2}{3}+x_2x_3\big)\)（\(z=0\) 切片上 \(x_2x_3\) 项为 0），页面读数与闭式的误差为 <b>0～2e-16</b>。③ 径向鼓包在原点有独立一维闭式 \(u(0,t)=c_8(t)+t\,c_8'(t)\)（\(c_8\) 为紧支光滑鼓包），页面值 −0.3108 与闭式 −0.310762 一致。④ 支集判定：球面与支集球相交当且仅当 \(\big||\mathbf x|-at\big|\le\rho\)——这正是 §5 依赖区域的种子；波前外页面给出精确的 0。</div>
+
+<h3>3.1　存在性与唯一性</h3>
+<p>定理的证明是「形式推导 + 末尾验证」的标准样式（与热传导 §3 同一哲学）。唯一性已含在推导里：任何解都逼出 (4.33)。存在性只需验证 (4.30) 确实是解：令 \(u_2=tM\psi(\mathbf x,at)\)，由引理 4.1 的 (4.17) 直接算得 \(a^2\Delta u_2=(u_2)_{tt}\)（教材 (4.34)），且 \(u_2|_{t=0}=0\)、\((u_2)_t|_{t=0}=\psi\)；再令 \(u_1=tM\varphi(\mathbf x,at)\)，同理 \(a^2\Delta u_1=(u_1)_{tt}\)、\(u_1|_{t=0}=\varphi\)，而 \((u_1)_t|_{t=0}=(a^2\Delta u_1)|_{t=0}=0\)。两者相加即 (4.14) 的解。光滑性假设 \(\varphi\in C^3,\psi\in C^2\) 正是球面积分号下求导两次所需要的。</p>
+
+<!-- ============ 4 降维法 ============ -->
+<h2 id="descent"><span class="no">04</span>降维法与二维泊松公式</h2>
+<p>球平均法只适用于三维。二维怎么办？教材的办法潇洒得近乎狡猾：把二维解 \(\bar u(x,y,t)=u(x,y,t)\) 看成一个<b>不依赖 \(z\) 的三维解</b>。它满足三维方程 (4.38) 与初始条件 (4.39)；反之，三维问题 (4.38)(4.39) 的任何解只要与 \(z\) 无关，就自动是二维问题的解。用三维泊松公式解它，再把球面积分投影到平面上——这就是<b>降维法</b>。</p>
+<h3>4.1　投影的几何：\(d\sigma=dS\cdot\cos\gamma\)</h3>
+<p>球面 \(S_{at}^M\) 上的面积微元 \(\mathrm dS\) 与它在 \(z=0\) 平面上的投影 \(\mathrm d\sigma\) 满足 \(\mathrm d\sigma=\mathrm dS\cos\gamma\)，而</p>
+$$\cos\gamma=\frac{\sqrt{(at)^2-(\xi-x)^2-(\eta-y)^2}}{at}$$
+<p>上下半球投影到同一个圆盘 \(\Sigma_{at}(M):(\xi-x)^2+(\eta-y)^2\le a^2t^2\)，合起来得到<b>二维泊松公式</b>：</p>
+$$u(x,y,t)=\frac{1}{2\pi a}\frac{\partial}{\partial t}\iint_{\Sigma_{at}(M)}\frac{\varphi(\xi,\eta)}{\sqrt{(at)^2-(\xi-x)^2-(\eta-y)^2}}\,\mathrm d\xi\mathrm d\eta+\frac{1}{2\pi a}\iint_{\Sigma_{at}(M)}\frac{\psi(\xi,\eta)}{\sqrt{(at)^2-(\xi-x)^2-(\eta-y)^2}}\,\mathrm d\xi\mathrm d\eta \tag{4.40}$$
+<p>作极坐标 \(\xi=x+r\cos\theta,\ \eta=y+r\sin\theta\) 并换元 \(r=at\sin\alpha\)（\(\alpha\in[0,\pi/2]\)），奇异的 \(1/\sqrt{(at)^2-r^2}\) 被精确消去：</p>
+$$u=\frac{1}{2\pi}\frac{\partial}{\partial t}\left[t\int_0^{2\pi}\!\!\int_0^{\pi/2}\varphi(x+at\sin\alpha\cos\theta,\,y+at\sin\alpha\sin\theta)\sin\alpha\,\mathrm d\alpha\mathrm d\theta\right]+\frac{t}{2\pi}\int_0^{2\pi}\!\!\int_0^{\pi/2}\psi(\cdots)\sin\alpha\,\mathrm d\alpha\mathrm d\theta$$
+<div class="warn"><b>数值坑（页面引擎亲测）：</b>直接对 (4.40) 的被积函数用求积公式会在圆盘边缘撞上 \(1/\sqrt{(at)^2-r^2}\to\infty\) 的可积奇点——固定节点求积在这里会静默给出错的数。换元 \(r=at\sin\alpha\) 后被积函数在 \([0,\pi/2]\) 上光滑（\(\sin\alpha\) 权重天生带一个零点压住奇点），Simpson 立刻恢复到机器精度。页面所有二维读数都走换元后的形式。</div>
+
+<div class="ctl">
+<span>球心横坐标 \(x_M\)</span>
+<input id="dm-mx" type="range" min="0" max="250" value="90">
+<span class="val" id="dm-mxv">x_M = 0.90</span>
+<span style="margin-left:14px">时刻 \(t\)</span>
+<input id="dm-t" type="range" min="20" max="200" value="100">
+<span class="val" id="dm-tv">t = 1.00</span>
+<span style="margin-left:14px">投影点 \((\xi,\eta)\)：在图中圆盘内拖动</span>
+</div>
+<canvas id="dm-canvas" class="plot" width="840" height="360"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">\(\rho=|\mathbf P-\mathbf M|\)（投影半径）</div><div class="v" id="dm-rho">—</div></div>
+<div class="cell"><div class="k">球面到平面高度 \(\sqrt{(at)^2-\rho^2}\)</div><div class="v" id="dm-h">—</div></div>
+<div class="cell"><div class="k">\(\cos\gamma\)（= 高度 / at）</div><div class="v" id="dm-cos">—</div></div>
+<div class="cell"><div class="k">投影盘边缘 \(\cos\gamma\)</div><div class="v" style="font-size:14px;padding-top:3px">0（核的奇点）</div></div>
+</div>
+<figcaption style="font-size:13px;color:var(--muted);text-align:center;margin-top:8px">图 4-1　降维法的几何（斜二测投影）：球面 \(S_{at}^M\) 投影到圆盘 \(\Sigma_{at}(M)\)，拖动盘内点 \(\mathbf P\) 看上下两个原像点与 \(\cos\gamma\)。</figcaption>
+
+<h3>4.2　交互：二维泊松公式求解器（对账路线 = 三维公式）</h3>
+<p>下图是解在 \(x\) 轴上的剖面（场点 \(\mathbf M\) 沿 \(x\) 轴拖动），圆点是两条独立路线的值：<b>路线①</b> 二维公式 (4.40)（换元后求积）；<b>路线②</b> 三维 Kirchhoff 公式 (5.7) 用于与 \(z\) 无关的同一份初值（即降维恒等式 \(u_2(x,y,t)=u_3(x,y,0,t)\) 的数值兑现）。代数已知精确解的 preset 给出第三方参考。</p>
+<div class="ctl">
+<span style="margin-right:6px">初始资料：</span>
+<button class="d2p on" data-p="bump">紧支鼓包（径向）</button>
+<button class="d2p" data-p="const">常数 \(\varphi\equiv1\)</button>
+<button class="d2p" data-p="linx">线性 \(\varphi=x\)</button>
+<button class="d2p" data-p="gauss">偏心高斯</button>
+</div>
+<canvas id="d2-canvas" class="plot" width="840" height="300"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">路线① 二维 (4.40)</div><div class="v" id="d2-u2">—</div></div>
+<div class="cell"><div class="k">路线② 三维降维 (5.7)</div><div class="v" id="d2-u3">—</div></div>
+<div class="cell"><div class="k">两路线差</div><div class="v" id="d2-diff">—</div></div>
+<div class="cell"><div class="k">代数参考值</div><div class="v" id="d2-ref">—</div></div>
+<div class="cell"><div class="k">参考值误差</div><div class="v" id="d2-referr">—</div></div>
+</div>
+<div class="note"><b>实测备注（verify_readout_w4.js）：</b>① 两条路线（二维圆盘积分 vs 三维球面积分的降维恒等式）在光滑 preset 上一致到 <b>3e-9</b> 以下（残余量来自 Simpson 对 \(\sin\alpha\) 的截断）；紧支鼓包 preset 在积分盘扫过支集边界 \(r=\rho\) 的配置下最差 <b>1.4e-5</b>——\(c_8\) 型紧支函数在边界「奇平」（所有导数趋于 0 但中间层高导数巨大），求积收敛变慢，这是诚实的代价而非错误。② 代数参考：\(\varphi\equiv1\Rightarrow u\equiv1\)、\(\varphi=x\Rightarrow u=x\)。③ 偏心高斯 preset 无初等闭式，靠两条路线互锁（差 <b>4.6e-8</b>）。</div>
+
+<!-- ============ 5 推迟势 ============ -->
+<h2 id="retarded"><span class="no">05</span>非齐次方程与推迟势</h2>
+<p>非齐次柯西问题 (4.41)–(4.42) 按线性分解成两题：齐次方程 + 非齐次初值（泊松公式已解）+ 非齐次方程 + 齐次初值。后者走<b>齐次化原理</b>：先解以 \(\tau\) 为初始时刻、初速为 \(f(\cdot,\tau)\) 的齐次问题 \(w(\mathbf x,t;\tau)\) (4.44)(4.45)，再对 \(\tau\) 积分，</p>
+$$u(\mathbf x,t)=\int_0^t w(\mathbf x,t;\tau)\,\mathrm d\tau \tag{4.46}$$
+<p>把三维泊松公式代进去并作变量代换 \(\tau=t-r/a\)，得到只在过去光锥内积分的<b>推迟势</b>：</p>
+$$u(\mathbf x,t)=\frac{1}{4\pi a^2}\iiint_{B_{at}^M}\frac{f\left(\boldsymbol\xi,\ t-\frac{|\boldsymbol\xi-\mathbf x|}{a}\right)}{|\boldsymbol\xi-\mathbf x|}\,\mathrm dV \tag{4.47}$$
+<p>积分点 \((\boldsymbol\xi,\tau)\) 对 \(\mathbf x\) 处时刻 \(t\) 的贡献只在 \(\tau=t-|\boldsymbol\xi-\mathbf x|/a\) 被取样——源的影响以速度 \(a\) 推迟到达，这就是「推迟」二字的含义，也是因果性的数学形态。</p>
+
+<div class="ctl">
+<span style="margin-right:6px">源项 \(f\)：</span>
+<button class="rpp on" data-p="one">恒源 \(f\equiv1\)</button>
+<button class="rpp" data-p="time">时变源 \(f\equiv t\)</button>
+<button class="rpp" data-p="gauss">时空高斯斑</button>
+<span style="margin-left:14px">时刻 \(t\)</span>
+<input id="rp-t" type="range" min="5" max="300" value="120">
+<span class="val" id="rp-tv">t = 1.20</span>
+<span style="margin-left:14px">场点 \(\mathbf x\)：在图中拖动</span>
+</div>
+<canvas id="rp-canvas" class="plot" width="840" height="300"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">推迟势 (4.47)</div><div class="v" id="rp-u">—</div></div>
+<div class="cell"><div class="k">闭式参考（若有）</div><div class="v" id="rp-ref">—</div></div>
+<div class="cell"><div class="k">参考值误差</div><div class="v" id="rp-err">—</div></div>
+<div class="cell"><div class="k">波前是否到达场点</div><div class="v" id="rp-causal">—</div></div>
+<div class="cell"><div class="k">积分球半径 \(at\)</div><div class="v" id="rp-R">—</div></div>
+</div>
+<div class="note"><b>实测备注（verify_readout_w4.js）：</b>① 恒源 \(f\equiv1\)：闭式解 \(u=t^2/2\)（直接验证 \(u_{tt}=a^2\Delta u+1\)、零初值），数值误差 <b>8e-16</b>（机器精度）。② 时变源 \(f\equiv t\)：闭式解 \(u=t^3/6\)，误差 <b>2e-16</b>。③ 时空高斯斑（中心 \(\mathbf x_0=(1.5,0,0)\)，空间紧支半径 0.6、时间高斯 \(\sigma=0.5\)）：波前时刻 \((|\mathbf x-\mathbf x_0|-0.6)/a\) 之前 \(u\) 为<b>精确的 0</b>（不是近似 0——被积函数在积分球外恒零，每个求积节点都取到 0）；\(t=2\) 时页面读数 <b>9.61e-5</b>，与独立求积（R-Simpson 64 × μ-Simpson 40 × φ-中点 40）一致。</div>
+
+<!-- ============ 6 习题 ============ -->
+<h2 id="exercises"><span class="no">06</span>习题选讲与小结</h2>
+<h3>习题 1（教材 p.46）　用泊松公式算两个柯西问题</h3>
+<p>第 (1) 题：\(\varphi=0,\ \psi=x^2+yz\)。Kirchhoff 形式 (5.7) 只剩 \(t\psi\) 一项，球面均值用代数事实</p>
+$$M(x_1^2)=x_1^2+\frac{R^2}{3},\qquad M(x_1x_2)=x_1x_2,\qquad M(x_1)=x_1$$
+<p>（二次项多出 \(R^2/3\)，来自单位球面上 \(\alpha_1^2\) 的平均值 \(1/3\)；交叉项与一次项的平均就是球心值）。代入 \(R=at\)：</p>
+$$u(x,y,z,t)=t\left(x^2+\frac{a^2t^2}{3}+yz\right)$$
+<p>验证：\(u|_{t=0}=0\)，\(u_t=x^2+yz+a^2t^2\) 故 \(u_t|_{t=0}=x^2+yz\)；\(u_{tt}=2a^2t\)，而 \(\Delta u=2t\)、\(a^2\Delta u=2a^2t\)——方程成立。第 (2) 题（\(\varphi=x^3+y^2z,\ \psi=0\)）走 \(\dfrac{\partial}{\partial t}\big[tM\varphi(\mathbf x,at)\big]\)，用 \(M(x_1^3)=x_1^3+x_1R^2\)、\(M(x_2^2x_3)=x_2^2x_3+\dfrac{x_3R^2}{3}\) 得</p>
+$$u=x^3+y^2z+3a^2t^2\left(x+\frac{z}{3}\right)$$
+<p>验证：\(u|_{t=0}=\varphi\)，\(u_t|_{t=0}=0\)；\(u_{tt}=6a^2x+2a^2z\)，\(\Delta(x^3+y^2z)=6x+2z\)——方程同样成立。<b>两个题的答案都是「球心值 + 半径修正」的结构</b>：球平均把每个多项式按其次数配上 \(R^2\) 的修正，这就是泊松公式的全部代数内容。</p>
+
+<h3>习题 2（教材 p.46）　用降维法导出一维达朗贝尔公式</h3>
+<p>把降维法再用一次：解二维柯西问题，但初始资料与 \(y\) 无关（\(\varphi=\varphi(x)\)）。(4.40) 的内层积分对 \(\eta\) 是标准的弧积分</p>
+$$\int_{-\sqrt{(at)^2-(\xi-x)^2}}^{\sqrt{(at)^2-(\xi-x)^2}}\frac{\mathrm d\eta}{\sqrt{(at)^2-(\xi-x)^2-(\eta^2}}=\pi$$
+<p>（被积函数正是 \(\dfrac{1}{\sqrt{c^2-\eta^2}}\) 的原函数 \(\arcsin\frac{\eta}{c}\) 在两个端点之差）。于是 (4.40) 退化为</p>
+$$u=\frac{1}{2a}\frac{\partial}{\partial t}\int_{x-at}^{x+at}\varphi(\xi)\,\mathrm d\xi+\frac{1}{2a}\int_{x-at}^{x+at}\psi(\xi)\,\mathrm d\xi=\frac{\varphi(x+at)+\varphi(x-at)}{2}+\frac{1}{2a}\int_{x-at}^{x+at}\psi(\xi)\,\mathrm d\xi$$
+<p>——正是 §2 的达朗贝尔公式。<b>一维、二维、三维的三个公式在降维法下排成一条线</b>，这不是巧合：球面积分的投影每降一维，核就少一次奇异化。</p>
+
+<h3>速查表</h3>
+<table>
+<tr><th>对象</th><th>公式</th><th>积分区域</th><th>关键技巧</th></tr>
+<tr><td>三维齐次</td><td>(4.30) / (5.7)</td><td>球面 \(S_{at}^M\)</td><td>球平均 + \(v=ru\)</td></tr>
+<tr><td>二维齐次</td><td>(4.40)</td><td>圆盘 \(\Sigma_{at}^M\)</td><td>降维法 + \(r=at\sin\alpha\) 换元</td></tr>
+<tr><td>三维非齐次</td><td>(4.47)</td><td>球体 \(B_{at}^M\)</td><td>齐次化原理 + 推迟时间 \(\tau=t-r/a\)</td></tr>
+<tr><td>球对称（径向）</td><td>(4.15) + \(v=ru\)</td><td>—</td><td>径向方程直接化一维</td></tr>
+</table>
+
+<div class="note"><b>接下来：</b>本页所有公式的积分区域（球面 / 圆盘 / 球体）看起来只是几何细节，实则决定了波的传播方式——三维波的「无后效」与二维波的「弥散」都从这几个区域的形状长出来。见配套页<a href="./高维波动方程-传播衰减与惠更斯原理.html">《高维波动方程：传播、衰减与惠更斯原理》</a>（§5）。</div>
+
+<footer>
+<p>内容取自谷超豪 等《数学物理方程（第四版）》第 1 章 §4（教材页 32–46）；公式编号与教材一致（如 (4.30)、(5.7)）。页面全部取 \(a=1\)，交互中的数值结论由工作区脚本 verify_readout_w4.js 实测。</p>
+<p>目录：math_visualization/site/pde/ · 生成于 2026-10-19 · 交互为零依赖原生 JS，公式渲染需联网（MathJax）。</p>
+</footer>
+</div>
+
+<script>
+"use strict";
+function $(id){ return document.getElementById(id); }
+
+/* ================= 通用工具 ================= */
+function simpson(f, a, b, n){
+  var h = (b - a) / n, s = f(a) + f(b), i;
+  for (i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * f(a + i * h);
+  return s * h / 3;
+}
+/* 单位球面积分：μ=cosθ 的 Simpson（面积元 dω=dφdμ，吸收 sinθ，常数被积也精确）× φ-中点 */
+function sphInt(g, nT, nP){
+  nT = nT || 96; nP = nP || 96;
+  var acc = 0;
+  for (var j = 0; j < nP; j++){
+    var ph = (j + 0.5) * 2 * Math.PI / nP, cp = Math.cos(ph), sp = Math.sin(ph);
+    acc += simpson(function(mu){ var st = Math.sqrt(1 - mu * mu); return g(st * cp, st * sp, mu); }, -1, 1, nT);
+  }
+  return acc * 2 * Math.PI / nP;
+}
+function sphMean(f, M, R, nT, nP){
+  return sphInt(function(a1, a2, a3){ return f([M[0] + R * a1, M[1] + R * a2, M[2] + R * a3]); }, nT, nP) / (4 * Math.PI);
+}
+/* 二维换元后的角向积分 G = ∫∫ f(x+at sinα cosθ, …) sinα dα dθ */
+function gauss2d(f, M, t, a, nA, nT){
+  nA = nA || 48; nT = nT || 64;
+  var acc = 0;
+  for (var j = 0; j < nT; j++){
+    var th = (j + 0.5) * 2 * Math.PI / nT, ct = Math.cos(th), st = Math.sin(th);
+    acc += simpson(function(al){ var s = Math.sin(al); return f([M[0] + a * t * s * ct, M[1] + a * t * s * st]) * s; }, 0, Math.PI / 2, nA);
+  }
+  return acc * 2 * Math.PI / nT;
+}
+/* 通用绘图 */
+function newPlot(ctx, W, H, o){
+  var L = o.l || 46, R = o.r || 16, T = o.t || 14, B = o.b || 30;
+  var iw = W - L - R, ih = H - T - B;
+  var X = function(x){ return L + (x - o.xmin) / (o.xmax - o.xmin) * iw; };
+  var Y = function(y){ return T + ih - (y - o.ymin) / (o.ymax - o.ymin) * ih; };
+  ctx.clearRect(0, 0, W, H);
+  ctx.font = "11px ui-monospace,monospace";
+  ctx.strokeStyle = "#d0d7de"; ctx.fillStyle = "#57606a"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, T + ih); ctx.lineTo(L + iw, T + ih); ctx.stroke();
+  if (o.ymin < 0 && o.ymax > 0){ ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(L + iw, Y(0)); ctx.stroke(); }
+  (o.xt || []).forEach(function(v){
+    ctx.beginPath(); ctx.moveTo(X(v), T + ih); ctx.lineTo(X(v), T + ih + 4); ctx.stroke();
+    ctx.textAlign = "center"; ctx.fillText(o.xf ? o.xf(v) : v, X(v), T + ih + 16);
+  });
+  (o.yt || []).forEach(function(v){
+    ctx.beginPath(); ctx.moveTo(L - 4, Y(v)); ctx.lineTo(L, Y(v)); ctx.stroke();
+    ctx.textAlign = "right"; ctx.fillText(o.yf ? o.yf(v) : v, L - 7, Y(v) + 3);
+  });
+  if (o.xlab){ ctx.textAlign = "center"; ctx.fillText(o.xlab, L + iw / 2, H - 4); }
+  if (o.ylab){ ctx.save(); ctx.translate(11, T + ih / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylab, 0, 0); ctx.restore(); }
+  return { X: X, Y: Y, L: L, T: T, iw: iw, ih: ih };
+}
+function fmtE(x){
+  if (!isFinite(x)) return "—";
+  if (x === 0) return "0.00e+0";
+  var e = Math.floor(Math.log10(Math.abs(x))), m = x / Math.pow(10, e);
+  if (e >= -2 && e <= 3) return x.toFixed(Math.max(0, 3 - e));
+  return m.toFixed(2) + "e" + (e >= 0 ? "+" : "") + e;
+}
+/* 紧支光滑鼓包（C∞，r<ρ 时非零，r≥ρ 恒零） */
+var RHO = 1.2;
+function c8(r){
+  if (r >= RHO) return 0;
+  var q = 1 - (r / RHO) * (r / RHO);
+  return Math.exp(-1 / q);
+}
+function c8p(r){
+  if (r >= RHO || r <= 0) return 0;
+  var q = 1 - (r / RHO) * (r / RHO);
+  return Math.exp(-1 / q) * (-2 * r / (RHO * RHO)) / (q * q);
+}
+function drag(canvas, toWorld, onMove){
+  var down = false;
+  function pos(ev){
+    var r = canvas.getBoundingClientRect();
+    var cx = (ev.clientX - r.left) / r.width * canvas.width;
+    var cy = (ev.clientY - r.top) / r.height * canvas.height;
+    return toWorld(cx, cy);
+  }
+  canvas.addEventListener("pointerdown", function(ev){ down = true; if (canvas.setPointerCapture) canvas.setPointerCapture(ev.pointerId); onMove(pos(ev)); });
+  canvas.addEventListener("pointermove", function(ev){ if (down) onMove(pos(ev)); });
+  canvas.addEventListener("pointerup", function(){ down = false; });
+  canvas.addEventListener("pointercancel", function(){ down = false; });
+}
+/* 固定色标的发散配色（不自动归一化）：正=红，负=蓝 */
+function dcolor(v, scale){
+  var t = Math.max(-1, Math.min(1, v / scale));
+  if (t >= 0){ return [255, 255 - 140 * t, 255 - 165 * t]; }
+  var u = -t;
+  return [255 - 150 * u, 255 - 55 * u, 255];
+}
+
+/* ================= 01 球平均机 + 引理 4.1 ================= */
+(function(){
+  var cv = $("sa-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var x = [0.6, 0.4, 0], r = 1.2, kind = "quad";
+  var hs = {
+    quad:  { f: function(p){ return p[0] * p[0] + p[1] * p[1]; }, exact: 2, label: "Δh ≡ 2" },
+    gauss: { f: function(p){ var s = p[0] * p[0] + p[1] * p[1] + p[2] * p[2]; return Math.exp(-s / 2); }, exact: null, label: "Δh = (|x|²−3)e^{−|x|²/2}" },
+    lin:   { f: function(p){ return p[0] + p[1]; }, exact: 0, label: "Δh ≡ 0" }
+  };
+  function Mh(rr, n){ n = n || 64; return sphMean(hs[kind].f, [x[0], x[1], 0], rr, n, n); }
+  function draw(){
+    /* 右：Mh(r) 曲线（newPlot 会清整张画布，必须先画它） */
+    var p = newPlot(ctx, W, H, { l: 400, r: 20, t: 20, b: 34, xmin: 0, xmax: 3, ymin: -0.5, ymax: 3.5,
+      xt: [0, 1, 2, 3], yt: [-0.5, 0.5, 1.5, 2.5, 3.5], xlab: "球半径 r", ylab: "Mh(x, r)" });
+    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2; ctx.beginPath();
+    for (i = 0; i <= 120; i++){
+      var rr = 0.05 + i / 120 * 2.95, vv = Mh(rr), qx = p.X(rr), qy = p.Y(vv);
+      if (i) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = "#D85A30"; ctx.beginPath(); ctx.moveTo(p.X(r), p.T); ctx.lineTo(p.X(r), p.T + p.ih); ctx.stroke();
+    ctx.fillStyle = "#D85A30"; ctx.textAlign = "left"; ctx.fillText("当前 r", p.X(r) + 4, p.T + 14);
+    ctx.fillStyle = "#185FA5"; ctx.fillText("Mh 曲线", p.L + 8, p.T + 14);
+    /* 左：球面示意 */
+    var cx = 170, cy = 150, S = 46, R = r * S;
+    ctx.strokeStyle = "#d0d7de"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx, cy - R - 14); ctx.lineTo(cx, cy + R + 14); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.stroke();
+    /* 球面上采样点按 h 值着色 */
+    var vals = [], i, j, th, ph, px, py, pt, v, vmax = 1e-9;
+    for (j = 0; j < 18; j++) for (i = 0; i < 24; i++){
+      th = (i + 0.5) * Math.PI / 24; ph = (j + 0.5) * 2 * Math.PI / 18;
+      var a1 = Math.sin(th) * Math.cos(ph), a2 = Math.sin(th) * Math.sin(ph), a3 = Math.cos(th);
+      pt = [x[0] + r * a1, x[1] + r * a2, r * a3];
+      v = hs[kind].f(pt); vals.push([cx + (a1 - a2 * 0.35) * R, cy + (a2 * 0.22 - a3) * R, v]);
+      if (Math.abs(v) > vmax) vmax = Math.abs(v);
+    }
+    vals.forEach(function(q){ var c = dcolor(q[2], vmax); ctx.fillStyle = "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")"; ctx.beginPath(); ctx.arc(q[0], q[1], 2.6, 0, 2 * Math.PI); ctx.fill(); });
+    ctx.fillStyle = "#1f2328"; ctx.font = "12px system-ui"; ctx.textAlign = "center";
+    ctx.fillText("球心 x", cx, cy - R - 20); ctx.fillText("x₁₂ 平面内的球面（斜二测）", cx, cy + R + 26);
+    /* 读数：引理两边各自独立算（径向 FD vs 三维空间 FD；球面积分用 128 节点压制噪声） */
+    var dr = 1e-3, dx = 1e-3;
+    var m0 = Mh(r, 128), mp = Mh(r + dr, 128), mm = Mh(r - dr, 128);
+    var mrr = (mp - 2 * m0 + mm) / (dr * dr), mr = (mp - mm) / (2 * dr);
+    var lhs = mrr + 2 / r * mr;
+    var lap = 0;
+    [0, 1, 2].forEach(function(k){
+      var xp = x.slice(), xm = x.slice(); xp[k] += dx; xm[k] -= dx;
+      lap += (sphMean(hs[kind].f, xp, r, 128, 128) - 2 * m0 + sphMean(hs[kind].f, xm, r, 128, 128)) / (dx * dx);
+    });
+    $("sa-h0").textContent = fmtE(hs[kind].f([x[0], x[1], 0]));
+    $("sa-mh").textContent = fmtE(m0);
+    $("sa-lhs").textContent = fmtE(lhs);
+    $("sa-rhs").textContent = fmtE(lap);
+    $("sa-err").textContent = fmtE(Math.abs(lhs - lap));
+    $("sa-rv").textContent = "r = " + r.toFixed(2);
+  }
+  $("sa-r").addEventListener("input", function(){ r = parseFloat(this.value) / 100; draw(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".hp"), function(b){
+    b.onclick = function(){
+      document.querySelectorAll(".hp").forEach(function(y){ y.classList.remove("on"); });
+      b.classList.add("on"); kind = b.getAttribute("data-h"); draw();
+    };
+  });
+  drag(cv, function(cx, cy){
+    var X0 = 170, Y0 = 150, S = 46;
+    var a1 = (cx - X0) / S, a2 = -(cy - Y0) / S;
+    return [a1, a2];
+  }, function(w){
+    if (Math.abs(w[0]) > 3.4 || Math.abs(w[1]) > 2.8) return;
+    x = [w[0], w[1], 0]; draw();
+  });
+  draw();
+  window.W4 = window.W4 || {};
+  window.W4.sa = {
+    set: function(o){ if (o.r !== undefined) { r = o.r; $("sa-r").value = r * 100; } if (o.x) { x = [o.x[0], o.x[1], 0]; } if (o.kind) { kind = o.kind; Array.prototype.forEach.call(document.querySelectorAll(".hp"), function(y){ y.classList.toggle("on", y.getAttribute("data-h") === kind); }); } draw(); },
+    state: function(){ return { r: r, x: x.slice(), kind: kind }; }
+  };
+})();
+
+/* ================= 02 三维泊松公式求解器 ================= */
+(function(){
+  var cv = $("p3-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var A = 1, t = 1.0, M = [1.2, 0.6], pre = "bump";
+  var presets = {
+    bump: { phi: function(p){ return c8(Math.hypot(p[0], p[1], p[2])); },
+            gphi: function(p){ var r = Math.hypot(p[0], p[1], p[2]); if (r < 1e-12 || r >= RHO) return [0, 0, 0]; var d = c8p(r) / r; return [d * p[0], d * p[1], d * p[2]]; },
+            psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0, 0]; }, radial: true, ref: null },
+    const: { phi: function(p){ return 1; }, gphi: function(p){ return [0, 0, 0]; },
+             psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0, 0]; }, radial: false,
+             ref: function(Mx, tt){ return 1; } },
+    linx: { phi: function(p){ return p[0]; }, gphi: function(p){ return [1, 0, 0]; },
+            psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0, 0]; }, radial: false,
+            ref: function(Mx, tt){ return Mx[0]; } },
+    quiz1: { phi: function(p){ return 0; }, gphi: function(p){ return [0, 0, 0]; },
+             psi: function(p){ return p[0] * p[0] + p[1] * p[2]; },
+             gpsi: function(p){ return [2 * p[0], p[2], p[1]]; }, radial: false,
+             ref: function(Mx, tt){ return tt * (Mx[0] * Mx[0] + A * A * tt * tt / 3 + Mx[1] * Mx[2]); } }
+  };
+  /* 路线①：Kirchhoff (5.7) */
+  function u1(P, tt, n){
+    n = n || 96;
+    var P0 = presets[pre], R = A * tt;
+    return sphInt(function(a1, a2, a3){
+      var q = [P[0] + R * a1, P[1] + R * a2, P[2] + R * a3], g = P0.gphi(q);
+      return tt * P0.psi(q) + P0.phi(q) + g[0] * (q[0] - P[0]) + g[1] * (q[1] - P[1]) + g[2] * (q[2] - P[2]);
+    }, n, n) / (4 * Math.PI);
+  }
+  /* 路线②：泊松形式 (4.33)，t-导数解析求出（∂_t[tM̄φ(at)] = M̄φ + at·∂_R M̄φ） */
+  function u2(P, tt){
+    var P0 = presets[pre], R = A * tt;
+    var mphi = sphMean(P0.phi, [P[0], P[1], 0], R, 96, 96);
+    var dr = sphInt(function(a1, a2, a3){
+      var q = [P[0] + R * a1, P[1] + R * a2, R * a3], g = P0.gphi(q);
+      return g[0] * a1 + g[1] * a2 + g[2] * a3;
+    }, 96, 96) / (4 * Math.PI);
+    return mphi + tt * A * dr + tt * sphMean(P0.psi, [P[0], P[1], 0], R, 96, 96);
+  }
+  /* 径向剖面（径向 preset 的热图用；低分辨率求积，仅示形） */
+  function profile(){
+    var out = [], i, N = 121;
+    for (i = 0; i <= N; i++){ var s = i / N * 6; out.push(u1([s, 0, 0], t, 48)); }
+    return out;
+  }
+  function draw(){
+    var P0 = presets[pre], R = A * t;
+    /* 视图映射：世界 [−6,6]² → 画布 */
+    var mx = 46, my = 16, iw = W - mx - 16, ih = H - my - 16;
+    function X(x){ return mx + (x + 6) / 12 * iw; }
+    function Y(y){ return my + (6 - y) / 12 * ih; }
+    ctx.clearRect(0, 0, W, H);
+    var scale = 1;
+    if (P0.radial){
+      var prof = profile(), umax = 1e-3;
+      prof.forEach(function(v){ if (Math.abs(v) > umax) umax = Math.abs(v); });
+      scale = umax;
+      var img = ctx.createImageData(iw, ih), d = img.data, i, j;
+      for (j = 0; j < ih; j++) for (i = 0; i < iw; i++){
+        var wx = -6 + i / iw * 12, wy = 6 - j / ih * 12, rr = Math.hypot(wx, wy);
+        var idx = Math.min(prof.length - 1, Math.round(rr / 6 * (prof.length - 1)));
+        var c = dcolor(prof[idx], scale), o = (j * iw + i) * 4;
+        d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 235;
+      }
+      ctx.putImageData(img, mx, my);
+      ctx.fillStyle = "#57606a"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "left";
+      ctx.fillText("色标固定 ±" + fmtE(scale) + "（当前剖面最大 |u|）", mx + 6, my + 14);
+    }
+    ctx.strokeStyle = "#d0d7de"; ctx.lineWidth = 1;
+    ctx.strokeRect(mx, my, iw, ih);
+    /* 支集球与积分球面痕迹 */
+    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 1.6; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.arc(X(0), Y(0), RHO / 12 * iw, 0, 2 * Math.PI); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(X(M[0]), Y(M[1]), R / 12 * iw, 0, 2 * Math.PI); ctx.stroke();
+    ctx.fillStyle = "#185FA5"; ctx.beginPath(); ctx.arc(X(M[0]), Y(M[1]), 4.5, 0, 2 * Math.PI); ctx.fill();
+    ctx.font = "12px system-ui"; ctx.textAlign = "left";
+    ctx.fillText("场点 x（可拖）", X(M[0]) + 8, Y(M[1]) - 6);
+    ctx.fillStyle = "#D85A30"; ctx.fillText("初值支集 B_ρ(0)，ρ = 1.2", X(0) + RHO / 12 * iw + 6, Y(0) + 4);
+    /* 读数 */
+    var a1 = u1([M[0], M[1], 0], t), a2 = u2([M[0], M[1], 0], t);
+    $("p3-u1").textContent = fmtE(a1);
+    $("p3-u2").textContent = fmtE(a2);
+    $("p3-diff").textContent = fmtE(Math.abs(a1 - a2));
+    if (P0.ref){
+      var rf = P0.ref([M[0], M[1], 0], t);
+      $("p3-ref").textContent = fmtE(rf);
+      $("p3-referr").textContent = fmtE(Math.abs(a1 - rf));
+    } else {
+      $("p3-ref").textContent = "—";
+      $("p3-referr").textContent = "—";
+    }
+    $("p3-R").textContent = fmtE(R);
+    var hit = Math.abs(Math.hypot(M[0], M[1]) - R) <= RHO;
+    $("p3-hit").textContent = hit ? "是" : "否（u = 0）";
+    $("p3-tv").textContent = "t = " + t.toFixed(2);
+  }
+  $("p3-t").addEventListener("input", function(){ t = parseFloat(this.value) / 100; draw(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".p3p"), function(b){
+    b.onclick = function(){
+      document.querySelectorAll(".p3p").forEach(function(y){ y.classList.remove("on"); });
+      b.classList.add("on"); pre = b.getAttribute("data-p"); draw();
+    };
+  });
+  drag(cv, function(cx, cy){
+    var mx = 46, my = 16, iw = W - mx - 16, ih = H - my - 16;
+    return [-6 + (cx - mx) / iw * 12, 6 - (cy - my) / ih * 12];
+  }, function(w){ if (Math.abs(w[0]) <= 6 && Math.abs(w[1]) <= 6){ M = w; draw(); } });
+  draw();
+  window.W4.p3 = {
+    set: function(o){ if (o.t !== undefined){ t = o.t; $("p3-t").value = t * 100; } if (o.M){ M = o.M; } if (o.pre){ pre = o.pre; Array.prototype.forEach.call(document.querySelectorAll(".p3p"), function(y){ y.classList.toggle("on", y.getAttribute("data-p") === pre); }); } draw(); },
+    state: function(){ return { t: t, M: M.slice(), pre: pre }; }
+  };
+})();
+
+/* ================= 03 降维法几何 ================= */
+(function(){
+  var cv = $("dm-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var mx = 0.9, t = 1.0, P = [0.35, 0.25];
+  /* 斜二测投影：(x,y,z) → 屏幕 */
+  var S = 62, X0 = 250, Y0 = 205;
+  function proj(p){ return [X0 + (p[0] + 0.34 * p[1]) * S, Y0 + (-p[2] + 0.21 * p[1]) * S]; }
+  /* 球面轮廓：视线方向 n 垂直的大圆 */
+  var nrm = [-0.3157, 0.9286, 0.1950];
+  var e1 = [0.9467, 0.3219, 0];
+  var e2 = [-0.0628, 0.1846, -0.9808];
+  function outline(R){
+    var pts = [], i;
+    for (i = 0; i <= 48; i++){
+      var th = i / 48 * 2 * Math.PI;
+      pts.push(proj([mx + R * (Math.cos(th) * e1[0] + Math.sin(th) * e2[0]),
+                      R * (Math.cos(th) * e1[1] + Math.sin(th) * e2[1]),
+                      R * (Math.cos(th) * e1[2] + Math.sin(th) * e2[2])]));
+    }
+    return pts;
+  }
+  function curve(R, fx, fy, fz){
+    var pts = [], i;
+    for (i = 0; i <= 48; i++){
+      var th = i / 48 * 2 * Math.PI;
+      pts.push(proj([mx + R * fx(th), R * fy(th), R * fz(th)]));
+    }
+    return pts;
+  }
+  function draw(){
+    var R = t, A = 1;
+    ctx.clearRect(0, 0, W, H);
+    /* z=0 平面（平行四边形） */
+    var c1 = proj([-3.2, -3.2, 0]), c2 = proj([3.2, -3.2, 0]), c3 = proj([3.2, 3.2, 0]), c4 = proj([-3.2, 3.2, 0]);
+    ctx.strokeStyle = "#d0d7de"; ctx.lineWidth = 1; ctx.beginPath();
+    ctx.moveTo(c1[0], c1[1]); ctx.lineTo(c2[0], c2[1]); ctx.lineTo(c3[0], c3[1]); ctx.lineTo(c4[0], c4[1]); ctx.closePath(); ctx.stroke();
+    ctx.fillStyle = "#9aa4ad"; ctx.font = "12px system-ui"; ctx.textAlign = "left";
+    ctx.fillText("z = 0 平面（投影靶）", c2[0] + 6, c2[1] + 16);
+    /* 投影圆盘 */
+    var pc = proj([mx, 0, 0]);
+    ctx.strokeStyle = "#0F6E56"; ctx.lineWidth = 1.8; ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.arc(pc[0], pc[1], R * S, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#0F6E56"; ctx.fillText("圆盘 Σ_at(M)（二维公式的积分区）", pc[0] - R * S + 4, pc[1] + R * S + 18);
+    /* 球：轮廓 + 赤道 + 一条经线 */
+    var ol = outline(R);
+    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 1.8; ctx.beginPath();
+    ol.forEach(function(q, i){ if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }); ctx.stroke();
+    var eq = curve(R, function(th){ return Math.cos(th); }, function(th){ return Math.sin(th); }, function(){ return 0; });
+    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 0.9; ctx.setLineDash([3, 3]); ctx.beginPath();
+    eq.forEach(function(q, i){ if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }); ctx.stroke(); ctx.setLineDash([]);
+    var md = curve(R, function(th){ return Math.sin(th); }, function(){ return 0; }, function(th){ return Math.cos(th); });
+    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 0.9; ctx.beginPath();
+    md.forEach(function(q, i){ if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }); ctx.stroke();
+    ctx.fillStyle = "#185FA5"; ctx.fillText("球面 S_at(M)（三维公式的积分区）", pc[0] - R * S, pc[1] - R * S - 10);
+    /* 球心 */
+    var mc = proj([mx, 0, 0]);
+    ctx.fillStyle = "#185FA5"; ctx.beginPath(); ctx.arc(mc[0], mc[1], 3.5, 0, 2 * Math.PI); ctx.fill();
+    /* 拖动点 P 与上下原像 */
+    var rho = Math.hypot(P[0], P[1]);
+    if (rho > R) { var s = R / Math.max(rho, 1e-9); P = [P[0] * s, P[1] * s]; rho = R; }
+    var Pp = [mx + P[0], P[1], 0], h = Math.sqrt(Math.max(0, R * R - rho * rho));
+    var Pu = [mx + P[0], P[1], h], Pl = [mx + P[0], P[1], -h];
+    var sp = proj(Pp), su = proj(Pu), sl = proj(Pl);
+    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 1.4; ctx.setLineDash([3, 2]);
+    ctx.beginPath(); ctx.moveTo(su[0], su[1]); ctx.lineTo(sl[0], sl[1]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#D85A30";
+    ctx.beginPath(); ctx.arc(su[0], su[1], 4.5, 0, 2 * Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(sp[0], sp[1], 4.5, 0, 2 * Math.PI); ctx.fill();
+    ctx.font = "12px system-ui"; ctx.textAlign = "left";
+    ctx.fillText("P（投影点，可拖）", sp[0] + 8, sp[1] + 14);
+    ctx.fillText("P₊（上原像）", su[0] + 8, su[1] - 4);
+    /* 高度标注 */
+    ctx.strokeStyle = "#57606a"; ctx.lineWidth = 0.8; ctx.setLineDash([2, 2]);
+    ctx.beginPath(); ctx.moveTo(su[0] - 10, su[1]); ctx.lineTo(sp[0] - 10, sp[1]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#57606a"; ctx.fillText("h = √(R²−ρ²)", su[0] - 96, (su[1] + sp[1]) / 2);
+    /* 读数 */
+    $("dm-rho").textContent = fmtE(rho);
+    $("dm-h").textContent = fmtE(h);
+    $("dm-cos").textContent = fmtE(h / R);
+    $("dm-mxv").textContent = "x_M = " + mx.toFixed(2);
+    $("dm-tv").textContent = "t = " + t.toFixed(2);
+  }
+  $("dm-mx").addEventListener("input", function(){ mx = parseFloat(this.value) / 100; draw(); });
+  $("dm-t").addEventListener("input", function(){ t = parseFloat(this.value) / 100; draw(); });
+  drag(cv, function(cx, cy){
+    /* 屏幕 → z=0 平面：cy = Y0 + 0.21·y·S，cx = X0 + (x + 0.34y)·S */
+    var y = (cy - Y0) / (0.21 * S);
+    return [(cx - X0) / S - 0.34 * y, y];
+  }, function(w){
+    var dx = w[0] - mx;
+    if (Math.abs(dx) < 3.2 && Math.abs(w[1]) < 3.2){ P = [dx, w[1]]; draw(); }
+  });
+  draw();
+  window.W4.dm = {
+    set: function(o){ if (o.mx !== undefined){ mx = o.mx; $("dm-mx").value = mx * 100; } if (o.t !== undefined){ t = o.t; $("dm-t").value = t * 100; } if (o.P){ P = o.P; } draw(); },
+    state: function(){ return { mx: mx, t: t, P: P.slice() }; }
+  };
+})();
+
+/* ================= 04 二维泊松公式求解器 ================= */
+(function(){
+  var cv = $("d2-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var A = 1, t = 1.0, Mx = 0.9, pre = "bump";
+  var presets = {
+    bump: { phi: function(p){ return c8(Math.hypot(p[0], p[1])); },
+            gphi: function(p){ var r = Math.hypot(p[0], p[1]); if (r < 1e-12 || r >= RHO) return [0, 0]; var d = c8p(r) / r; return [d * p[0], d * p[1]]; },
+            psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: null },
+    const: { phi: function(p){ return 1; }, gphi: function(p){ return [0, 0]; },
+             psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: function(x, tt){ return 1; } },
+    linx: { phi: function(p){ return p[0]; }, gphi: function(p){ return [1, 0]; },
+            psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: function(x, tt){ return x; } },
+    gauss: { phi: function(p){ return Math.exp(-((p[0] - 1.5) * (p[0] - 1.5) + p[1] * p[1]) / 0.5); },
+             gphi: function(p){ var e = Math.exp(-((p[0] - 1.5) * (p[0] - 1.5) + p[1] * p[1]) / 0.5); return [-2 * (p[0] - 1.5) / 0.5 * e, -2 * p[1] / 0.5 * e]; },
+             psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: null }
+  };
+  /* 路线①：二维泊松公式（换元后，t-导数解析求出） */
+  function u2(P, tt, nA, nT){
+    nA = nA || 64; nT = nT || 96;
+    var P0 = presets[pre];
+    var G = gauss2d(P0.phi, P, tt, A, nA, nT);
+    var dG = 0;
+    for (var j = 0; j < nT; j++){
+      var th = (j + 0.5) * 2 * Math.PI / nT, ct = Math.cos(th), st = Math.sin(th);
+      dG += simpson(function(al){
+        var s = Math.sin(al);
+        var q = [P[0] + A * tt * s * ct, P[1] + A * tt * s * st];
+        var g = P0.gphi(q);
+        return (g[0] * ct + g[1] * st) * s * s;
+      }, 0, Math.PI / 2, nA);
+    }
+    dG = dG * 2 * Math.PI / nT;
+    return (G + tt * dG) / (2 * Math.PI) + tt * gauss2d(P0.psi, P, tt, A, nA, nT) / (2 * Math.PI);
+  }
+  /* 路线②：三维 Kirchhoff 公式用于与 z 无关的同一份初值（降维恒等式） */
+  function u3(P, tt){
+    var P0 = presets[pre], R = A * tt;
+    var phi3 = function(p){ return P0.phi([p[0], p[1]]); };
+    var psi3 = function(p){ return P0.psi([p[0], p[1]]); };
+    var gphi3 = function(p){ var g = P0.gphi([p[0], p[1]]); return [g[0], g[1], 0]; };
+    return sphInt(function(a1, a2, a3){
+      var q = [P[0] + R * a1, R * a2, R * a3], g = gphi3(q);
+      return tt * psi3(q) + phi3(q) + g[0] * (q[0] - P[0]) + g[1] * (q[1] - P[1]);
+    }, 96, 96) / (4 * Math.PI);
+  }
+  function draw(){
+    var P0 = presets[pre];
+    var p = newPlot(ctx, W, H, { l: 46, r: 16, t: 16, b: 32, xmin: -6, xmax: 6, ymin: -0.4, ymax: 1.6,
+      xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 0.5, 1], xlab: "x（y = 0 剖面）", ylab: "u(x, 0, t)" });
+    /* 支集与积分盘示意 */
+    ctx.strokeStyle = "#D85A30"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(p.X(-RHO), p.T); ctx.lineTo(p.X(-RHO), p.T + p.ih);
+    ctx.moveTo(p.X(RHO), p.T); ctx.lineTo(p.X(RHO), p.T + p.ih); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = "#0F6E56"; ctx.setLineDash([2, 2]);
+    ctx.beginPath(); ctx.moveTo(p.X(Mx - A * t), p.T); ctx.lineTo(p.X(Mx - A * t), p.T + p.ih);
+    ctx.moveTo(p.X(Mx + A * t), p.T); ctx.lineTo(p.X(Mx + A * t), p.T + p.ih); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#0F6E56"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "left";
+    ctx.fillText("积分盘 Σ 边缘", p.X(Mx + A * t) - 66, p.T + 12);
+    /* 解曲线（径向 preset 用解析剖面；其余逐点算，低分辨率仅示形） */
+    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2; ctx.beginPath();
+    var i, vmax = 1e-3;
+    var vals = [];
+    for (i = 0; i <= 180; i++){
+      var xx = -6 + i / 180 * 12;
+      var v = u2([xx, 0], t, 32, 48);
+      vals.push(v); if (Math.abs(v) > vmax) vmax = Math.abs(v);
+    }
+    vals.forEach(function(v, k){ var xx = -6 + k / 240 * 12, px = p.X(xx), py = p.Y(Math.max(-0.4, Math.min(1.6, v))); if (k) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
+    ctx.stroke();
+    /* 场点标记 */
+    var uM = u2([Mx, 0], t);
+    ctx.fillStyle = "#D85A30"; ctx.beginPath(); ctx.arc(p.X(Mx), p.Y(Math.max(-0.4, Math.min(1.6, uM))), 4.5, 0, 2 * Math.PI); ctx.fill();
+    ctx.font = "12px system-ui"; ctx.textAlign = "left";
+    ctx.fillText("M（沿 x 轴拖）", p.X(Mx) + 8, p.T + 26);
+    /* 读数 */
+    var r1 = u2([Mx, 0], t), r2 = u3([Mx, 0], t);
+    $("d2-u2").textContent = fmtE(r1);
+    $("d2-u3").textContent = fmtE(r2);
+    $("d2-diff").textContent = fmtE(Math.abs(r1 - r2));
+    if (P0.ref){
+      var rf = P0.ref(Mx, t);
+      $("d2-ref").textContent = fmtE(rf);
+      $("d2-referr").textContent = fmtE(Math.abs(r1 - rf));
+    } else { $("d2-ref").textContent = "—"; $("d2-referr").textContent = "—"; }
+  }
+  drag(cv, function(cx, cy){
+    var p = { l: 46, r: 16, iw: W - 62 };
+    return -6 + (cx - 46) / (W - 62) * 12;
+  }, function(w){ if (w >= -6 && w <= 6){ Mx = w; draw(); } });
+  draw();
+  window.W4.d2 = {
+    set: function(o){ if (o.t !== undefined){ t = o.t; } if (o.Mx !== undefined){ Mx = o.Mx; } if (o.pre){ pre = o.pre; Array.prototype.forEach.call(document.querySelectorAll(".d2p"), function(y){ y.classList.toggle("on", y.getAttribute("data-p") === pre); }); } draw(); },
+    state: function(){ return { t: t, Mx: Mx, pre: pre }; }
+  };
+})();
+
+/* ================= 05 推迟势 ================= */
+(function(){
+  var cv = $("rp-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var A = 1, t = 1.2, M = [1.5, 0], pre = "one";
+  var X0 = [1.5, 0, 0], RHO2 = 0.6, TSIG = 0.5, curveCache = null, curvePre = null;
+  var presets = {
+    one:   { f: function(p, s){ return 1; }, ref: function(tt){ return tt * tt / 2; }, compact: false },
+    time:  { f: function(p, s){ return s; }, ref: function(tt){ return tt * tt * tt / 6; }, compact: false },
+    gauss: { f: function(p, s){
+               var dx = p[0] - X0[0], dy = p[1] - X0[1], dz = p[2] - X0[2];
+               var rr = Math.sqrt(dx * dx + dy * dy + dz * dz);
+               return c8r(rr) * Math.exp(-s * s / (2 * TSIG * TSIG));
+             }, ref: null, compact: true }
+  };
+  /* 空间紧支光滑鼓包（半径 RHO2，用于因果性精确判定） */
+  function c8r(r){
+    if (r >= RHO2) return 0;
+    var q = 1 - (r / RHO2) * (r / RHO2);
+    return Math.exp(-1 / q);
+  }
+  function uRet(P, tt, n){
+    n = n || 48;
+    var R = A * tt, P0 = presets[pre], acc = 0;
+    for (var j = 0; j < n; j++){
+      var ph = (j + 0.5) * 2 * Math.PI / n, cp = Math.cos(ph), sp = Math.sin(ph);
+      acc += simpson(function(mu){
+        var st = Math.sqrt(1 - mu * mu);
+        return simpson(function(rr){
+          var q = [P[0] + rr * st * cp, P[1] + rr * st * sp, P[2] + rr * mu];
+          return P0.f(q, tt - rr / A) * rr;
+        }, 0, R, n);
+      }, -1, 1, n);
+    }
+    return acc * 2 * Math.PI / n / (4 * Math.PI * A * A);
+  }
+  function draw(){
+    var R = A * t, P0 = presets[pre];
+    ctx.clearRect(0, 0, W, H);
+    var p = newPlot(ctx, W, H, { l: 46, r: 16, t: 16, b: 32, xmin: -1, xmax: 4, ymin: -0.2, ymax: 2.2,
+      xt: [-1, 0, 1, 2, 3, 4], yt: [0, 0.5, 1, 1.5, 2], xlab: "t", ylab: "u(x, t)" });
+    /* u(t) 曲线：闭式 preset 用参考曲线，高斯 preset 用低分辨率求积（按 preset 缓存） */
+    var tmax = 3;
+    if (curveCache === null || curvePre !== pre){
+      curveCache = [];
+      for (var ci = 0; ci <= 120; ci++){
+        var tt0 = ci / 120 * tmax;
+        curveCache.push(P0.ref ? P0.ref(tt0) : uRet([M[0], M[1], 0], tt0, 24));
+      }
+      curvePre = pre;
+    }
+    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2; ctx.beginPath();
+    for (var cj = 0; cj <= 120; cj++){
+      var px2 = p.X(cj / 120 * tmax), py2 = p.Y(curveCache[cj]);
+      if (cj) ctx.lineTo(px2, py2); else ctx.moveTo(px2, py2);
+    }
+    ctx.stroke();
+    if (!P0.ref){
+      ctx.fillStyle = "#57606a"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "left";
+      ctx.fillText("（高斯 preset 曲线为 24³ 低分辨率求积，仅示形）", p.L + 8, p.T + 14);
+    }
+    /* 当前时刻 */
+    var u = uRet([M[0], M[1], 0], t);
+    ctx.strokeStyle = "#D85A30"; ctx.beginPath(); ctx.moveTo(p.X(t), p.T); ctx.lineTo(p.X(t), p.T + p.ih); ctx.stroke();
+    ctx.fillStyle = "#D85A30"; ctx.beginPath(); ctx.arc(p.X(t), p.Y(u), 4.5, 0, 2 * Math.PI); ctx.fill();
+    /* 读数 */
+    $("rp-u").textContent = fmtE(u);
+    if (P0.ref){
+      var rf = P0.ref(t);
+      $("rp-ref").textContent = fmtE(rf);
+      $("rp-err").textContent = fmtE(Math.abs(u - rf));
+    } else { $("rp-ref").textContent = "—"; $("rp-err").textContent = "—"; }
+    var front = (Math.hypot(M[0] - X0[0], M[1] - X0[1]) - RHO2) / A;
+    $("rp-causal").textContent = (P0.compact && t < front) ? "未到（u ≡ 0）" : "已到";
+    $("rp-R").textContent = fmtE(R);
+    $("rp-tv").textContent = "t = " + t.toFixed(2);
+  }
+  $("rp-t").addEventListener("input", function(){ t = parseFloat(this.value) / 100; draw(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".rpp"), function(b){
+    b.onclick = function(){
+      document.querySelectorAll(".rpp").forEach(function(y){ y.classList.remove("on"); });
+      b.classList.add("on"); pre = b.getAttribute("data-p"); draw();
+    };
+  });
+  drag(cv, function(cx, cy){
+    var L = 46, iw = W - 62;
+    return [-1 + (cx - L) / iw * 5, 0];
+  }, function(w){ M[0] = Math.max(-1, Math.min(4, w[0])); draw(); });
+  draw();
+  window.W4.rp = {
+    set: function(o){ if (o.t !== undefined){ t = o.t; $("rp-t").value = t * 100; } if (o.M){ M = [o.M[0], o.M[1] !== undefined ? o.M[1] : M[1]]; } if (o.pre){ pre = o.pre; Array.prototype.forEach.call(document.querySelectorAll(".rpp"), function(y){ y.classList.toggle("on", y.getAttribute("data-p") === pre); }); } draw(); },
+    state: function(){ return { t: t, M: M.slice(), pre: pre }; }
+  };
+})();
+</script>
+</body>
+</html>

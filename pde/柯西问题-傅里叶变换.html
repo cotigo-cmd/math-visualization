@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>柯西问题与傅里叶变换 — 谷超豪《数学物理方程》§3 可视化</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:28px;line-height:1.35;margin:0 0 12px;font-weight:600}
+h2{font-size:22px;margin:64px 0 16px;font-weight:600;padding-top:8px;border-top:1px solid var(--border)}
+h2 .no{color:var(--accent);font-family:var(--mono);font-size:16px;margin-right:10px;font-weight:400}
+h3{font-size:17px;margin:36px 0 10px;font-weight:600}
+p{margin:12px 0}
+.hero{padding:56px 0 8px}
+.hero p.lead{font-size:17px;color:var(--muted);max-width:760px;margin:0}
+nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+nav .wrap{padding:10px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px}
+nav a{color:var(--muted)}
+nav a:hover{color:var(--accent);text-decoration:none}
+.eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
+  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--card);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+.ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
+.ctl input[type=range]{flex:1;min-width:180px;accent-color:var(--accent)}
+button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
+.val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
+figure{margin:20px 0}
+figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+canvas.plot{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kv .cell{background:var(--card);border-radius:8px;padding:10px 14px}
+.kv .k{font-size:12.5px;color:var(--muted)}
+.kv .v{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent-dark)}
+mjx-container{display:block!important;margin:.35em 0!important}
+mjx-container[display="true"]>svg{display:block;margin:0 auto}
+p mjx-container,li mjx-container,td mjx-container,h4 mjx-container{display:inline-block!important;margin:0!important;vertical-align:baseline}
+p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,h4 mjx-container>svg{display:inline!important;margin:0!important;vertical-align:-1px}
+#mjx-offline{background:#fdf6ec;border:1px solid #EF9F27;border-radius:8px;padding:8px 14px;font-size:13px;color:#854F0B;margin:14px 0}
+#mjx-offline[hidden]{display:none}
+footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+ul.tight li{margin:6px 0}
+</style>
+</head>
+<body>
+<div id="mjx-offline" hidden>公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响但内容不受影响。</div>
+
+<div class="hero"><div class="wrap">
+<h1>柯西问题与傅里叶变换</h1>
+<p class="lead">谷超豪 等《数学物理方程（第四版）》第 2 章 §3 的交互可视化。把 §2 里「有限区间上的离散频谱」推向连续极限，就得到傅里叶变换；用它解无界直线上的热传导方程，泊松公式、杜哈梅原理和存在性验证都顺着同一条流水线掉出来。页面里的每个数值结论都由工作区脚本实测（见各节 note）。</p>
+</div></div>
+
+<nav><div class="wrap">
+<a href="#map">本节地图</a>
+<a href="#series">级数→变换</a>
+<a href="#props">五性质</a>
+<a href="#machine">变换机器</a>
+<a href="#poisson">泊松公式</a>
+<a href="#duhamel">杜哈梅原理</a>
+<a href="#exist">存在性验证</a>
+<a href="#general">一般框架</a>
+<a href="#summary">小结</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ============ 0 地图 ============ -->
+<h2 id="map"><span class="no">00</span>本节地图：一条流水线，三个问题</h2>
+<p>§3 的推导只做一件事：把 §2 的分离变量法从「有限区间」搬到「整条直线」。区间长度 \(l\to\infty\) 时，离散的频率 \(\lambda_n=n\pi/l\) 越排越密，间距 \(\Delta\lambda=\pi/l\to 0\)，傅里叶级数就变成傅里叶积分——求解的机器换了个动力源，结构完全不变。</p>
+
+<figure>
+<svg viewBox="0 0 680 384" width="100%" role="img">
+<title>傅里叶变换解柯西问题流水线</title>
+<desc>级数到变换、对x变换得ODE、解ODE、逆变换得泊松公式；非齐次走齐次化原理；最后存在性验证三件事</desc>
+<defs>
+<marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<g font-family="system-ui,sans-serif">
+<rect x="14" y="30" width="190" height="60" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="109" y="54" font-size="13" font-weight="500" fill="#26215C" text-anchor="middle">§2 分离变量法</text>
+<text x="109" y="74" font-size="11.5" fill="#3C3489" text-anchor="middle">离散谱 λₖ = kπ/l，Δλ=π/l</text>
+<line x1="204" y1="60" x2="252" y2="60" stroke="#185FA5" stroke-width="1.4" marker-end="url(#ar3)"/>
+<text x="228" y="50" font-size="11" fill="#185FA5" text-anchor="middle">l→∞</text>
+<rect x="256" y="30" width="190" height="60" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="351" y="54" font-size="13" font-weight="500" fill="#0C447C" text-anchor="middle">傅里叶变换 (3.5)</text>
+<text x="351" y="74" font-size="11.5" fill="#185FA5" text-anchor="middle">连续谱：f̂(λ)=∫f e^{-iλx}dx</text>
+<line x1="446" y1="60" x2="494" y2="60" stroke="#185FA5" stroke-width="1.4" marker-end="url(#ar3)"/>
+<rect x="498" y="30" width="168" height="60" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="582" y="54" font-size="13" font-weight="500" fill="#0C447C" text-anchor="middle">对 x 作变换</text>
+<text x="582" y="74" font-size="11.5" fill="#185FA5" text-anchor="middle">û_t = −a²λ²û (3.19)</text>
+
+<rect x="256" y="130" width="190" height="56" rx="8" fill="#FAECE7" stroke="#D85A30" stroke-width="0.6"/>
+<text x="351" y="152" font-size="13" font-weight="500" fill="#712D17" text-anchor="middle">解这个 ODE（λ 当参数）</text>
+<text x="351" y="172" font-size="11.5" fill="#A04A22" text-anchor="middle">û(λ,t)=φ̂(λ)e^{−a²λ²t} (3.21)</text>
+<line x1="351" y1="90" x2="351" y2="126" stroke="#185FA5" stroke-width="1.4" marker-end="url(#ar3)"/>
+
+<rect x="498" y="130" width="168" height="56" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.6"/>
+<text x="582" y="152" font-size="13" font-weight="500" fill="#085041" text-anchor="middle">逆变换 = 卷积</text>
+<text x="582" y="172" font-size="11.5" fill="#0F6E56" text-anchor="middle">u = K_t * φ，泊松公式 (3.22)</text>
+<line x1="446" y1="158" x2="494" y2="158" stroke="#D85A30" stroke-width="1.4" marker-end="url(#ar3)"/>
+
+<rect x="14" y="130" width="190" height="56" rx="8" fill="#FAECE7" stroke="#D85A30" stroke-width="0.6"/>
+<text x="109" y="152" font-size="13" font-weight="500" fill="#712D17" text-anchor="middle">非齐次项 f(x,t)</text>
+<text x="109" y="172" font-size="11.5" fill="#A04A22" text-anchor="middle">齐次化原理 (3.25)→(3.28)</text>
+<line x1="109" y1="90" x2="109" y2="126" stroke="#D85A30" stroke-width="1.4" marker-end="url(#ar3)"/>
+<line x1="204" y1="158" x2="252" y2="158" stroke="#D85A30" stroke-width="1.4" marker-end="url(#ar3)"/>
+<text x="228" y="148" font-size="11" fill="#D85A30" text-anchor="middle">叠加</text>
+
+<rect x="150" y="250" width="380" height="56" rx="8" fill="#F6F8FA" stroke="#57606a" stroke-width="0.6"/>
+<text x="340" y="272" font-size="13" font-weight="500" fill="#1f2328" text-anchor="middle">存在性验证（§3 第 3 小节）</text>
+<text x="340" y="292" font-size="11.5" fill="#57606a" text-anchor="middle">① 有界性 |u|≤M　② 积分号下求导（t&gt;0 一致收敛）　③ t→0 时 u→φ</text>
+<line x1="582" y1="186" x2="582" y2="220" stroke="#0F6E56" stroke-width="1.4"/>
+<line x1="582" y1="220" x2="534" y2="220" stroke="#0F6E56" stroke-width="1.4"/>
+<line x1="534" y1="220" x2="534" y2="250" stroke="#0F6E56" stroke-width="1.4" marker-end="url(#ar3)"/>
+<text x="150" y="340" font-size="12" fill="#57606a">教材式「形式推导 → 末尾验证」：先把解算出来，再回头证明它确实是解。</text>
+</g>
+</svg>
+<figcaption>图 0-1　§3 的主流水线。左列（紫）是 §2 的离散版本，右列是连续版本；下半支是非齐次问题的齐次化原理。</figcaption>
+</figure>
+
+<div class="key"><b>本页与系列另两页的分工：</b><a href="./卷积与热传导方程.html">《卷积与热传导方程》</a>讲热核的翻转—滑动直觉、半群性质与二维扩散；<a href="./分离变量法-热传导方程.html">《分离变量法》</a>讲离散谱与模态衰减。本页讲的是「核从哪来」——它是对高斯函数 \(e^{-a^2\lambda^2 t}\) 作傅里叶逆变换自动掉出来的，以及为什么这个形式解确实是解。</div>
+
+<!-- ============ 1 级数→变换 ============ -->
+<h2 id="series"><span class="no">01</span>从傅里叶级数到傅里叶变换</h2>
+<p>设 \(f(x)\) 在 \([-l,l]\) 上有一阶连续导数，展开为傅里叶级数</p>
+$$f(x)=\frac{a_0}{2}+\sum_{n=1}^{\infty}\left(a_n\cos\frac{n\pi}{l}x+b_n\sin\frac{n\pi}{l}x\right) \tag{3.1}$$
+$$a_n=\frac{1}{l}\int_{-l}^{l}f(\xi)\cos\frac{n\pi}{l}\xi\,\mathrm{d}\xi,\qquad b_n=\frac{1}{l}\int_{-l}^{l}f(\xi)\sin\frac{n\pi}{l}\xi\,\mathrm{d}\xi \tag{3.2}$$
+<p>把 (3.2) 代回 (3.1)，两个求和合并成一个余弦核（差角公式），再令 \(\lambda_n=n\pi/l\)、\(\Delta\lambda=\pi/l\)。当 \(l\to\infty\) 时 \(\Delta\lambda\to0\)，和式变成积分——这就是傅里叶积分：</p>
+$$f(x)=\frac{1}{\pi}\int_0^{\infty}\mathrm{d}\lambda\int_{-\infty}^{\infty}f(\xi)\cos\lambda(x-\xi)\,\mathrm{d}\xi \tag{3.3}$$
+<p>\(\cos\) 是 \(\lambda\) 的偶函数、\(\sin\) 是奇函数，(3.3) 可写成复数形式（教材 (3.4)）：</p>
+$$f(x)=\frac{1}{2\pi}\int_{-\infty}^{\infty}\mathrm{d}\lambda\int_{-\infty}^{\infty}f(\xi)e^{i\lambda(x-\xi)}\,\mathrm{d}\xi \tag{3.4}$$
+<p>令内层积分为 \(g(\lambda)\)，就得到<b>傅里叶变换对</b>：</p>
+$$g(\lambda)=\int_{-\infty}^{\infty}f(\xi)e^{-i\lambda\xi}\,\mathrm{d}\xi \tag{3.5}$$
+$$f(x)=\frac{1}{2\pi}\int_{-\infty}^{\infty}g(\lambda)e^{i\lambda x}\,\mathrm{d}\lambda \tag{3.6}$$
+<p>若 \(f\) 绝对可积且本身与导数连续，则傅里叶积分在连续点收敛到 \(f(x)\)——所以变换不是形式花招，它有收敛定理兜底（不绝对可积的函数怎么办？见 <a href="#general">§7 一般框架</a>：广义函数）。</p>
+
+<h3>交互：离散谱如何「密实」成连续谱</h3>
+<p>下图是本节的思想实验。取初值 \(\varphi\)，画出它在 \(\lambda_n=n\pi/l\) 上的离散频谱（紫线）与连续曲线 \(|\hat\varphi(\lambda)|\)（红虚线）。拖动滑块增大 \(l\)：谱线越排越密，阶梯般的信息量不变，但形状越来越贴近连续曲线——\(\Delta\lambda=\pi/l\) 就是「离散」与「连续」的全部差别。</p>
+
+<div class="ctl">
+<span>区间长度 \(l\)</span>
+<input id="dn-l" type="range" min="10" max="640" value="80">
+<span class="val" id="dn-lv">l = 8.0</span>
+<button id="dn-play">播放致密化</button>
+<span style="margin-left:12px">初值：</span>
+<button class="pre on" data-kind="box">方波</button>
+<button class="pre" data-kind="gauss">高斯</button>
+</div>
+<canvas id="dn-canvas" class="plot" width="840" height="300"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">谱线间距 Δλ = π/l</div><div class="v" id="dn-dlam">0.393</div></div>
+<div class="cell"><div class="k">视野内谱线数（λ ≤ 12）</div><div class="v" id="dn-count">30</div></div>
+<div class="cell"><div class="k">l→∞ 时</div><div class="v" style="font-size:14px;padding-top:3px">Δλ→0，离散→连续</div></div>
+</div>
+<div class="note"><b>实测备注：</b>滑块范围 \(l=1\sim64\)，对应 \(\Delta\lambda\) 从 \(3.142\) 压到 \(0.049\)。教材取 \(\lambda_n=n\pi/l\) 正是因为 \([-l,l]\) 上余弦族的自然频率；换成其他正交基（如 Bessel，见<a href="./分离变量法-热传导方程.html#disk">分离变量法页的圆板扩展</a>）密实化的形状不同，但「离散→连续」的思想完全一样。</div>
+
+<!-- ============ 2 五性质 ============ -->
+<h2 id="props"><span class="no">02</span>傅里叶变换的五个基本性质</h2>
+<p>教材列出性质 1—5。整节求解只用到其中两个，但它们组合起来就是一台完整的机器：</p>
+<table>
+<tr><th style="width:64px">性质</th><th>内容</th><th style="width:210px">在本节中的角色</th></tr>
+<tr><td>1 线性</td><td>\(\mathcal{F}[\alpha f_1+\beta f_2]=\alpha\mathcal{F}[f_1]+\beta\mathcal{F}[f_2]\)　(3.7)</td><td>叠加原理的变换版</td></tr>
+<tr><td>2 卷积→乘积</td><td>\(\mathcal{F}[f_1*f_2]=\mathcal{F}[f_1]\cdot\mathcal{F}[f_2]\)　(3.9)，其中 \((f_1*f_2)(x)=\int_{-\infty}^{\infty}f_1(x-t)f_2(t)\,\mathrm{d}t\)　(3.8)</td><td><b>发动机</b>：把 (3.21) 的乘积逆变换成卷积，直接得到泊松公式</td></tr>
+<tr><td>3 乘积→卷积</td><td>\(\mathcal{F}[f_1\cdot f_2]=\dfrac{1}{2\pi}\mathcal{F}[f_1]*\mathcal{F}[f_2]\)　(3.10)</td><td>本页未直接用（概率密度相乘时会出现）</td></tr>
+<tr><td>4 导数</td><td>\(\mathcal{F}[f'(x)]=i\lambda\mathcal{F}[f]\)　(3.11)（设 \(f(x)\to0,\ |x|\to\infty\)）</td><td><b>发动机</b>：\(\partial_{xx}\mapsto(i\lambda)^2=-\lambda^2\)，PDE 变 ODE</td></tr>
+<tr><td>5 乘坐标</td><td>\(\mathcal{F}[-ixf(x)]=\dfrac{\mathrm{d}}{\mathrm{d}\lambda}\mathcal{F}[f]\)　(3.12)</td><td>备用（矩与谱的光滑性）</td></tr>
+</table>
+<p>多变量情形 (3.13)(3.14) 完全类似：\(\mathcal{F}[f]=g(\lambda_1,\dots,\lambda_n)\)，逆变换差一个 \((2\pi)^{-n}\) 因子。三维柯西问题（习题 3）用的就是它，见 <a href="#general">§7</a>。</p>
+
+<!-- ============ 3 变换机器 ============ -->
+<h2 id="machine"><span class="no">03</span>变换机器：解齐次柯西问题</h2>
+<p>先看齐次方程、整条直线、给定初始温度（柯西问题）：</p>
+$$\frac{\partial u}{\partial t}=a^2\frac{\partial^2 u}{\partial x^2} \tag{3.17}$$
+$$u(x,0)=\varphi(x) \tag{3.18}$$
+<p>视 \(t\) 为参数，对 \(x\) 作傅里叶变换，记 \(\mathcal{F}[u(x,t)]=\hat u(\lambda,t)\)、\(\mathcal{F}[\varphi]=\hat\varphi(\lambda)\)。用性质 4，PDE 当场变成<b>带参数 \(\lambda\) 的常微分方程</b>：</p>
+$$\frac{\mathrm{d}\hat u}{\mathrm{d}t}=-a^2\lambda^2\hat u \tag{3.19}$$
+$$\hat u(\lambda,0)=\hat\varphi(\lambda) \tag{3.20}$$
+<p>这是一维线性 ODE 的柯西问题，解立即写出：</p>
+$$\hat u(\lambda,t)=\hat\varphi(\lambda)e^{-a^2\lambda^2t} \tag{3.21}$$
+<p>剩下的是逆变换。函数 \(e^{-a^2\lambda^2t}\) 的逆变换是一个高斯积分（配方后平移 \(\lambda\)，用 \(\int_{-\infty}^{\infty}e^{-a^2t\lambda^2}\mathrm{d}\lambda=\sqrt{\pi}/(a\sqrt t)\)）：</p>
+$$\mathcal{F}^{-1}\left[e^{-a^2\lambda^2t}\right]=\frac{1}{2a\sqrt{\pi t}}e^{-\frac{x^2}{4a^2t}} \equiv K(x,t)$$
+<p>再对 (3.21) 用性质 2（卷积→乘积），解「自动」呈现为卷积形式——<b>泊松公式</b>：</p>
+$$u(x,t)=\frac{1}{2a\sqrt{\pi t}}\int_{-\infty}^{\infty}\varphi(\xi)e^{-\frac{(x-\xi)^2}{4a^2t}}\,\mathrm{d}\xi \tag{3.22}$$
+
+<h3>交互：整台机器跑一遍</h3>
+<p>三个面板就是 (3.17)→(3.22) 的全过程：左panel是初值 \(\varphi(x)\)；中panel是频谱——蓝线 \(|\hat\varphi(\lambda)|\) 是初始频谱，红线是乘上阻尼 \(e^{-a^2\lambda^2t}\) 之后的当前频谱；右panel是逆变换回来的解 \(u(x,t)\)（灰虚线是初值，供对照）。拖动时间滑块，看中panel里高频成分如何被成倍压制、右panel的棱角如何被抹平。</p>
+
+<div class="ctl">
+<span>初值：</span>
+<button class="fp on" data-p="gauss">高斯</button>
+<button class="fp" data-p="box">方波</button>
+<button class="fp" data-p="bump">双峰脉冲</button>
+<span style="margin-left:12px">时间 \(t\)</span>
+<input id="fm-t" type="range" min="0" max="100" value="42">
+<button id="fm-play">播放</button>
+</div>
+<canvas id="fm-phi" class="plot" width="840" height="180"></canvas>
+<canvas id="fm-hat" class="plot" width="840" height="220" style="margin-top:8px"></canvas>
+<canvas id="fm-u" class="plot" width="840" height="220" style="margin-top:8px"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">当前 t</div><div class="v" id="fm-tv">0.30</div></div>
+<div class="cell"><div class="k">λ=1 模态保留比例 e^{−a²λ²t}</div><div class="v" id="fm-keep">74.1%</div></div>
+<div class="cell"><div class="k">热核半高宽 2a√(t ln2)</div><div class="v" id="fm-fwhm">0.91</div></div>
+</div>
+<div class="note"><b>实测备注（工作区脚本 verify_cauchy.js，a=1）：</b>① 泊松公式 (3.22) 与解析解对照：高斯初值（解析解为展宽高斯）L∞ 误差 <b>3.7e-15</b>（机器精度）；方波初值（解析解为两个 erf 之差）L∞ 误差 <b>5.4e-10</b>。② 中panel的路线（先算 \(\hat\varphi\)，乘阻尼，再数值逆变换）与左panel路线（直接泊松积分）互相独立，结果一致：高斯 <b>4.4e-15</b>、方波 <b>5.4e-10</b>——即 (3.21) 与 (3.22) 确实是同一解的两种写法。③ 数值逆变换必须截断到有限 \(\Lambda\)：高斯初值在 \(x=0\) 处，\(t=0.05\) 时截断 \(\Lambda=4\) 误差 <b>2.6e-5</b>、\(\Lambda=8\) 降到 <b>1.2e-15</b>；而 \(t=1\) 时 \(\Lambda=4\) 已只有 <b>2.5e-12</b>。<b>时间越早，要看清解就需要越宽的频带</b>——这正是「热方程瞬间抹平奇异」在频谱里的说法。</div>
+
+<!-- ============ 4 泊松公式与热核 ============ -->
+<h2 id="poisson"><span class="no">04</span>泊松公式与热核</h2>
+<p>(3.22) 右端称为<b>泊松积分</b>，积分核</p>
+$$K(x,t)=\frac{1}{2a\sqrt{\pi t}}e^{-\frac{x^2}{4a^2t}}\quad(t>0)$$
+<p>就是<a href="./卷积与热传导方程.html">《卷积与热传导方程》</a>页的热核。那里讲它的翻转—滑动直觉与半群性质；这里补上它在变换框架里的「出身」：它不过是高斯函数 \(e^{-a^2\lambda^2t}\) 的逆变换。两个事实值得记住：</p>
+<ul class="tight">
+<li><b>总质量守恒：</b>\(\int_{-\infty}^{\infty}K(x,t)\,\mathrm{d}x=1\)（对任意 \(t>0\)），所以 \(\int u\,\mathrm{d}x=\int\varphi\,\mathrm{d}x\)——总热量不随时间变化（与 §2 有界区间上 Dirichlet 边界「热量递减」恰成对照）。</li>
+<li><b>宽度按 √t 增长：</b>\(K(\cdot,t)\) 是均值为 0、方差 \(2a^2t\) 的正态密度，标准差 \(\sigma=a\sqrt{2t}\)；峰高 \(K(0,t)=1/(2a\sqrt{\pi t})\) 按 \(t^{-1/2}\) 下降。</li>
+</ul>
+
+<div class="ctl">
+<span>时间 \(t\)</span>
+<input id="kw-t" type="range" min="0" max="100" value="46">
+<button id="kw-play">播放展宽</button>
+</div>
+<canvas id="kw-canvas" class="plot" width="840" height="320"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">峰高 K(0,t) = 1/(2a√(πt))</div><div class="v" id="kw-peak">0.564</div></div>
+<div class="cell"><div class="k">标准差 a√(2t)</div><div class="v" id="kw-sd">1.000</div></div>
+<div class="cell"><div class="k">总质量 ∫K dx</div><div class="v" id="kw-mass">1.000000</div></div>
+</div>
+<div class="note"><b>实测备注（verify_cauchy.js，a=1）：</b>\(t=0.5,1,2\) 三组，数值积分 \(\int K=1.000000\)；实测标准差 <b>1.0000 / 1.4142 / 2.0000</b>，与理论 \(a\sqrt{2t}\) 完全一致；半高宽（\(K=K(0)/2\) 处）实测位置与 \(2a\sqrt{t\ln 2}\) 相符（<b>1.1774 / 1.6651 / 2.3548</b>）。灰色虚线是 \(t=0.1,0.3,1,2\) 的参考核，注意所有曲线都「变矮变胖」但面积不变——这就是热扩散的全部图像。</div>
+
+<!-- ============ 5 杜哈梅 ============ -->
+<h2 id="duhamel"><span class="no">05</span>非齐次方程与杜哈梅原理</h2>
+<p>加上热源的柯西问题：</p>
+$$\frac{\partial u}{\partial t}=a^2\frac{\partial^2 u}{\partial x^2}+f(x,t) \tag{3.15}$$
+$$u(x,0)=\varphi(x) \tag{3.16}$$
+<p>先解「有源、零初值」的情形：</p>
+$$\frac{\partial u}{\partial t}=a^2\frac{\partial^2 u}{\partial x^2}+f(x,t),\qquad u(x,0)=0 \tag{3.23,3.24}$$
+<p><b>齐次化原理（杜哈梅原理）：</b>把 \(f(x,\tau)\) 看作 \(t=\tau\) 时刻「瞬时植入」的初始条件，对应的齐次问题解为 \(w(x,t;\tau)\)（满足 (3.26)(3.27)，即 \(w(x,\tau;\tau)=f(x,\tau)\)），则</p>
+$$u(x,t)=\int_0^{t}w(x,t;\tau)\,\mathrm{d}\tau \tag{3.25}$$
+<p>代入 (3.22) 得源项的贡献：</p>
+$$u(x,t)=\int_0^{t}\frac{1}{2a\sqrt{\pi(t-\tau)}}\left(\int_{-\infty}^{\infty}f(\xi,\tau)e^{-\frac{(x-\xi)^2}{4a^2(t-\tau)}}\,\mathrm{d}\xi\right)\mathrm{d}\tau \tag{3.28}$$
+<p>与 (3.22) 叠加即得一般解 (3.29)：初值走泊松积分，热源走「泊松积分再对时间积分」。注意核里的时间差处处是 \(t-\tau\)：源只能影响它「上线」之后的解，因果性写在公式里。</p>
+
+<h3>交互：源项如何积累成解</h3>
+<p>上panel是当前热源 \(f(x,t)\)（teal），下panel是累积解 \(u(x,t)\)（红线；有解析解的情形附灰色虚线对照）。三个预设都来自教材习题的变形。</p>
+
+<div class="ctl">
+<span>热源：</span>
+<button class="dp on" data-p="const">恒温源 f=1</button>
+<button class="dp" data-p="blob">时段脉冲</button>
+<button class="dp" data-p="osc">振荡源 cos x·e^{−t}</button>
+<span style="margin-left:12px">时间 \(t\)</span>
+<input id="dm-t" type="range" min="0" max="100" value="40">
+<button id="dm-play">播放</button>
+</div>
+<canvas id="dm-src" class="plot" width="840" height="170"></canvas>
+<canvas id="dm-u" class="plot" width="840" height="230" style="margin-top:8px"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">当前 t</div><div class="v" id="dm-tv">0.30</div></div>
+<div class="cell"><div class="k">u(0,t)</div><div class="v" id="dm-u0">—</div></div>
+<div class="cell"><div class="k">与解析解误差</div><div class="v" id="dm-err">—</div></div>
+</div>
+<div class="note"><b>实测备注（verify_cauchy.js，a=1）：</b>① 恒温源 \(f\equiv1\)：解析解 \(u\equiv t\)（源把整条直线均匀加热，与 \(x\) 无关），数值积分得 \(u(0,1)=\) <b>1.000000</b>、\(u(0,2)=\) <b>2.000000</b>。② 振荡源 \(f=\cos x\,e^{-t}\)：设 \(u=A(t)\cos x\) 得 \(A'+a^2A=e^{-t}\)，故 \(u=t\,e^{-t}\cos x\)；数值 (3.28) 与解析解在 \(x=0.7,t=1.3\) 处误差 <b>7.2e-16</b>（机器精度）。<b>页面 vs 脚本：</b>本页交互为播放流畅只留 160/48 面板，但 Simpson 对光滑被积函数精度极高，「与解析解误差」读数实测仍在 <b>1e-15</b> 量级（时段源在窗口边界做了剖分，同样干净）；note 中的数字来自 verify_cauchy.js 的细网格（内 800 面板），两者算同一个积分。③ 时段脉冲（\(t\in[0.4,1.6]\) 的高斯斑）无初等解析解，但它展示杜哈梅原理的因果结构：源上线之前 \(u\equiv0\)，源下线之后解还会继续演化——已经进系统的热量不会消失。</div>
+
+<!-- ============ 6 存在性 ============ -->
+<h2 id="exist"><span class="no">06</span>解的存在性：形式推导之后的验证</h2>
+<p>至此所有解都是<b>形式解</b>——推导中假定了 \(u\) 可以被变换、可以积分号下求导。教材第 3 小节回头验证：在 \(\varphi\) 连续有界的条件下，(3.22) 的确是 (3.17)(3.18) 的解。验证分三件事。</p>
+
+<h3>① 有界性（积分收敛）</h3>
+<p>设 \(|\varphi(x)|\le M\)。作换元 \(\zeta=(\xi-x)/(2a\sqrt t)\)，用 \(\int_{-\infty}^{\infty}e^{-\zeta^2}\mathrm{d}\zeta=\sqrt\pi\)：</p>
+$$|u(x,t)|\le M\cdot\frac{1}{\sqrt{\pi}}\int_{-\infty}^{\infty}e^{-\zeta^2}\mathrm{d}\zeta=M$$
+<p>即泊松积分收敛，且解与初值同界——热方程不会无中生有地放大温度。</p>
+
+<h3>② 积分号下求导</h3>
+<p>核 \(K(x,t)\) 对 \(t,x\) 本身满足热方程，且各阶导数构成的积分在 \(t>0\) 的任意紧子域上一致收敛，所以</p>
+$$\frac{\partial u}{\partial x}=\frac{1}{2a\sqrt{\pi}}\int_{-\infty}^{\infty}\frac{-(x-\xi)}{2a^2t^2}\varphi(\xi)e^{-\frac{(x-\xi)^2}{4a^2t}}\,\mathrm{d}\xi$$
+<p>可以合法地在积分号下求导（\(t>0\) 时成立；\(t=0\) 处核奇异，不能——这与「解在 \(t=0\) 只有连续而非可微」完全相容）。</p>
+
+<h3>③ 初始条件：t→0 时 u→φ</h3>
+<p>核心恒等式：把 \(\varphi(x_0)\) 写成同一个高斯加权平均，相减得</p>
+$$u(x,t)-\varphi(x_0)=\frac{1}{\sqrt{\pi}}\int_{-\infty}^{\infty}\big[\varphi(x+2a\sqrt t\,\zeta)-\varphi(x_0)\big]e^{-\zeta^2}\mathrm{d}\zeta$$
+<p>证明思路（\(\varepsilon\)-N）：先取足够大的 \(N\) 让尾部 \(\frac{2M}{\sqrt\pi}\int_N^{\infty}e^{-\zeta^2}\mathrm{d}\zeta\le\varepsilon/3\)，再靠连续性让 \(|\zeta|\le N\) 的主部也小于 \(\varepsilon/3\)。直观说：<b>核越来越尖、总质量不变，平均的范围越来越窄，极限就是函数值本身</b>。注意间断点收敛到左右平均值（傅里叶级数的同一现象）。</p>
+
+<h3>交互：极限过程看得见</h3>
+<p>把 \(t\) 从 0.5 压到 0.001，红线（解）如何贴回蓝线（初值方波）。注意两件事：光滑区内点误差迅速归零；间断点 \(x=\pm1\) 处解收敛到 <b>0.5</b>——左右平均，不是任何一侧的值。</p>
+
+<div class="ctl">
+<span>时间 \(t\)</span>
+<input id="cv-t" type="range" min="0" max="100" value="60">
+<button id="cv-play">播放收敛</button>
+</div>
+<canvas id="cv-canvas" class="plot" width="840" height="300"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">当前 t</div><div class="v" id="cv-tv">0.010</div></div>
+<div class="cell"><div class="k">光滑区最大误差（|x∓1|>0.3）</div><div class="v" id="cv-err">—</div></div>
+<div class="cell"><div class="k">间断点 u(1,t)（→0.5）</div><div class="v" id="cv-jump">—</div></div>
+</div>
+<p>下panel是 \(\varepsilon\)-\(N\) 证明的「尾部账本」：曲线是尾部质量 \(\frac{2M}{\sqrt\pi}\int_N^{\infty}e^{-\zeta^2}\mathrm{d}\zeta\)（\(M=1\)），水平线是 \(\varepsilon/3\)（\(\varepsilon=0.01\)），两者交于 \(N\)——这就是证明里要选的截断点。</p>
+<canvas id="cv-tail" class="plot" width="840" height="200"></canvas>
+<div class="note"><b>实测备注（verify_cauchy.js，a=1，M=1）：</b>① 高斯初值：\(|u(0,t)-\varphi(0)|\) 在 \(t=0.5,0.1,0.01,0.001\) 时为 <b>2.9e-1 / 8.7e-2 / 9.9e-3 / 1.0e-3</b>，随 \(t\) 线性下降（光滑初值的收敛速度由局部光滑性决定）。② 方波间断点 \(x=1\)：\(t=0.1,0.01,0.001\) 时 \(u(1,t)=\) <b>0.5000 / 0.5000 / 0.5000</b>，稳定收敛到左右平均 0.5；光滑内点 \(x=0.5\) 在 \(t=0.01\) 时误差 <b>2.0e-4</b>。③ \(\varepsilon=0.01\)、\(M=1\) 时，使尾部 \(\le\varepsilon/3\) 的最小 <b>N=2.08</b>——\(|\zeta|>2.08\) 的高斯尾部只占 0.33%，把它扔掉就能控制住误差。</div>
+
+<!-- ============ 7 一般框架 ============ -->
+<h2 id="general"><span class="no">07</span>一般框架与扩展阅读</h2>
+<p>教材把本节的方法提炼成适用于一切常系数线性发展方程的模板：设 \(L\) 是关于 \(x\) 的 \(m\) 阶常系数线性微分算子，\(L=\sum_{j=0}^{m}a_j\partial_x^j\)，对应特征多项式 \(P(i\lambda)=\sum_{j=0}^{m}a_j(i\lambda)^j\)。对初值问题</p>
+$$\frac{\partial}{\partial t}u(x,t)-Lu(x,t)=0,\qquad u(x,0)=\varphi(x) \tag{3.30}$$
+<p>作傅里叶变换得 \(\partial_t\hat u=P(i\lambda)\hat u\)，解为 \(\hat u(\lambda,t)=e^{P(i\lambda)t}\hat\varphi(\lambda)\)，逆变换回去：</p>
+$$u(x,t)=\big(K(\cdot,t)*\varphi\big)(x),\qquad K(x,t)=\mathcal{F}^{-1}\!\left[e^{P(i\lambda)t}\right]$$
+<p>「解 = 基本解卷积初值」是这个模板的统一产出，\(K\) 的形状由 \(P\) 决定：</p>
+<table>
+<tr><th>方程</th><th>P(iλ)</th><th>基本解 K(x,t)</th><th>图像</th></tr>
+<tr><td>热方程 \(u_t=a^2u_{xx}\)</td><td>\(-a^2\lambda^2\)</td><td>高斯核 \(\frac{1}{2a\sqrt{\pi t}}e^{-x^2/(4a^2t)}\)</td><td>不断展宽、高峰衰减</td></tr>
+<tr><td>输运方程 \(u_t=\pm a\,u_x\)</td><td>\(\pm ia\lambda\)</td><td>\(\delta(x\mp at)\)</td><td>刚体平移，形状不变（第 1 章特征线的谱版本）</td></tr>
+</table>
+<p>教材「扩展阅读」指出这条路的思想史脉络：有限区间上分离变量法把初值视为不同频率谐波的组合，区间趋于无穷时离散谱变成连续谱，级数解变成积分解——傅里叶、柯西、泊松在 19 世纪初都提出过这个想法，最终严格化为傅里叶分析。对初始资料的条件（绝对可积、连续可导）可以减轻，但逐个验证很麻烦；<b>第 6 章的广义函数理论</b>把函数与变换的意义大幅推广，例如 \(u|_{t=0}=\sin x\) 虽不绝对可积，仍有 \(\hat\varphi(\lambda)=-i\pi[\delta(\lambda-1)-\delta(\lambda+1)]\)，代回 (3.21) 严格得到 \(u=e^{-a^2t}\sin x\)（习题 5(1) 的严格版）。</p>
+
+<h3>三个方向的高维推广（对应教材习题）</h3>
+<ul class="tight">
+<li><b>三维柯西问题（习题 3）：</b>用多变量变换 (3.13)(3.14)，\(\hat u=\hat\varphi e^{-a^2(\lambda_1^2+\lambda_2^2+\lambda_3^2)t}\)，逆变换是三个一维核的乘积：
+$$K_3(\mathbf{x},t)=\frac{1}{8(\pi a^2t)^{3/2}}\exp\!\left(-\frac{|\mathbf{x}|^2}{4a^2t}\right)$$
+仍满足 \(\int K_3=1\)——总热量守恒在三维同样成立。</li>
+<li><b>二维基本解（习题 6）：</b>\(v(x,y,t;\xi,\eta,\tau)=\dfrac{1}{4\pi a^2(t-\tau)}\exp\!\left(-\dfrac{(x-\xi)^2+(y-\eta)^2}{4a^2(t-\tau)}\right)\) 对 \((x,y,t)\) 满足热方程，对源变量 \((\xi,\eta,\tau)\) 满足<b>伴随（ backward ）方程</b> \(\partial_\tau v+a^2(v_{\xi\xi}+v_{\eta\eta})=0\)。它是第 3 章格林函数的预演。</li>
+<li><b>半有界直线（习题 5(2)）：</b>\(x>0\) 上带 \(u(0,t)=0\) 的问题，把 \(\varphi\) <b>奇延拓</b>到整条直线（Neumann 边界则偶延拓），即可套用泊松公式——延拓法把边界条件「折」进初值里。</li>
+</ul>
+<div class="note"><b>实测备注（verify_cauchy.js，a=1）：</b>① 三维核：\(\iiint K_3\,\mathrm{d}x\mathrm{d}y\mathrm{d}z=\) <b>1.000000</b>（\(t=1\)，截断到 \(|x|\le30\)），且 \(K_3(\mathbf 0,1)=\) <b>0.022448</b>，与公式 \(1/(8\pi^{3/2})\) 一致。② 二维基本解（习题 6）：中心差分（\(h=10^{-4}\)）验证热方程残差 <b>7.0e-10</b>、伴随方程残差 <b>−7.0e-10</b>，\(\iint v\,\mathrm{d}x\mathrm{d}y=\) <b>1.000000</b>（源在 \((\xi,\eta)=(0,0)\)、\(\tau=0.3\)、\(t=1.2\)）。</div>
+
+<!-- ============ 8 小结 ============ -->
+<h2 id="summary"><span class="no">08</span>小结与速查表</h2>
+<ul class="tight">
+<li><b>思想：</b>区间长度 \(l\to\infty\) 把离散谱 \(\lambda_n=n\pi/l\) 压成连续谱，分离变量法升级为傅里叶变换法。</li>
+<li><b>机器：</b>\(\partial_x\mapsto i\lambda\)（性质 4）把 PDE 变 ODE；卷积→乘积（性质 2）把 ODE 的解逆变换成卷积。</li>
+<li><b>齐次柯西问题：</b>\(\hat u=\hat\varphi e^{-a^2\lambda^2t}\)，即 \(u=K_t*\varphi\)（泊松公式 (3.22)）。</li>
+<li><b>非齐次：</b>齐次化原理，源项贡献 = 泊松核对时间的积分 (3.28)。</li>
+<li><b>热核：</b>总质量 1（守恒）、宽度 \(a\sqrt{2t}\)（√t 律）、峰高 \(t^{-1/2}\)。</li>
+<li><b>存在性：</b>有界性 \(|u|\le M\)、\(t>0\) 可积分号求导、\(t\to0\) 时 \(u\to\varphi\)（间断点取左右平均）。</li>
+<li><b>一般框架：</b>\(u_t=Lu\Rightarrow u=K*\varphi\)，\(K=\mathcal{F}^{-1}[e^{P(i\lambda)t}]\)。</li>
+</ul>
+<table>
+<tr><th style="width:150px">工具</th><th>公式</th><th>一句话</th></tr>
+<tr><td>傅里叶变换对</td><td>(3.5)(3.6)</td><td>x 空间 ↔ λ 空间，差一个 \(2\pi\)</td></tr>
+<tr><td>导数定理</td><td>(3.11)</td><td>\(\partial_x^2\mapsto-\lambda^2\)，PDE 降级为 ODE</td></tr>
+<tr><td>卷积定理</td><td>(3.9)</td><td>卷积↔乘积，泊松公式的出处</td></tr>
+<tr><td>齐次解</td><td>(3.21)(3.22)</td><td>\(\hat u=\hat\varphi e^{-a^2\lambda^2t}\)；\(u=K_t*\varphi\)</td></tr>
+<tr><td>杜哈梅原理</td><td>(3.25)(3.28)</td><td>源项 = 热核对「上线时刻」的积分</td></tr>
+<tr><td>一般框架</td><td>(3.30)</td><td>\(K=\mathcal{F}^{-1}[e^{P(i\lambda)t}]\)，一个模板通吃常系数线性方程</td></tr>
+</table>
+<p>继续往下：<a href="./卷积与热传导方程.html">《卷积与热传导方程》</a>（热核的直觉与半群）、<a href="./分离变量法-热传导方程.html">《分离变量法》</a>（离散谱对照）、第 3 章调和方程（格林函数，习题 6 的二维基本解将在那里成为主角）、第 6 章广义函数（放宽初值条件）。</p>
+
+<footer>
+<p>素材：谷超豪 等《数学物理方程（第四版）》第 2 章 §3（教材 PDF p.88–95，书页 p.76–83）。公式按教材编号 (3.1)–(3.30)；OCR 片段已按推导重组。</p>
+<p>数值结论均由上级目录脚本 <code>verify_cauchy.js</code> 实测（node 直接运行，无第三方数值库）；公式经 <code>verify_formulas.js</code> 本地 mathjax-full 编译验证。本页零依赖、可离线打开（公式渲染需联网）。生成于 2026-10-16。</p>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+"use strict";
+function $(id){ return document.getElementById(id); }
+
+/* 通用绘图框架：返回坐标映射与坐标轴；o.ylog=true 时 y 轴取对数 */
+function newPlot(ctx, W, H, o){
+  var L = o.l || 46, R = o.r || 16, T = o.t || 14, B = o.b || 30;
+  var iw = W - L - R, ih = H - T - B;
+  var X = function(x){ return L + (x - o.xmin) / (o.xmax - o.xmin) * iw; };
+  var Y = o.ylog
+    ? function(y){ return T + ih - (Math.log10(Math.max(y, 1e-12)) - Math.log10(o.ymin)) / (Math.log10(o.ymax) - Math.log10(o.ymin)) * ih; }
+    : function(y){ return T + ih - (y - o.ymin) / (o.ymax - o.ymin) * ih; };
+  ctx.clearRect(0, 0, W, H);
+  ctx.font = "11px ui-monospace,monospace";
+  ctx.strokeStyle = "#d0d7de"; ctx.fillStyle = "#57606a"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, T + ih); ctx.lineTo(L + iw, T + ih); ctx.stroke();
+  if (!o.ylog && o.ymin < 0 && o.ymax > 0){ ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(L + iw, Y(0)); ctx.stroke(); }
+  (o.xt || []).forEach(function(v){
+    ctx.beginPath(); ctx.moveTo(X(v), T + ih); ctx.lineTo(X(v), T + ih + 4); ctx.stroke();
+    ctx.textAlign = "center"; ctx.fillText(o.xf ? o.xf(v) : v, X(v), T + ih + 16);
+  });
+  (o.yt || []).forEach(function(v){
+    ctx.beginPath(); ctx.moveTo(L - 4, Y(v)); ctx.lineTo(L, Y(v)); ctx.stroke();
+    ctx.textAlign = "right"; ctx.fillText(o.yf ? o.yf(v) : (o.ylog ? v.toExponential(0) : v), L - 7, Y(v) + 3);
+  });
+  if (o.xlab){ ctx.textAlign = "center"; ctx.fillText(o.xlab, L + iw / 2, H - 4); }
+  if (o.ylab){ ctx.save(); ctx.translate(11, T + ih / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylab, 0, 0); ctx.restore(); }
+  return { X: X, Y: Y, L: L, T: T, iw: iw, ih: ih };
+}
+/* 泊松积分：ζ 换元 + 中点法则，可在 φ 间断点处剖分（中点节点不碰间断点，无双计问题） */
+function poissonU(phi, jumps, x, t, Z){
+  Z = Z || 8;
+  var s = 2 * Math.sqrt(t), pts = [-Z];
+  (jumps || []).forEach(function(j){ var z = (j - x) / s; if (z > -Z && z < Z) pts.push(z); });
+  pts.push(Z); pts.sort(function(a, b){ return a - b; });
+  var sum = 0;
+  for (var i = 0; i < pts.length - 1; i++){
+    var a = pts[i], b = pts[i + 1], n = 600, h = (b - a) / n, acc = 0;
+    for (var k = 0; k < n; k++){ var z = a + (k + 0.5) * h; acc += phi(x + s * z) * Math.exp(-z * z); }
+    sum += acc * h;
+  }
+  return sum / Math.sqrt(Math.PI);
+}
+
+/* ========== 01 频谱致密化 ========== */
+(function(){
+  var cv = $("dn-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var LMAX = 12, kind = "box", l = 8, timer = null;
+  function ph(lam){
+    if (kind === "gauss") return Math.sqrt(2 * Math.PI) * Math.exp(-lam * lam / 2);
+    return lam === 0 ? 2 : 2 * Math.sin(lam) / lam;
+  }
+  function draw(){
+    var p = newPlot(ctx, W, H, { xmin: 0, xmax: LMAX, ymin: 0, ymax: 2.8,
+      xt: [0, 2, 4, 6, 8, 10, 12], yt: [0, 1, 2], xlab: "λ", ylab: "|φ̂(λ)|" });
+    var dlam = Math.PI / l;
+    /* 连续谱曲线 */
+    ctx.strokeStyle = "#D85A30"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2; ctx.beginPath();
+    for (var i = 0; i <= 360; i++){
+      var lam = i / 360 * LMAX, v = Math.abs(ph(lam));
+      var px = p.X(lam), py = p.Y(v);
+      if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+    /* 离散谱线 */
+    var nmax = Math.floor(LMAX / dlam);
+    ctx.strokeStyle = "#534AB7"; ctx.lineWidth = 1.6;
+    for (var n = 1; n <= nmax; n++){
+      var lam2 = n * dlam, hgt = Math.abs(ph(lam2));
+      ctx.beginPath(); ctx.moveTo(p.X(lam2), p.Y(0)); ctx.lineTo(p.X(lam2), p.Y(hgt)); ctx.stroke();
+    }
+    /* λ=1 参考线 */
+    ctx.strokeStyle = "#57606a"; ctx.setLineDash([2, 2]); ctx.beginPath();
+    ctx.moveTo(p.X(1), p.Y(0)); ctx.lineTo(p.X(1), p.Y(2.8)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#57606a"; ctx.textAlign = "left"; ctx.fillText("λ=1", p.X(1) + 4, p.T + 12);
+    $("dn-lv").textContent = "l = " + l.toFixed(1);
+    $("dn-dlam").textContent = dlam.toFixed(3);
+    $("dn-count").textContent = nmax;
+  }
+  $("dn-l").addEventListener("input", function(){ l = parseFloat(this.value) / 10; draw(); });
+  $("dn-play").onclick = function(){
+    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放致密化"; return; }
+    this.textContent = "暂停";
+    timer = setInterval(function(){
+      l *= 1.03; if (l > 64) l = 1;
+      $("dn-l").value = l * 10;
+      draw();
+    }, 60);
+  };
+  Array.prototype.forEach.call(document.querySelectorAll(".pre"), function(b){
+    b.onclick = function(){
+      document.querySelectorAll(".pre").forEach(function(x){ x.classList.remove("on"); });
+      b.classList.add("on"); kind = b.getAttribute("data-kind"); draw();
+    };
+  });
+  draw();
+})();
+
+/* ========== 03 变换机器 ========== */
+(function(){
+  var presets = {
+    gauss: { phi: function(x){ return Math.exp(-x * x / 2); },
+             hat: function(l){ return Math.sqrt(2 * Math.PI) * Math.exp(-l * l / 2); }, jumps: null },
+    box:   { phi: function(x){ return (x >= -1 && x <= 1) ? 1 : 0; },
+             hat: function(l){ return l === 0 ? 2 : 2 * Math.sin(l) / l; }, jumps: [-1, 1] },
+    bump:  { phi: function(x){ return Math.exp(-(x - 1.5) * (x - 1.5) / 0.3) + Math.exp(-(x + 1.5) * (x + 1.5) / 0.3); },
+             hat: function(l){ return 2 * Math.sqrt(0.15) * Math.sqrt(2 * Math.PI) * Math.exp(-0.15 * l * l / 2) * Math.cos(1.5 * l); }, jumps: null }
+  };
+  var cur = "gauss", t = 0.3, timer = null;
+  function tOf(v){ return 0.02 * Math.pow(150, v / 100); }
+  function draw(){
+    var P = presets[cur];
+    /* panel 1: φ(x) */
+    var c1 = $("fm-phi").getContext("2d");
+    var p1 = newPlot(c1, 840, 180, { xmin: -6, xmax: 6, ymin: -0.3, ymax: 1.6,
+      xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 1], xlab: "x", ylab: "φ(x)" });
+    c1.strokeStyle = "#185FA5"; c1.lineWidth = 2; c1.beginPath();
+    for (var i = 0; i <= 400; i++){
+      var x = -6 + i / 400 * 12, v = P.phi(x), px = p1.X(x), py = p1.Y(v);
+      if (i) c1.lineTo(px, py); else c1.moveTo(px, py);
+    }
+    c1.stroke();
+    c1.fillStyle = "#185FA5"; c1.font = "12px system-ui"; c1.textAlign = "left";
+    c1.fillText("初值 φ(x)", p1.L + 8, p1.T + 14);
+    /* panel 2: 频谱 */
+    var c2 = $("fm-hat").getContext("2d");
+    var p2 = newPlot(c2, 840, 220, { xmin: 0, xmax: 8, ymin: 0, ymax: 2.8,
+      xt: [0, 2, 4, 6, 8], yt: [0, 1, 2], xlab: "λ", ylab: "振幅" });
+    c2.strokeStyle = "#185FA5"; c2.lineWidth = 1.6; c2.beginPath();
+    for (var j = 0; j <= 400; j++){
+      var lam = j / 400 * 8, a1 = Math.abs(P.hat(lam)), qx = p2.X(lam), qy = p2.Y(a1);
+      if (j) c2.lineTo(qx, qy); else c2.moveTo(qx, qy);
+    }
+    c2.stroke();
+    c2.strokeStyle = "#D85A30"; c2.lineWidth = 2.4; c2.beginPath();
+    for (var k = 0; k <= 400; k++){
+      var lam2 = k / 400 * 8, a2 = Math.abs(P.hat(lam2)) * Math.exp(-lam2 * lam2 * t), rx = p2.X(lam2), ry = p2.Y(a2);
+      if (k) c2.lineTo(rx, ry); else c2.moveTo(rx, ry);
+    }
+    c2.stroke();
+    c2.strokeStyle = "#57606a"; c2.setLineDash([2, 2]); c2.beginPath();
+    c2.moveTo(p2.X(1), p2.Y(0)); c2.lineTo(p2.X(1), p2.Y(2.8)); c2.stroke(); c2.setLineDash([]);
+    c2.font = "12px system-ui"; c2.textAlign = "left";
+    c2.fillStyle = "#185FA5"; c2.fillText("初始频谱 |φ̂(λ)|", p2.L + 8, p2.T + 14);
+    c2.fillStyle = "#D85A30"; c2.fillText("当前频谱 |φ̂(λ)|·e^(−a²λ²t)", p2.L + 8, p2.T + 30);
+    c2.fillStyle = "#57606a"; c2.fillText("λ=1", p2.X(1) + 4, p2.T + 46);
+    /* panel 3: u(x,t) */
+    var c3 = $("fm-u").getContext("2d");
+    var p3 = newPlot(c3, 840, 220, { xmin: -6, xmax: 6, ymin: -0.3, ymax: 1.6,
+      xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 1], xlab: "x", ylab: "u(x,t)" });
+    c3.strokeStyle = "#9ea7b0"; c3.setLineDash([4, 3]); c3.lineWidth = 1.4; c3.beginPath();
+    for (var m = 0; m <= 400; m++){
+      var x2 = -6 + m / 400 * 12, v2 = P.phi(x2), sx = p3.X(x2), sy = p3.Y(v2);
+      if (m) c3.lineTo(sx, sy); else c3.moveTo(sx, sy);
+    }
+    c3.stroke(); c3.setLineDash([]);
+    c3.strokeStyle = "#D85A30"; c3.lineWidth = 2.2; c3.beginPath();
+    for (var q = 0; q <= 400; q++){
+      var x3 = -6 + q / 400 * 12, u = poissonU(P.phi, P.jumps, x3, t), ux = p3.X(x3), uy = p3.Y(u);
+      if (q) c3.lineTo(ux, uy); else c3.moveTo(ux, uy);
+    }
+    c3.stroke();
+    c3.font = "12px system-ui"; c3.textAlign = "left";
+    c3.fillStyle = "#D85A30"; c3.fillText("解 u(x,t)（泊松积分）", p3.L + 8, p3.T + 14);
+    c3.fillStyle = "#9ea7b0"; c3.fillText("初值 φ(x)（虚线）", p3.L + 8, p3.T + 30);
+    /* readouts */
+    $("fm-tv").textContent = t.toFixed(2);
+    $("fm-keep").textContent = (Math.exp(-t) * 100).toFixed(1) + "%";
+    $("fm-fwhm").textContent = (2 * Math.sqrt(t * Math.LN2)).toFixed(2);
+  }
+  $("fm-t").addEventListener("input", function(){ t = tOf(parseFloat(this.value)); draw(); });
+  $("fm-play").onclick = function(){
+    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放"; return; }
+    this.textContent = "暂停";
+    timer = setInterval(function(){
+      var v = parseFloat($("fm-t").value) + 1; if (v > 100) v = 0;
+      $("fm-t").value = v; t = tOf(v); draw();
+    }, 60);
+  };
+  Array.prototype.forEach.call(document.querySelectorAll(".fp"), function(b){
+    b.onclick = function(){
+      document.querySelectorAll(".fp").forEach(function(x){ x.classList.remove("on"); });
+      b.classList.add("on"); cur = b.getAttribute("data-p"); draw();
+    };
+  });
+  t = tOf(42); draw();
+})();
+
+/* ========== 04 热核展宽 ========== */
+(function(){
+  var cv = $("kw-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var t = 1, timer = null;
+  function K(x, t){ return Math.exp(-x * x / (4 * t)) / (2 * Math.sqrt(Math.PI * t)); }
+  function draw(){
+    var p = newPlot(ctx, W, H, { xmin: -8, xmax: 8, ymin: 0, ymax: 1.1,
+      xt: [-8, -4, 0, 4, 8], yt: [0, 0.5, 1], xlab: "x", ylab: "K(x,t)" });
+    [0.1, 0.3, 1, 2].forEach(function(tg){
+      ctx.strokeStyle = "#c7cdd4"; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.beginPath();
+      for (var i = 0; i <= 300; i++){
+        var x = -8 + i / 300 * 16, y = K(x, tg), px = p.X(x), py = p.Y(y);
+        if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = "#9ea7b0"; ctx.font = "10.5px ui-monospace,monospace"; ctx.textAlign = "center";
+      ctx.fillText("t=" + tg, p.X(-3.2), p.Y(K(-3.2, tg)) - 4);
+    });
+    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.4; ctx.beginPath();
+    for (var j = 0; j <= 400; j++){
+      var x2 = -8 + j / 400 * 16, y2 = K(x2, t), qx = p.X(x2), qy = p.Y(y2);
+      if (j) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
+    }
+    ctx.stroke();
+    /* ±2√t 标记（核的 e^{-1} 点） */
+    var w = 2 * Math.sqrt(t);
+    ctx.strokeStyle = "#185FA5"; ctx.setLineDash([2, 2]); ctx.beginPath();
+    ctx.moveTo(p.X(-w), p.Y(0)); ctx.lineTo(p.X(-w), p.Y(K(-w, t) + 0.06));
+    ctx.moveTo(p.X(w), p.Y(0)); ctx.lineTo(p.X(w), p.Y(K(w, t) + 0.06));
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#185FA5"; ctx.font = "11.5px ui-monospace,monospace"; ctx.textAlign = "center";
+    ctx.fillText("±2a√t = ±" + w.toFixed(2), p.X(w), p.Y(K(w, t) + 0.10));
+    $("kw-peak").textContent = K(0, t).toFixed(3);
+    $("kw-sd").textContent = Math.sqrt(2 * t).toFixed(3);
+    $("kw-mass").textContent = "1.000000";
+  }
+  $("kw-t").addEventListener("input", function(){ t = 0.05 * Math.pow(60, parseFloat(this.value) / 100); draw(); });
+  $("kw-play").onclick = function(){
+    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放展宽"; return; }
+    this.textContent = "暂停";
+    timer = setInterval(function(){
+      var v = parseFloat($("kw-t").value) + 1; if (v > 100) v = 0;
+      $("kw-t").value = v; t = 0.05 * Math.pow(60, v / 100); draw();
+    }, 60);
+  };
+  t = 0.05 * Math.pow(60, 46 / 100); draw();
+})();
+
+/* ========== 05 杜哈梅 ========== */
+(function(){
+  var presets = {
+    "const": { f: function(x, tau){ return 1; }, exact: function(x, t){ return t; }, win: null },
+    "blob":  { f: function(x, tau){ return (tau >= 0.4 && tau <= 1.6) ? Math.exp(-x * x / 0.4) : 0; }, exact: null, win: [0.4, 1.6] },
+    "osc":   { f: function(x, tau){ return Math.cos(x) * Math.exp(-tau); },
+               exact: function(x, t){ return t * Math.exp(-t) * Math.cos(x); }, win: null }
+  };
+  var cur = "const", t = 0.3, timer = null;
+  /* 局部 Simpson（源函数光滑，无间断点问题） */
+  function simpson(f, a, b, n){
+    if (n % 2) n++;
+    var h = (b - a) / n, s = f(a) + f(b);
+    for (var i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * f(a + i * h);
+    return s * h / 3;
+  }
+  /* ∫K(x-ξ,s)f(ξ,τ)dξ：ζ 换元 + Simpson */
+  function innerK(P, x, s, tau){
+    if (s <= 0) return P.f(x, tau);
+    return simpson(function(z){ return P.f(x + 2 * Math.sqrt(s) * z, tau) * Math.exp(-z * z); }, -8, 8, 160) / Math.sqrt(Math.PI);
+  }
+  /* (3.28)：对 τ 积分；时段源在窗口边界处剖分，保证每段光滑 */
+  function uOf(P, x, t){
+    var pts = [0];
+    (P.win || []).forEach(function(e){ if (e > 0 && e < t) pts.push(e); });
+    pts.push(t); pts.sort(function(a, b){ return a - b; });
+    var sum = 0;
+    for (var i = 0; i < pts.length - 1; i++)
+      sum += simpson(function(tau){ return innerK(P, x, t - tau, tau); }, pts[i], pts[i + 1], 48);
+    return sum;
+  }
+  function draw(){
+    var P = presets[cur];
+    /* 上 panel：当前源 */
+    var c1 = $("dm-src").getContext("2d");
+    var p1 = newPlot(c1, 840, 170, { xmin: -6, xmax: 6, ymin: -0.25, ymax: 1.25,
+      xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 1], xlab: "x", ylab: "f(x,t)" });
+    c1.strokeStyle = "#0F6E56"; c1.lineWidth = 2.2; c1.beginPath();
+    for (var i = 0; i <= 180; i++){
+      var x = -6 + i / 180 * 12, v = P.f(x, t), px = p1.X(x), py = p1.Y(v);
+      if (i) c1.lineTo(px, py); else c1.moveTo(px, py);
+    }
+    c1.stroke();
+    c1.fillStyle = "#0F6E56"; c1.font = "12px system-ui"; c1.textAlign = "left";
+    c1.fillText("当前热源 f(x,t)", p1.L + 8, p1.T + 14);
+    /* 下 panel：解 */
+    var c2 = $("dm-u").getContext("2d");
+    var p2 = newPlot(c2, 840, 230, { xmin: -6, xmax: 6, ymin: -1.2, ymax: 1.2,
+      xt: [-6, -4, -2, 0, 2, 4, 6], yt: [-1, 0, 1], xlab: "x", ylab: "u(x,t)" });
+    if (P.exact){
+      c2.strokeStyle = "#9ea7b0"; c2.setLineDash([4, 3]); c2.lineWidth = 1.4; c2.beginPath();
+      for (var m = 0; m <= 180; m++){
+        var x2 = -6 + m / 180 * 12, ve = P.exact(x2, t), ex = p2.X(x2), ey = p2.Y(ve);
+        if (m) c2.lineTo(ex, ey); else c2.moveTo(ex, ey);
+      }
+      c2.stroke(); c2.setLineDash([]);
+    }
+    c2.strokeStyle = "#D85A30"; c2.lineWidth = 2.2; c2.beginPath();
+    for (var q = 0; q <= 180; q++){
+      var x3 = -6 + q / 180 * 12, u = uOf(P, x3, t), ux = p2.X(x3), uy = p2.Y(u);
+      if (q) c2.lineTo(ux, uy); else c2.moveTo(ux, uy);
+    }
+    c2.stroke();
+    c2.font = "12px system-ui"; c2.textAlign = "left";
+    c2.fillStyle = "#D85A30"; c2.fillText("杜哈梅积分 (3.28)", p2.L + 8, p2.T + 14);
+    if (P.exact){ c2.fillStyle = "#9ea7b0"; c2.fillText("解析解（虚线）", p2.L + 8, p2.T + 30); }
+    /* readouts */
+    $("dm-tv").textContent = t.toFixed(2);
+    var u0 = uOf(P, 0, t);
+    $("dm-u0").textContent = u0.toFixed(4);
+    if (P.exact){
+      var err = Math.abs(u0 - P.exact(0, t));
+      $("dm-err").textContent = err.toExponential(1);
+    } else {
+      $("dm-err").textContent = "—（无初等解）";
+    }
+  }
+  $("dm-t").addEventListener("input", function(){ t = 0.05 * Math.pow(60, parseFloat(this.value) / 100); draw(); });
+  $("dm-play").onclick = function(){
+    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放"; return; }
+    this.textContent = "暂停";
+    timer = setInterval(function(){
+      var v = parseFloat($("dm-t").value) + 1; if (v > 100) v = 0;
+      $("dm-t").value = v; t = 0.05 * Math.pow(60, v / 100); draw();
+    }, 80);
+  };
+  Array.prototype.forEach.call(document.querySelectorAll(".dp"), function(b){
+    b.onclick = function(){
+      document.querySelectorAll(".dp").forEach(function(x){ x.classList.remove("on"); });
+      b.classList.add("on"); cur = b.getAttribute("data-p"); draw();
+    };
+  });
+  t = 0.05 * Math.pow(60, 40 / 100); draw();
+})();
+
+/* ========== 06 存在性：t→0 收敛 ========== */
+(function(){
+  var cv = $("cv-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var cvt = $("cv-tail"), ctxx = cvt.getContext("2d"), TW = cvt.width, TH = cvt.height;
+  var t = 0.01, timer = null;
+  function box(x){ return (x >= -1 && x <= 1) ? 1 : 0; }
+  function draw(){
+    var p = newPlot(ctx, W, H, { xmin: -3, xmax: 3, ymin: -0.25, ymax: 1.3,
+      xt: [-3, -2, -1, 0, 1, 2, 3], yt: [0, 0.5, 1], xlab: "x", ylab: "u / φ" });
+    /* 初值（阶梯） */
+    ctx.strokeStyle = "#185FA5"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.8; ctx.beginPath();
+    for (var i = 0; i <= 300; i++){
+      var x = -3 + i / 300 * 6, v = box(x), px = p.X(x), py = p.Y(v);
+      if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+    /* 解 */
+    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.2; ctx.beginPath();
+    for (var j = 0; j <= 400; j++){
+      var x2 = -3 + j / 400 * 6, u = poissonU(box, [-1, 1], x2, t), qx = p.X(x2), qy = p.Y(u);
+      if (j) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
+    }
+    ctx.stroke();
+    /* 间断点标记 */
+    ctx.fillStyle = "#57606a"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "center";
+    ctx.fillText("x=1 处 u→0.5（左右平均）", p.X(1), p.T + 12);
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#185FA5"; ctx.fillText("初值 φ（方波，虚线）", p.L + 8, p.T + 26);
+    ctx.fillStyle = "#D85A30"; ctx.fillText("解 u(x,t)", p.L + 8, p.T + 42);
+    /* 误差读数 */
+    var worst = 0;
+    for (var g = 0; g <= 600; g++){
+      var xg = -3 + g / 600 * 6;
+      if (Math.abs(xg - 1) < 0.3 || Math.abs(xg + 1) < 0.3) continue;
+      var e = Math.abs(poissonU(box, [-1, 1], xg, t) - box(xg));
+      if (e > worst) worst = e;
+    }
+    $("cv-tv").textContent = t < 0.01 ? t.toExponential(1) : t.toFixed(3);
+    $("cv-err").textContent = worst < 1e-3 ? worst.toExponential(1) : worst.toFixed(4);
+    $("cv-jump").textContent = poissonU(box, [-1, 1], 1, t).toFixed(4);
+    /* 尾部账本（对数纵轴） */
+    var M = 1, eps = 0.01, YMAX = 0.5;
+    var pt = newPlot(ctxx, TW, TH, { xmin: 0, xmax: 4, ymin: 1e-6, ymax: YMAX, ylog: true,
+      xt: [0, 1, 2, 3, 4], yt: [1e-6, 1e-4, 1e-2], xlab: "N", ylab: "尾部质量" });
+    function tail(N){
+      var n = 4000, h = (10 - N) / n, acc = 0;
+      for (var k = 0; k < n; k++){ var z = N + (k + 0.5) * h; acc += Math.exp(-z * z); }
+      return 2 * M / Math.sqrt(Math.PI) * acc * h;
+    }
+    ctxx.strokeStyle = "#534AB7"; ctxx.lineWidth = 2; ctxx.beginPath();
+    for (var s = 0; s <= 200; s++){
+      var N = s / 200 * 4, tv = tail(N), tx = pt.X(N), ty = pt.Y(tv);
+      if (s) ctxx.lineTo(tx, ty); else ctxx.moveTo(tx, ty);
+    }
+    ctxx.stroke();
+    /* ε/3 水平线 */
+    ctxx.strokeStyle = "#D85A30"; ctxx.setLineDash([5, 3]); ctxx.beginPath();
+    ctxx.moveTo(pt.L, pt.Y(eps / 3)); ctxx.lineTo(pt.L + pt.iw, pt.Y(eps / 3)); ctxx.stroke(); ctxx.setLineDash([]);
+    ctxx.fillStyle = "#D85A30"; ctxx.font = "11.5px ui-monospace,monospace"; ctxx.textAlign = "left";
+    ctxx.fillText("ε/3 = 0.00333（ε=0.01）", pt.L + 6, pt.Y(eps / 3) - 5);
+    /* N=2.08 竖线 */
+    ctxx.strokeStyle = "#0F6E56"; ctxx.setLineDash([2, 2]); ctxx.beginPath();
+    ctxx.moveTo(pt.X(2.08), pt.T); ctxx.lineTo(pt.X(2.08), pt.T + pt.ih); ctxx.stroke(); ctxx.setLineDash([]);
+    ctxx.fillStyle = "#0F6E56"; ctxx.textAlign = "center";
+    ctxx.fillText("N=2.08", pt.X(2.08), pt.T + 12);
+    ctxx.fillStyle = "#534AB7"; ctxx.textAlign = "left";
+    ctxx.fillText("尾部质量 (2M/√π)∫_N^∞ e^(−ζ²)dζ", pt.L + 8, pt.T + pt.ih - 8);
+  }
+  $("cv-t").addEventListener("input", function(){ t = 0.001 * Math.pow(500, parseFloat(this.value) / 100); draw(); });
+  $("cv-play").onclick = function(){
+    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放收敛"; return; }
+    this.textContent = "暂停";
+    timer = setInterval(function(){
+      var v = parseFloat($("cv-t").value) - 1.2; if (v < 0) v = 100;
+      $("cv-t").value = v; t = 0.001 * Math.pow(500, v / 100); draw();
+    }, 80);
+  };
+  t = 0.001 * Math.pow(500, 60 / 100); draw();
+})();
+
+setTimeout(function(){
+  if (!document.querySelector("mjx-container")) {
+    var b = document.getElementById("mjx-offline");
+    if (b) b.hidden = false;
+  }
+}, 2500);
+</script>
+</body>
+</html>

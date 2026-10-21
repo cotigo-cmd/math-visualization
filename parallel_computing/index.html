@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>并行算法 · 筹备中</title>
+<!--
+  维护说明（给未来的自己）：
+  本页是占位门牌——学科尚未开工。开工时按新学科启动提示词（math_visualization/新学科启动提示词.md）
+  重建本页为正式章节导航，版式自定（门户不限定学科风格），然后把总导航 site/index.html
+  里对应卡片的标签从「筹备中」改成「已上线」。
+-->
+<style>
+:root{
+  --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --card:#f6f8fa;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--text);
+  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:64px 22px 60px}
+.crumb{font-size:13px;margin:0 0 18px}
+.crumb a{color:var(--accent);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 8px;font-weight:650}
+p.lead{color:var(--muted);font-size:15px;margin:0 0 24px;max-width:64ch}
+.tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,monospace;
+  border-radius:5px;padding:1px 8px;margin-right:10px;vertical-align:2px;font-weight:500;
+  background:#F1EFE8;color:#5F5E5A}
+.card{display:block;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:16px 22px;margin:0 0 12px}
+.card .t{font-size:15.5px;font-weight:650;margin:0 0 4px;color:var(--accent-dark)}
+.card .d{font-size:13.5px;color:var(--muted);margin:0;line-height:1.7}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--border);
+  font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a></p>
+<h1><span class="tag">筹备中</span>并行算法</h1>
+<p class="lead">教材：Michael J. Quinn《Parallel Programming in C with MPI and OpenMP》（知识库代号 quinn）。并行不是「同时跑很多」——分解、通信、同步、加速比，每个概念配可拖动的实验台。</p>
+
+<div class="card">
+<p class="t">1 · 性能分析：Amdahl 与 Gustafson</p>
+<p class="d">串行比例 s 固定时加速比的天花板、放大问题规模的另一条路——课程与科研（芯片散热大规模求解）的双场景入口。（ch7，首选）</p>
+</div>
+<div class="card">
+<p class="t">2 · 并行算法设计模式</p>
+<p class="d">规约 / 扫描 / 分治三类模式的动画：数据怎么分、结果怎么合。（ch3）</p>
+</div>
+<div class="card">
+<p class="t">3 · 经典算法的并行时间线</p>
+<p class="d">筛法、Floyd、排序、FFT 的并行 Gantt 图：通信与计算的交错可视化。（ch5/6/14/15）</p>
+</div>
+<div class="card">
+<p class="t">4 · 稠密线性方程组的并行</p>
+<p class="d">高斯消元与 CG 的并行化——与数值线代学科交叉，放最后。（ch12）</p>
+</div>
+
+<footer>
+<p>以上为开工前的规划草案（按可视化增益 + 与科研连接度排序），最终顺序以新对话独立判断为准。</p>
+<p>占位门牌页：本学科开工时重建为正式章节导航，版式自定。</p>
+</footer>
+
+</div>
+</body>
+</html>

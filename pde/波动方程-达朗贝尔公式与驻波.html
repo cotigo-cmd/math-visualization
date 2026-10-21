@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>弦的振动：达朗贝尔公式与驻波 — 谷超豪《数学物理方程》第 1 章 §1–§3 可视化</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:28px;line-height:1.35;margin:0 0 12px;font-weight:600}
+h2{font-size:22px;margin:64px 0 16px;font-weight:600;padding-top:8px;border-top:1px solid var(--border)}
+h2 .no{color:var(--accent);font-family:var(--mono);font-size:16px;margin-right:10px;font-weight:400}
+h3{font-size:17px;margin:36px 0 10px;font-weight:600}
+h4{font-size:15px;margin:24px 0 8px;font-weight:600}
+p{margin:12px 0}
+.hero{padding:56px 0 8px}
+.hero p.lead{font-size:17px;color:var(--muted);max-width:780px;margin:0}
+nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+nav .wrap{padding:10px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px}
+nav a{color:var(--muted)}
+nav a:hover{color:var(--accent);text-decoration:none}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.thm{border-left:3px solid var(--teal);background:#E1F5EE;padding:12px 18px;
+  border-radius:0 8px 8px 0;margin:18px 0;font-size:14.6px}
+.thm .tag{font-family:var(--mono);font-size:12px;color:var(--teal);font-weight:600;margin-right:8px}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--card);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+.ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
+.ctl input[type=range]{flex:1;min-width:150px;accent-color:var(--accent)}
+button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
+.val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
+figure{margin:20px 0}
+figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+canvas.plot{width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kv .cell{background:var(--card);border-radius:8px;padding:10px 14px}
+.kv .k{font-size:12.5px;color:var(--muted)}
+.kv .v{font-family:var(--mono);font-size:16.5px;font-weight:600;color:var(--accent-dark)
+}
+.kv .v.ok{color:var(--teal)}
+.kv .v.bad{color:var(--coral)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:6px 0 0;font-family:var(--mono)}
+mjx-container{display:block!important;margin:.35em 0!important}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[display="true"]{overflow-x:auto}
+mjx-container[display="true"]>svg{display:block;margin:0 auto}
+p mjx-container,li mjx-container,td mjx-container,h4 mjx-container,.thm mjx-container{display:inline-block!important;margin:0!important;vertical-align:baseline}
+p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,h4 mjx-container>svg,.thm mjx-container>svg{display:inline!important;margin:0!important;vertical-align:-1px}
+#mjx-offline{background:#fdf6ec;border:1px solid #EF9F27;border-radius:8px;padding:8px 14px;font-size:13px;color:#854F0B;margin:14px 0}
+#mjx-offline[hidden]{display:none}
+footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+ul.tight li{margin:6px 0}
+code{font-family:var(--mono);font-size:13px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:0 4px}
+.crumb{font-size:13px;margin:0 0 18px}
+.crumb a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div id="mjx-offline" hidden>公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响但内容不受影响。</div>
+
+<div class="hero"><div class="wrap">
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> · <a href="./index.html">数学物理方程</a></p>
+<h1>弦的振动：达朗贝尔公式与驻波</h1>
+<p class="lead">谷超豪 等《数学物理方程（第四版）》第 1 章 §1–§3 的交互可视化。一条弦，三种看法：§1 用牛顿第二定律把它「摇」成方程 \(u_{tt}-a^2u_{xx}=f\)；§2 用达朗贝尔公式把解拆成一左一右两个行波，读出依赖区间与有限传播速度；§3 用分离变量法把同一批解重新组合成驻波与频谱。页面数值结论由工作区根 <code>verify_readout_wave.js</code> 端到端实测。</p>
+</div></div>
+
+<nav><div class="wrap">
+<a href="#map">总览</a>
+<a href="#derive">导出</a>
+<a href="#conditions">定解条件</a>
+<a href="#travel">通解</a>
+<a href="#dalembert">达朗贝尔</a>
+<a href="#regions">依赖区域</a>
+<a href="#reflect">反射</a>
+<a href="#duhamel">齐次化</a>
+<a href="#standing">驻波</a>
+<a href="#plucked">拨弦</a>
+<a href="#nonhomo">非齐次</a>
+<a href="#compare">对比实验室</a>
+<a href="#summary">速查</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ============ 00 总览 ============ -->
+<h2><span class="no">00</span>一页总览：一条弦的三种看法</h2>
+<div class="kv">
+<div class="cell"><div class="k">方程（§1）</div><div class="v">\(u_{tt}-a^2u_{xx}=f\)</div></div>
+<div class="cell"><div class="k">通解（§2）</div><div class="v">\(F(x-at)+G(x+at)\)</div></div>
+<div class="cell"><div class="k">驻波（§3）</div><div class="v">\(\sum\) 模态叠加</div></div>
+</div>
+<p>同一条两端固定的弦，同一种运动，本章用两条互相印证的技术路线各解一遍：</p>
+<ul class="tight">
+<li><b>行波路线（§2）</b>：无界弦（柯西问题）的解是右传播波与左传播波的叠加，<b>达朗贝尔公式</b>把初值 φ、ψ 直接写成积分表达式。它一眼给出有限传播速度、依赖区间、决定区域、影响区域，也顺手证明了存在唯一性与连续依赖性。</li>
+<li><b>驻波路线（§3）</b>：有界弦（初边值问题）的解是一系列驻波的叠加，频率成整数倍——这正是「弦为什么发出泛音」的数学。分离变量法把 PDE 化成常微分方程的固有值问题。</li>
+<li>两条路线在<b>反射</b>问题上交汇：固定端的奇延拓 = 行波相位翻转；自由端的偶延拓 = 同相反射。</li>
+</ul>
+<table>
+<tr><th>节</th><th>主题</th><th>本页交互</th><th>教材页码（PDF）</th></tr>
+<tr><td>§1</td><td>弦振动方程导出、定解条件、适定性</td><td>微元段受力沙盘 · 三类边界条件</td><td>p.13–21</td></tr>
+<tr><td>§2</td><td>叠加原理、达朗贝尔公式、波的传播、齐次化原理</td><td>特征线 · 达朗贝尔求解器 · 依赖/影响区域 · 反射实验室 · 齐次化积分</td><td>p.22–31</td></tr>
+<tr><td>§3</td><td>初边值问题的分离变量法、物理意义</td><td>驻波实验室 · 拨弦频谱</td><td>p.32–42</td></tr>
+</table>
+
+<!-- ============ 01 导出 ============ -->
+<h2><span class="no">01</span>§1.1 从一根弦导出波动方程</h2>
+<p>考察两端固定、拉紧、均匀柔软的弦，长 \(l\)，在平衡位置附近作微小横振动，记点 \(x\) 在时刻 \(t\) 的位移为 \(u(x,t)\)。三条基本假设（教材 p.2）：(1) 弦均匀，(线)密度 \(\rho\) 为常数；(2) 微小横振动，\(\partial u/\partial x\) 处处很小；(3) 弦柔软不抗弯，张力沿切线方向，伸长服从胡克定律。</p>
+
+<h3>微元段受力沙盘</h3>
+<p>任取弦段 \((x,\,x+\Delta x)\)。假设 (2) 使弧长</p>
+$$\Delta s=\int_x^{x+\Delta x}\sqrt{1+\left(\tfrac{\partial u}{\partial x}\right)^2}\,\mathrm{d}x\approx \Delta x,$$
+<p>弦段在振动中不被拉长，于是由胡克定律，张力大小 \(T(x)\) 与 \(x\)、\(t\) 都无关，是常数 \(T\)。段两端张力的垂直分量差</p>
+$$T\sin\alpha_2-T\sin\alpha_1\;\approx\;T\left[\frac{\partial u}{\partial x}(x+\Delta x,t)-\frac{\partial u}{\partial x}(x,t)\right],$$
+<p>与动量变化率相等（冲量 = 动量增量），令 \(\Delta x,\Delta t\to 0\) 即得无外力方程</p>
+$$\frac{\partial^2 u}{\partial t^2}=a^2\frac{\partial^2 u}{\partial x^2},\qquad a^2=\frac{T}{\rho}.$$
+<figure>
+<canvas id="seg-cv" class="plot" width="840" height="320"></canvas>
+<figcaption>交互 1 · 微元段受力沙盘：拖动滑杆移动弦段、改变段宽。两端张力沿切线，垂直分量之差驱动这段弦的横向加速。</figcaption>
+</figure>
+<div class="ctl">
+<label>弦段左端 \(x_0\)<input type="range" id="seg-x0" min="-200" max="120" value="40"><span class="val" id="seg-x0v">0.40</span></label>
+<label>段宽 \(\Delta x\)<input type="range" id="seg-dx" min="20" max="160" value="80"><span class="val" id="seg-dxv">0.80</span></label>
+</div>
+<div class="kv">
+<div class="cell"><div class="k">左端倾角 \(\alpha_1\)</div><div class="v" id="seg-a1">—</div></div>
+<div class="cell"><div class="k">右端倾角 \(\alpha_2\)</div><div class="v" id="seg-a2">—</div></div>
+<div class="cell"><div class="k">垂直合力 \(T(\sin\alpha_2-\sin\alpha_1)\)</div><div class="v" id="seg-net">—</div></div>
+<div class="cell"><div class="k">水平残余 \(T(\cos\alpha_2-\cos\alpha_1)\)</div><div class="v" id="seg-hz">—</div></div>
+<div class="cell"><div class="k">弧长修正 \(\Delta s/\Delta x\)</div><div class="v" id="seg-ds">—</div></div>
+</div>
+<p class="note">沙盘取 \(T=\rho=1\)（即 \(a=1\)）。水平残余与垂直合力之比约 \(\alpha/2\) 量级——它随<b>斜率平方</b>衰减，正是假设 (2)「微小振动」把张力钳成常数的原因；垂直合力才是一阶主角，它与 \(u_{xx}\) 成正比，除以 \(\rho\) 就是弦段的横向加速度。</p>
+
+<h3>外力项与高维形式</h3>
+<p>若有垂直于 \(x\) 轴的外力（线）密度 \(F(x,t)\)，冲量平衡式左侧添上 \(\int_x^{x+\Delta x}F\,\mathrm{d}x\,\Delta t\)，得到</p>
+$$\frac{\partial^2 u}{\partial t^2}=a^2\frac{\partial^2 u}{\partial x^2}+f(x,t),\qquad f(x,t)=\frac{F(x,t)}{\rho},$$
+<p>其中 \(f\) 是<b>单位质量</b>所受外力。薄膜与弹性体的振动依同一套路导出（教材 (1.15)(1.16)）：</p>
+$$\frac{\partial^2 u}{\partial t^2}=a^2\left(\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}\right)+f(x,y,t),\qquad
+\frac{\partial^2 u}{\partial t^2}=a^2\Delta u+f(x,y,z,t).$$
+<p class="note">波速实测参考（本页公式 \(a=\sqrt{T/\rho}\)）：吉他弦 \(T=70\,\mathrm{N}\)、\(\rho=0.004\,\mathrm{kg/m}\) ⟹ \(a=132.3\,\mathrm{m/s}\)；若弦长 \(0.65\,\mathrm{m}\)，基频 \(f_1=a/(2l)=101.8\,\mathrm{Hz}\)。钢琴 C4（\(261.6\,\mathrm{Hz}\)，弦长约 \(0.6\,\mathrm{m}\)）对应 \(a\approx314\,\mathrm{m/s}\)——高音弦更短更紧，波速更高。</p>
+
+<!-- ============ 02 定解条件 ============ -->
+<h2><span class="no">02</span>§1.2 定解条件与适定性</h2>
+<p>方程只描述一般规律，要确定运动还得给出<b>初始条件</b>与<b>边界条件</b>（合称定解条件）。两端固定的初边值问题（教材 (1.19)–(1.22)）：</p>
+$$\begin{cases}
+\dfrac{\partial^2 u}{\partial t^2}-a^2\dfrac{\partial^2 u}{\partial x^2}=f(x,t), & t&gt;0,\;0&lt;x&lt;l,\\[2mm]
+t=0:\;u=\varphi(x),\;\dfrac{\partial u}{\partial t}=\psi(x), & 0&lt;x&lt;l,\\[2mm]
+x=0:\;u=0,\qquad x=l:\;u=0, & t&gt;0.
+\end{cases}$$
+<h3>三类边界条件</h3>
+<figure>
+<canvas id="bc-cv" class="plot" width="840" height="300"></canvas>
+<figcaption>交互 2 · 三类边界：同一个左行脉冲撞上不同的端点。固定端翻转反射，自由端同相反射，弹性支承把端点拴在弹簧上。</figcaption>
+</figure>
+<div class="ctl">
+<button id="bc-d" class="on">第一类 · 固定端</button>
+<button id="bc-n">第二类 · 自由端</button>
+<button id="bc-r">第三类 · 弹性支承</button>
+<label>时间 \(t\)<input type="range" id="bc-t" min="0" max="50" value="0"><span class="val" id="bc-tv">0.00</span></label>
+<button id="bc-play">播放</button>
+</div>
+<div class="kv">
+<div class="cell"><div class="k">当前边界条件</div><div class="v" id="bc-form" style="font-size:14px">—</div></div>
+<div class="cell"><div class="k">反射系数（脉冲）</div><div class="v" id="bc-coef">—</div></div>
+<div class="cell"><div class="k">端点位移 \(u(0,t)\)</div><div class="v" id="bc-wall">—</div></div>
+</div>
+<ul class="tight">
+<li><b>第一类（Dirichlet）</b>：\(u|_{x=0}=0\)。端点固定，脉冲<b>反相</b>反射（系数 \(-1\)）。</li>
+<li><b>第二类（Neumann）</b>：\(\partial u/\partial x|_{x=0}=0\)。端点在垂直方向自由滑动，脉冲<b>同相</b>反射（系数 \(+1\)）。</li>
+<li><b>第三类（Robin）</b>：\(\partial u/\partial x+\sigma u=0\)，\(\sigma=k/T\)（教材 p.7，\(k\) 为弹性系数）。弹性支承不耗能，各频率全反射但相移依赖频率，脉冲会被涂抹；沙盘只演示弹簧本身的伸缩。</li>
+</ul>
+<h3>适定性三问</h3>
+<div class="card">
+<p>给定定解问题后第一件事是问提法是否合适（教材 p.8）：<b>存在性</b>（解是否存在？）、<b>唯一性</b>（解是否只有一个？）、<b>稳定性</b>（定解条件或自由项做微小改变时，解是否也只微小改变？）。三者合称<b>适定性</b>。</p>
+<p>本章的答卷：§2 的达朗贝尔公式把柯西问题的解写成初值的有限表达式，存在、唯一、连续依赖一并兑现（定理 2.1）；§3 的级数解在相容性条件下是经典解（定理 3.1）；稳定性（含能量守恒）由第 1 章 §6 的能量积分方法给出。反过来，缺了条件的提法可能崩坏——经典反例是拉普拉斯方程的柯西问题（Hadamard 例，见第 3 章 A 页交互 03c）。</p>
+</div>
+
+<!-- ============ 03 通解 ============ -->
+<h2><span class="no">03</span>§2.1–2 叠加原理与通解</h2>
+<p>线性方程 + 线性定解条件 ⟹ 叠加原理：若 \(u_1,u_2\) 分别是带自由项 \(f_1,f_2\) 的方程的解，则 \(C_1u_1+C_2u_2\) 解自由项 \(C_1f_1+C_2f_2\) 的方程。把柯西问题</p>
+$$\frac{\partial^2 u}{\partial t^2}-a^2\frac{\partial^2 u}{\partial x^2}=f(x,t)\quad(t&gt;0,\,-\infty&lt;x&lt;\infty),\qquad
+t=0:\;u=\varphi(x),\;\frac{\partial u}{\partial t}=\psi(x),$$
+<p>分解为「齐次方程 + 非齐次初值」(I) 与「非齐次方程 + 齐次初值」(II)，分别求解再相加。对 (I) 引入特征坐标</p>
+$$\xi=x-at,\qquad \eta=x+at,$$
+<p>链式法则把方程化为 \(\partial^2u/\partial\xi\partial\eta=0\)，两次积分即得通解</p>
+$$u(x,t)=F(x-at)+G(x+at).$$
+<div class="key"><b>特征线</b>：在 \((x,t)\) 平面上，\(x=x_0\pm at\) 两条直线称为波动方程的特征线（斜率 \(\pm 1/a\)）。沿它们 \(\xi\) 或 \(\eta\) 守恒，扰动沿特征线传播——「有限传播速度」的全部秘密就在这两根斜线里。</div>
+<figure>
+<canvas id="ch-cv" class="plot" width="840" height="300"></canvas>
+<figcaption>交互 3 · 特征线网格：拖动波速 \(a\)，看特征线斜率 \(\pm1/a\) 如何张合。原点扰动的可达范围永远是这两根线夹成的角状区域。</figcaption>
+</figure>
+<div class="ctl">
+<label>波速 \(a\)<input type="range" id="ch-a" min="20" max="200" value="100"><span class="val" id="ch-av">1.00</span></label>
+</div>
+<div class="kv">
+<div class="cell"><div class="k">特征线斜率</div><div class="v" id="ch-slope">±1.000</div></div>
+<div class="cell"><div class="k">扰动从 \(x_0=-2\) 到 \(x=2\) 所需时间</div><div class="v" id="ch-t2">—</div></div>
+</div>
+
+<!-- ============ 04 达朗贝尔 ============ -->
+<h2><span class="no">04</span>§2.2 达朗贝尔公式</h2>
+<p>把通解代入初始条件：\(F(x)+G(x)=\varphi(x)\)，\(a[-F'(x)+G'(x)]=\psi(x)\)。第二式积分后与第一式联立解出 \(F,G\)，代回即得</p>
+$$\boxed{\;u(x,t)=\frac{\varphi(x-at)+\varphi(x+at)}{2}+\frac{1}{2a}\int_{x-at}^{x+at}\psi(\alpha)\,\mathrm{d}\alpha\;}$$
+<div class="thm"><span class="tag">定理 2.1</span>设 \(\varphi(x)\in C^2(\mathbb{R})\)，\(\psi(x)\in C^1(\mathbb{R})\)，则柯西问题 (2.7)(2.8) 存在唯一解，由达朗贝尔公式给出；且解关于初值连续依赖。</div>
+<p>公式读法：第一项是<b>初位移对半、左右对开</b>；第二项是<b>初速度在依赖区间上的平均</b>。点 \((x,t)\) 只「听」初始轴上区间 \([x-at,\,x+at]\) 的话——这就是依赖区间。</p>
+<figure>
+<canvas id="da-cv" class="plot" width="840" height="380"></canvas>
+<figcaption>交互 4 · 达朗贝尔求解器：选一个初值预设，拖动时间与探针。珊瑚虚线 = 右传波 \(\tfrac12\varphi(x-at)\)，青色虚线 = 左传波 \(\tfrac12\varphi(x+at)\)，蓝线 = 合成解；横轴下方括号标出探针处的依赖区间。</figcaption>
+</figure>
+<div class="ctl">
+<button id="da-p0" class="on">三角拨弦 φ</button>
+<button id="da-p1">平台脉冲 φ</button>
+<button id="da-p2">高斯包 φ</button>
+<button id="da-p3">初速度 ψ</button>
+<button id="da-play">播放</button>
+<label>波速 \(a\)<input type="range" id="da-a" min="20" max="200" value="100"><span class="val" id="da-av">1.00</span></label>
+<label>时间 \(t\)<input type="range" id="da-t" min="0" max="400" value="0"><span class="val" id="da-tv">0.00</span></label>
+<label>探针 \(x^\ast\)<input type="range" id="da-x" min="-300" max="300" value="0"><span class="val" id="da-xv">0.00</span></label>
+</div>
+<div class="kv">
+<div class="cell"><div class="k">\(u(x^\ast,t)\)</div><div class="v" id="da-u">—</div></div>
+<div class="cell"><div class="k">右传波 \(\tfrac12\varphi(x^\ast-at)\)</div><div class="v" id="da-lw">—</div></div>
+<div class="cell"><div class="k">左传波 \(\tfrac12\varphi(x^\ast+at)\)</div><div class="v" id="da-rw">—</div></div>
+<div class="cell"><div class="k">速度项 \(\tfrac{1}{2a}\int\psi\)</div><div class="v" id="da-psi">—</div></div>
+<div class="cell"><div class="k">依赖区间</div><div class="v" id="da-dep" style="font-size:14px">—</div></div>
+</div>
+<p class="note">实测锚点（三角拨弦，\(a=1\)）：\(u(0,0.3)=0.700000\)、\(u(0.5,0.4)=0.500000\)、\(u(0.25,1.2)=0.025000\)、\(u(0,1)=0\)（两个半三角刚好分离）。这些数由 <code>verify_readout_wave.js</code> 与独立重算逐位比对。</p>
+
+<!-- ============ 05 依赖区域 ============ -->
+<h2><span class="no">05</span>§2.3 依赖区间、决定区域与影响区域</h2>
+<p>三个区域都在 \((x,t)\) 上半平面里读：</p>
+<ul class="tight">
+<li><b>依赖区间</b>：点 \((x,t)\) 的解只依赖初始轴上的 \([x-at,\,x+at]\)——过该点作两条特征线，截出的闭区间。</li>
+<li><b>决定区域</b>：给定 \([x_1,x_2]\) 上的初值，能完全决定解的范围是三角形：\(x=x_1+at\) 与 \(x=x_2-at\) 两特征线和初始轴围成。</li>
+<li><b>影响区域</b>：只在 \([x_1,x_2]\) 上改动初值，\(t\) 时刻受影响的 \(x\) 范围是 \(x_1-at\le x\le x_2+at\)；此外纹丝不动。区间缩成一点 \(x_0\)，影响区域就是过 \(x_0\) 的两条特征线夹成的角状区域。</li>
+</ul>
+<figure>
+<canvas id="dep-cv" class="plot" width="840" height="400"></canvas>
+<figcaption>交互 5 · 三个区域一张图：紫点 = 考察点 \((x_0,t_0)\)；轴上粗线段 = 依赖区间；蓝色三角形 = \([x_1,x_2]\) 的决定区域；珊瑚楔形 = 影响区域，\(t=t_0\) 处的切片即当前影响范围。</figcaption>
+</figure>
+<div class="ctl">
+<label>点 \(x_0\)<input type="range" id="dep-x0" min="-300" max="300" value="50"><span class="val" id="dep-x0v">0.50</span></label>
+<label>点 \(t_0\)<input type="range" id="dep-t0" min="0" max="350" value="100"><span class="val" id="dep-t0v">1.00</span></label>
+<label>区间 \([x_1,x_2]\) 左端<input type="range" id="dep-x1" min="-300" max="100" value="-150"><span class="val" id="dep-x1v">-1.50</span></label>
+<label>区间右端<input type="range" id="dep-x2" min="-100" max="300" value="150"><span class="val" id="dep-x2v">1.50</span></label>
+<label>波速 \(a\)<input type="range" id="dep-a" min="40" max="160" value="100"><span class="val" id="dep-av">1.00</span></label>
+</div>
+<div class="kv">
+<div class="cell"><div class="k">依赖区间</div><div class="v" id="dep-dep" style="font-size:14px">—</div></div>
+<div class="cell"><div class="k">决定区域顶点</div><div class="v" id="dep-apex" style="font-size:14px">—</div></div>
+<div class="cell"><div class="k">\(t_0\) 时刻影响范围</div><div class="v" id="dep-fan" style="font-size:14px">—</div></div>
+</div>
+
+<!-- ============ 06 反射 ============ -->
+<h2><span class="no">06</span>§2.4 半无界弦：奇延拓与反射</h2>
+<p>一端固定的半无界弦（教材 (2.22)–(2.24)）：方程在 \(x&gt;0\)，端点 \(u(0,t)=0\)。诀窍是设想 \(x&lt;0\) 也有弦，只需把初值作<b>奇延拓</b>：</p>
+$$\Phi(x)=\begin{cases}\varphi(x),&x\ge0\\ -\varphi(-x),&x&lt;0\end{cases}\qquad
+\Psi(x)=\begin{cases}\psi(x),&x\ge0\\ -\psi(-x),&x&lt;0\end{cases}$$
+<p>奇函数的达朗贝尔解在 \(x=0\) 处自动为零。物理图像：固定端把入射波<b>翻转</b>后弹回。为保经典解还需相容性条件 \(\varphi(0)=\varphi''(0)=\psi(0)=0\)（教材 (2.29)）。</p>
+<figure>
+<canvas id="ref-cv" class="plot" width="840" height="340"></canvas>
+<figcaption>交互 6 · 反射实验室：高斯脉冲从右侧射向端点墙。固定端（奇延拓）：反射波倒立，墙上恒 \(u(0,t)=0\)；自由端（偶延拓）：反射波正立，墙上恒 \(u_x(0,t)=0\)。</figcaption>
+</figure>
+<div class="ctl">
+<button id="ref-fix" class="on">固定端（奇延拓）</button>
+<button id="ref-free">自由端（偶延拓）</button>
+<button id="ref-play">播放</button>
+<label>时间 \(t\)<input type="range" id="ref-t" min="0" max="50" value="0"><span class="val" id="ref-tv">0.00</span></label>
+</div>
+<div class="kv">
+<div class="cell"><div class="k">墙上位移 \(u(0,t)\)</div><div class="v" id="ref-wall">—</div></div>
+<div class="cell"><div class="k">墙上斜率 \(u_x(0,t)\)</div><div class="v" id="ref-slope">—</div></div>
+<div class="cell"><div class="k">反射系数</div><div class="v" id="ref-coef">—</div></div>
+<div class="cell"><div class="k">半线上 \(\max\lvert u\rvert\)</div><div class="v" id="ref-amp">—</div></div>
+</div>
+<p class="note">实测（固定端，入射高斯峰高 1）：\(u(0,t)\equiv0\)（机器精度内），\(\max\lvert u\rvert\) 随脉冲到位升至 \(0.999998\)（\(t=0.6\)）——反射不损失振幅，只损失相位。</p>
+
+<!-- ============ 07 齐次化 ============ -->
+<h2><span class="no">07</span>§2.5 齐次化原理（杜阿梅尔原理）</h2>
+<p>强迫振动 (II)（零初值 + 外力 \(f\)）的解法是「把外力切成瞬时冲量」：\([0,t]\) 分小段，段内 \(f\) 视为常数，它产生的速度改变量 \(f(x,t_j)\Delta t_j\) 当作该时刻的初速度，解一个齐次方程问题；再由叠加原理取极限。结果：</p>
+$$u(x,t)=\int_0^t W(x,t;\tau)\,\mathrm{d}\tau,\qquad
+W(x,t;\tau)=\frac{1}{2a}\int_{x-a(t-\tau)}^{x+a(t-\tau)}f(\xi,\tau)\,\mathrm{d}\xi,$$
+<p>合起来就是特征三角形上的二重积分（教材 (2.38)）：</p>
+$$u(x,t)=\frac{1}{2a}\iint_G f(\xi,\tau)\,\mathrm{d}\xi\,\mathrm{d}\tau,$$
+<p>\(G\) 是过 \((x,t)\) 向下作两条特征线与 \(\xi\) 轴夹成的三角形。验证也不难：对参变量积分求导得</p>
+$$\frac{\partial u}{\partial t}=\frac12\int_0^t\big[f(x+a(t-\tau),\tau)+f(x-a(t-\tau),\tau)\big]\mathrm{d}\tau,\qquad
+\frac{\partial^2 u}{\partial t^2}=f(x,t)+\frac{a}{2}\int_0^t\big[f_x^+-f_x^-\big]\mathrm{d}\tau,$$
+$$\frac{\partial u}{\partial x}=\frac{1}{2a}\int_0^t\big[f^+-f^-\big]\mathrm{d}\tau,\qquad
+\frac{\partial^2 u}{\partial x^2}=\frac{1}{2a}\int_0^t\big[f_x^+-f_x^-\big]\mathrm{d}\tau,$$
+<p>相减即 \(u_{tt}-a^2u_{xx}=f\)，初值亦满足。齐次化原理同样适用于初边值问题与热传导方程（见 §3.3 与第 2 章）。</p>
+<figure>
+<canvas id="duh-cv" class="plot" width="840" height="340"></canvas>
+<figcaption>交互 7 · 齐次化原理对账：左图画 \((\xi,\tau)\) 平面上的积分域 \(G\)；右图画当前探针处解随时间积累的曲线。数值积分（中点 \(800\times800\)）与独立闭式实时对账。</figcaption>
+</figure>
+<div class="ctl">
+<button id="duh-p0" class="on">\(f=\sin(\pi x)\)</button>
+<button id="duh-p1">\(f=x(1-x)\)</button>
+<button id="duh-p2">\(f=\sin(2\pi x)\)</button>
+<label>探针 \(x\)<input type="range" id="duh-x" min="0" max="100" value="35"><span class="val" id="duh-xv">0.35</span></label>
+<label>时间 \(t\)<input type="range" id="duh-t" min="0" max="200" value="100"><span class="val" id="duh-tv">1.00</span></label>
+</div>
+<div class="kv">
+<div class="cell"><div class="k">数值积分 \(\tfrac{1}{2a}\iint_G f\)</div><div class="v" id="duh-num">—</div></div>
+<div class="cell"><div class="k">独立闭式</div><div class="v" id="duh-cls">—</div></div>
+<div class="cell"><div class="k">相对误差</div><div class="v" id="duh-err">—</div></div>
+</div>
+<p class="note">三个预设都有闭式解：\(f=\sin(k\pi x)\) 时 \(u=\dfrac{1-\cos(k\pi t)}{k^2\pi^2}\sin(k\pi x)\)；\(f=x(1-x)\) 时 \(u=\dfrac{t^2}{2}x(1-x)-\dfrac{t^4}{12}\)。实测（中点 \(2000\times2000\)）：相对误差 \(1.9\times10^{-8}\)（\(t=0.25\)）到 \(2.3\times10^{-7}\)（\(t=1\)），且随网格二次收敛；页面交互用 \(800\times800\)（约 \(10^{-6}\) 量级）。</p>
+
+<!-- ============ 08 驻波 ============ -->
+<h2><span class="no">08</span>§3.1 分离变量法：驻波</h2>
+<p>回到两端固定的弦（初边值问题）。复杂振动分解为简谐振动的叠加，设特解 \(u=X(x)T(t)\) 代入齐次方程，分离得</p>
+$$T''+\lambda a^2T=0,\qquad X''+\lambda X=0,\qquad X(0)=X(l)=0.$$
+<p>\(\lambda\le0\) 时只有零解；\(\lambda&gt;0\) 时 \(X=C_1\cos\sqrt{\lambda}x+C_2\sin\sqrt{\lambda}x\)，边界条件逼出固有值与固有函数：</p>
+$$\lambda_k=\frac{k^2\pi^2}{l^2},\qquad X_k(x)=\sin\frac{k\pi x}{l}\quad(k=1,2,\dots),$$
+<p>相应 \(T_k=A_k\cos\omega_k t+B_k\sin\omega_k t\)，\(\omega_k=k\pi a/l\)。一般解为级数（教材 (3.15)(3.16)）：</p>
+$$u(x,t)=\sum_{k=1}^{\infty}\left(A_k\cos\frac{k\pi a}{l}t+B_k\sin\frac{k\pi a}{l}t\right)\sin\frac{k\pi x}{l},$$
+$$A_k=\frac{2}{l}\int_0^{l}\varphi(\xi)\sin\frac{k\pi\xi}{l}\,\mathrm{d}\xi,\qquad
+B_k=\frac{2}{k\pi a}\int_0^{l}\psi(\xi)\sin\frac{k\pi\xi}{l}\,\mathrm{d}\xi.$$
+<div class="thm"><span class="tag">定理 3.1</span>若 \(\varphi\in C^3,\psi\in C^2\) 且 \(\varphi(0)=\varphi(l)=\varphi''(0)=\varphi''(l)=\psi(0)=\psi(l)=0\)（相容性条件 (3.17)），则级数确为初边值问题的经典解。</div>
+<figure>
+<canvas id="sw-cv" class="plot" width="840" height="340"></canvas>
+<figcaption>交互 8 · 驻波实验室：左模式看单个驻波（黑点 = 节点，虚线 = 包络）；右模式叠加教材拨弦例的前 \(N\) 个模态（灰虚线 = 初始形状）。</figcaption>
+</figure>
+<div class="ctl">
+<button id="sw-m0" class="on">单模态</button>
+<button id="sw-m1">拨弦叠加</button>
+<button id="sw-play">播放</button>
+<label>模态 \(k\)<input type="range" id="sw-k" min="1" max="8" value="2"><span class="val" id="sw-kv">2</span></label>
+<label>叠加数 \(N\)<input type="range" id="sw-N" min="1" max="64" value="8"><span class="val" id="sw-Nv">8</span></label>
+</div>
+<div class="kv">
+<div class="cell"><div class="k">圆频率 \(\omega_k=k\pi a/l\)</div><div class="v" id="sw-om">—</div></div>
+<div class="cell"><div class="k">频率 \(f_k=\omega_k/2\pi\)</div><div class="v" id="sw-fk">—</div></div>
+<div class="cell"><div class="k">周期</div><div class="v" id="sw-per">—</div></div>
+<div class="cell"><div class="k">节点</div><div class="v" id="sw-nodes" style="font-size:13px">—</div></div>
+<div class="cell"><div class="k">拨弦 \(A_1\)（叠加模式）</div><div class="v" id="sw-ak1">—</div></div>
+</div>
+
+<!-- ============ 09 拨弦 ============ -->
+<h2><span class="no">09</span>§3.2 物理意义与拨弦例</h2>
+<p>第 \(k\) 项 \(u_k=N_k\cos(\omega_k t+\theta_k)\sin(k\pi x/l)\)（教材 (3.19)）：弦上各点同频简谐振动、相位相同，振幅 \(N_k\sin(k\pi x/l)\) 随位置变，在 \(x=ml/k\)（\(m=0,\dots,k\)）处恒为零——<b>节点</b>。这种波形不动的振动叫<b>驻波</b>，分离变量法因此又称驻波法。\(\omega_1=\pi a/l\) 是<b>基音</b>，其余是基音整数倍的<b>泛音</b>——弦发声的数学解释。</p>
+<p>教材例（p.25）：弦在 \(x=c\) 处被提起高度 \(h\) 后放开，\(\varphi\) 是折线、\(\psi\equiv0\)，于是 \(B_k\equiv0\)，且</p>
+$$A_k=\frac{2hl^2}{\pi^2c(l-c)}\cdot\frac{\sin(k\pi c/l)}{k^2},\qquad
+u(x,t)=\sum_{k=1}^{\infty}A_k\cos\frac{k\pi a}{l}t\,\sin\frac{k\pi x}{l}.$$
+<p>取 \(l=1,\;c=0.3,\;h=1\)，前六个系数（页面实时重算，此处为实测值）：</p>
+<table>
+<tr><th>\(k\)</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr>
+<tr><td>\(A_k\)</td><td>0.780672</td><td>0.229434</td><td>0.033132</td><td>−0.035449</td><td>−0.038599</td><td>−0.015755</td></tr>
+</table>
+<p class="note">系数按 \(1/k^2\) 衰减（折线只有一阶导数跳变），部分和收敛但不快：\(x=0.3\)（峰点）处 \(N=8\) 部分和 \(0.9442\)，\(N=64\) 才到 \(0.9925\)；\(x=0.5\) 处 \(N=8\) 给 \(0.7029\)、\(N=64\) 给 \(0.7144\)（真值 \(0.7143\)）。因为峰值点连续、两侧导数跳变，过冲远小于傅里叶级数经典吉布斯现象的 9%——慢但不振。</p>
+
+<!-- ============ 10 非齐次 ============ -->
+<h2><span class="no">10</span>§3.3–3.4 非齐次方程与非齐次边界</h2>
+<p><b>非齐次方程</b>：零初值 + 外力 \(f\) 的初边值问题 (II) 同样用齐次化原理（教材 (3.27)–(3.31)）：先解参数 \(\tau\) 的齐次问题得</p>
+$$W(x,t;\tau)=\sum_{k=1}^{\infty}B_k(\tau)\sin\frac{k\pi a}{l}(t-\tau)\sin\frac{k\pi x}{l},\qquad
+B_k(\tau)=\frac{2}{k\pi a}\int_0^{l}f(\xi,\tau)\sin\frac{k\pi\xi}{l}\,\mathrm{d}\xi,$$
+<p>再积分 \(u=\int_0^tW\,\mathrm{d}\tau\)。级数可逐项求导的条件是 \(f\in C^2\) 且端点消失 \(f(0,t)=f(l,t)=0\)（相容性 (3.32)）。</p>
+<p><b>非齐次边界</b>（教材 (3.33)–(3.40)，端点位移 \(\mu_1(t),\mu_2(t)\)）：先把边界「抬高」再减去。令</p>
+$$U(x,t)=\mu_1(t)+\frac{x}{l}\big[\mu_2(t)-\mu_1(t)\big],\qquad V=u-U,$$
+<p>\(U\) 是满足非齐次边界的任意光滑函数（这里取线性插值），\(V\) 满足齐次边界，方程右端与初值相应减去 \(U\) 的贡献：</p>
+$$V_{tt}-a^2V_{xx}=f-\mu_1''-\frac{x}{l}\big[\mu_2''-\mu_1''\big],\qquad
+V|_{t=0}=\varphi-\mu_1(0)-\frac{x}{l}\big[\mu_2(0)-\mu_1(0)\big],$$
+$$\frac{\partial V}{\partial t}\Big|_{t=0}=\psi-\mu_1'(0)-\frac{x}{l}\big[\mu_2'(0)-\mu_1'(0)\big].$$
+<p>相容性 \(\mu_1(0)=\mu_2(0)=0,\;\mu_1'(0)=\mu_2'(0)=0\) 保证新问题仍满足端点条件。第 2 章 §4–5 的唯一性与稳定性讨论还会反复用到「边界齐次化」这一招。</p>
+
+<!-- ============ 11 对比实验室 ============ -->
+<h2><span class="no">11</span>对比实验室：波动 vs 热传导</h2>
+<p>同一初值、同一位置坐标，两个方程给出两种世界观。热传导方程的解是初值与热核的卷积：</p>
+$$u_{\text{热}}(x,t)=\frac{1}{\sqrt{4\pi a^2t}}\int_{-\infty}^{\infty}e^{-\frac{(x-\xi)^2}{4a^2t}}\varphi(\xi)\,\mathrm{d}\xi.$$
+<figure>
+<canvas id="cmp-cv" class="plot" width="840" height="380"></canvas>
+<figcaption>交互 9 · 波动 vs 热：左蓝线是达朗贝尔解（两个半脉冲以速度 \(a\) 分离），右紫线是热核解（立即抹平、持续衰减）。竖虚线 = 波前位置 \(\pm at\)——热方程没有波前，瞬间波及全轴。</figcaption>
+</figure>
+<div class="ctl">
+<button id="cmp-p0" class="on">矩形脉冲</button>
+<button id="cmp-p1">高斯脉冲</button>
+<button id="cmp-play">播放</button>
+<label>波速/扩散 \(a\)<input type="range" id="cmp-a" min="40" max="160" value="100"><span class="val" id="cmp-av">1.00</span></label>
+<label>时间 \(t\)<input type="range" id="cmp-t" min="0" max="400" value="25"><span class="val" id="cmp-tv">0.25</span></label>
+</div>
+<div class="kv">
+<div class="cell"><div class="k">波动 \(\sup\lvert u\rvert\)</div><div class="v" id="cmp-wsup">—</div></div>
+<div class="cell"><div class="k">热 \(\sup u\)</div><div class="v" id="cmp-hsup">—</div></div>
+<div class="cell"><div class="k">波动 \(\int u^2\mathrm{d}x\)</div><div class="v" id="cmp-wl2">—</div></div>
+<div class="cell"><div class="k">热 \(\int u^2\mathrm{d}x\)</div><div class="v" id="cmp-hl2">—</div></div>
+<div class="cell"><div class="k">波前位置 \(\pm at\)</div><div class="v" id="cmp-front">—</div></div>
+</div>
+<p>矩形脉冲（半宽 \(b=1\)）的实测对照（\(a=1\)）：</p>
+<table>
+<tr><th>\(t\)</th><th>0.25</th><th>1</th><th>4</th></tr>
+<tr><td>波 \(\sup u\)</td><td>1.0000</td><td>1.0000</td><td>0.5000</td></tr>
+<tr><td>热 \(\sup u\)</td><td>0.8427</td><td>0.5205</td><td>0.2763</td></tr>
+<tr><td>波 \(\int u^2\)</td><td>1.7500</td><td>1.0000</td><td>1.0000</td></tr>
+<tr><td>热 \(\int u^2\)</td><td>1.2191</td><td>0.7375</td><td>0.3908</td></tr>
+</table>
+<ul class="tight">
+<li>波动：\(t\le b/a\) 时两半脉冲重叠，\(\sup u=1\)；分离后各带一半振幅（\(\sup=\tfrac12\)、\(\int u^2=b\)）<b>永不衰减</b>。能量 \(E=\tfrac12\int(u_t^2+a^2u_x^2)\,\mathrm{d}x\) 守恒——高斯脉冲实测 \(E\equiv0.626657\)。</li>
+<li>热：峰值按 \(\mathrm{erf}\big(b/(2a\sqrt{t})\big)\) 下降，大时间渐近 \(b/(a\sqrt{\pi t})\)；\(\int u^2\) 持续衰减（高斯脉冲的 \(\tfrac12\int u_x^2\mathrm{d}x\)：0.2216 → 0.0561 → 0.0089，\(t=0.25/1/4\)）。总质量 \(\int u\,\mathrm{d}x\) 两者都守恒，差别全在「形状」：波动保形，热抹平。</li>
+</ul>
+
+<!-- ============ 12 速查 ============ -->
+<h2><span class="no">12</span>速查表与习题选讲</h2>
+<table>
+<tr><th>对象</th><th>公式</th><th>要点</th></tr>
+<tr><td>弦振动方程</td><td>\(u_{tt}-a^2u_{xx}=f\)，\(a^2=T/\rho\)</td><td>微元段牛顿第二定律 + 胡克定律</td></tr>
+<tr><td>通解</td><td>\(u=F(x-at)+G(x+at)\)</td><td>特征坐标 \(\xi=x-at,\eta=x+at\)</td></tr>
+<tr><td>柯西问题解</td><td>\(\tfrac12[\varphi(x-at)+\varphi(x+at)]+\tfrac{1}{2a}\int_{x-at}^{x+at}\psi\)</td><td>达朗贝尔公式；依赖区间 \([x-at,x+at]\)</td></tr>
+<tr><td>强迫柯西问题</td><td>\(\tfrac{1}{2a}\iint_G f\,\mathrm{d}\xi\mathrm{d}\tau\)</td><td>齐次化原理；\(G\) = 特征三角形</td></tr>
+<tr><td>固定端半无界弦</td><td>奇延拓后达朗贝尔</td><td>反射系数 \(-1\)；相容性 \(\varphi(0)=\varphi''(0)=\psi(0)=0\)</td></tr>
+<tr><td>初边值问题</td><td>\(\sum_k(A_k\cos\omega_kt+B_k\sin\omega_kt)\sin(k\pi x/l)\)</td><td>驻波叠加；\(\omega_k=k\pi a/l\)</td></tr>
+<tr><td>模态系数</td><td>\(A_k=\frac{2}{l}\int\varphi\sin\)，\(B_k=\frac{2}{k\pi a}\int\psi\sin\)</td><td>正弦级数系数</td></tr>
+<tr><td>基频</td><td>\(f_1=a/(2l)\)</td><td>泛音 = 基音整数倍</td></tr>
+</table>
+<h3>习题选讲</h3>
+<div class="card">
+<p><b>§2 习题 2</b>（初值满足什么条件时解仅由右传播波组成？）<br>
+答：\(\psi(x)=-a\varphi'(x)\)。代入验证：\(\tfrac{1}{2a}\int_{x-at}^{x+at}\psi=\tfrac12\varphi(x-at)-\tfrac12\varphi(x+at)\)，与前半项叠加得 \(u=\varphi(x-at)\)，纯右行波。</p>
+</div>
+<div class="card">
+<p><b>§2 习题 8</b>（\(u_{tt}-u_{xx}=t\sin x\)，零初值 + \(u_t|_{t=0}=\sin x\)）<br>
+分解：齐次部分 \(\tfrac12\int_{x-t}^{x+t}\sin\alpha\,\mathrm{d}\alpha=\sin x\sin t\)；强迫部分试 \(u_p=c(t)\sin x\)：\(c''+c=t\)，零初值给 \(c=t-\sin t\)。相加恰有 \(u=t\sin x\)——齐次化「切碎」的外力效果与自由振动精确对消。</p>
+</div>
+<div class="card">
+<p><b>§3 习题 3(1)</b>（混合边值 \(u|_{x=0}=u_x|_{x=l}=0\)，\(\varphi=\sin\frac{3\pi x}{2l}\)，\(\psi=\sin\frac{5\pi x}{2l}\)）<br>
+混合边值的固有函数是 \(\sin\frac{(2k+1)\pi x}{2l}\)，固有值 \(\lambda_k=\frac{(2k+1)^2\pi^2}{4l^2}\)。此处 \(\varphi,\psi\) 各是一个纯模态（\(k=1,2\)），解为
+\(u=\cos\frac{3\pi at}{2l}\sin\frac{3\pi x}{2l}+\frac{2l}{5\pi a}\sin\frac{5\pi at}{2l}\sin\frac{5\pi x}{2l}\)。</p>
+</div>
+
+<footer>
+<p>内容依据：谷超豪 等《数学物理方程（第四版）》（高等教育出版社，2023）第 1 章 §1–§3，PDF p.13–42（书页 2–31）。素材为该教材 OCR 切片（中文正文可靠，分式与根号易损）；本页公式按编号 (1.1)–(3.40) 依推导重组，偏离处已在正文标注。页面数值结论由工作区根 <code>verify_readout_wave.js</code>（vm + DOM 桩端到端读数闸门）与 <code>verify_formulas.js</code>（MathJax 全量编译）实测。</p>
+<p>交互为零依赖原生 JS + Canvas；公式由 MathJax 3（cdnjs CDN）渲染，离线时退化为 LaTeX 源码。级数系数与积分实时计算，页面无预存答案。</p>
+<p>生成于 2026-10-19 · 数学可视化工作室 · 配套页面：分离变量法-热传导方程（同名的驻波路线用于热方程）、卷积与热传导方程（热核视角）</p>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+"use strict";
+function $(id){ return document.getElementById(id); }
+function clampr(v,a,b){ return v<a?a:(v>b?b:v); }
+function fmt(v){
+  if(!isFinite(v))return "∞";
+  var a=Math.abs(v);
+  if(a!==0&&(a<1e-4||a>=1e5))return v.toExponential(3);
+  return v.toFixed(6);
+}
+function fmtE(v){ return isFinite(v)?v.toExponential(2):"—"; }
+function setTxt(id,s){ var e=$(id); if(e) e.textContent=s; }
+/* A&S 7.1.26，|ε|≤1.5e-7 */
+function erfA(z){
+  var s=z<0?-1:1; z=Math.abs(z);
+  var t=1/(1+0.3275911*z);
+  var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-z*z);
+  return s*y;
+}
+/* ---------- 画布坐标框 ---------- */
+function frame(ctx,W,H,X0,X1,Y0,Y1,o){
+  o=o||{};
+  var ml=o.ml||54,mr=o.mr||18,mt=o.mt||18,mb=o.mb||36;
+  var pw=W-ml-mr,ph=H-mt-mb;
+  var X=function(x){return ml+(x-X0)/(X1-X0)*pw;};
+  var Y=function(y){return mt+(Y1-y)/(Y1-Y0)*ph;};
+  if(o.clear!==false) ctx.clearRect(0,0,W,H);
+  ctx.lineWidth=1; ctx.strokeStyle="#e4e8ed"; ctx.fillStyle="#8b949e";
+  ctx.font='11px ui-monospace,Consolas,monospace';
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  (o.xt||[]).forEach(function(v){
+    var x=X(v);
+    ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke();
+    ctx.fillText(o.xf?o.xf(v):String(v),x,mt+ph+6);
+  });
+  ctx.textAlign="right"; ctx.textBaseline="middle";
+  (o.yt||[]).forEach(function(v){
+    var y=Y(v);
+    ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke();
+    ctx.fillText(o.yf?o.yf(v):String(v),ml-6,y);
+  });
+  ctx.strokeStyle="#57606a"; ctx.lineWidth=1.3;
+  if(Y0<0&&Y1>0){ var y0=Y(0); ctx.beginPath(); ctx.moveTo(ml,y0); ctx.lineTo(ml+pw,y0); ctx.stroke(); }
+  if(X0<0&&X1>0){ var x0=X(0); ctx.beginPath(); ctx.moveTo(x0,mt); ctx.lineTo(x0,mt+ph); ctx.stroke(); }
+  if(o.xlabel){ ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillStyle="#57606a"; ctx.fillText(o.xlabel,ml+pw/2,H-6); }
+  if(o.ylabel){ ctx.save(); ctx.translate(12,mt+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign="center"; ctx.fillStyle="#57606a"; ctx.fillText(o.ylabel,0,0); ctx.restore(); }
+  return {X:X,Y:Y,ml:ml,mt:mt,pw:pw,ph:ph};
+}
+function curve(ctx,F,X,Y,x0,x1,N,style,width){
+  ctx.strokeStyle=style; ctx.lineWidth=width||2;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  for(var i=0;i<=N;i++){
+    var x=x0+(x1-x0)*i/N, y=F(x);
+    var px=X(x), py=Y(y);
+    if(i===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+}
+function dashed(ctx,F,X,Y,x0,x1,N,style,width,dash){
+  ctx.strokeStyle=style; ctx.lineWidth=width||1.5;
+  ctx.setLineDash(dash||[5,4]);
+  ctx.beginPath();
+  for(var i=0;i<=N;i++){
+    var x=x0+(x1-x0)*i/N, y=F(x);
+    var px=X(x), py=Y(y);
+    if(i===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke(); ctx.setLineDash([]);
+}
+function label(ctx,txt,x,y,col,align){
+  ctx.fillStyle=col||"#1f2328"; ctx.textAlign=align||"left"; ctx.textBaseline="alphabetic";
+  ctx.font='12px ui-monospace,Consolas,monospace';
+  ctx.fillText(txt,x,y);
+}
+var T0=1, RHO0=1; /* 沙盘张力与密度 */
+
+/* ================= 1 微元段受力 ================= */
+var segX0=0.40, segDX=0.80;
+function segShape(x){ return 0.55*Math.sin(1.4*x+0.6); }
+function segD(x){ return 0.55*1.4*Math.cos(1.4*x+0.6); }
+function segAll(){
+  var x1=segX0, x2=segX0+segDX;
+  var a1=Math.atan(segD(x1)), a2=Math.atan(segD(x2));
+  var net=T0*(Math.sin(a2)-Math.sin(a1));
+  var hz=T0*(Math.cos(a2)-Math.cos(a1));
+  /* 弧长 Δs = ∫√(1+u_x²)dx，Simpson 400 */
+  var N=400, h=segDX/N, s=0, i;
+  for(i=0;i<=N;i++){
+    var w=(i===0||i===N)?1:((i%2)?4:2);
+    s+=w*Math.sqrt(1+segD(x1+i*h)*segD(x1+i*h));
+  }
+  s*=h/3;
+  setTxt("seg-x0v",segX0.toFixed(2));
+  setTxt("seg-dxv",segDX.toFixed(2));
+  setTxt("seg-a1",(a1*180/Math.PI).toFixed(2)+"°");
+  setTxt("seg-a2",(a2*180/Math.PI).toFixed(2)+"°");
+  setTxt("seg-net",fmt(net));
+  setTxt("seg-hz",fmt(hz));
+  setTxt("seg-ds",fmt(s/segDX));
+  var cv=$("seg-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,-2.6,2.6,-1.1,1.1,{xt:[-2,-1,0,1,2],yt:[-1,0,1],xlabel:"x",ylabel:"u(x)"});
+  var X=f.X,Y=f.Y;
+  curve(ctx,segShape,X,Y,-2.6,2.6,300,"#b9c2cc",1.5);
+  /* 弦段加粗 */
+  ctx.strokeStyle="#185FA5"; ctx.lineWidth=3.5; ctx.beginPath();
+  for(var j=0;j<=60;j++){
+    var xx=x1+(x2-x1)*j/60, px=X(xx), py=Y(segShape(xx));
+    if(j===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  /* 端点张力箭头 */
+  function tend(x,dir){
+    var u=segShape(x), d=segD(x);
+    var L=0.9;
+    var x0=X(x), y0=Y(u);
+    var ang=Math.atan(-d); /* 画布 y 向下，切线斜率取负 */
+    var tx=x0+dir*L*Math.cos(ang), ty=y0+dir*L*Math.sin(ang);
+    ctx.strokeStyle="#D85A30"; ctx.fillStyle="#D85A30"; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(tx,ty); ctx.stroke();
+    var a=Math.atan2(ty-y0,tx-x0),LL=9;
+    ctx.beginPath(); ctx.moveTo(tx,ty);
+    ctx.lineTo(tx-LL*Math.cos(a-0.4),ty-LL*Math.sin(a-0.4));
+    ctx.lineTo(tx-LL*Math.cos(a+0.4),ty-LL*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill();
+    label(ctx,"T("+(dir<0?"x":"x+Δx")+")",tx+dir*10,ty-6,"#D85A30");
+  }
+  tend(x1,-1); tend(x2,1);
+  /* 倾角弧 */
+  function arc(x,dir){
+    var u=segShape(x), d=segD(x);
+    var px=X(x), py=Y(u), r=34;
+    var a=Math.atan(-d)*(dir<0?1:-1);
+    ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.4; ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    if(dir<0) ctx.arc(px,py,r,Math.PI+a,Math.PI,false);
+    else ctx.arc(px,py,r,0,a,true);
+    ctx.stroke(); ctx.setLineDash([]);
+    label(ctx,dir<0?"α₁":"α₂",px+dir*(r+6),py+(dir<0?14:-8),"#534AB7");
+  }
+  arc(x1,-1); arc(x2,1);
+  label(ctx,"弦段 (x, x+Δx)，Δs ≈ Δx",X(-2.5),Y(1.05),"#57606a");
+}
+$("seg-x0").addEventListener("input",function(){ segX0=clampr(parseFloat(this.value)/100,-2,1.2); segAll(); });
+$("seg-dx").addEventListener("input",function(){ segDX=clampr(parseFloat(this.value)/100,0.2,1.6); segAll(); });
+
+/* ================= 2 三类边界 ================= */
+var bcMode=0, bcT=0, bcTimer=null;
+function bcG(z){ return Math.exp(-9*(z-2.4)*(z-2.4)); }
+function bcSol(x,t,mode){
+  if(mode===0) return bcG(x+t)-bcG(-x+t);
+  if(mode===1) return bcG(x+t)+bcG(-x+t);
+  return bcG(x+t);
+}
+function bcAll(){
+  var names=["第一类（固定端）","第二类（自由端）","第三类（弹性支承）"];
+  var forms=["u(0,t) = 0","u_x(0,t) = 0","u_x(0,t) + σ·u(0,t) = 0"];
+  var coefs=["−1（反相）","+1（同相）","全反射、相移随频率"];
+  setTxt("bc-tv",bcT.toFixed(2));
+  setTxt("bc-form",forms[bcMode]);
+  setTxt("bc-coef",coefs[bcMode]);
+  setTxt("bc-wall",bcMode===2?fmt(bcG(bcT))+"（入射）":fmt(bcSol(0,bcT,bcMode)));
+  $("bc-d").className=bcMode===0?"on":"";
+  $("bc-n").className=bcMode===1?"on":"";
+  $("bc-r").className=bcMode===2?"on":"";
+  var cv=$("bc-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,0,2.8,-1.35,1.35,{xt:[0,0.5,1,1.5,2,2.5],yt:[-1,0,1],xlabel:"x",ylabel:"u"});
+  var X=f.X,Y=f.Y;
+  /* 墙 */
+  ctx.strokeStyle="#1f2328"; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(X(0),f.mt); ctx.lineTo(X(0),f.mt+f.ph); ctx.stroke();
+  ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  for(var i=0;i<8;i++){
+    var yy=f.mt+f.ph*i/8;
+    ctx.beginPath(); ctx.moveTo(X(0),yy); ctx.lineTo(X(0)-10,yy+8); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  if(bcMode===2){
+    /* 弹簧：以 u(0,t) 伸缩 */
+    var ext=bcG(bcT);
+    var y0=Y(ext), xw=X(0);
+    ctx.strokeStyle="#D85A30"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(xw,y0);
+    for(var s2=0;s2<=16;s2++){
+      var t3=s2/16;
+      ctx.lineTo(xw-14*t3, y0+(s2%2?9:-9)*(1-t3*0.6));
+    }
+    ctx.stroke();
+    label(ctx,"弹簧（伸长 = u(0,t)）",X(0.9),Y(-1.15),"#D85A30");
+    label(ctx,"入射脉冲",X(1.4),Y(bcG(1.4+bcT))+16,"#57606a");
+  }
+  dashed(ctx,function(x){return bcG(x+bcT);},X,Y,0,2.8,300,"#8b949e",1.6,[6,4]);
+  if(bcMode<2){
+    dashed(ctx,function(x){return (bcMode===0?-1:1)*bcG(-x+bcT);},X,Y,0,2.8,300,"#0F6E56",1.6,[2,3]);
+  }
+  curve(ctx,function(x){return bcSol(x,bcT,bcMode);},X,Y,0,2.8,400,"#185FA5",2.6);
+  /* 墙位移标记 */
+  var uw=bcSol(0,bcT,bcMode);
+  ctx.fillStyle="#185FA5";
+  ctx.beginPath(); ctx.arc(X(0),Y(uw),4,0,7); ctx.fill();
+  label(ctx,"u(0,t)="+fmt(uw),X(0)+8,Y(uw)-8,"#185FA5");
+  label(ctx,names[bcMode],X(2.75),Y(1.22),"#57606a","right");
+}
+$("bc-d").addEventListener("click",function(){ bcMode=0; bcAll(); });
+$("bc-n").addEventListener("click",function(){ bcMode=1; bcAll(); });
+$("bc-r").addEventListener("click",function(){ bcMode=2; bcAll(); });
+$("bc-t").addEventListener("input",function(){ bcT=clampr(parseFloat(this.value)/10,0,5); bcAll(); });
+$("bc-play").addEventListener("click",function(){
+  var btn=this;
+  if(bcTimer){ clearInterval(bcTimer); bcTimer=null; btn.textContent="播放"; btn.className=""; return; }
+  btn.textContent="暂停"; btn.className="on";
+  bcTimer=setInterval(function(){
+    bcT+=0.03; if(bcT>5)bcT=0;
+    $("bc-t").value=String(Math.round(bcT*10));
+    bcAll();
+  },40);
+});
+
+/* ================= 3 特征线 ================= */
+function chAll(){
+  var a=clampr(parseFloat($("ch-a").value)/100,0.2,2);
+  setTxt("ch-av",a.toFixed(2));
+  setTxt("ch-slope","±"+(1/a).toFixed(3));
+  setTxt("ch-t2",((2-(-2))/a).toFixed(3));
+  var cv=$("ch-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,-4,4,0,4,{xt:[-4,-2,0,2,4],yt:[0,1,2,3,4],xlabel:"x",ylabel:"t"});
+  var X=f.X,Y=f.Y;
+  [-2,-1,0,1,2].forEach(function(x0){
+    ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.2; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(X(x0),Y(0)); ctx.lineTo(X(x0+4*a),Y(4)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(x0),Y(0)); ctx.lineTo(X(x0-4*a),Y(4)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#185FA5"; ctx.beginPath(); ctx.arc(X(x0),Y(0),3.5,0,7); ctx.fill();
+  });
+  /* 原点光锥填充 */
+  ctx.fillStyle="rgba(24,95,165,.08)";
+  ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(4*a),Y(4)); ctx.lineTo(X(-4*a),Y(4)); ctx.closePath(); ctx.fill();
+  label(ctx,"特征线 x = x₀ ± a t（斜率 ±1/a）",X(-3.8),Y(3.8),"#185FA5");
+}
+$("ch-a").addEventListener("input",chAll);
+
+/* ================= 4 达朗贝尔求解器 ================= */
+var daP=0, daA=1, daT=0, daX=0, daTimer=null;
+function daPhi(x){
+  if(daP===0){ var y=Math.abs(x); return y<=1?1-y:0; }
+  if(daP===1){ return Math.abs(x)<=0.6?1:0; }
+  if(daP===2){ return Math.exp(-4*x*x); }
+  return 0;
+}
+function daPsi(x){
+  if(daP===3){ return Math.abs(x)<=0.5?1:0; }
+  return 0;
+}
+function daPsiInt(lo,hi){
+  if(daP!==3) return 0;
+  var l=Math.max(lo,-0.5), h=Math.min(hi,0.5);
+  return h>l?h-l:0;
+}
+function daU(x,t){
+  var a=daA;
+  return 0.5*(daPhi(x-a*t)+daPhi(x+a*t))+(1/(2*a))*daPsiInt(x-a*t,x+a*t);
+}
+function daAll(){
+  setTxt("da-av",daA.toFixed(2));
+  setTxt("da-tv",daT.toFixed(2));
+  setTxt("da-xv",daX.toFixed(2));
+  var u=daU(daX,daT);
+  setTxt("da-u",fmt(u));
+  setTxt("da-lw",fmt(0.5*daPhi(daX-daA*daT)));
+  setTxt("da-rw",fmt(0.5*daPhi(daX+daA*daT)));
+  setTxt("da-psi",fmt((1/(2*daA))*daPsiInt(daX-daA*daT,daX+daA*daT)));
+  setTxt("da-dep","["+(daX-daA*daT).toFixed(2)+", "+(daX+daA*daT).toFixed(2)+"]");
+  var cv=$("da-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,-4,4,-1.7,1.7,{xt:[-4,-2,0,2,4],yt:[-1,0,1],xlabel:"x",ylabel:"u"});
+  var X=f.X,Y=f.Y;
+  dashed(ctx,function(x){return daPhi(x);},X,Y,-4,4,400,"#b9c2cc",1.4,[2,3]);
+  if(daP<3){
+    dashed(ctx,function(x){return 0.5*daPhi(x-daA*daT);},X,Y,-4,4,400,"#D85A30",1.8,[7,4]);
+    dashed(ctx,function(x){return 0.5*daPhi(x+daA*daT);},X,Y,-4,4,400,"#0F6E56",1.8,[2,3]);
+  }
+  curve(ctx,function(x){return daU(x,daT);},X,Y,-4,4,600,"#185FA5",2.8);
+  /* 探针 */
+  ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(X(daX),f.mt); ctx.lineTo(X(daX),f.mt+f.ph); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="#534AB7"; ctx.beginPath(); ctx.arc(X(daX),Y(u),4.5,0,7); ctx.fill();
+  /* 依赖区间括号 */
+  var d1=daX-daA*daT, d2=daX+daA*daT, yb=Y(-1.62);
+  ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(X(d1),yb-5); ctx.lineTo(X(d1),yb+5); ctx.moveTo(X(d2),yb-5); ctx.lineTo(X(d2),yb+5);
+  ctx.moveTo(X(d1),yb); ctx.lineTo(X(d2),yb); ctx.stroke();
+  label(ctx,"依赖区间",(X(d1)+X(d2))/2,yb-8,"#534AB7","center");
+  label(ctx,"— 合成 u    -- 右传 ½φ(x−at)    -- 左传 ½φ(x+at)    .. 初值",X(-3.9),Y(1.58),"#57606a");
+}
+$("da-p0").addEventListener("click",function(){ daP=0; daBtns(); daAll(); });
+$("da-p1").addEventListener("click",function(){ daP=1; daBtns(); daAll(); });
+$("da-p2").addEventListener("click",function(){ daP=2; daBtns(); daAll(); });
+$("da-p3").addEventListener("click",function(){ daP=3; daBtns(); daAll(); });
+function daBtns(){
+  $("da-p0").className=daP===0?"on":"";
+  $("da-p1").className=daP===1?"on":"";
+  $("da-p2").className=daP===2?"on":"";
+  $("da-p3").className=daP===3?"on":"";
+}
+$("da-a").addEventListener("input",function(){ daA=clampr(parseFloat(this.value)/100,0.2,2); daAll(); });
+$("da-t").addEventListener("input",function(){ daT=clampr(parseFloat(this.value)/100,0,4); daAll(); });
+$("da-x").addEventListener("input",function(){ daX=clampr(parseFloat(this.value)/100,-3,3); daAll(); });
+$("da-play").addEventListener("click",function(){
+  var btn=this;
+  if(daTimer){ clearInterval(daTimer); daTimer=null; btn.textContent="播放"; btn.className=""; return; }
+  btn.textContent="暂停"; btn.className="on";
+  daTimer=setInterval(function(){
+    daT+=0.03; if(daT>4)daT=0;
+    $("da-t").value=String(Math.round(daT*100));
+    daAll();
+  },40);
+});
+
+/* ================= 5 依赖/影响区域 ================= */
+var depX0=0.5, depT0=1, depX1=-1.5, depX2=1.5, depA=1;
+function depAll(){
+  var x1=Math.min(depX1,depX2), x2=Math.max(depX1,depX2);
+  if(x2-x1<0.1){ var mid=(x1+x2)/2; x1=mid-0.05; x2=mid+0.05; }
+  setTxt("dep-x0v",depX0.toFixed(2)); setTxt("dep-t0v",depT0.toFixed(2));
+  setTxt("dep-x1v",x1.toFixed(2)); setTxt("dep-x2v",x2.toFixed(2));
+  setTxt("dep-av",depA.toFixed(2));
+  var d1=depX0-depA*depT0, d2=depX0+depA*depT0;
+  var ax=(x1+x2)/2, at=(x2-x1)/(2*depA);
+  var f1=x1-depA*depT0, f2=x2+depA*depT0;
+  setTxt("dep-dep","["+d1.toFixed(2)+", "+d2.toFixed(2)+"]");
+  setTxt("dep-apex","("+ax.toFixed(2)+", "+at.toFixed(2)+")");
+  setTxt("dep-fan","["+f1.toFixed(2)+", "+f2.toFixed(2)+"]");
+  var cv=$("dep-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,-4,4,0,4,{xt:[-4,-2,0,2,4],yt:[0,1,2,3,4],xlabel:"x",ylabel:"t"});
+  var X=f.X,Y=f.Y;
+  /* 影响区域楔形 */
+  ctx.fillStyle="rgba(216,90,48,.10)";
+  ctx.beginPath(); ctx.moveTo(X(x1),Y(0)); ctx.lineTo(X(x1-4*depA),Y(4)); ctx.lineTo(X(x2+4*depA),Y(4)); ctx.lineTo(X(x2),Y(0)); ctx.closePath(); ctx.fill();
+  /* 决定区域三角形 */
+  ctx.fillStyle="rgba(24,95,165,.13)";
+  ctx.beginPath(); ctx.moveTo(X(x1),Y(0)); ctx.lineTo(X(x2),Y(0)); ctx.lineTo(X(ax),Y(at)); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(X(x1),Y(0)); ctx.lineTo(X(x2),Y(0)); ctx.lineTo(X(ax),Y(at)); ctx.closePath(); ctx.stroke();
+  /* 特征线过考察点 */
+  ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.6; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(X(depX0),Y(depT0)); ctx.lineTo(X(d1),Y(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X(depX0),Y(depT0)); ctx.lineTo(X(d2),Y(0)); ctx.stroke();
+  ctx.setLineDash([]);
+  /* 依赖区间 */
+  ctx.strokeStyle="#534AB7"; ctx.lineWidth=3.5;
+  ctx.beginPath(); ctx.moveTo(X(d1),Y(0)); ctx.lineTo(X(d2),Y(0)); ctx.stroke();
+  /* t0 切片 */
+  ctx.strokeStyle="#D85A30"; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(X(f1),Y(depT0)); ctx.lineTo(X(f2),Y(depT0)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="#534AB7"; ctx.beginPath(); ctx.arc(X(depX0),Y(depT0),5,0,7); ctx.fill();
+  ctx.fillStyle="#D85A30";
+  ctx.beginPath(); ctx.arc(X(f1),Y(depT0),3.5,0,7); ctx.fill();
+  ctx.beginPath(); ctx.arc(X(f2),Y(depT0),3.5,0,7); ctx.fill();
+  label(ctx,"考察点 (x₀,t₀)",X(depX0)+8,Y(depT0)-6,"#534AB7");
+  label(ctx,"依赖区间",X(d2)+6,Y(0)+16,"#534AB7");
+  label(ctx,"决定区域",X(ax),Y(at)+16,"#185FA5","center");
+  label(ctx,"影响区域（t₀ 切片 = 珊瑚线段）",X(-3.9),Y(3.85),"#D85A30");
+}
+$("dep-x0").addEventListener("input",function(){ depX0=parseFloat(this.value)/100; depAll(); });
+$("dep-t0").addEventListener("input",function(){ depT0=clampr(parseFloat(this.value)/100,0,3.5); depAll(); });
+$("dep-x1").addEventListener("input",function(){ depX1=clampr(parseFloat(this.value)/100,-3,3); depAll(); });
+$("dep-x2").addEventListener("input",function(){ depX2=clampr(parseFloat(this.value)/100,-3,3); depAll(); });
+$("dep-a").addEventListener("input",function(){ depA=clampr(parseFloat(this.value)/100,0.4,1.6); depAll(); });
+
+/* ================= 6 反射实验室 ================= */
+var refMode=0, refT=0, refTimer=null;
+function refG(z){ return Math.exp(-9*(z-2.4)*(z-2.4)); }
+function refU(x,t,mode){ return mode===0?(refG(x+t)-refG(-x+t)):(refG(x+t)+refG(-x+t)); }
+function refAll(){
+  setTxt("ref-tv",refT.toFixed(2));
+  $("ref-fix").className=refMode===0?"on":"";
+  $("ref-free").className=refMode===1?"on":"";
+  var wall=refU(0,refT,refMode);
+  var gp=refG(refT);
+  var slope=refMode===0?2*(-18*(refT-2.4)*refG(refT)):0; /* u_x(0,t) */
+  setTxt("ref-wall",fmt(wall));
+  setTxt("ref-slope",fmt(slope));
+  setTxt("ref-coef",refMode===0?"−1（反相）":"+1（同相）");
+  var mx=0;
+  for(var i=0;i<=2000;i++){
+    var x=i*4.5/2000, v=Math.abs(refU(x,refT,refMode));
+    if(v>mx)mx=v;
+  }
+  setTxt("ref-amp",fmt(mx));
+  var cv=$("ref-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,0,4.5,-1.4,1.4,{xt:[0,1,2,3,4],yt:[-1,0,1],xlabel:"x（半无界弦 x ≥ 0）",ylabel:"u"});
+  var X=f.X,Y=f.Y;
+  ctx.strokeStyle="#1f2328"; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(X(0),f.mt); ctx.lineTo(X(0),f.mt+f.ph); ctx.stroke();
+  ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  for(var k=0;k<9;k++){
+    var yy=f.mt+f.ph*k/9;
+    ctx.beginPath(); ctx.moveTo(X(0),yy); ctx.lineTo(X(0)-10,yy+8); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  dashed(ctx,function(x){return refG(x+refT);},X,Y,0,4.5,300,"#8b949e",1.6,[6,4]);
+  dashed(ctx,function(x){return (refMode===0?-1:1)*refG(-x+refT);},X,Y,0,4.5,300,"#0F6E56",1.6,[2,3]);
+  curve(ctx,function(x){return refU(x,refT,refMode);},X,Y,0,4.5,400,"#185FA5",2.6);
+  ctx.fillStyle="#185FA5"; ctx.beginPath(); ctx.arc(X(0),Y(wall),4.5,0,7); ctx.fill();
+  label(ctx,"入射（灰虚线） · 反射（青虚线） · 合成（蓝）",X(0.15),Y(1.28),"#57606a");
+  label(ctx,refMode===0?"固定端：奇延拓，反射波倒立":"自由端：偶延拓，反射波正立",X(4.4),Y(1.28),"#57606a","right");
+}
+$("ref-fix").addEventListener("click",function(){ refMode=0; refAll(); });
+$("ref-free").addEventListener("click",function(){ refMode=1; refAll(); });
+$("ref-t").addEventListener("input",function(){ refT=clampr(parseFloat(this.value)/10,0,5); refAll(); });
+$("ref-play").addEventListener("click",function(){
+  var btn=this;
+  if(refTimer){ clearInterval(refTimer); refTimer=null; btn.textContent="播放"; btn.className=""; return; }
+  btn.textContent="暂停"; btn.className="on";
+  refTimer=setInterval(function(){
+    refT+=0.03; if(refT>5)refT=0;
+    $("ref-t").value=String(Math.round(refT*10));
+    refAll();
+  },40);
+});
+
+/* ================= 7 齐次化原理 ================= */
+var duhP=0, duhX=0.35, duhT=1;
+function duhF(x){
+  if(duhP===0) return Math.sin(Math.PI*x);
+  if(duhP===1) return x*(1-x);
+  return Math.sin(2*Math.PI*x);
+}
+function duhClosed(x,t){
+  if(duhP===0) return (1-Math.cos(Math.PI*t))/(Math.PI*Math.PI)*Math.sin(Math.PI*x);
+  if(duhP===1) return t*t*x*(1-x)/2 - t**4/12;
+  return (1-Math.cos(2*Math.PI*t))/(4*Math.PI*Math.PI)*Math.sin(2*Math.PI*x);
+}
+function duhNum(x,t){
+  var a=1, M=800, N=800, dt=t/M, s=0;
+  if(t<=0) return 0;
+  for(var i=0;i<M;i++){
+    var tau=(i+0.5)*dt;
+    var lo=x-a*(t-tau), hi=x+a*(t-tau);
+    var si=0;
+    for(var j=0;j<N;j++) si+=duhF(lo+(hi-lo)*(j+0.5)/N);
+    s+=si*(hi-lo)/N*dt;
+  }
+  return s/(2*a);
+}
+function duhAll(){
+  setTxt("duh-xv",duhX.toFixed(2));
+  setTxt("duh-tv",duhT.toFixed(2));
+  var num=duhNum(duhX,duhT), cls=duhClosed(duhX,duhT);
+  setTxt("duh-num",fmtE(num));
+  setTxt("duh-cls",fmtE(cls));
+  if(Math.abs(cls)>1e-12) setTxt("duh-err",fmtE(Math.abs(num-cls)/Math.abs(cls)));
+  else setTxt("duh-err","|Δ|="+fmtE(Math.abs(num-cls)));
+  var cv=$("duh-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  /* 左：特征三角形 */
+  var x0=duhX, t0=duhT;
+  var m=Math.max(0.6,Math.abs(x0)+t0+0.4);
+  var f=frame(ctx,W/2-14,H,-m,m,0,Math.max(2.2,t0+0.4),{xt:[-m,-m/2,0,m/2,m],yt:[0,1,2,3],xlabel:"ξ",ylabel:"τ",ml:44,mb:30});
+  var X=f.X,Y=f.Y;
+  ctx.fillStyle="rgba(83,74,183,.12)";
+  ctx.beginPath(); ctx.moveTo(X(x0-t0),Y(0)); ctx.lineTo(X(x0),Y(t0)); ctx.lineTo(X(x0+t0),Y(0)); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(X(x0-t0),Y(0)); ctx.lineTo(X(x0),Y(t0)); ctx.lineTo(X(x0+t0),Y(0)); ctx.stroke();
+  ctx.fillStyle="#534AB7"; ctx.beginPath(); ctx.arc(X(x0),Y(t0),4.5,0,7); ctx.fill();
+  label(ctx,"积分域 G",X(x0-t0)+6,Y(t0/2)+14,"#534AB7");
+  label(ctx,"(ξ,τ) 平面",X(0),f.mt+f.ph-6,"#57606a","center");
+  /* 右：解随 τ 积累的曲线（闭式），当前 t 打点 */
+  var TMAX=2.2, i, vmin=0, vmax=0, vals=[];
+  for(i=0;i<=200;i++){
+    var tt=TMAX*i/200, vv=duhClosed(duhX,tt);
+    vals.push(vv);
+    if(vv<vmin)vmin=vv; if(vv>vmax)vmax=vv;
+  }
+  var pad=Math.max(0.05,(vmax-vmin)*0.12);
+  var g=frame(ctx,W,H,0,TMAX,vmin-pad,vmax+pad,{xt:[0,0.5,1,1.5,2],xlabel:"t",ylabel:"u(x,t)",ml:W/2+46,mb:30,clear:false});
+  var X2=g.X,Y2=g.Y;
+  curve(ctx,function(tt){ return duhClosed(duhX,tt); },X2,Y2,0,TMAX,200,"#534AB7",2.4);
+  ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(X2(t0),g.mt); ctx.lineTo(X2(t0),g.mt+g.ph); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="#185FA5"; ctx.beginPath(); ctx.arc(X2(t0),Y2(duhClosed(duhX,t0)),4.5,0,7); ctx.fill();
+  label(ctx,"解随时间积累（闭式曲线）",X2(0.06),g.mt+14,"#534AB7");
+}
+$("duh-p0").addEventListener("click",function(){ duhP=0; duhBtns(); duhAll(); });
+$("duh-p1").addEventListener("click",function(){ duhP=1; duhBtns(); duhAll(); });
+$("duh-p2").addEventListener("click",function(){ duhP=2; duhBtns(); duhAll(); });
+function duhBtns(){
+  $("duh-p0").className=duhP===0?"on":"";
+  $("duh-p1").className=duhP===1?"on":"";
+  $("duh-p2").className=duhP===2?"on":"";
+}
+$("duh-x").addEventListener("input",function(){ duhX=clampr(parseFloat(this.value)/100,0,1); duhAll(); });
+$("duh-t").addEventListener("input",function(){ duhT=clampr(parseFloat(this.value)/100,0,2); duhAll(); });
+
+/* ================= 8 驻波实验室 ================= */
+var swMode=0, swK=2, swN=8, swT=0, swTimer=null;
+var SWL=1, SWA=1, SWC=0.3, SWH=1;
+function swAk(k){ return 2*SWH*SWL*SWL*Math.sin(k*Math.PI*SWC/SWL)/(Math.PI*Math.PI*SWC*(SWL-SWC)*k*k); }
+function swU(x,t){
+  var s=0,k;
+  if(swMode===0){
+    s=Math.sin(swK*Math.PI*x/SWL)*Math.cos(swK*Math.PI*SWA/SWL*t);
+  }else{
+    for(k=1;k<=swN;k++) s+=swAk(k)*Math.cos(k*Math.PI*SWA/SWL*t)*Math.sin(k*Math.PI*x/SWL);
+  }
+  return s;
+}
+function swAll(){
+  setTxt("sw-kv",String(swK));
+  setTxt("sw-Nv",String(swN));
+  var om=swK*Math.PI*SWA/SWL;
+  setTxt("sw-om",om.toFixed(4));
+  setTxt("sw-fk",(om/(2*Math.PI)).toFixed(4)+" Hz");
+  setTxt("sw-per",(2*Math.PI/om).toFixed(4)+" s");
+  var nodes=[],m;
+  for(m=0;m<=swK;m++) nodes.push((m/swK).toFixed(4));
+  setTxt("sw-nodes",swMode===0?nodes.join(", "):"—（多模态无固定节点）");
+  setTxt("sw-ak1",swMode===1?fmt(swAk(1)):"—");
+  $("sw-m0").className=swMode===0?"on":"";
+  $("sw-m1").className=swMode===1?"on":"";
+  var cv=$("sw-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,0,1,-1.7,1.7,{xt:[0,0.25,0.5,0.75,1],yt:[-1,0,1],xlabel:"x（弦长 l = 1）",ylabel:"u"});
+  var X=f.X,Y=f.Y;
+  dashed(ctx,function(x){return daPhi0(x);},X,Y,0,1,300,"#b9c2cc",1.3,[2,3]);
+  if(swMode===0){
+    dashed(ctx,function(x){return Math.sin(swK*Math.PI*x/SWL);},X,Y,0,1,300,"#0F6E56",1.5,[5,4]);
+    dashed(ctx,function(x){return -Math.sin(swK*Math.PI*x/SWL);},X,Y,0,1,300,"#0F6E56",1.5,[5,4]);
+    for(var mm=0;mm<=swK;mm++){
+      ctx.fillStyle="#1f2328";
+      ctx.beginPath(); ctx.arc(X(mm/swK),Y(0),3.5,0,7); ctx.fill();
+    }
+    label(ctx,"包络 ±sin(kπx/l)（青虚线）· 节点（黑点）",X(0.02),Y(1.58),"#57606a");
+  }else{
+    label(ctx,"灰虚线 = 初始形状 φ；蓝线 = 前 "+swN+" 个模态叠加",X(0.02),Y(1.58),"#57606a");
+  }
+  curve(ctx,function(x){return swU(x,swT);},X,Y,0,1,600,"#185FA5",2.6);
+}
+function daPhi0(x){
+  if(swMode===0) return 0;
+  /* 拨弦初值（灰虚线参考） */
+  return x<=SWC?SWH*x/SWC:(x<SWL?SWH*(SWL-x)/(SWL-SWC):0);
+}
+$("sw-m0").addEventListener("click",function(){ swMode=0; swAll(); });
+$("sw-m1").addEventListener("click",function(){ swMode=1; swAll(); });
+$("sw-k").addEventListener("input",function(){ swK=clampr(parseInt(this.value,10),1,8); swAll(); });
+$("sw-N").addEventListener("input",function(){ swN=clampr(parseInt(this.value,10),1,64); swAll(); });
+$("sw-play").addEventListener("click",function(){
+  var btn=this;
+  if(swTimer){ clearInterval(swTimer); swTimer=null; btn.textContent="播放"; btn.className=""; return; }
+  btn.textContent="暂停"; btn.className="on";
+  swTimer=setInterval(function(){
+    swT+=0.02; if(swT>2)swT=0;
+    swAll();
+  },40);
+});
+
+/* ================= 9 对比实验室 ================= */
+var cmpP=0, cmpA=1, cmpT=0.25, cmpTimer=null;
+function cmpPhi(x){
+  if(cmpP===0) return Math.abs(x)<=1?1:0;
+  return Math.exp(-4*x*x);
+}
+function cmpWave(x,t){
+  return 0.5*(cmpPhi(x-cmpA*t)+cmpPhi(x+cmpA*t));
+}
+function cmpHeat(x,t){
+  if(t<=0) return cmpPhi(x);
+  var s=cmpA*cmpA*t;
+  if(cmpP===0) return 0.5*(erfA((1-x)/(2*Math.sqrt(s)))+erfA((1+x)/(2*Math.sqrt(s))));
+  return Math.exp(-x*x/(1+4*s*4))/Math.sqrt(1+16*s);
+}
+function cmpAll(){
+  setTxt("cmp-av",cmpA.toFixed(2));
+  setTxt("cmp-tv",cmpT.toFixed(2));
+  var s=cmpA*cmpA*cmpT;
+  var wsup,hl2;
+  if(cmpP===0){
+    wsup=(cmpA*cmpT<=1)?1:0.5;
+  }else{
+    wsup=Math.max(Math.exp(-4*s),0.5+0.5*Math.exp(-16*s));
+  }
+  var hsup=(cmpT<=0)?1:(cmpP===0?erfA(1/(2*Math.sqrt(s))):1/Math.sqrt(1+16*s));
+  /* 热 ∫u²dx：矩形闭式繁杂，直接细网格（被积光滑）；高斯用闭式 */
+  if(cmpP===1){
+    hl2=Math.sqrt(Math.PI/8)/Math.sqrt(1+16*s);
+  }else{
+    var M=8000, dx=24/M, acc=0;
+    for(var i=0;i<M;i++){
+      var x=-12+(i+0.5)*dx, v=cmpHeat(x,cmpT);
+      acc+=v*v*dx;
+    }
+    hl2=acc;
+  }
+  var wl2=(cmpP===0)?((cmpA*cmpT<=1)?2-cmpA*cmpT:1):0.5*Math.sqrt(Math.PI/8)*(1+Math.exp(-8*s));
+  setTxt("cmp-wsup",wsup.toFixed(4));
+  setTxt("cmp-hsup",hsup.toFixed(4));
+  setTxt("cmp-wl2",wl2.toFixed(4));
+  setTxt("cmp-hl2",hl2.toFixed(4));
+  setTxt("cmp-front","±"+(cmpA*cmpT).toFixed(2));
+  var cv=$("cmp-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  /* 左：波动 */
+  var f=frame(ctx,W/2-14,H,-7,7,-0.25,1.25,{xt:[-6,-3,0,3,6],yt:[0,0.5,1],xlabel:"x",ylabel:"u",ml:46,mb:30});
+  var X=f.X,Y=f.Y;
+  curve(ctx,function(x){return cmpWave(x,cmpT);},X,Y,-7,7,700,"#185FA5",2.6);
+  dashed(ctx,function(x){return cmpPhi(x);},X,Y,-7,7,400,"#b9c2cc",1.3,[2,3]);
+  ctx.strokeStyle="#D85A30"; ctx.lineWidth=1.2; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(X(-cmpA*cmpT),f.mt); ctx.lineTo(X(-cmpA*cmpT),f.mt+f.ph); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X(cmpA*cmpT),f.mt); ctx.lineTo(X(cmpA*cmpT),f.mt+f.ph); ctx.stroke();
+  ctx.setLineDash([]);
+  label(ctx,"波动方程（达朗贝尔）",X(-6.8),Y(1.18),"#185FA5");
+  label(ctx,"波前 ±at（珊瑚虚线）",X(-6.8),Y(1.05),"#D85A30");
+  /* 右：热 */
+  var xoff=W/2+14;
+  var g=frame(ctx,W,H,-7,7,-0.25,1.25,{xt:[-6,-3,0,3,6],yt:[0,0.5,1],xlabel:"x",ylabel:"u",ml:xoff+32,mb:30,clear:false});
+  var X2=g.X,Y2=g.Y;
+  curve(ctx,function(x){return cmpHeat(x,cmpT);},X2,Y2,-7,7,700,"#534AB7",2.6);
+  dashed(ctx,function(x){return cmpPhi(x);},X2,Y2,-7,7,400,"#b9c2cc",1.3,[2,3]);
+  label(ctx,"热传导方程（热核）",X2(-6.8),Y2(1.18),"#534AB7");
+  label(ctx,"瞬间波及全轴",X2(-6.8),Y2(1.05),"#57606a");
+}
+$("cmp-p0").addEventListener("click",function(){ cmpP=0; cmpBtns(); cmpAll(); });
+$("cmp-p1").addEventListener("click",function(){ cmpP=1; cmpBtns(); cmpAll(); });
+function cmpBtns(){
+  $("cmp-p0").className=cmpP===0?"on":"";
+  $("cmp-p1").className=cmpP===1?"on":"";
+}
+$("cmp-a").addEventListener("input",function(){ cmpA=clampr(parseFloat(this.value)/100,0.4,1.6); cmpAll(); });
+$("cmp-t").addEventListener("input",function(){ cmpT=clampr(parseFloat(this.value)/100,0,4); cmpAll(); });
+$("cmp-play").addEventListener("click",function(){
+  var btn=this;
+  if(cmpTimer){ clearInterval(cmpTimer); cmpTimer=null; btn.textContent="播放"; btn.className=""; return; }
+  btn.textContent="暂停"; btn.className="on";
+  cmpTimer=setInterval(function(){
+    cmpT+=0.02; if(cmpT>4)cmpT=0;
+    $("cmp-t").value=String(Math.round(cmpT*100));
+    cmpAll();
+  },40);
+});
+
+/* ---------- 初始化 ---------- */
+segAll(); bcAll(); chAll(); daAll(); depAll(); refAll(); duhAll(); swAll(); cmpAll();
+</script>
+</body>
+</html>

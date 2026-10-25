@@ -64,14 +64,14 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <p class="kicker">泛函分析 · 交互教学页</p>
 <h1>泛函分析 · 可视化系列</h1>
 <p class="lead">江泽坚、孙善利《泛函分析》的配套交互页。无限维空间里直觉何时失效、投影如何选出「最近的点」、算子的谱长什么样——每页一个可拖动的实验台，页内所有数字都由工作区脚本实测得出。</p>
-<p class="meta">教材 5 章 · 图号 FA-01 起顺编 · 2026-10-25 重建索引 · 页面零依赖、可离线打开（公式渲染需联网）</p>
+<p class="meta">教材 5 章 · 图号 FA-01 起顺编 · 2026-10-25 重建索引 · FA-01 已上线 · 页面零依赖、可离线打开（公式渲染需联网）</p>
 
 <h2>第 2 章 · Hilbert 空间 <span>ch02</span></h2>
 
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">FA-01 · ch02</span>正交投影与最佳逼近</p>
-<p class="d">最佳逼近点的存在唯一（变分不等式）· 投影算子的幂等与自伴 · 贝塞尔不等式与 Parseval 等式的对账 · 正交分解沙盘——科研里「把解投到正确子空间上」的思想原型（可视化增益 + 科研连接度最高，排第一）</p>
-</div>
+<a class="card" href="正交投影与最佳逼近.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">FA-01 · ch02</span>正交投影与最佳逼近</p>
+<p class="d">四个实验台全部实测对账：正交分解沙盘（(z,y)=0、勾股对账 ‖x‖²=‖y‖²+‖z‖²）、闭球上的变分不等式（(x−y,w−y)≤0，w≠y 时严格可测）、投影算子账本（P²=P、Pᵀ=P、‖P‖₂=1、tr P=1、P(I−P)=0 残差全零）、l² Parseval 对账台（Bessel 余量 ≥0，k=N 精确取等）。射影定理（定理 3.1）→ 变分不等式 (VI) → Fréchet-Riesz 预告；与 NLA 投影算子页互为参照。闸门 verify_readout_fa01.js 134 项。</p>
+</a>
 
 <h2>第 1 章 · 距离线性空间 <span>ch01</span></h2>
 
@@ -104,7 +104,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <footer>
 <p>教材：江泽坚、孙善利《泛函分析》（知识库代号 <code>fhfx2</code>，切片 <code>raw/textbook/fhfx2/</code>，ch01–ch05）。切片头部有页码偏移与质量报告，先读头部确认；OCR 公式引用前按上下文重组核对，引用位置精确到章节。</p>
 <p>版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；实验台结构沿用全站约定。图号 FA-01 起顺编。</p>
-<p>校验：公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed；数值结论必须工作区根脚本实测。2026-10-25 由占位门牌重建。</p>
+<p>校验：公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed；数值结论必须工作区根脚本实测。2026-10-25 由占位门牌重建；同日 FA-01 上线（verify_readout_fa01.js 134 项通过、公式 199 项 0 failed、链接 0 broken）。</p>
 </footer>
 
 </div>

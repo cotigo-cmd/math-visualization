@@ -73,13 +73,17 @@ footer a{color:var(--teal)}
 </div>
 
 <div class="ch">
-  <h2>后续章节（规划）</h2>
+  <h2>第 8 章 · 类和对象（§8 / §9 / §11 / §12）</h2>
 
-  <div class="card off">
-    <div class="ttl"><span class="code">CPP-02</span><span class="name">对象内存模型：构造、析构与 this</span><span class="tag">筹备中</span></div>
-    <p class="desc">对象的字节布局、构造/析构的时序、<code>this</code> 指针、继承下的对象切片、虚函数表的实际内存排布（为什么基类析构要 virtual）。</p>
-    <div class="meta">§8 / §11 / §12</div>
-  </div>
+  <a class="card" href="./object-model.html">
+    <div class="ttl"><span class="code">CPP-02</span><span class="name">对象内存模型：构造、析构与 this</span><span class="tag live">已上线</span></div>
+    <p class="desc">对象在内存里到底长什么样。五个交互实验：<code>sizeof(Time)</code> 为什么是 12（数据成员 + 对齐填充，函数代码在对象外）· 一段 <code>volume</code> 代码怎么服务十个对象（<code>this</code> 是隐式形参）· 构造/析构时序逐步播放（先基类后派生，析构倒序）· <code>al = bl</code> 的对象切片到底拷走哪些字节 · 虚函数表与虚析构（<code>delete</code> 基类指针为什么必须 <code>virtual ~</code>）。</p>
+    <div class="meta">§8.3.4 · 9.1 · 9.5.3 · 9.6 · 11.5 · 11.6 · 12.3.3 · 12.3.4 · 12.4 ／ 读数闸门 verify_readout_obj.js · 172 项</div>
+  </a>
+</div>
+
+<div class="ch">
+  <h2>后续章节（规划）</h2>
 
   <div class="card off">
     <div class="ttl"><span class="code">CPP-03</span><span class="name">递归调用栈</span><span class="tag">筹备中</span></div>

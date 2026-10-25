@@ -3,66 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>泛函分析 · 筹备中</title>
+<title>泛函分析 · 可视化系列</title>
 <!--
-  维护说明（给未来的自己）：
-  本页是占位门牌——学科尚未开工。开工时按新学科启动提示词（math_visualization/新学科启动提示词.md）
-  重建本页为正式章节导航，版式自定（门户不限定学科风格），然后把总导航 site/index.html
-  里对应卡片的标签从「筹备中」改成「已上线」。
+  学科索引（泛函分析）。2026-10-25 由占位门牌重建为正式章节导航（五天冲刺计划）。
+  版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；实验台结构沿用全站约定。
+  加新页时：在对应章节把 .card.planned 改成 <a class="card"> 并填 href，图号接 FA-01 顺编。
+  素材：江泽坚、孙善利《泛函分析》（知识库代号 fhfx2），切片在
+  ~/.workbuddy/wiki-knowledge/raw/textbook/fhfx2/（ch01 距离线性空间 / ch02 Hilbert 空间 /
+  ch03 Banach 有界线性算子 / ch04 谱论 / ch05 广义函数论大意）。切片头部有质量报告与页码偏移，
+  先读头部确认；OCR 公式引用前按上下文重组核对，引用位置精确到章节。
+  验证脚本在工作区根（相对路径 ../../verify_formulas.js）；总导航 site/index.html 的卡片标签
+  在冲刺结束后由用户统一 flipping，自动化任务不要改总导航（避免并发写冲突）。
 -->
 <style>
 :root{
-  --text:#1f2328; --muted:#57606a; --border:#d0d7de;
-  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
-  --card:#f6f8fa;
+  --paper:#f4f5fa; --sheet:#ffffff; --ink:#1e2440; --muted:#5a6078;
+  --line:#d8dcee; --line-2:#b9c0dd;
+  --indigo:#3d4fa3; --indigo-soft:#e9ecfa;
+  --violet:#7a4fa3; --violet-soft:#f1eaf8;
+  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
-body{margin:0;background:#fff;color:var(--text);
+body{margin:0;color:var(--ink);background:var(--paper);
   font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
-.wrap{max-width:780px;margin:0 auto;padding:64px 22px 60px}
+.wrap{max-width:820px;margin:0 auto;padding:60px 22px 70px}
 .crumb{font-size:13px;margin:0 0 18px}
-.crumb a{color:var(--accent);text-decoration:none}
+.crumb a{color:var(--indigo);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
-h1{font-size:26px;margin:0 0 8px;font-weight:650}
-p.lead{color:var(--muted);font-size:15px;margin:0 0 24px;max-width:64ch}
-.tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,monospace;
-  border-radius:5px;padding:1px 8px;margin-right:10px;vertical-align:2px;font-weight:500;
-  background:#F1EFE8;color:#5F5E5A}
-.card{display:block;background:var(--card);border:1px solid var(--border);
-  border-radius:12px;padding:16px 22px;margin:0 0 12px}
-.card .t{font-size:15.5px;font-weight:650;margin:0 0 4px;color:var(--accent-dark)}
-.card .d{font-size:13.5px;color:var(--muted);margin:0;line-height:1.7}
-footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--border);
-  font-size:13px;color:var(--muted)}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:28px;margin:8px 0 10px;font-weight:650;letter-spacing:-.01em}
+p.lead{color:#3c4260;font-size:15.5px;margin:0 0 10px;max-width:70ch}
+.meta{font-size:12.5px;color:var(--muted);margin:14px 0 0;font-family:var(--mono)}
+h2{font-size:13px;font-weight:600;color:var(--muted);margin:44px 0 14px;letter-spacing:.06em;
+  text-transform:uppercase;border-bottom:1px solid var(--line-2);padding-bottom:8px;
+  display:flex;justify-content:space-between;align-items:baseline}
+h2 span{font-family:var(--mono);font-weight:400;letter-spacing:.02em;text-transform:none}
+a.card,.card{display:block;background:var(--sheet);border:1px solid var(--line);border-radius:12px;
+  padding:16px 20px;margin:0 0 11px;text-decoration:none;color:var(--ink);position:relative}
+a.card{border-left:3px solid var(--indigo)}
+a.card:hover{border-color:var(--indigo)}
+.card .t{font-size:16px;font-weight:650;margin:0 0 5px;color:#232a4e}
+.card .d{font-size:13.4px;color:var(--muted);margin:0;line-height:1.75}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;border-radius:999px;
+  padding:1px 9px;margin-right:8px;vertical-align:2px;letter-spacing:.02em}
+.tag.live{background:var(--indigo-soft);color:var(--indigo);border:1px solid rgba(61,79,163,.3)}
+.tag.plan{background:#eef0f6;color:#6a7090;border:1px solid var(--line)}
+.tag.ch{background:var(--violet-soft);color:var(--violet);border:1px solid rgba(122,79,163,.3)}
+.card.planned{background:transparent;border-style:dashed;border-left:3px dashed var(--line-2);opacity:.72}
+.card.planned .t{font-weight:600;color:#4a5080}
+footer{margin-top:52px;padding-top:16px;border-top:1px solid var(--line-2);font-size:12.6px;color:var(--muted)}
+footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var(--line);
+  border-radius:4px;padding:0 5px;font-size:11.8px}
+@media(max-width:620px){h1{font-size:23px}.wrap{padding-top:44px}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a></p>
-<h1><span class="tag">筹备中</span>泛函分析</h1>
-<p class="lead">教材：江泽坚、孙善利《泛函分析》（知识库代号 fhfx2）。抽象的无限维概念——距离、投影、算子、谱——逐个配上能拖动的直观图像。</p>
+<p class="kicker">泛函分析 · 交互教学页</p>
+<h1>泛函分析 · 可视化系列</h1>
+<p class="lead">江泽坚、孙善利《泛函分析》的配套交互页。无限维空间里直觉何时失效、投影如何选出「最近的点」、算子的谱长什么样——每页一个可拖动的实验台，页内所有数字都由工作区脚本实测得出。</p>
+<p class="meta">教材 5 章 · 图号 FA-01 起顺编 · 2026-10-25 重建索引 · 页面零依赖、可离线打开（公式渲染需联网）</p>
 
-<div class="card">
-<p class="t">1 · Hilbert 空间的正交投影</p>
-<p class="d">最佳逼近点、贝塞尔不等式、正交分解——科研里「修正量」的思想原型：把解投到正确的子空间上。（§2，首选）</p>
+<h2>第 2 章 · Hilbert 空间 <span>ch02</span></h2>
+
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">FA-01 · ch02</span>正交投影与最佳逼近</p>
+<p class="d">最佳逼近点的存在唯一（变分不等式）· 投影算子的幂等与自伴 · 贝塞尔不等式与 Parseval 等式的对账 · 正交分解沙盘——科研里「把解投到正确子空间上」的思想原型（可视化增益 + 科研连接度最高，排第一）</p>
 </div>
-<div class="card">
-<p class="t">2 · 距离空间的单位球</p>
-<p class="d">l¹ / l² / l∞ 单位球的形状对比、开闭集、稠密与完备——「无限维里直觉何时失效」的第一课。（§1）</p>
+
+<h2>第 1 章 · 距离线性空间 <span>ch01</span></h2>
+
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">FA-02 · ch01</span>单位球、开闭集与完备性</p>
+<p class="d">l¹ / l² / l∞ 单位球的形状对比（与本站数值线性代数·范数页互为参照，这里进入无限维）· 开闭集、闭包、稠密 · 完备 vs 不完备的反例 · Cauchy 列不收敛时「洞里」发生了什么</p>
 </div>
-<div class="card">
-<p class="t">3 · 线性算子与共轭空间</p>
-<p class="d">算子范数、Riesz 表示、对偶空间——把「泛函」从抽象名词变成看得见的映射。（§2–3）</p>
+
+<h2>第 3 章 · Banach 空间上的有界线性算子 <span>ch03</span></h2>
+
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">FA-03 · ch03</span>算子范数与共轭空间</p>
+<p class="d">算子范数的几何（把单位球映进去的最小球）· 有界 = 连续的等价 · Riesz 表示定理把泛函变成向量 · 对偶空间的直观——「泛函」从抽象名词变成看得见的映射</p>
 </div>
-<div class="card">
-<p class="t">4 · 谱论</p>
-<p class="d">有界算子谱的分类、自伴算子的谱定理——最难的一块，放在最后。（§4）</p>
+
+<h2>第 4 章 · 有界线性算子谱论 <span>ch04</span></h2>
+
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">FA-04 · ch04</span>谱的分类与谱定理</p>
+<p class="d">点谱 / 连续谱 / 残留谱的判据 · 谱半径公式 · 自伴算子的谱定理（有限维特征分解的正确推广）· 与本站 NLA 特征值页的衔接——最难的一块，放在最后</p>
+</div>
+
+<h2>拓展 · 广义函数 <span>ch05</span></h2>
+
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">FA-05 · ch05</span>广义函数论大意</p>
+<p class="d">δ 函数作为连续线性泛函 · 基本解 · 与本站 PDE 学科「广义函数」页互为参照（同一素材的泛函视角）</p>
 </div>
 
 <footer>
-<p>以上为开工前的规划草案（按可视化增益 + 与科研连接度排序），最终顺序以新对话独立判断为准。</p>
-<p>占位门牌页：本学科开工时重建为正式章节导航，版式自定。</p>
+<p>教材：江泽坚、孙善利《泛函分析》（知识库代号 <code>fhfx2</code>，切片 <code>raw/textbook/fhfx2/</code>，ch01–ch05）。切片头部有页码偏移与质量报告，先读头部确认；OCR 公式引用前按上下文重组核对，引用位置精确到章节。</p>
+<p>版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；实验台结构沿用全站约定。图号 FA-01 起顺编。</p>
+<p>校验：公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed；数值结论必须工作区根脚本实测。2026-10-25 由占位门牌重建。</p>
 </footer>
 
 </div>

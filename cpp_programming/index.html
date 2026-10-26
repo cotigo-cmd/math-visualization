@@ -63,6 +63,16 @@ footer a{color:var(--teal)}
 <p class="lead">教材：谭浩强《C++ 程序设计》。这一学科只做一件事——把<b>看不见的运行时刻</b>画出来：内存里的字节、指针里的地址、栈帧的压入弹出、对象的虚函数表。语法书能讲清的部分不重复画，画的是「书上只能靠想象」的部分。</p>
 
 <div class="ch">
+  <h2>第 4 章 · 利用函数实现指定的功能（§4）</h2>
+
+  <a class="card" href="./recursion-stack.html">
+    <div class="ttl"><span class="code">CPP-03</span><span class="name">递归调用栈：阶乘、汉诺塔与栈溢出</span><span class="tag live">已上线</span></div>
+    <p class="desc">同一个函数同时活着很多份——每次调用都往栈上压一帧。五个交互实验：一次调用的五步（参数传递、记返回地址、保护现场/恢复现场，图 4.10；递归函数无法 <code>inline</code>）· <code>fac(n)</code> 栈帧逐层压入弹出＋事件时间线（回溯/递推两阶段，调用 n 次、乘法 n−1 次、最大栈深 n）· <code>age(5)</code> 复现图 4.8（回溯到 10 岁再递推回 18）· 汉诺塔三座实况与调用栈同步（2<sup>n</sup>−1 步、栈深 n+1）· 8 MiB 栈能装多少帧（32 B/帧模型 ≈ 26 万帧）与 <code>static</code> 局部变量陷阱（auto 版每次返回 1，static 版跨调用累加）。</p>
+    <div class="meta">§4.6 · 4.7 · 4.12.1–4.12.3 · 习题 9 ／ 读数闸门 verify_readout_stack.js · 437 项</div>
+  </a>
+</div>
+
+<div class="ch">
   <h2>第 6 章 · 指针与引用</h2>
 
   <a class="card" href="./pointers.html">
@@ -84,12 +94,6 @@ footer a{color:var(--teal)}
 
 <div class="ch">
   <h2>后续章节（规划）</h2>
-
-  <div class="card off">
-    <div class="ttl"><span class="code">CPP-03</span><span class="name">递归调用栈</span><span class="tag">筹备中</span></div>
-    <p class="desc">栈帧逐层压入与弹出：阶乘 / 汉诺塔 / 回溯的递归树与栈深同步动画，顺带看清「为什么深递归会栈溢出」。</p>
-    <div class="meta">§4 / §7</div>
-  </div>
 
   <div class="card off">
     <div class="ttl"><span class="code">CPP-04</span><span class="name">STL 容器的内部结构</span><span class="tag">筹备中</span></div>

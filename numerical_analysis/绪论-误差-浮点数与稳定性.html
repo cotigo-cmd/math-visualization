@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>绪论：误差、浮点数与数值稳定性 · 数值分析 第 1 讲</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 素材：四川大学 2026 数值分析课件（朱瑞）第 1 讲 绪论，切片
+     ~/.workbuddy/wiki-knowledge/raw/courseware/na-2026/ch01-overview.md（204 页 PDF）。
+     引用：定义 1–7、定理 1（相对误差与有效数字）、式 (1) 运算误差、
+     例 3（最小/最大正规数）、定义 4（机器精度）与 binary32/64 表、
+     定义 5/6（适定、良态病态）、例 5（x²−2αx+1）、例 12（截断）、例 17（x²−118x+1）、
+     例 19（sin 级数）、例 20（差商总误差）、定义 12 + 例 14、定义 13 + 例 16（Iₙ 递推）。
+     每页首行「课程考核方式」是幻灯片模板侧栏，不是正文。
+  2. 页内每个数字都由工作区根目录 verify_na01.js 实测（vm 执行本页脚本 + 独立重算参考值），
+     改算例后必须重跑。
+  3. 公式改动后跑 `node verify_formulas.js 绪论-误差-浮点数与稳定性.html`（要求 0 failed）；
+     行间公式只能用 $$（配置只注册 $$ 与 \(\)），公式内 < 写成 &lt;。
+  4. 例 16 的「真值」不用课件式 (9.3) 闭式：a=100 时闭式要相减 10¹⁰ 量级的项，
+     double 只能保住 5 位。本页真值用复合 Gauss-4 求积与倒推两路交叉验证（一致到 1e-11）。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
+  --line:#e3dccd; --line-2:#cfc6b2;
+  --orange:#c2531f; --orange-soft:#fbeee5;
+  --teal:#0d6b5d; --teal-soft:#e7f3ef;
+  --ch:#1f5c66; --ch-soft:#e5eff0;
+  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  --ghost:rgba(160,148,124,.16);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);
+  background:
+    linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
+    linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
+    var(--paper);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px 90px}
+a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(13,107,93,.3)}
+a:hover{border-bottom-color:var(--teal)}
+h1{font-size:29px;line-height:1.3;margin:0 0 10px;font-weight:650;letter-spacing:-.01em}
+h2{font-size:21px;margin:66px 0 14px;font-weight:650;display:flex;align-items:baseline;gap:12px}
+h2 .no{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ch);
+  border:1px solid rgba(31,92,102,.34);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
+h3{font-size:16.5px;margin:32px 0 8px;font-weight:650}
+p{margin:12px 0;max-width:74ch}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.hero{padding:58px 0 6px}
+.hero p.lead{font-size:16.5px;color:#4a4438;max-width:74ch}
+#mjx-offline{display:none;margin:0 0 4px;padding:9px 16px;background:#fff4d6;border:1px solid #e8cf92;
+  border-radius:8px;font-size:13.5px;color:#6b5417}
+body:not(.mjx-ready) #mjx-offline{display:block}
+nav{position:sticky;top:0;z-index:20;margin:26px 0 0;
+  background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .inner{max-width:900px;margin:0 auto;padding:9px 22px;display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
+nav a{color:var(--muted);border:0}
+nav a:hover{color:var(--ch)}
+
+.glance{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0 6px}
+.glance div{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.glance b{display:block;font-family:var(--mono);font-size:22px;font-weight:600;line-height:1.25;letter-spacing:-.02em}
+.glance span{font-size:12.5px;color:var(--muted);display:block;margin-top:3px}
+.glance .a b{color:var(--orange)}
+.glance .b b{color:var(--teal)}
+.glance .c b{color:var(--ch)}
+
+.lab{background:var(--sheet);border:1px solid var(--line);border-radius:14px;
+  padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
+.lab-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.lab-head .t{font-size:12.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted)}
+canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px solid var(--line)}
+#cv-float{height:310px}
+#cv-cancel{height:330px}
+#cv-cond{height:340px}
+#cv-rec{height:330px}
+#cv-tot{height:340px}
+.ctrls{display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin:12px 2px 8px;font-size:13.5px}
+.ctrls .grp{display:flex;align-items:center;gap:9px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:170px;height:3px;border-radius:3px;
+  background:var(--line-2);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+  background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--orange);
+  border:2px solid #fff;cursor:pointer}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;padding:5px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line-2)}
+.seg button[aria-pressed=true]{background:var(--ch-soft);color:var(--ch);font-weight:600}
+.btn{font:inherit;font-size:13px;padding:5px 14px;border:1px solid var(--line-2);border-radius:8px;
+  background:#fff;color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ch);color:var(--ch)}
+.btn.primary{background:var(--ch);border-color:var(--ch);color:#fff}
+.btn.primary:hover{background:#17474f;color:#fff}
+.reads{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+.reads div{background:#fffdf8;padding:10px 12px}
+.reads .k{font-size:11.5px;color:var(--muted)}
+.reads .v{font-family:var(--mono);font-size:16.5px;font-weight:600;margin-top:2px}
+.reads .v.orange{color:var(--orange)}
+.reads .v.teal{color:var(--teal)}
+.reads .v.ch{color:var(--ch)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:9px 2px 0}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:20px;height:0;border-top:2.2px solid var(--orange);border-radius:2px}
+.legend i.teal{border-color:var(--teal)}
+.legend i.ch{border-color:var(--ch)}
+.legend i.gray{border-top:1.4px dashed rgba(35,32,26,.55)}
+.legend i.dot{border-top:0;border-radius:50%;width:8px;height:8px;background:var(--orange)}
+.hint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+
+.eq{font-size:17px;text-align:center;margin:18px 0;padding:12px 16px;background:var(--sheet);
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-assistive-mml{position:absolute!important;width:1px;height:1px;overflow:hidden!important;clip:rect(1px,1px,1px,1px)}
+mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
+.note{border-left:3px solid var(--orange);background:var(--orange-soft);padding:10px 16px;margin:16px 0;
+  border-radius:0 8px 8px 0;font-size:14.5px}
+.note.teal{border-left-color:var(--teal);background:var(--teal-soft)}
+.note.ch{border-left-color:var(--ch);background:var(--ch-soft)}
+.note p{margin:6px 0}
+table{width:100%;border-collapse:collapse;font-size:13.7px;margin:16px 0;background:var(--sheet)}
+th,td{border-bottom:1px solid var(--line);padding:7px 10px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:12.5px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line-2)}
+td.mono,th.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+table.decide td,table.decide th{text-align:left;vertical-align:top}
+table.decide td:nth-child(1),table.decide th:nth-child(1){width:22%}
+table.decide td:nth-child(2),table.decide th:nth-child(2){width:34%}
+tr.hi td{background:var(--ch-soft)}
+ul,ol{max-width:74ch}
+li{margin:5px 0}
+footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line-2);font-size:12.8px;color:var(--muted)}
+footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var(--line);
+  border-radius:4px;padding:0 5px;font-size:12px}
+@media (max-width:680px){
+  #cv-float{height:280px} #cv-cancel{height:300px} #cv-cond{height:290px}
+  #cv-rec{height:280px} #cv-tot{height:300px}
+  .glance{grid-template-columns:1fr}
+  .reads{grid-template-columns:repeat(2,1fr)}
+  h1{font-size:24px}
+  table{font-size:12.1px}
+  th,td{padding:6px 6px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap"><div id="mjx-offline">公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响，正文与交互不受影响。</div></div>
+
+<div class="hero"><div class="wrap">
+<p class="kicker">数值分析 · 第 1 讲 · 绪论与误差分析</p>
+<h1>绪论：所有结论都要先问一句「剩几位」</h1>
+<p class="lead">
+数值分析的第一课不是任何算法，而是一套<strong>记账规则</strong>：误差怎么量（绝对、相对、有效数字），机器能存多少（浮点数与机器精度 <em>ε</em>），一个问题本身有多敏感（性态），一个算法会不会把误差越滚越大（稳定性）。这四件事定下了后面 19 讲所有算法的评价标准。
+这一页把它们做成五个可以拖的实验台。所有读数都由工作区脚本实测——包括课件表 9.3 那串 <span style="font-family:var(--mono)">0.0099 → 0.0050 → 0.0030 → 0.0333 → −3.083 → 308.5</span> 的爆炸过程。
+</p>
+</div></div>
+
+<nav><div class="inner">
+<a href="#float">① 浮点尺</a>
+<a href="#cancel">② 抵消</a>
+<a href="#cond">③ 性态</a>
+<a href="#rec">④ 递推稳定性</a>
+<a href="#tot">⑤ 总误差</a>
+<a href="#sum">⑥ 一页收束</a>
+</div></nav>
+
+<div class="wrap">
+
+<div class="glance">
+  <div class="a"><b>2.22×10⁻¹⁶</b><span>binary64 的机器精度 \(\epsilon=2^{-52}\)；相邻浮点数在 1 附近只隔这么远</span></div>
+  <div class="b"><b>10.04</b><span>\(x^2-2\alpha x+1=0\) 在 \(\alpha=1.005\) 处的放大因子 \(\alpha/\sqrt{\alpha^2-1}\)</span></div>
+  <div class="c"><b>308.5</b><span>5 位有效数字下正推 \(I_n=1/n-100I_{n-1}\) 得到的 \(I_5\)，真值 0.00165</span></div>
+</div>
+
+<!-- ================= 01 ================= -->
+<h2 id="err"><span class="no">01</span>误差的三种说法，以及它们何时等价</h2>
+
+<p>
+课件把「误差」拆成三层。最朴素的是<strong>绝对误差</strong>（定义 1）：\(e(x)=|x-\bar x|\)。它的问题是没带尺度——量地球半径差 1 km 与量螺丝直径差 1 km，性质完全不同。于是有<strong>相对误差</strong>（定义 2）：
+$$e_r=\frac{|x-\bar x|}{|x|},\qquad \varepsilon_r=\frac{\varepsilon}{|x|}.$$
+相对误差带上了「相对于自己多大」的信息，这才让不同量级的问题可以比较。第三种说法是<strong>有效数字</strong>（定义 3），它把误差翻译成「你还能信几位」：
+</p>
+
+<div class="note ch">
+<p><strong>定义 3（有效数字）.</strong> 设 \(\bar x=\pm 10^m\times 0.x_1x_2\cdots\)，\(x_1\ne 0\)。若
+$$e=|x-\bar x|\le \tfrac12\times 10^{m-n},$$
+则称 \(\bar x\) 有 \(n\) 位有效数字。</p>
+</div>
+
+<p>
+注意这个定义里 \(m\) 是<strong>量级</strong>（\(10^m\) 那一档），所以「\(n\) 位有效数字」不是「小数点后 \(n\) 位」。课件例 1 拿 \(\pi\) 演示：\(\bar x=3.14\) 时 \(m=1\)，\(e=0.0015\le 0.5\times10^{-2}=0.5\times 10^{1-3}\)，故 \(n=3\) 位；\(\bar x=3.1416\) 时 \(e=7.3\times10^{-6}\le 0.5\times10^{-4}=0.5\times10^{1-5}\)，故 \(n=5\) 位。课件写「\(2+1\)」「\(4+1\)」说的就是这个 \(+1\)（整数位也算一位）。
+</p>
+
+<p>
+有效数字与相对误差的关系是<strong>定理 1</strong>：若 \(\bar x\) 有 \(n\) 位有效数字，则
+$$e_r\le \frac{1}{2x_1}\times 10^{1-n};$$
+反过来，若 \(e_r\le \dfrac{1}{2(x_1+1)}\times 10^{1-n}\)，则 \(\bar x\) 至少有 \(n\) 位有效数字。两条界的差别只在分母的 \(x_1\) 与 \(x_1+1\)——首位数字越大，同样的相对误差能保证的有效位数越多。实测：\(\pi\) 取 3.14 时 \(e_r=5.07\times10^{-4}\)，界 \(1.67\times10^{-3}\)，判 3 位；取 3.1416 时 \(e_r=2.34\times10^{-6}\)，界 \(1.67\times10^{-5}\)，判 5 位——与课件结论一致。
+</p>
+
+<p>
+最有用的是<strong>运算误差传播</strong>（课件式 (1)）：若 \(y=\varphi(x_1,\dots,x_n)\)，\(\varphi\) 连续可导，则
+$$\frac{|y-\bar y|}{|y|}\lesssim\sum_{i=1}^{n}\left|\frac{x_i}{y}\cdot\frac{\partial\varphi}{\partial x_i}\right|\cdot\frac{|x_i-\bar x_i|}{|x_i|}.$$
+括号里那个东西就是<strong>条件数</strong>：输入相对误差前面挂的放大倍数。后面第 5.3 讲会用矩阵范数把它写得更狠，但思想在第 1 页就出现了。
+</p>
+
+<p>
+第二层是<strong>机器能存多少</strong>。课件把浮点数写成
+$$\pm d_0.d_1d_2\cdots d_{p-1}\times\beta^{e},\qquad 0\le d_i&lt;\beta,$$
+\(\beta\) 是基数、\(p\) 是精度。IEEE 754 的 binary32 取 \(\beta=2,p=24\)，binary64 取 \(\beta=2,p=53\)。定义 4 把「表示一个实数产生的最大相对误差」叫<strong>机器精度</strong> \(\epsilon\)：截断（chopping）时 \(\epsilon\approx\beta^{1-p}\)，四舍五入时只剩一半 \(\epsilon\approx\frac12\beta^{1-p}\)。课件表给的是前者：
+</p>
+
+<table>
+<thead><tr><th>IEEE 754</th><th>常用名</th><th class="mono">β</th><th class="mono">p</th><th class="mono">ε = β^(1−p)</th><th class="mono">十进制</th></tr></thead>
+<tbody>
+<tr><td>binary32</td><td>单精度 float</td><td class="mono">2</td><td class="mono">24</td><td class="mono">2⁻²³</td><td class="mono">1.192×10⁻⁷</td></tr>
+<tr class="hi"><td>binary64</td><td>双精度 double</td><td class="mono">2</td><td class="mono">53</td><td class="mono">2⁻⁵²</td><td class="mono">2.220×10⁻¹⁶</td></tr>
+</tbody>
+</table>
+
+<p>
+\(\epsilon\) 的几何含义很具体：它是 \([1,\beta)\) 上相邻两个浮点数的间距（ulp）。\(\epsilon\) 越小，能分辨的差别越细。下面这台实验台把它画成一把尺子——拖动 \(p\) 和基数 \(\beta\)，看格点变密、看一个小于半格的增量如何被整格吞掉。
+</p>
+
+<!-- ================= 02 实验 01 ================= -->
+<h2 id="float"><span class="no">02</span>实验 01 · 浮点尺：机器精度到底有多细</h2>
+
+<div class="lab">
+  <div class="lab-head">
+    <span class="t">实验 01 · 浮点格点与 ulp</span>
+    <span class="t" id="ff-state">β = 10，p = 5</span>
+  </div>
+  <canvas id="cv-float" aria-label="浮点数格点尺：x 附近的浮点间距"></canvas>
+  <div class="legend">
+    <span><i class="gray"></i>可表示的浮点数（间距 = ulp）</span>
+    <span><i class="dot"></i>真值 x</span>
+    <span><i class="ch"></i>fl(x)（机器里实际存的）</span>
+  </div>
+  <div class="ctrls">
+    <div class="grp seg" role="group" aria-label="基数">
+      <button id="ff-b2" aria-pressed="false">β = 2</button>
+      <button id="ff-b8" aria-pressed="false">β = 8</button>
+      <button id="ff-b10" aria-pressed="true">β = 10</button>
+    </div>
+    <div class="grp seg" role="group" aria-label="舍入方式">
+      <button id="ff-round" aria-pressed="true">四舍五入</button>
+      <button id="ff-chop" aria-pressed="false">截断</button>
+    </div>
+    <div class="grp">
+      <label for="ff-p">精度 p</label>
+      <input id="ff-p" type="range" min="2" max="16" step="1" value="5">
+      <output id="ff-po" style="font-family:var(--mono);min-width:2em">5</output>
+    </div>
+    <div class="grp">
+      <label for="ff-x">真值 x</label>
+      <input id="ff-x" type="range" min="1" max="2" step="0.00001" value="1.23457">
+      <output id="ff-xo" style="font-family:var(--mono);min-width:4.6em">1.23457</output>
+    </div>
+  </div>
+  <div class="reads">
+    <div><div class="k">ε = β^(1−p)</div><div class="v ch" id="ff-eps">—</div></div>
+    <div><div class="k">ulp(x)</div><div class="v" id="ff-ulp">—</div></div>
+    <div><div class="k">fl(x)</div><div class="v" id="ff-fl">—</div></div>
+    <div><div class="k">相对误差 |x−fl(x)|/x</div><div class="v orange" id="ff-rel">—</div></div>
+  </div>
+  <p class="hint" id="ff-eat">—</p>
+</div>
+
+<p>
+三点值得盯着看。第一，\(\epsilon\) 只由 \(\beta\) 与 \(p\) 决定，与 \(x\) 无关——它是<strong>系统属性</strong>，不是某个数的误差。第二，绝对间距 ulp 随 \(x\) 的量级变（\(x\) 每乘一个 \(\beta\)，ulp 也乘 \(\beta\)），所以「绝对误差 10⁻⁶」在不同量级下含义不同，这正是不用绝对误差而用相对误差的原因。第三，把 \(p\) 调小到 3 再把 \(\beta\) 换成 10，尺子只剩 10 格，能看见半个格子的增量被直接吞掉——这就是后面所有「有效数字损失」的源头。
+</p>
+
+<div class="note teal">
+<p><strong>为什么不直接用 \(\epsilon\) 判「相等」.</strong> 计算机里没有「\(a=b\)」，只有「\(|a-b|\le\) 若干倍 \(\epsilon\cdot\max(|a|,|b|)\)」。本页所有模拟都按这个口径写：先算 \(x\)，再按 \(p\) 位有效数字舍入成 \(\mathrm{fl}(x)\)，后续每一步都在舍入后的值上继续——这正是真实浮点运算的样子。</p>
+</div>
+
+<!-- ================= 03 ================= -->
+<h2 id="loss"><span class="no">03</span>有效数字的损失：相近数相减为什么致命</h2>
+
+<p>
+定义 3 说的是「误差有多大」，但真正让算法翻车的是<strong>有效位数的减少</strong>。课件例 17 是标准剧本：解
+$$x^2-118x+1=0,$$
+系数 \(118,1,0\) 全部精确，计算工具只有 5 位十进制有效数字。求根公式给出 \(x_{1,2}=59.000\pm\sqrt{3480}\)。而
+$$\sqrt{3480}=58.9915248\cdots\ \xrightarrow{\ 5\ \text{位}\ }\ 58.992,$$
+于是
+$$x_2=59.000-58.992=0.008.$$
+真值是 \(x_2=0.008475184989\cdots\)。按定义 3 核一遍：\(m=-2\)，\(e=4.75\times10^{-4}\)，要满足 \(e\le 0.5\times10^{-2-n}\) 只有 \(n=1\) —— <strong>5 位输入，1 位输出</strong>。误差不是「算错了」，是 59.000 与 58.992 的高位在相减时全部抵消，只剩下最后几位在支撑结果。
+</p>
+
+<p>
+课件给的改法是走根与系数的关系 \(x_1x_2=1\)：
+$$x_2=\frac{1}{x_1}=\frac{1}{59.000+\sqrt{3480}}=\frac{1}{117.99}=0.0084753\cdots$$
+同样 5 位工具，这次拿到 \(n=4\) 位有效数字。差别只在于<strong>把减法换成了除法</strong>——分母是两个同号数相加，没有任何抵消。
+</p>
+
+<div class="note">
+<p><strong>同一句话的另外三种版本。</strong>课件注 9 把这条经验写成「尽量避免相近的两个数做减法」。它的三个变体在这一讲里都出现了：① <em>加法</em>也怕——例 18 的 \(123+\epsilon\times 2\) 在 \(\epsilon\) 小于半个 ulp 时结果仍是 123，\(\epsilon\) 被整个吞掉；② <em>求根</em>怕——就是上面这题；③ <em>级数</em>也怕——例 19 里 \(\sin x\) 的 138 项 Taylor 和在 \(x=100\) 处算出 \(10^{26}\) 量级的数（课件报 \(2.94\times10^{26}\)，本页逐项递推重算 \(1.18\times10^{26}\)——同为垃圾值，具体值随求和次序变），而真值只有 \(-0.5064\)：大项之间互相抵消，剩下的位数被舍入噪声占满。</p>
+</div>
+
+<p>
+下面是同一道题的两种算法摆在一起。拖动 \(p\) 看「直接相减」这条路的有效位数怎么随 \(p\) 爬——注意它稳定地比 \(p\) 少四位左右，而「取倒数」这条路几乎一位不掉。
+</p>
+
+<!-- ================= 04 实验 02 ================= -->
+<h2 id="cancel"><span class="no">04</span>实验 02 · 抵消：59 − √3480 只剩一位</h2>
+
+<div class="lab">
+  <div class="lab-head">
+    <span class="t">实验 02 · 例 17 的两种求根路径</span>
+    <span class="t" id="cc-state">p = 5 位十进制</span>
+  </div>
+  <canvas id="cv-cancel" aria-label="59.000 减 58.992 的竖式与有效数字损失"></canvas>
+  <div class="legend">
+    <span><i class="gray"></i>被抵消掉的高位</span>
+    <span><i></i>结果里还剩下的有效位</span>
+    <span><i class="teal"></i>真值对应的正确位</span>
+  </div>
+  <div class="ctrls">
+    <div class="grp">
+      <label for="cc-p">精度 p</label>
+      <input id="cc-p" type="range" min="3" max="9" step="1" value="5">
+      <output id="cc-po" style="font-family:var(--mono);min-width:2em">5</output>
+    </div>
+    <div class="grp seg" role="group" aria-label="路径">
+      <button id="cc-direct" aria-pressed="true">直接相减</button>
+      <button id="cc-recip" aria-pressed="false">取倒数 1/x₁</button>
+    </div>
+  </div>
+  <div class="reads">
+    <div><div class="k">√3480 取 p 位</div><div class="v" id="cc-sqrt">—</div></div>
+    <div><div class="k">x₁ = 59 + √3480</div><div class="v" id="cc-x1">—</div></div>
+    <div><div class="k">x₂（本路径）</div><div class="v orange" id="cc-x2">—</div></div>
+    <div><div class="k">x₂ 的有效位数</div><div class="v teal" id="cc-d2">—</div></div>
+  </div>
+  <p class="hint" id="cc-note">—</p>
+</div>
+
+<p>
+这张表把两条路的账并排记下来（真值 \(x_2=0.008475184989\)）。「有效位数」一栏按定义 3 逐条核对，不是估的：
+</p>
+
+<table>
+<thead><tr><th>p（十进制有效位）</th><th class="mono">x₂ = 59 − fl(√3480)</th><th class="mono">有效位</th><th class="mono">x₂ = 1/x₁</th><th class="mono">有效位</th></tr></thead>
+<tbody>
+<tr><td>3</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0.00847</td><td class="mono">2</td></tr>
+<tr class="hi"><td>5</td><td class="mono">0.008</td><td class="mono">1</td><td class="mono">0.0084753</td><td class="mono">4</td></tr>
+<tr><td>7</td><td class="mono">0.00848</td><td class="mono">3</td><td class="mono">0.008475187</td><td class="mono">6</td></tr>
+<tr><td>9</td><td class="mono">0.0084752</td><td class="mono">5</td><td class="mono">0.0084751850</td><td class="mono">8</td></tr>
+</tbody>
+</table>
+
+<p>
+规律很清楚：直接相减一路<strong>稳定地少 4 位</strong>（\(p\ge5\) 时；因为 59 与 √3480 的首位相同，抵消吃掉了约 \(\log_{10}(59/0.008)\approx3.9\) 位），而取倒数只少 1 位（除法本身的舍入）。这不是精度不够，是<strong>算法把精度用错了地方</strong>。
+</p>
+
+<!-- ================= 05 ================= -->
+<h2 id="cond"><span class="no">05</span>性态：问题本身有多敏感（例 5）</h2>
+
+<p>
+上面讲的是算法的错。但有些问题是<strong>问题本身</strong>就敏感——无论算法多好，输入的微小扰动都会被放大。课件用定义 5、6 区分两层：
+</p>
+
+<div class="note ch">
+<p><strong>定义 5（适定）.</strong> 问题适定，如果解存在、唯一、且连续依赖于参数与输入数据。<br>
+<strong>定义 6（良态 / 病态）.</strong> 若问题对参数与输入数据的扰动不敏感，称良态；否则称病态。</p>
+</div>
+
+<p>
+例 5 是这一讲最漂亮的算例：求
+$$x^2-2\alpha x+1=0,\qquad \alpha&gt;1$$
+的解。两根是 \(x_{1,2}(\alpha)=\alpha\pm\sqrt{\alpha^2-1}\)，求导
+$$\frac{dx_{1,2}}{d\alpha}=1\pm\frac{\alpha}{\sqrt{\alpha^2-1}}.$$
+课件用 \(\dfrac{e_r(x_{1,2}(\alpha))}{e_r(\alpha)}\approx\dfrac{dx_{1,2}}{d\alpha}\cdot\dfrac{\alpha}{x_{1,2}(\alpha)}\) 度量敏感性。代进去化简会发现一个巧合：两个根的放大因子<strong>完全相等</strong>，
+$$\left|\frac{dx_{1,2}}{d\alpha}\cdot\frac{\alpha}{x_{1,2}}\right|=\frac{\alpha}{\sqrt{\alpha^2-1}},$$
+因为 \(x_1=\alpha-s\)、\(x_2=\alpha+s\) 满足 \(x_1x_2=1\)（记 \(s=\sqrt{\alpha^2-1}\)），而
+$$1\mp\frac{\alpha}{s}=\frac{s\mp\alpha}{s}=\mp\frac{x_{1,2}}{s},$$
+取绝对值后两根给出同一个因子，且
+$$\lim_{\alpha\to1^+}\frac{e_r(x)}{e_r(\alpha)}=+\infty.$$
+</p>
+
+<p>
+课件实测两组：\(\alpha=1.0050\to1.0051\) 时比值 \(\approx10\)，\(\alpha=1.0010\to1.0011\) 时 \(\approx21.82\)。本页用 \(\Delta\alpha=10^{-4}\) 的有限差分复算，得 \(9.98\) 与 \(21.82\)（第二组与课件逐位相同），而闭式 \(\alpha/\sqrt{\alpha^2-1}\) 给出 \(10.04\) 与 \(22.38\)——有限差分本身也带 \(O(\Delta\alpha)\) 偏差，这正是「实测值略小于理论值」的原因。
+</p>
+
+<!-- ================= 06 实验 03 ================= -->
+<h2 id="labcond"><span class="no">06</span>实验 03 · 把 α 拖到 1 附近，看放大因子起飞</h2>
+
+<div class="lab">
+  <div class="lab-head">
+    <span class="t">实验 03 · 例 5 的敏感性曲线</span>
+    <span class="t" id="cd-state">α = 1.005</span>
+  </div>
+  <canvas id="cv-cond" aria-label="两根随 α 的曲线与放大因子曲线"></canvas>
+  <div class="legend">
+    <span><i class="teal"></i>x₁ = α − √(α²−1)</span>
+    <span><i></i>x₂ = α + √(α²−1)</span>
+    <span><i class="ch"></i>放大因子 α/√(α²−1)（右图，对数纵轴）</span>
+    <span><i class="gray"></i>有限差分实测点</span>
+  </div>
+  <div class="ctrls">
+    <div class="grp">
+      <label for="cd-a">α</label>
+      <input id="cd-a" type="range" min="0" max="380" step="1" value="120">
+      <output id="cd-ao" style="font-family:var(--mono);min-width:4.6em">1.0050</output>
+    </div>
+    <div class="grp seg" role="group" aria-label="根">
+      <button id="cd-r1" aria-pressed="true">看 x₁</button>
+      <button id="cd-r2" aria-pressed="false">看 x₂</button>
+    </div>
+  </div>
+  <div class="reads">
+    <div><div class="k">α</div><div class="v" id="cd-al">—</div></div>
+    <div><div class="k">放大因子（闭式）</div><div class="v ch" id="cd-kap">—</div></div>
+    <div><div class="k">放大因子（有限差分）</div><div class="v orange" id="cd-kapfd">—</div></div>
+    <div><div class="k">当前根的值</div><div class="v teal" id="cd-root">—</div></div>
+  </div>
+  <p class="hint" id="cd-note">—</p>
+</div>
+
+<p>
+左图两根在 \(\alpha\to1^+\) 处<strong>汇合成一点</strong> \(x_1=x_2=1\)：曲线在那里竖直，\(dx/d\alpha\to\infty\)。这不是画图的问题，是 \(\sqrt{\alpha^2-1}\) 在 1 处导数无穷。右图把放大因子画成对数纵轴，能看到它按 \(1/\sqrt{\alpha-1}\) 缓慢发散——比 \(1/(\alpha-1)\) 温和，但仍无界。
+</p>
+
+<p>
+一个必须说清的区别：<strong>性态是问题的属性，稳定性是算法的属性</strong>。例 5 的病态没法靠换算法治好；但病态问题遇到不稳定算法会雪上加霜。反过来，良态问题遇到不稳定算法照样废——这就是下一节。
+</p>
+
+<!-- ================= 07 ================= -->
+<h2 id="conv"><span class="no">07</span>收敛性（例 14）与稳定性（例 16）</h2>
+
+<p>
+定义 12 很短：若数值解 \(x_n\to x\)，称数值解收敛。真正的问题是<strong>多快</strong>。课件例 14 用同一道题 \(\,2x^2+x-15=0\,\)（正根 \(2.5\)）给了两种改写。法 1 是「解出 \(x\)」：
+$$\text{法 1：}\quad x=\frac{15}{2x+1}\ \Longrightarrow\ x_{k+1}=\frac{15}{2x_k+1},\qquad x_0=2 .$$
+法 2 是「减去修正量」，而这个修正量正是 Newton 步（\(4x+1=f'(x)\)）：
+$$\text{法 2：}\quad x_{k+1}=x_k-\frac{2x_k^2+x_k-15}{4x_k+1},\qquad x_0=2 .$$
+两者都收敛，但速度差着量级：
+</p>
+
+<table>
+<thead><tr><th>k</th><th class="mono">法 1（不动点）</th><th class="mono">法 2（Newton）</th><th>法 1 的 \( |e_k/e_{k-1}| \)</th><th>法 2 的 \( e_{k+1}/e_k^2 \)</th></tr></thead>
+<tbody>
+<tr><td>0</td><td class="mono">2.00000000</td><td class="mono">2.0000000000</td><td class="mono">—</td><td class="mono">—</td></tr>
+<tr><td>1</td><td class="mono">3.00000000</td><td class="mono">2.5555555556</td><td class="mono">1.0000</td><td class="mono">0.1782</td></tr>
+<tr><td>2</td><td class="mono">2.14285714</td><td class="mono">2.5005500550</td><td class="mono">0.7143</td><td class="mono">0.1818</td></tr>
+<tr><td>3</td><td class="mono">2.83783784</td><td class="mono">2.5000000550</td><td class="mono">0.9459</td><td class="mono">0.1468</td></tr>
+<tr><td>4</td><td class="mono">2.24696356</td><td class="mono">2.5000000000</td><td class="mono">0.7490</td><td class="mono">—</td></tr>
+<tr><td>5</td><td class="mono">2.73028740</td><td class="mono">2.5000000000</td><td class="mono">0.9101</td><td class="mono">—</td></tr>
+<tr class="hi"><td>6</td><td class="mono">2.32177484</td><td class="mono">—</td><td class="mono">0.7739</td><td class="mono">—</td></tr>
+</tbody>
+</table>
+
+<p>
+法 1 的比值在 \(0.71\sim0.95\) 之间来回跳，但始终贴着 \(|\varphi_1'(2.5)|=30/36=0.8333\) —— 这就是线性收敛，误差每步乘一个固定因子，且符号交替（所以 \(x_k\) 在 2.5 两侧来回跨）。法 2 的 \(e_{k+1}/e_k^2\) 稳定在 \(0.18\) 附近，理论值
+$$\frac{|f''(2.5)|}{2|f'(2.5)|}=\frac{4}{2\times11}=0.1818,$$
+四位数字全对。这就是二阶收敛：每步有效数字翻倍，3 步从 \(5\times10^{-1}\) 杀到 \(5.5\times10^{-8}\)。
+</p>
+
+<p>
+定义 13 讲的是另一件事：<strong>扰动会不会被放大</strong>。若数值方法对舍入误差的传播是可控的，称稳定。课件例 16 用一个积分族把这条讲透了：
+$$I_n(a)=\int_0^1\frac{x^n}{x+a}\,dx,\qquad a&gt;0.$$
+分部拆一下（分子写成 \(x^{n-1}(x+a)-a\,x^{n-1}\)）得到递推
+$$I_n(a)=\frac1n-a\,I_{n-1}(a),\qquad I_0(a)=\ln\frac{a+1}{a},$$
+且 \(0&lt;I_n&lt;I_{n-1}\)。看起来完美：只需算一个对数，然后一路递推。实际是灾难——设 \(\hat I_n\) 是计算值，\(e_n=I_n-\hat I_n\)，两式相减得
+$$e_n=-a\,e_{n-1}\ \Longrightarrow\ e_n=(-a)^n e_0,\qquad |e_n|=a^n|e_0|.$$
+\(a=100\) 时每步把误差乘 100。课件表 9.3 与 9.5 记录了这个过程：\(I_0\) 只有 \(3\times10^{-8}\) 的舍入误差，到 \(I_5\) 已经放大到 \(3\times10^{2}\)，算出 \(I_5(100)\approx308.5\)，而真值是 \(0.0016525\)——<strong>差了五个数量级</strong>。
+</p>
+
+<div class="note">
+<p><strong>「真值」也要小心。</strong>课件式 (9.3) 的闭式 \(I_5(a)=-a^5\ln\frac{a+1}{a}+a^4-\frac{a^3}{2}+\frac{a^2}{3}-\frac{a}{4}+\frac15\) 在 \(a=100\) 时要相减 \(10^{10}\) 量级的项，直接代入 double 只能保住五六位（课件报 \(0.0016524067\)）。本页的真值改用两条独立路径交叉验证：复合 Gauss-4 求积得 \(0.0016525049\)，倒推递推得 \(0.0016525049\)，一致到 \(10^{-11}\)，故取 \(I_5(100)=0.00165250\)。这件事本身就是第 1 讲的主题：<em>连「真值」都是要论证的</em>。</p>
+</div>
+
+<p>
+修法就在递推式里：把方向倒过来。由 \(I_n=\frac1n-aI_{n-1}\) 解出
+$$I_{n-1}=\frac{1}{a}\left(\frac1n-I_n\right),$$
+误差关系随之变成 \(e_{n-1}=-e_n/a\)，每步<strong>压缩</strong> \(a\) 倍。只要从一个足够大的 \(N\) 出发、取 \(I_N\approx0\)（因 \(0&lt;I_N&lt;\frac{1}{N+1+a}\)），一路倒推到 \(n=0\)，误差已经被压到可以忽略。
+</p>
+
+<!-- ================= 08 实验 04 ================= -->
+<h2 id="rec"><span class="no">08</span>实验 04 · 正推爆炸、倒推收敛</h2>
+
+<div class="lab">
+  <div class="lab-head">
+    <span class="t">实验 04 · 例 16 的误差传播（纵轴 log₁₀|eₙ|）</span>
+    <span class="t" id="rc-state">a = 100</span>
+  </div>
+  <canvas id="cv-rec" aria-label="正推与倒推的误差随 n 的变化"></canvas>
+  <div class="legend">
+    <span><i></i>正推 Iₙ = 1/n − a·I_{n−1}（误差 ×a）</span>
+    <span><i class="teal"></i>倒推 I_{n−1} = (1/n − Iₙ)/a（误差 ÷a）</span>
+    <span><i class="gray"></i>double 的舍入底线 10⁻¹⁶</span>
+  </div>
+  <div class="ctrls">
+    <div class="grp">
+      <label for="rc-a">参数 a</label>
+      <input id="rc-a" type="range" min="0" max="200" step="1" value="200">
+      <output id="rc-ao" style="font-family:var(--mono);min-width:3.6em">100</output>
+    </div>
+    <div class="grp seg" role="group" aria-label="有效位数">
+      <button id="rc-p5" aria-pressed="true">p = 5</button>
+      <button id="rc-p8" aria-pressed="false">p = 8</button>
+      <button id="rc-p15" aria-pressed="false">p = 15</button>
+    </div>
+  </div>
+  <div class="reads">
+    <div><div class="k">I₅ 正推（p 位）</div><div class="v orange" id="rc-f5">—</div></div>
+    <div><div class="k">I₅ 真值</div><div class="v" id="rc-true">—</div></div>
+    <div><div class="k">I₅ 倒推（double）</div><div class="v teal" id="rc-b5">—</div></div>
+    <div><div class="k">每步误差因子</div><div class="v ch" id="rc-factor">—</div></div>
+  </div>
+  <p class="hint" id="rc-note">—</p>
+</div>
+
+<p>
+把 \(a\) 拖到 1 以下，两条线会<strong>交换位置</strong>：\(a&lt;1\) 时正推的误差因子 \(|{-a}|&lt;1\)，正推反而稳定，倒推每步放大 \(1/a\)。课件表 9.4 记的正是这种情形——\(a=0.1\) 时正推给出 \(I_5=0.1779094\)，与真值 \(0.1779093544\) 完全对上。
+</p>
+
+<div class="note teal">
+<p><strong>稳定性没有绝对答案，只有「对这个参数稳」.</strong> 同一条递推式，\(a=100\) 时正推是废的、倒推是对的；\(a=0.1\) 时正推是对的、倒推是废的。课件把它总结成一句：<em>若 \(a&gt;1\)，当 \(n\) 足够大时 \(|e_n|\to+\infty\)，需要根据 \(a\) 的取值设计不同的计算策略</em>。判据其实就一个数：\(|{-a}|\) 与 1 谁大。</p>
+</div>
+
+<p>
+顺带把课件的<strong>向后误差分析</strong>接上：若算法给出 \(\hat y\)，而存在 \(\delta x\) 使 \(\hat y=f(x+\delta x)\)、\(|\delta x|\le|x|\varepsilon\)，就说这个 \(\varepsilon\) 小、算法稳定。它的好处是把「算错了多少」翻译成「相当于把输入改了多少」——对 \(I_n\) 这种问题，正推算出的 \(\hat I_5=308.5\) 找不到任何合理的 \(\delta I_0\) 能解释（因为 \(|{-a}|^5=10^{10}\) 倍的放大），所以不稳定；倒推算出的 \(\hat I_5\) 只需 \(\delta I_0\sim10^{-16}\) 就能解释，所以稳定。
+</p>
+
+<!-- ================= 09 ================= -->
+<h2 id="total"><span class="no">09</span>总误差：截断与舍入的拉锯（例 20）</h2>
+
+<p>
+前面四类误差（定义 7：模型、观测、截断、舍入）里，真正会在一行代码里同时出现的是后两类。定义 10 的截断误差来自「用有限次运算近似无限次」，定义 11 的舍入误差来自「浮点数只有有限字长」。它们的方向相反：
+</p>
+
+<ul>
+<li>步长 \(h\) 取<strong>大</strong>：截断误差大（\(O(h)\)），舍入误差被 \(1/h\) 压小；</li>
+<li>步长 \(h\) 取<strong>小</strong>：截断误差小，但两个相近的数相减，舍入误差被 \(1/h\) 放大。</li>
+</ul>
+
+<p>
+例 20 把它做成可算的：设 \(f(x)=e^x\)，只用保留 8 位小数的计算工具，用差商
+$$g(h)=\frac{f(1+h)-f(1)}{h}$$
+近似 \(f'(1)=e\)。课件表 9.6 给了四个点：\(h=10^{-1}\) 时 \(g=2.85884190\)（差 \(1.41\times10^{-1}\)）；\(h=10^{-4}\) 时 \(g=2.71840000\)（差 \(1.18\times10^{-4}\)）；\(h=10^{-5}\) 时 \(g=2.71800000\)（差 \(2.82\times10^{-4}\)）；\(h=10^{-6}\) 时 \(g=2.72000000\)（差 \(1.72\times10^{-3}\)）。<strong>先降后升</strong>，中间有个最优步长。
+</p>
+
+<p>
+把两条误差写成模型：截断项 \(\frac{h}{2}|f''(\xi)|\approx\frac{e}{2}h\)，舍入项 \(\frac{2\delta}{h}\)（\(\delta=\frac12\times10^{-8}\) 是每个函数值的舍入上限，两个值相减误差最多 \(2\delta\)）。相加后对 \(h\) 求极小：
+$$\frac{e}{2}-\frac{2\delta}{h^2}=0\ \Longrightarrow\ h^*=\sqrt{\frac{4\delta}{e}}=\sqrt{\frac{2\times10^{-8}}{e}}\approx 8.6\times10^{-5},\qquad |E(h^*)|\approx 2.3\times10^{-4}.$$
+也就是说：<strong>8 位小数只换得到 4 位准确的导数</strong>，而且无论怎么调 \(h\) 都突破不了。这条「总误差地板」是数值微分的宿命，第 4.3 讲会再回来。
+</p>
+
+<!-- ================= 10 实验 05 ================= -->
+<h2 id="tot"><span class="no">10</span>实验 05 · 总误差的 U 形与最优步长</h2>
+
+<div class="lab">
+  <div class="lab-head">
+    <span class="t">实验 05 · 例 20 的总误差（双对数）</span>
+    <span class="t" id="tt-state">小数位 d = 8</span>
+  </div>
+  <canvas id="cv-tot" aria-label="总误差随步长变化的 U 形曲线"></canvas>
+  <div class="legend">
+    <span><i class="dot"></i>实测 |e − g(h)|</span>
+    <span><i class="gray"></i>截断 e·h/2</span>
+    <span><i class="teal"></i>舍入 2δ/h</span>
+    <span><i class="ch"></i>两者之和</span>
+  </div>
+  <div class="ctrls">
+    <div class="grp">
+      <label for="tt-d">小数位数 d</label>
+      <input id="tt-d" type="range" min="4" max="12" step="1" value="8">
+      <output id="tt-do" style="font-family:var(--mono);min-width:2em">8</output>
+    </div>
+    <div class="grp">
+      <label for="tt-h">当前步长 h</label>
+      <input id="tt-h" type="range" min="0" max="240" step="1" value="120">
+      <output id="tt-ho" style="font-family:var(--mono);min-width:5em">1.0e-4</output>
+    </div>
+  </div>
+  <div class="reads">
+    <div><div class="k">g(h) 实测</div><div class="v" id="tt-g">—</div></div>
+    <div><div class="k">实测误差 |e − g(h)|</div><div class="v orange" id="tt-err">—</div></div>
+    <div><div class="k">理论最优 h* = √(4δ/e)</div><div class="v ch" id="tt-hopt">—</div></div>
+    <div><div class="k">该处的误差地板</div><div class="v teal" id="tt-floor">—</div></div>
+  </div>
+  <p class="hint" id="tt-note">—</p>
+</div>
+
+<p>
+拖动小数位数 \(d\) 会看到最优点<strong>整体平移</strong>：\(\delta=\frac12 10^{-d}\)，故 \(h^*\propto10^{-d/2}\)——每多 2 位小数，最优步长小 10 倍，误差地板也小 10 倍。这是数值微分里唯一能靠「加精度」改善的量，且改善速度是<strong>开根号</strong>的：想要 3 位额外精度，得付出 6 位额外字长。
+</p>
+
+<p>
+曲线上的锯齿不是画错了：舍入误差是<strong>量化</strong>的，分子只能取 \(10^{-d}\) 的整数倍，所以 \(g(h)\) 落在间距 \(10^{-d}/h\) 的格点上。锯齿的包络才是那条 \(2\delta/h\)。课件表 9.6 的四个点正好落在包络上。
+</p>
+
+<!-- ================= 11 ================= -->
+<h2 id="sum"><span class="no">11</span>一页收束：四个问题，四把尺子</h2>
+
+<p>
+第 1 讲没有算法，只有四把尺子。后面每一讲都会用它们量一次：这个方法的截断误差是几阶？它稳定吗？这个问题本身病态吗？算出来的解还剩几位可信？
+</p>
+
+<table class="decide">
+<thead><tr><th>尺子</th><th>问的是什么</th><th>本讲的判据 / 算例</th></tr></thead>
+<tbody>
+<tr><td><strong>误差的量法</strong></td><td>「差多少」还是「差多少比例」</td><td>绝对误差 \(e=|x-\bar x|\)；相对误差 \(e_r=e/|x|\)；有效数字 \(e\le\frac12 10^{m-n}\)。量级不同必须用相对误差。</td></tr>
+<tr class="hi"><td><strong>机器精度 ε</strong></td><td>机器能分辨多细</td><td>\(\epsilon=\beta^{1-p}\)：binary32 \(1.19\times10^{-7}\)，binary64 \(2.22\times10^{-16}\)。它是系统属性，与具体数字无关。</td></tr>
+<tr><td><strong>性态（问题）</strong></td><td>输入扰动被放大几倍</td><td>例 5：\(\alpha/\sqrt{\alpha^2-1}\)，\(\alpha\to1^+\) 时无界。换算法治不好，只能改写问题或提高精度。</td></tr>
+<tr><td><strong>稳定性（算法）</strong></td><td>舍入误差会不会滚雪球</td><td>例 16：正推误差 \(a^n e_0\)，\(a&gt;1\) 必爆；倒推 \(a^{-n}e_0\)。判据是误差因子与 1 的大小。</td></tr>
+</tbody>
+</table>
+
+<div class="note ch">
+<p><strong>本讲的三个「反直觉」.</strong>① 有效数字会凭空消失——5 位输入算出 1 位输出（例 17），而且这是<em>算法</em>的选择，不是精度不够；② 「收敛」不等于「能用」——例 14 法 1 确实收敛，但要几十步才够，法 2 三步到位，差别是收敛<em>阶</em>不是收敛<em>性</em>；③ 「真值」也要论证——\(I_5(100)\) 的闭式在 double 里只保五六位，本页真值靠两条独立路径交叉验证才敢写。</p>
+</div>
+
+<p>
+下一步：第 2 章开始讲插值。那里第一次出现「用有限个点重建一个函数」，而第 1 讲的所有尺子都会立刻派上用场——插值余项是截断误差，节点分布影响稳定性（Runge 现象），范德蒙矩阵的性态决定方程组能不能解。
+</p>
+
+<footer>
+<p>素材：四川大学数学学院 2026 年数值分析课件（朱瑞）第 1 讲「绪论与课程介绍」，204 页 PDF，切片归档于知识库 <code>raw/courseware/na-2026/ch01-overview.md</code>。引用条目：定义 1–7、定理 1、式 (1)、例 3、定义 4 与 binary32/64 表、定义 5/6、例 5、例 12、例 17–20、定义 12 与例 14、定义 13 与例 16、向后误差分析。</p>
+<p>页内每个读数由工作区根目录 <code>verify_na01.js</code> 实测（vm 执行本页脚本 + 独立重算参考值）：浮点格点、有效数字位数、\(\alpha/\sqrt{\alpha^2-1}\)、\(I_n\) 递推（真值用复合 Gauss-4 求积与倒推双路交叉验证）、差商总误差。公式用 <code>verify_formulas.js</code> 本地编译，要求 0 failed。</p>
+<p>与本站其它页的关系：第 5.2/5.3 讲（范数、性态）会把式 (1) 的「条件数」写成 \(\kappa(A)=\|A\|\|A^{-1}\|\)，可对照数值线性代数学科的 <em>NLA-10 条件数·几何与误差放大</em>；第 4.3 讲的数值微分会把本页实验 05 的 U 形推广到高阶差商。</p>
+</footer>
+
+<script>
+"use strict";
+/* ===================== 画布工具 ===================== */
+function fit(cv){
+  const r = cv.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.max(1, Math.round(r.width * dpr));
+  cv.height = Math.max(1, Math.round(r.height * dpr));
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, r.width, r.height);
+  return { ctx: ctx, w: r.width, h: r.height };
+}
+const COL = { ink:"#23201a", muted:"#8a8272", grid:"#e6dfd1",
+  orange:"#c2531f", teal:"#0d6b5d", ch:"#1f5c66", soft:"#f6f2e9" };
+/* 读数用：保证 parseFloat 能解析 */
+function fmtN(v, d){
+  if (!isFinite(v)) return "—";
+  const a = Math.abs(v);
+  if (a === 0) return "0";
+  if (a >= 1e5 || a < 1e-3) return v.toExponential(d === undefined ? 2 : d);
+  return v.toFixed(d === undefined ? 4 : d);
+}
+function sup(e){
+  const M = {"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+  return String(e).split("").map(function(c){ return M[c] || c; }).join("");
+}
+/* 读数用：保留 s 位有效数字，且 parseFloat 能解析 */
+function fmtS(v, s){
+  if (!isFinite(v)) return "—";
+  if (v === 0) return "0";
+  const a = Math.abs(v);
+  if (a >= 1e6 || a < 1e-4) return v.toExponential(s - 1);
+  return String(Number(v.toPrecision(s)));
+}
+function gridLabel(v, ulp){
+  const a = Math.abs(v);
+  if (a >= 1e5 || a < 1e-3) return v.toExponential(3);
+  const dec = Math.max(0, Math.min(9, Math.ceil(-Math.log10(ulp))));
+  return v.toFixed(dec);
+}
+/* 数字串里前 n 个有效数字的区间（跳过小数点） */
+function sigRange(s, n){
+  let start = -1, cnt = 0, end = -1;
+  for (let i = 0; i < s.length; i++){
+    const c = s.charAt(i);
+    if (c >= "1" && c <= "9" && start < 0) start = i;
+    if (start >= 0 && c >= "0" && c <= "9"){
+      cnt++;
+      if (cnt === n){ end = i; break; }
+    }
+  }
+  if (start < 0) return null;
+  if (end < 0) end = s.length - 1;
+  return [start, end];
+}
+
+/* ===================== 数值核心（闸门直接调用） ===================== */
+const NA1 = {};
+/* β 进制、p 位有效数字的舍入；mode = round | chop */
+NA1.flBeta = function(x, beta, p, mode){
+  if (!isFinite(x) || x === 0) return x;
+  const s = x < 0 ? -1 : 1, a = Math.abs(x);
+  let E = Math.floor(Math.log(a) / Math.log(beta));
+  let lo = Math.pow(beta, E), hi = lo * beta;
+  if (lo > a){ E--; lo /= beta; hi /= beta; }
+  if (hi <= a){ E++; lo *= beta; hi *= beta; }
+  let sc = Math.pow(beta, p - 1 - E);
+  let m = a * sc;
+  m = (mode === "chop") ? Math.floor(m + 1e-9) : Math.round(m);
+  if (m >= Math.pow(beta, p)){ m = m / beta; E++; sc = Math.pow(beta, p - 1 - E); }
+  return s * m / sc;
+};
+/* x 所在 binade 的浮点间距 */
+NA1.ulp = function(x, beta, p){
+  const a = Math.abs(x);
+  let E = Math.floor(Math.log(a) / Math.log(beta));
+  if (Math.pow(beta, E) > a) E--;
+  if (Math.pow(beta, E + 1) <= a) E++;
+  return Math.pow(beta, E - p + 1);
+};
+/* 按定义 3 数有效数字位数 */
+NA1.sigDigits = function(approx, exact){
+  if (approx === 0) return 0;
+  const e = Math.abs(exact - approx);
+  const m = Math.floor(Math.log10(Math.abs(approx))) + 1;
+  for (let n = 15; n >= 1; n--){
+    if (e <= 0.5 * Math.pow(10, m - n) * (1 + 1e-12)) return n;
+  }
+  return 0;
+};
+/* 例 5 的放大因子：两根相等 */
+NA1.kappa = function(a){ return a / Math.sqrt(a * a - 1); };
+/* 复合 Gauss-4 求 I_n(a)，作真值 */
+const G4 = [[-0.8611363115940526, 0.3478548451374538],
+            [-0.3399810435848563, 0.6521451548625461],
+            [ 0.3399810435848563, 0.6521451548625461],
+            [ 0.8611363115940526, 0.3478548451374538]];
+NA1.integ = function(a, n, panel){
+  const P = panel || 200, h = 1 / P;
+  let s = 0;
+  for (let i = 0; i < P; i++){
+    const c = (i + 0.5) * h, r = h / 2;
+    for (let g = 0; g < 4; g++){
+      const x = c + r * G4[g][0];
+      s += G4[g][1] * Math.pow(x, n) / (x + a) * r;
+    }
+  }
+  return s;
+};
+/* 正推：I_n = 1/n - a*I_{n-1}，每步按 p 位有效数字舍入 */
+NA1.fwd = function(a, nmax, p){
+  const vals = [NA1.flBeta(Math.log(1 + 1 / a), 10, p, "round")];
+  for (let n = 1; n <= nmax; n++){
+    vals.push(NA1.flBeta(1 / n - a * vals[n - 1], 10, p, "round"));
+  }
+  return vals;
+};
+/* 倒推：从 I_N = 0 起 I_{n-1} = (1/n - I_n)/a */
+NA1.bwd = function(a, N){
+  const vals = new Array(N + 1);
+  vals[N] = 0;
+  let I = 0;
+  for (let n = N; n >= 1; n--){ I = (1 / n - I) / a; vals[n - 1] = I; }
+  return vals;
+};
+/* 例 20：d 位小数的差商 */
+NA1.gdiff = function(h, d){
+  const q = Math.pow(10, d);
+  const f = function(v){ return Math.round(v * q) / q; };
+  return (f(Math.exp(1 + h)) - f(Math.exp(1))) / h;
+};
+window.NA1 = NA1;
+
+/* ===================== 实验 01：浮点尺 ===================== */
+const FF = { beta: 10, p: 5, mode: "round", x: 1.23457 };
+
+function drawFloat(){
+  const cv = document.getElementById("cv-float");
+  const { ctx, w, h } = fit(cv);
+  const ulp = NA1.ulp(FF.x, FF.beta, FF.p);
+  const fx = NA1.flBeta(FF.x, FF.beta, FF.p, FF.mode);
+  const PL = 52, PR = 26, axisY = 150;
+  const k0 = Math.floor((FF.x - 3.4 * ulp) / ulp);
+  const lo = k0 * ulp, hi = (k0 + 7) * ulp;
+  const X = function(v){ return PL + (v - lo) / (hi - lo) * (w - PL - PR); };
+
+  ctx.font = "12px ui-monospace,Consolas,monospace";
+  ctx.fillStyle = COL.muted;
+  ctx.textAlign = "left";
+  ctx.fillText("β = " + FF.beta + "，p = " + FF.p + "　相邻浮点间距 ulp = " + ulp.toExponential(4), PL, 24);
+
+  /* 轴 */
+  ctx.strokeStyle = COL.muted; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(PL - 14, axisY); ctx.lineTo(w - PR + 8, axisY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(w - PR + 8, axisY);
+  ctx.lineTo(w - PR + 1, axisY - 4); ctx.lineTo(w - PR + 1, axisY + 4); ctx.closePath();
+  ctx.fillStyle = COL.muted; ctx.fill();
+
+  /* 格点 */
+  for (let k = 0; k <= 7; k++){
+    const v = (k0 + k) * ulp, x = X(v);
+    ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, axisY - 46); ctx.lineTo(x, axisY + 34); ctx.stroke();
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(x, axisY - 7); ctx.lineTo(x, axisY + 7); ctx.stroke();
+    ctx.fillStyle = COL.muted; ctx.font = "10.5px ui-monospace,Consolas,monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(gridLabel(v, ulp), x, axisY + 50);
+  }
+  /* ulp 标注：取中间一段 */
+  const xa = X((k0 + 2) * ulp), xb = X((k0 + 3) * ulp);
+  ctx.strokeStyle = COL.ch; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(xa, axisY - 30); ctx.lineTo(xb, axisY - 30); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(xa, axisY - 34); ctx.lineTo(xa, axisY - 26);
+  ctx.moveTo(xb, axisY - 34); ctx.lineTo(xb, axisY - 26); ctx.stroke();
+  ctx.fillStyle = COL.ch; ctx.font = "11px ui-monospace,Consolas,monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("ulp", (xa + xb) / 2, axisY - 38);
+
+  /* x 与 fl(x) */
+  const px = X(FF.x), pf = X(fx);
+  ctx.strokeStyle = COL.orange; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(px, axisY - 84); ctx.lineTo(px, axisY + 10); ctx.stroke();
+  ctx.fillStyle = COL.orange;
+  ctx.beginPath(); ctx.arc(px, axisY, 5.2, 0, Math.PI * 2); ctx.fill();
+  ctx.font = "12px ui-monospace,Consolas,monospace"; ctx.textAlign = "center";
+  ctx.fillText("x", px, axisY - 90);
+
+  ctx.strokeStyle = COL.ch; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(pf, axisY + 6); ctx.lineTo(pf, axisY + 16); ctx.stroke();
+  ctx.fillStyle = COL.ch;
+  ctx.beginPath(); ctx.arc(pf, axisY, 5.2, 0, Math.PI * 2); ctx.fill();
+  ctx.font = "12px ui-monospace,Consolas,monospace";
+  ctx.textAlign = "left";
+  ctx.fillText("fl(x)", pf + 8, axisY + 26);
+
+  /* 误差括号 */
+  const yb = axisY + 78;
+  ctx.strokeStyle = COL.orange; ctx.lineWidth = 1.2;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(px, axisY + 8); ctx.lineTo(px, yb);
+  ctx.moveTo(pf, axisY + 8); ctx.lineTo(pf, yb); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(px, yb); ctx.lineTo(pf, yb); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(px, yb - 4); ctx.lineTo(px, yb + 4);
+  ctx.moveTo(pf, yb - 4); ctx.lineTo(pf, yb + 4); ctx.stroke();
+  ctx.fillStyle = COL.orange; ctx.textAlign = "center";
+  ctx.fillText("|x − fl(x)| = " + Math.abs(FF.x - fx).toExponential(3), (px + pf) / 2, yb + 20);
+
+  /* 底部：1 + c·ε 的吞没 */
+  const eps = Math.pow(FF.beta, 1 - FF.p);
+  const y0 = h - 16;
+  ctx.textAlign = "left"; ctx.fillStyle = COL.muted; ctx.font = "11.5px ui-monospace,Consolas,monospace";
+  ctx.fillText("吞没：", 20, y0);
+  const items = [0.4, 0.5, 0.6];
+  for (let i = 0; i < 3; i++){
+    const c = items[i];
+    const got = NA1.flBeta(1 + c * eps, FF.beta, FF.p, FF.mode) - 1;
+    const txt = "1+" + c + "ε → " + (got === 0 ? "1" : gridLabel(1 + got, eps));
+    ctx.fillStyle = got === 0 ? COL.muted : COL.orange;
+    ctx.fillText(txt, 74 + i * 150, y0);
+  }
+}
+
+function renderFloat(){
+  const eps = Math.pow(FF.beta, 1 - FF.p);
+  const ulp = NA1.ulp(FF.x, FF.beta, FF.p);
+  const fx = NA1.flBeta(FF.x, FF.beta, FF.p, FF.mode);
+  document.getElementById("ff-state").textContent = "β = " + FF.beta + "，p = " + FF.p +
+    "（" + (FF.mode === "round" ? "四舍五入" : "截断") + "）";
+  document.getElementById("ff-eps").textContent = fmtS(eps, 4);
+  document.getElementById("ff-ulp").textContent = fmtS(ulp, 4);
+  document.getElementById("ff-fl").textContent = fx.toPrecision(Math.min(FF.p, 12));
+  document.getElementById("ff-rel").textContent = fmtS(Math.abs(FF.x - fx) / FF.x, 4);
+  const eps10 = Math.pow(10, 1 - FF.p);
+  const eaten = NA1.flBeta(1 + 0.4 * eps10, 10, FF.p, FF.mode) - 1;
+  const nGrid = Math.pow(FF.beta, FF.p - 1);
+  const gridTxt = nGrid > 1e6 ? nGrid.toExponential(1) : String(Math.round(nGrid));
+  document.getElementById("ff-eat").textContent =
+    "当前尺子上 [1, β) 内有 " + gridTxt + " 个格点；把 x 拖到 1 附近时 ulp = ε = " +
+    eps.toExponential(3) + "。十进制 p=" + FF.p + " 时，1 + 0.4·10" + sup(1 - FF.p) +
+    " 仍等于 " + (eaten === 0 ? "1（被吞掉）" : "1+一格（没被吞）") +
+    "；相对误差 " + (Math.abs(FF.x - fx) / FF.x).toExponential(3) + " 不超过 ε/2 = " +
+    (eps / 2).toExponential(3) + "。";
+  drawFloat();
+}
+
+/* ===================== 实验 02：抵消 ===================== */
+const CC = { p: 5, path: "direct" };
+const TRUE_X1 = 59 + Math.sqrt(3480), TRUE_X2 = 59 - Math.sqrt(3480);
+
+function ccData(){
+  const sq = NA1.flBeta(Math.sqrt(3480), 10, CC.p, "round");
+  const x1 = NA1.flBeta(59 + sq, 10, CC.p, "round");
+  const x2 = NA1.flBeta(59 - sq, 10, CC.p, "round");
+  const xi = NA1.flBeta(1 / x1, 10, CC.p, "round");
+  return { sq: sq, x1: x1, x2: x2, xi: xi,
+    d2: NA1.sigDigits(x2, TRUE_X2), di: NA1.sigDigits(xi, TRUE_X2) };
+}
+
+function drawCancel(){
+  const cv = document.getElementById("cv-cancel");
+  const { ctx, w, h } = fit(cv);
+  const D = ccData();
+  const mid = w / 2;
+  const mono = "13.5px ui-monospace,Consolas,monospace";
+  const monoBig = "17px ui-monospace,Consolas,monospace";
+
+  function card(x0, x1, title, ok){
+    ctx.strokeStyle = ok ? "rgba(13,107,93,.45)" : "rgba(194,83,31,.45)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x0, 34, x1 - x0, 176, 10);
+    else ctx.rect(x0, 34, x1 - x0, 176);
+    ctx.stroke();
+    ctx.fillStyle = ok ? COL.teal : COL.orange;
+    ctx.font = "12px ui-monospace,Consolas,monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(title, x0 + 14, 56);
+  }
+  card(24, mid - 10, "路径 A · 直接相减", false);
+  card(mid + 10, w - 24, "路径 B · 取倒数", true);
+
+  /* 路径 A */
+  const ax = 40;
+  const s59 = (59).toPrecision(CC.p), sSq = D.sq.toPrecision(CC.p);
+  ctx.font = mono; ctx.textAlign = "left";
+  ctx.fillStyle = COL.muted;
+  ctx.fillText(s59, ax, 90);
+  ctx.fillText("− " + sSq, ax, 112);
+  const lw = Math.max(108, Math.max(s59.length, sSq.length + 2) * 8.4 + 12);
+  ctx.strokeStyle = COL.muted; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(ax, 120); ctx.lineTo(ax + lw, 120); ctx.stroke();
+  ctx.font = monoBig;
+  ctx.fillStyle = COL.orange;
+  const sA = D.x2 === 0 ? "0" : String(D.x2);
+  ctx.fillText(sA, ax, 146);
+  ctx.font = "11.5px ui-monospace,Consolas,monospace";
+  ctx.fillStyle = COL.orange;
+  ctx.fillText("有效位 " + D.d2, ax, 172);
+  ctx.fillStyle = COL.muted;
+  ctx.fillText("5 位输入", ax, 194);
+
+  /* 路径 B */
+  const bx = mid + 26;
+  ctx.font = mono; ctx.fillStyle = COL.muted;
+  ctx.fillText("x₁ = " + String(D.x1), bx, 90);
+  ctx.fillText("x₂ = 1/x₁", bx, 112);
+  ctx.strokeStyle = COL.muted;
+  ctx.beginPath(); ctx.moveTo(bx, 120); ctx.lineTo(bx + 108, 120); ctx.stroke();
+  ctx.font = monoBig; ctx.fillStyle = COL.teal;
+  ctx.fillText(String(D.xi), bx, 146);
+  ctx.font = "11.5px ui-monospace,Consolas,monospace";
+  ctx.fillStyle = COL.teal;
+  ctx.fillText("有效位 " + D.di, bx, 172);
+  ctx.fillStyle = COL.muted;
+  ctx.fillText("5 位输入", bx, 194);
+
+  /* 真值行：按所选路径点亮前 n 位 */
+  const tv = TRUE_X2.toPrecision(12);
+  const n = CC.path === "direct" ? D.d2 : D.di;
+  const rg = sigRange(tv, n);
+  const yT = 250;
+  ctx.font = "15px ui-monospace,Consolas,monospace";
+  const cw = (ctx.measureText ? ctx.measureText("0").width : 9) || 9;
+  ctx.textAlign = "left"; ctx.fillStyle = COL.muted;
+  ctx.font = "12px ui-monospace,Consolas,monospace";
+  ctx.fillText("真值", 40, yT + 5);
+  const xStart = 96;
+  for (let i = 0; i < tv.length; i++){
+    const on = rg && i >= rg[0] && i <= rg[1];
+    ctx.fillStyle = on ? COL.ch : "#b9b1a1";
+    ctx.font = (on ? "bold " : "") + "15px ui-monospace,Consolas,monospace";
+    ctx.fillText(tv.charAt(i), xStart + i * cw, yT);
+  }
+  const xEnd = xStart + tv.length * cw;
+  if (rg){
+    ctx.strokeStyle = COL.ch; ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(xStart + rg[0] * cw, yT + 8);
+    ctx.lineTo(xStart + (rg[1] + 1) * cw, yT + 8);
+    ctx.stroke();
+    ctx.fillStyle = COL.ch; ctx.font = "11.5px ui-monospace,Consolas,monospace";
+    ctx.fillText("前 " + n + " 位对得上", xEnd + 12, yT + 4);
+  } else {
+    ctx.fillStyle = COL.orange; ctx.font = "11.5px ui-monospace,Consolas,monospace";
+    ctx.fillText("一位都对不上", xEnd + 12, yT + 4);
+  }
+  /* 底部提示 */
+  ctx.fillStyle = COL.muted; ctx.font = "11.5px ui-monospace,Consolas,monospace";
+  ctx.fillText("竖式里被抵消的是 59.000 与 58.992 的整数位与前两位小数 —— 结果只剩最后一位在撑", 40, h - 18);
+}
+
+function renderCancel(){
+  const D = ccData();
+  document.getElementById("cc-state").textContent = "p = " + CC.p + " 位十进制";
+  document.getElementById("cc-sqrt").textContent = String(D.sq);
+  document.getElementById("cc-x1").textContent = String(D.x1);
+  document.getElementById("cc-x2").textContent = String(CC.path === "direct" ? D.x2 : D.xi);
+  document.getElementById("cc-d2").textContent = String(CC.path === "direct" ? D.d2 : D.di) + " 位";
+  document.getElementById("cc-note").textContent = CC.path === "direct"
+    ? "直接相减：5 位输入只剩 " + D.d2 + " 位。抵消吃掉的位数 ≈ log₁₀(59/x₂) ≈ " +
+      Math.log10(59 / TRUE_X2).toFixed(2) + "。"
+    : "取倒数：5 位输入保住 " + D.di + " 位。分母 117.99 是两个同号数相加，没有抵消。";
+  drawCancel();
+}
+
+/* ===================== 实验 03：性态 ===================== */
+/* 滑块 i ∈ [0,380] → u = log10(α−1) = −3.5 + 0.01i */
+const CD = { i: 120, root: 1 };
+function cdAlpha(i){ return 1 + Math.pow(10, -3.5 + 0.01 * i); }
+
+function drawCond(){
+  const cv = document.getElementById("cv-cond");
+  const { ctx, w, h } = fit(cv);
+  const a = cdAlpha(CD.i);
+  const splitX = Math.round(w * 0.52);
+  const PT = 34, PB = 52;
+  const PL1 = 46, PR1 = 14, PL2 = 44, PR2 = 16;
+
+  /* 左：两根随 α */
+  const uMin = -3.5, uMax = 0.3;
+  const X1 = function(aa){
+    const u = Math.log10(aa - 1);
+    return PL1 + (u - uMin) / (uMax - uMin) * (splitX - PL1 - PR1);
+  };
+  const Y1 = function(v){ return h - PB - (v / 6.2) * (h - PT - PB); };
+
+  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+  for (let v = 0; v <= 6; v += 1){
+    ctx.beginPath(); ctx.moveTo(PL1, Y1(v)); ctx.lineTo(splitX - PR1, Y1(v)); ctx.stroke();
+  }
+  ctx.strokeStyle = COL.muted; ctx.lineWidth = 1.1;
+  ctx.beginPath(); ctx.moveTo(PL1, h - PB); ctx.lineTo(splitX - PR1, h - PB); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PL1, PT); ctx.lineTo(PL1, h - PB); ctx.stroke();
+
+  ctx.font = "10.5px ui-monospace,Consolas,monospace";
+  ctx.fillStyle = COL.muted; ctx.textAlign = "right";
+  for (let v = 0; v <= 6; v += 2) ctx.fillText(String(v), PL1 - 7, Y1(v) + 3.5);
+  ctx.textAlign = "center";
+  for (let u = -3; u <= 0; u++){
+    const aa = 1 + Math.pow(10, u);
+    ctx.fillText(aa.toFixed(u <= -2 ? 3 : 2), X1(aa), h - PB + 16);
+  }
+  ctx.fillStyle = COL.ink;
+  ctx.fillText("α（对数刻度）", splitX / 2 + 8, h - PB + 38);
+  ctx.textAlign = "left"; ctx.fillStyle = COL.muted;
+  ctx.fillText("两根 x₁, x₂", PL1, PT - 12);
+
+  /* 曲线 */
+  function curve(fn, color, dash){
+    ctx.strokeStyle = color; ctx.lineWidth = 1.9;
+    ctx.setLineDash(dash || []);
+    ctx.beginPath();
+    for (let i = 0; i <= 380; i++){
+      const aa = cdAlpha(i);
+      const v = fn(aa);
+      const x = X1(aa), y = Y1(v);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  curve(function(aa){ return aa - Math.sqrt(aa * aa - 1); }, COL.teal);
+  curve(function(aa){ return aa + Math.sqrt(aa * aa - 1); }, COL.orange);
+
+  /* 当前 α 竖线 + 两根点 */
+  const xa = X1(a), s = Math.sqrt(a * a - 1);
+  ctx.strokeStyle = "rgba(35,32,26,.35)"; ctx.lineWidth = 1;
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(xa, PT); ctx.lineTo(xa, h - PB); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = COL.teal;
+  ctx.beginPath(); ctx.arc(xa, Y1(a - s), 4.6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = COL.orange;
+  ctx.beginPath(); ctx.arc(xa, Y1(a + s), 4.6, 0, Math.PI * 2); ctx.fill();
+  const sel = CD.root === 1 ? a - s : a + s;
+  ctx.font = "11px ui-monospace,Consolas,monospace";
+  ctx.textAlign = "left";
+  ctx.fillStyle = COL.teal;
+  ctx.fillText((CD.root === 1 ? "▸ " : "   ") + "x₁ = " + (a - s).toFixed(6), PL1 + 8, PT + 16);
+  ctx.fillStyle = COL.orange;
+  ctx.fillText((CD.root === 2 ? "▸ " : "   ") + "x₂ = " + (a + s).toFixed(6), PL1 + 8, PT + 32);
+
+  /* 右：放大因子 */
+  const X2 = function(aa){
+    const u = Math.log10(aa - 1);
+    return splitX + PL2 + (u - uMin) / (uMax - uMin) * (w - splitX - PL2 - PR2);
+  };
+  const kMin = 0, kMax = 3.5;
+  const Y2 = function(k){ return h - PB - (Math.log10(k) - kMin) / (kMax - kMin) * (h - PT - PB); };
+  ctx.strokeStyle = COL.muted; ctx.lineWidth = 1.1;
+  ctx.beginPath(); ctx.moveTo(splitX + PL2, h - PB); ctx.lineTo(w - PR2, h - PB); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(splitX + PL2, PT); ctx.lineTo(splitX + PL2, h - PB); ctx.stroke();
+  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+  for (let k = 0; k <= 3; k++){
+    const y = Y2(Math.pow(10, k));
+    ctx.beginPath(); ctx.moveTo(splitX + PL2, y); ctx.lineTo(w - PR2, y); ctx.stroke();
+    ctx.fillStyle = COL.muted; ctx.font = "10.5px ui-monospace,Consolas,monospace";
+    ctx.textAlign = "right"; ctx.fillText("10" + sup(k), splitX + PL2 - 6, y + 3.5);
+  }
+  ctx.strokeStyle = COL.ch; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i <= 380; i++){
+    const aa = cdAlpha(i), k = NA1.kappa(aa);
+    const x = X2(aa), y = Y2(k);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  /* 有限差分点 */
+  const dA = 1e-4;
+  const a2 = a + dA;
+  const xA1 = a - Math.sqrt(a * a - 1), xA2 = a2 - Math.sqrt(a2 * a2 - 1);
+  const kapFd = (Math.abs(xA2 - xA1) / Math.abs(xA1)) / (dA / a);
+  ctx.fillStyle = COL.orange;
+  ctx.beginPath(); ctx.arc(X2(a), Y2(kapFd), 4.4, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = COL.ch; ctx.lineWidth = 1;
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(X2(a), PT); ctx.lineTo(X2(a), h - PB); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = COL.muted; ctx.font = "11px ui-monospace,Consolas,monospace";
+  ctx.textAlign = "left";
+  ctx.fillText("放大因子 α/√(α²−1)", splitX + PL2 + 4, PT - 12);
+  ctx.textAlign = "center"; ctx.fillStyle = COL.ink;
+  ctx.fillText("α", (splitX + PL2 + w - PR2) / 2, h - PB + 38);
+}
+
+function renderCond(){
+  const a = cdAlpha(CD.i);
+  const s = Math.sqrt(a * a - 1);
+  const dA = 1e-4, a2 = a + dA;
+  const x1 = a - s, x2 = a + s;
+  const x1b = a2 - Math.sqrt(a2 * a2 - 1);
+  const kapFd = (Math.abs(x1b - x1) / Math.abs(x1)) / (dA / a);
+  document.getElementById("cd-state").textContent = "α = " + a.toFixed(4);
+  document.getElementById("cd-ao").textContent = a.toFixed(4);
+  document.getElementById("cd-al").textContent = a.toFixed(6);
+  document.getElementById("cd-kap").textContent = fmtS(NA1.kappa(a), 5);
+  document.getElementById("cd-kapfd").textContent = fmtS(kapFd, 5);
+  document.getElementById("cd-root").textContent = (CD.root === 1 ? x1 : x2).toFixed(9);
+  document.getElementById("cd-note").textContent =
+    "α − 1 = " + (a - 1).toExponential(3) + " 时，输入的相对误差被放大 " + NA1.kappa(a).toFixed(2) +
+    " 倍；闭式与 Δα=1e-4 的有限差分相差 " +
+    (100 * Math.abs(kapFd - NA1.kappa(a)) / NA1.kappa(a)).toFixed(1) + "%（有限差分自身的 O(Δα) 偏差）。" +
+    "α → 1⁺ 时 α/√(α²−1) ~ 1/√(2(α−1)) → ∞。";
+  drawCond();
+}
+
+/* ===================== 实验 04：递推稳定性 ===================== */
+const RC = { i: 200, p: 5, N: 16 };
+function rcA(i){ return Math.pow(10, -1 + 3 * i / 200); }
+
+function drawRec(){
+  const cv = document.getElementById("cv-rec");
+  const { ctx, w, h } = fit(cv);
+  const a = rcA(RC.i);
+  const PL = 58, PR = 22, PT = 26, PB = 46;
+  const nmax = 12;
+  const yMin = -22, yMax = 22;
+  const X = function(n){ return PL + n / nmax * (w - PL - PR); };
+  const Y = function(lg){ return h - PB - (lg - yMin) / (yMax - yMin) * (h - PT - PB); };
+
+  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+  for (let lg = -20; lg <= 20; lg += 10){
+    ctx.beginPath(); ctx.moveTo(PL, Y(lg)); ctx.lineTo(w - PR, Y(lg)); ctx.stroke();
+    ctx.fillStyle = COL.muted; ctx.font = "10.5px ui-monospace,Consolas,monospace";
+    ctx.textAlign = "right"; ctx.fillText("10" + sup(lg), PL - 7, Y(lg) + 3.5);
+  }
+  ctx.strokeStyle = COL.muted; ctx.lineWidth = 1.1;
+  ctx.beginPath(); ctx.moveTo(PL, h - PB); ctx.lineTo(w - PR, h - PB); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PL, PT); ctx.lineTo(PL, h - PB); ctx.stroke();
+  ctx.fillStyle = COL.muted; ctx.textAlign = "center";
+  for (let n = 0; n <= nmax; n += 2) ctx.fillText(String(n), X(n), h - PB + 16);
+  ctx.fillStyle = COL.ink;
+  ctx.fillText("n", (PL + w - PR) / 2, h - PB + 38);
+
+  /* 舍入底线 */
+  ctx.strokeStyle = "rgba(35,32,26,.4)"; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(PL, Y(-16)); ctx.lineTo(w - PR, Y(-16)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = COL.muted; ctx.textAlign = "left"; ctx.font = "10.5px ui-monospace,Consolas,monospace";
+  ctx.fillText("double 舍入底线 10⁻¹⁶", PL + 6, Y(-16) - 6);
+
+  function plot(errs, color){
+    ctx.strokeStyle = color; ctx.lineWidth = 2.1;
+    ctx.beginPath();
+    let started = false;
+    for (let n = 0; n <= nmax; n++){
+      const e = Math.abs(errs[n]);
+      if (!isFinite(e) || e === 0) { started = false; continue; }
+      const lg = Math.max(yMin, Math.min(yMax, Math.log10(e)));
+      const x = X(n), y = Y(lg);
+      if (!started){ ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.fillStyle = color;
+    for (let n = 0; n <= nmax; n++){
+      const e = Math.abs(errs[n]);
+      if (!isFinite(e) || e === 0) continue;
+      const lg = Math.max(yMin, Math.min(yMax, Math.log10(e)));
+      ctx.beginPath(); ctx.arc(X(n), Y(lg), 3.1, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  const fv = NA1.fwd(a, nmax, RC.p);
+  const bv = NA1.bwd(a, RC.N);
+  const ex = [];
+  for (let n = 0; n <= nmax; n++) ex.push(NA1.integ(a, n));
+  const fe = fv.map(function(v, n){ return v - ex[n]; });
+  const be = bv.map(function(v, n){ return v - ex[n]; });
+  plot(fe, COL.orange);
+  plot(be, COL.teal);
+
+  ctx.font = "11px ui-monospace,Consolas,monospace";
+  ctx.textAlign = "left"; ctx.fillStyle = COL.orange;
+  ctx.fillText("正推：每步 ×" + fmtN(a, 2), PL + 8, PT + 12);
+  ctx.fillStyle = COL.teal;
+  ctx.fillText("倒推：每步 ÷" + fmtN(a, 2), PL + 8, PT + 28);
+}
+
+function renderRec(){
+  const a = rcA(RC.i);
+  const fv = NA1.fwd(a, 6, RC.p);
+  const bv = NA1.bwd(a, RC.N);
+  const tr = NA1.integ(a, 5);
+  const aTxt = a >= 10 ? a.toFixed(1) : a.toFixed(3);
+  document.getElementById("rc-state").textContent = "a = " + aTxt;
+  document.getElementById("rc-ao").textContent = aTxt;
+  document.getElementById("rc-f5").textContent = fmtS(fv[5], 8);
+  document.getElementById("rc-true").textContent = fmtS(tr, 8);
+  document.getElementById("rc-b5").textContent = fmtS(bv[5], 8);
+  document.getElementById("rc-factor").textContent = "×" + aTxt + " / ÷" + aTxt;
+  const ratio = Math.abs(a);
+  document.getElementById("rc-note").textContent = ratio > 1
+    ? "a = " + aTxt + " > 1：正推误差每步乘 " + aTxt + "，n=5 时已放大 " +
+      fmtN(Math.pow(ratio, 5), 2) + " 倍，I₅ 算出 " + fmtN(fv[5], 4) + "（真值 " + fmtN(tr, 4) +
+      "）；倒推每步除以 " + aTxt + "，稳稳落在真值上。"
+    : "a = " + aTxt + " < 1：正推误差每步乘 " + aTxt + " < 1，是稳定方向；倒推每步放大 " +
+      fmtN(1 / a, 2) + " 倍，反而崩掉（I₅ 算出 " + fmtN(bv[5], 4) + "，真值 " + fmtN(tr, 4) + "）。";
+  drawRec();
+}
+
+/* ===================== 实验 05：总误差 ===================== */
+const TT = { d: 8, i: 120 };
+function ttH(i, d){ return Math.pow(10, -1 - (d - 2) * i / 240); }
+
+function drawTot(){
+  const cv = document.getElementById("cv-tot");
+  const { ctx, w, h } = fit(cv);
+  const d = TT.d, delta = 0.5 * Math.pow(10, -d);
+  const PL = 62, PR = 22, PT = 26, PB = 46;
+  const hMax = -1, hMin = -(d - 1);
+  const X = function(lg){ return PL + (hMax - lg) / (hMax - hMin) * (w - PL - PR); };
+  const yLo = -9, yHi = 2;
+  const Y = function(lg){ return h - PB - (lg - yLo) / (yHi - yLo) * (h - PT - PB); };
+
+  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+  for (let lg = yLo; lg <= yHi; lg += 2){
+    ctx.beginPath(); ctx.moveTo(PL, Y(lg)); ctx.lineTo(w - PR, Y(lg)); ctx.stroke();
+    ctx.fillStyle = COL.muted; ctx.font = "10.5px ui-monospace,Consolas,monospace";
+    ctx.textAlign = "right"; ctx.fillText("10" + sup(lg), PL - 7, Y(lg) + 3.5);
+  }
+  ctx.strokeStyle = COL.muted; ctx.lineWidth = 1.1;
+  ctx.beginPath(); ctx.moveTo(PL, h - PB); ctx.lineTo(w - PR, h - PB); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PL, PT); ctx.lineTo(PL, h - PB); ctx.stroke();
+  ctx.fillStyle = COL.muted; ctx.textAlign = "center";
+  for (let lg = hMin; lg <= hMax; lg += 1) ctx.fillText("10" + sup(lg), X(lg), h - PB + 16);
+  ctx.fillStyle = COL.ink;
+  ctx.fillText("步长 h", (PL + w - PR) / 2, h - PB + 38);
+
+  function line(fn, color, dash, lw){
+    ctx.strokeStyle = color; ctx.lineWidth = lw || 1.6;
+    ctx.setLineDash(dash || []);
+    ctx.beginPath();
+    for (let i = 0; i <= 240; i++){
+      const lg = hMax + (hMin - hMax) * i / 240, hh = Math.pow(10, lg);
+      const v = Math.abs(fn(hh));
+      if (!isFinite(v) || v <= 0) continue;
+      const yy = Y(Math.max(yLo, Math.min(yHi, Math.log10(v))));
+      if (i === 0) ctx.moveTo(X(lg), yy); else ctx.lineTo(X(lg), yy);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  line(function(hh){ return Math.E * hh / 2; }, "rgba(35,32,26,.5)", [5, 4], 1.3);
+  line(function(hh){ return 2 * delta / hh; }, COL.teal, [5, 4], 1.3);
+  line(function(hh){ return Math.E * hh / 2 + 2 * delta / hh; }, COL.ch, [], 1.5);
+
+  /* 实测 */
+  ctx.strokeStyle = COL.orange; ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  let started = false;
+  const pts = [];
+  for (let i = 0; i <= 240; i++){
+    const lg = hMax + (hMin - hMax) * i / 240, hh = Math.pow(10, lg);
+    const err = Math.abs(Math.E - NA1.gdiff(hh, d));
+    if (!isFinite(err) || err <= 0) continue;
+    const yy = Y(Math.max(yLo, Math.min(yHi, Math.log10(err))));
+    pts.push([X(lg), yy]);
+    if (!started){ ctx.moveTo(X(lg), yy); started = true; } else ctx.lineTo(X(lg), yy);
+  }
+  ctx.stroke();
+  ctx.fillStyle = COL.orange;
+  for (let i = 0; i < pts.length; i += 6){
+    ctx.beginPath(); ctx.arc(pts[i][0], pts[i][1], 2.4, 0, Math.PI * 2); ctx.fill();
+  }
+
+  /* 最优步长竖线 */
+  const hOpt = Math.sqrt(4 * delta / Math.E);
+  ctx.strokeStyle = COL.ch; ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(X(Math.log10(hOpt)), PT); ctx.lineTo(X(Math.log10(hOpt)), h - PB); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = COL.ch; ctx.textAlign = "left"; ctx.font = "10.5px ui-monospace,Consolas,monospace";
+  ctx.fillText("h* = " + hOpt.toExponential(2), X(Math.log10(hOpt)) + 6, PT + 12);
+
+  /* 当前 h */
+  const hc = ttH(TT.i, TT.d);
+  const ec = Math.abs(Math.E - NA1.gdiff(hc, TT.d));
+  ctx.fillStyle = COL.orange;
+  ctx.beginPath();
+  ctx.arc(X(Math.log10(hc)), Y(Math.max(yLo, Math.min(yHi, Math.log10(ec)))), 5.2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function renderTot(){
+  const d = TT.d, delta = 0.5 * Math.pow(10, -d);
+  const hc = ttH(TT.i, TT.d);
+  const gv = NA1.gdiff(hc, d);
+  const err = Math.abs(Math.E - gv);
+  const hOpt = Math.sqrt(4 * delta / Math.E);
+  document.getElementById("tt-state").textContent = "小数位 d = " + d;
+  document.getElementById("tt-do").textContent = String(d);
+  document.getElementById("tt-ho").textContent = hc.toExponential(1);
+  document.getElementById("tt-g").textContent = gv.toFixed(Math.min(d, 8));
+  document.getElementById("tt-err").textContent = fmtS(err, 5);
+  document.getElementById("tt-hopt").textContent = fmtS(hOpt, 5);
+  document.getElementById("tt-floor").textContent = fmtS(2 * Math.sqrt(Math.E * delta), 5);
+  document.getElementById("tt-note").textContent =
+    "d = " + d + " 时 δ = " + delta.toExponential(2) + "，h* = √(4δ/e) = " + hOpt.toExponential(2) +
+    "，误差地板 2√(eδ) = " + (2 * Math.sqrt(Math.E * delta)).toExponential(2) +
+    "。当前 h = " + hc.toExponential(1) + " 偏离最优点，实测误差 " + err.toExponential(2) + "。";
+  drawTot();
+}
+
+/* ===================== 事件绑定 ===================== */
+function setSeg(ids, onId){
+  for (let i = 0; i < ids.length; i++){
+    const el = document.getElementById(ids[i]);
+    if (el.setAttribute) el.setAttribute("aria-pressed", ids[i] === onId ? "true" : "false");
+  }
+}
+function on(id, ev, fn){ document.getElementById(id).addEventListener(ev, fn); }
+/* 滑杆一律读自己元素的 value（不依赖 event.target，便于冒烟/闸门驱动） */
+function bindRange(id, fn){
+  const el = document.getElementById(id);
+  el.addEventListener("input", function(){ fn(el.value); });
+}
+
+on("ff-b2", "click", function(){ FF.beta = 2; setSeg(["ff-b2","ff-b8","ff-b10"], "ff-b2"); renderFloat(); });
+on("ff-b8", "click", function(){ FF.beta = 8; setSeg(["ff-b2","ff-b8","ff-b10"], "ff-b8"); renderFloat(); });
+on("ff-b10", "click", function(){ FF.beta = 10; setSeg(["ff-b2","ff-b8","ff-b10"], "ff-b10"); renderFloat(); });
+on("ff-round", "click", function(){ FF.mode = "round"; setSeg(["ff-round","ff-chop"], "ff-round"); renderFloat(); });
+on("ff-chop", "click", function(){ FF.mode = "chop"; setSeg(["ff-round","ff-chop"], "ff-chop"); renderFloat(); });
+bindRange("ff-p", function(v){
+  FF.p = Math.max(2, Math.min(16, parseInt(v, 10) || 5));
+  document.getElementById("ff-po").textContent = String(FF.p);
+  renderFloat();
+});
+bindRange("ff-x", function(v){
+  FF.x = parseFloat(v);
+  document.getElementById("ff-xo").textContent = FF.x.toFixed(5);
+  renderFloat();
+});
+
+bindRange("cc-p", function(v){
+  CC.p = Math.max(3, Math.min(9, parseInt(v, 10) || 5));
+  document.getElementById("cc-po").textContent = String(CC.p);
+  renderCancel();
+});
+on("cc-direct", "click", function(){ CC.path = "direct"; setSeg(["cc-direct","cc-recip"], "cc-direct"); renderCancel(); });
+on("cc-recip", "click", function(){ CC.path = "recip"; setSeg(["cc-direct","cc-recip"], "cc-recip"); renderCancel(); });
+
+bindRange("cd-a", function(v){ CD.i = parseInt(v, 10); renderCond(); });
+on("cd-r1", "click", function(){ CD.root = 1; setSeg(["cd-r1","cd-r2"], "cd-r1"); renderCond(); });
+on("cd-r2", "click", function(){ CD.root = 2; setSeg(["cd-r1","cd-r2"], "cd-r2"); renderCond(); });
+
+bindRange("rc-a", function(v){ RC.i = parseInt(v, 10); renderRec(); });
+on("rc-p5", "click", function(){ RC.p = 5; setSeg(["rc-p5","rc-p8","rc-p15"], "rc-p5"); renderRec(); });
+on("rc-p8", "click", function(){ RC.p = 8; setSeg(["rc-p5","rc-p8","rc-p15"], "rc-p8"); renderRec(); });
+on("rc-p15", "click", function(){ RC.p = 15; setSeg(["rc-p5","rc-p8","rc-p15"], "rc-p15"); renderRec(); });
+
+bindRange("tt-d", function(v){
+  TT.d = Math.max(4, Math.min(12, parseInt(v, 10) || 8));
+  document.getElementById("tt-do").textContent = String(TT.d);
+  renderTot();
+});
+bindRange("tt-h", function(v){ TT.i = parseInt(v, 10); renderTot(); });
+
+let rz = 0;
+if (typeof window !== "undefined" && window.addEventListener){
+  window.addEventListener("resize", function(){
+    clearTimeout(rz);
+    rz = setTimeout(function(){ drawFloat(); drawCancel(); drawCond(); drawRec(); drawTot(); }, 140);
+  });
+}
+
+renderFloat();
+renderCancel();
+renderCond();
+renderRec();
+renderTot();
+</script>
+</div>
+</body>
+</html>

@@ -75,10 +75,10 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 
 <h2>第 1 讲 · 绪论与误差分析 <span>ch01</span></h2>
 
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 1 讲</span>浮点数、误差与数值稳定性</p>
-<p class="d">机器精度探测 · 相近数相减的灾难性抵消 · 误差传播与放大因子 · 数值解的收敛性 · 稳定算法与不稳定算法在同一问题上的实测差异</p>
-</div>
+<a class="card" href="./绪论-误差-浮点数与稳定性.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">第 1 讲</span>绪论：误差、浮点数与数值稳定性</p>
+<p class="d">浮点尺实验台（β = 2/8/10、p 从 2 拖到 16、四舍五入 / 截断切换，看格点间距与「半个格子的增量被吞掉」）· 例 17 的 59 − √3480 抵消竖式（5 位输入只剩 1 位，改写成 1/x₁ 保住 4 位，p 从 3 到 9 逐档实测）· 例 5 的敏感性曲线（放大因子 α/√(α²−1) 两根相等，α→1⁺ 发散，闭式与有限差分对账）· 例 16 的 Iₙ 递推（a 可拖到 1 以下看正推 / 倒推谁稳定；a=100 时正推 308.5、真值 0.00165）· 例 20 的差商总误差 U 形（h*≈8.6e−5、误差地板 2.3e−4，随小数位数整体平移）· 闸门 verify_na01.js 119 项全过</p>
+</a>
 
 <h2>第 2 章 · 函数的多项式插值 <span>ch02</span></h2>
 
@@ -175,7 +175,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 
 <footer>
 <p>课件：四川大学数学学院 2026 年数值分析课件（朱瑞；学习通课程课件，归档于知识库 <code>raw/courseware/na-2026/</code>，md 切片 + 同名 PDF）。2026-10-25 起本目录由课本（张平文、李铁军《数值分析》，北京大学出版社 2007）切换为课件讲序；张平文教材降为参考书目，课件未覆盖的课本章节（FFT、常微分方程数值方法、Monte Carlo）暂不排期。</p>
-<p>已上线三页的课件归属：「Lagrange 插值」= 第 2.1–2.2 讲，「数值积分」= 第 4.1–4.2 讲，「非线性方程迭代法」= 第 5.5 讲前半；三页内容均可用课件对应讲次复核。</p>
+<p>已上线四页的课件归属：「绪论」= 第 1 讲，「Lagrange 插值」= 第 2.1–2.2 讲，「数值积分」= 第 4.1–4.2 讲，「非线性方程迭代法」= 第 5.5 讲前半；四页内容均可用课件对应讲次复核。</p>
 <p>校验：数值脚本在工作区根 <code>math_visualization/</code>（相对路径 <code>../../verify_runge.js</code> 等）；公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed。</p>
 </footer>
 

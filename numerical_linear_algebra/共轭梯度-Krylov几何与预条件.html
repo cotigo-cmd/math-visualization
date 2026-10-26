@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>共轭梯度 · Krylov 几何与预条件 · 数值线性代数</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 本页 = 数值线性代数系列第 11 页（图号 NLA-11），教材 Lecture 32–40（书页 241–320，PDF 256–335）。
+     主内容：L32 为何迭代 / L38 CG 三定理与收敛速率 / L39 CGN 顺带 / L40 预条件。
+  2. 版式身份「制图台」与全系列一致；公式规则、canvas 规则同 NLA-01 / NLA-10 页注释。
+  3. 读数闸门：verify_readout_cg.js（工作区根）。四个实验的内核全部在页面里真跑：
+     实验01 2×2 CG（A = R diag(λ₁,λ₂) Rᵀ，x* 固定，b = A x*）；
+     实验02 对角谱 m=400 真跑 CG 与最速下降（精确线搜索）；
+     实验03 Chebyshev 上界（闭式，1/T_n(γ) = 2ρⁿ/(1+ρ²ⁿ)）；
+     实验04 一维变系数扩散 m=127，PCG 四档预条件（Thomas 解三对角、幂法+反幂法估 κ）。
+  4. 踩过的坑（改代码前必读）：
+     ① CG 的残差 2-范数**不单调**（只有 A-范数误差单调），b=ones 时第一步残差能涨到 11 倍，
+        所以一维算例的右端用「确定性 LCG 造的 generic x*，b = A x*」，不要用 ones；
+     ② x* 取纯正弦组合时 b 落在低维不变子空间里，CG 会 2 步收敛，看起来像 bug；
+     ③ 对角谱上「步数」会被 m 卡住，m 必须远大于 √κ 才有意义；本页 m=400，κ 上限 1e6；
+     ④ 反幂法得到的 Rayleigh 商**就是** λmin，不要再取倒数（初版取了一次，κ 全错）。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
+.crumb{font-size:13px;margin:0 0 16px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
+.sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
+.sheet .cell:last-child{border-right:none}
+.sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
+.sheet .v{font-size:14.5px;margin:0;font-weight:600}
+.sheet .no{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;color:var(--cinn)}
+h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
+.tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:#EEF3F8;color:var(--steel)}
+h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:4px 0}
+.mono{font-family:ui-monospace,Consolas,monospace;font-size:13.5px}
+.lab{border:1px solid var(--line);border-radius:10px;padding:16px 18px 14px;margin:18px 0;
+  background:linear-gradient(180deg,#FFFFFF 0%,#FCFBF8 100%)}
+.lab-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 6px}
+.lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+.lab-head .t{font-size:14.5px;font-weight:650}
+.lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
+canvas{display:block;width:100%;height:auto;background:var(--card);
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
+.ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
+.ctrl label{color:var(--ink2);white-space:nowrap}
+.ctrl .nm{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
+input[type=range]{width:104px;accent-color:var(--cinn)}
+button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  border-radius:7px;padding:5px 13px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:none;border-radius:0;padding:5px 12px}
+.seg button.on{background:var(--steel);color:#fff}
+.readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
+.ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
+  border-bottom:1px dotted var(--grid);padding:3px 0}
+.ro .k{color:var(--ink2)}
+.ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
+.eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
+  border-radius:0 8px 8px 0;font-size:14px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
+table.tb{border-collapse:collapse;margin:12px 0;font-size:13.5px;width:100%}
+table.tb td,table.tb th{border:1px solid var(--line);padding:5px 10px;text-align:center}
+table.tb th{background:var(--card);font-weight:600}
+table.tb td.l,table.tb th.l{text-align:left}
+table.tb tr.hi td{background:#FBF1ED}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--ink2)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0;flex-wrap:wrap}
+.pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
+.pager a:hover{text-decoration:underline}
+.hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
+@media print{
+  .noprint{display:none}
+  h2{page-break-after:avoid}
+  .lab,table.tb,.eq{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
+
+<div class="sheet">
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-11</p></div>
+  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">共轭梯度 · Krylov 几何与预条件</p></div>
+  <div class="cell"><p class="k">教材</p><p class="v">Lecture 32–40 · 书页 241–320</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+</div>
+
+<h1>共轭梯度：把「解方程」换成「下山」，再把它换成「找多项式」</h1>
+<p class="lead">前十一讲全是<strong>直接法</strong>：有限步、精确、\(O(m^3)\)。从 Lecture 32 起换一套世界观——<strong>迭代法</strong>把 \(A\) 当黑箱，只问「能不能算 \(Ax\)」，用 \(O(m^2)\) 甚至 \(O(m)\) 的代价换一个近似解。其中最漂亮的是 1952 年 Hestenes 与 Stiefel 的共轭梯度：它在 Krylov 子空间里走一步就吃掉一个方向，收敛速度由<strong>谱</strong>决定，而不是由矩阵大小决定。这一页把三件事串起来：<em>几何</em>（沿椭圆的共轭方向下山）、<em>逼近论</em>（Chebyshev 多项式，\(\sqrt\kappa\) 从哪来）、<em>工程</em>（预条件子把谱搬回原点附近）。</p>
+<p class="hint">约定：实矩阵、实向量，2-范数。全部读数由工作区根脚本 <span class="mono">verify_readout_cg.js</span> 实测。注意：本页内容<strong>不在本学期考试范围</strong>（只考到最小二乘），但它是「用神经网络修正粗网格解」这条科研线的数学骨架——粗网格修正正是空间预条件。</p>
+
+<h2><span class="no">01</span>为什么值得迭代：\(O(m^3)\) 是一道墙</h2>
+<p>非迭代（直接）算法要 \(O(m^3)\) 次运算。教材用一个朴素的历史观察把这件事说透：如果 45 年里能算的矩阵维数涨了 \(10^3\) 倍，而同期硬件快了 \(10^9\) 倍，那么 \(10^9=(10^3)^3\)——硬件多出来的算力，<strong>全部被 \(m^3\) 吃掉了</strong>。这就是 \(O(m^3)\) 瓶颈在历史上的投影。</p>
+<table class="tb">
+<tr><th>年份</th><th>「很大」的维数</th><th>当时的代表软件</th><th>相对 1950 年的倍数</th></tr>
+<tr><td>1950</td><td>\(m=20\)</td><td>Wilkinson</td><td>\(1\)</td></tr>
+<tr><td>1965</td><td>\(m=200\)</td><td>Forsythe &amp; Moler</td><td>\(10\)</td></tr>
+<tr><td>1980</td><td>\(m=2000\)</td><td>LINPACK</td><td>\(100\)</td></tr>
+<tr class="hi"><td>1995</td><td>\(m=20000\)</td><td>LAPACK</td><td>\(1000\)</td></tr>
+</table>
+<p>为什么能打破？因为<strong>大的矩阵都不随机</strong>。维数 \(3\) 或 \(30\) 的矩阵可以真的来自「三个力之间的关系」；维数 \(10^5\) 的矩阵几乎只可能来自微分或积分方程的离散化——教材的原话是：<em>如果 \(m\) 很大，它多半是 \(\infty\) 的一个近似</em>。于是这些矩阵带有结构：稀疏、Toeplitz、低秩、分层。迭代法的做法是把它当<strong>黑箱</strong>：</p>
+<div class="eq">$$ x\ \longrightarrow\ \boxed{\ \text{BLACK BOX}\ }\ \longrightarrow\ Ax $$</div>
+<p>算法只要「给我 \(Ax\)」（有些还要 \(A^{*}x\)），完全不碰元素。稀疏时 \(Ax\) 只要 \(O(\nu m)\)（\(\nu\) 是每行非零数）而不是 \(O(m^2)\)。对比之下，Gauss 消元、Householder 三角化<strong>显式地操作元素去造零</strong>，这个过程一般会毁掉稀疏性——这正是直接法在超大问题上输掉的地方。</p>
+<p>代价与收益可以写成一张账：直接法是 \(O(m)\) 步 \(\times\) \(O(m^2)\)/步 \(=O(m^3)\)；迭代法<strong>最坏情况</strong>也是这个数，但它成功时可以压掉一个甚至两个因子。理想情形是 \(O(1)\) 步 \(\times\) \(O(m)\)/步 \(=O(m)\)，实际典型是 \(O(m^3)\to O(m^2)\)。教材给的经验值是：1990 年代中期的工程计算里，迭代法通常比直接法快<strong>一个数量级</strong>。</p>
+<p>迭代法在原理上<strong>不精确</strong>——就算没有舍入误差，跑到实际有意义的步数时也不是精确解。这常让初学者不安，但教材的反驳很干脆：直接法在计算机上同样不精确，我们本来也只指望精确到机器精度；既然迭代法也能达到机器精度，「原理上近似」这件事就没有多少实际意义（图 32.1：直接法的残差一直趴在原处，直到 \(O(m^3)\) 步做完才「啪」地掉到 \(\varepsilon_{\text{machine}}\)；迭代法是几何式地滑下去）。</p>
+
+<h2><span class="no">02</span>Krylov 子空间：把 \(m\) 维问题投影成 \(n\) 维</h2>
+<p>后面所有方法的共同骨架只有一句话：<strong>把 \(m\) 维问题投影到一个低维 Krylov 子空间里</strong>。给定 \(A\) 与 \(b\)，Krylov 序列是 \(b,\,Ab,\,A^2b,\,A^3b,\dots\)（每一步只是再乘一次 \(A\)，黑箱就够），对应的 Krylov 子空间是</p>
+<div class="eq">$$ \mathcal{K}_n=\mathcal{K}_n(A,b)=\langle b,\,Ab,\,A^2b,\ \dots,\ A^{\,n-1}b\rangle. \tag{33.5 / 38.1} $$</div>
+<p>投影之后，原来的 \(m\) 维问题变成一列维数 \(n=1,2,3,\dots\) 的小问题。\(A\) 是 hermitian 时这些小矩阵是<strong>三对角</strong>，非 hermitian 时是 <strong>Hessenberg</strong>。整张表就四格（教材 p. 245）：</p>
+<table class="tb">
+<tr><th></th><th>\(Ax=b\)</th><th>\(Ax=\lambda x\)</th></tr>
+<tr class="hi"><td class="l">\(A=A^{*}\)</td><td>CG（还要正定）</td><td>Lanczos</td></tr>
+<tr><td class="l">\(A\ne A^{*}\)</td><td>GMRES · CGN</td><td>Arnoldi · BCG 等</td></tr>
+</table>
+<p>本页只走左上格（CG），顺带在 §07 提一句左下格的 CGN——因为「把条件数平方」这个教训太值钱。</p>
+<p>关键的第二句话：解 \(Ax=b\) 等价于<strong>找一个二次型的碗底</strong>。令</p>
+<div class="eq">$$ \varphi(x)=\tfrac12\,x^{\mathrm T}Ax-x^{\mathrm T}b,\qquad \nabla\varphi(x)=Ax-b=-r(x). \tag{38.7} $$</div>
+<p>\(A\) 对称正定时 \(\varphi\) 是严格凸的，唯一极小点就是 \(x_*=A^{-1}b\)，而且有一个漂亮的恒等式把「误差」和「函数值」绑在一起：</p>
+<div class="eq">$$ \|e_n\|_A^2=e_n^{\mathrm T}Ae_n=2\varphi(x_n)+x_*^{\mathrm T}b \quad(\text{常数}). \tag{38.7 后半} $$</div>
+<p>所以「最小化 A-范数误差」和「最小化 \(\varphi\)」是同一件事。\(\varphi\) 的等高线是以 \(x_*\) 为中心的<strong>椭圆</strong>，半轴比是 \(\sqrt{\lambda_1/\lambda_2}=\sqrt\kappa\)——注意不是 \(\kappa\)。这个 \(\sqrt{\kappa}\) 就是后面 (38.10) 里那个 \(\sqrt\kappa\) 的几何来源，也是为什么 CG 只要 \(O(\sqrt\kappa)\) 步而最速下降要 \(O(\kappa)\) 步。</p>
+
+<div class="lab">
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">Krylov 几何：沿共轭方向走两步就到碗底</span><span class="tag">(38.3)–(38.6)</span></div>
+  <p class="lab-sub">\(A=R(\theta)\,\mathrm{diag}(\lambda_1,\lambda_2)\,R(\theta)^{\mathrm T}\)，取 \(\|x_*\|=1\) 固定精确解、\(b=Ax_*\)、\(x_0=0\)。灰细线是 \(\varphi\) 的等高椭圆（中心 \(x_*\)），两条朱砂点线是椭圆的两个主轴（半轴比 = \(\sqrt\kappa\)）。朱砂粗折线 = CG：第一步落在 \(\mathcal K_1=\langle b\rangle\) 这条直线与某条等高线的<strong>切点</strong>（即该直线上的最小点），第二步沿 \(p_1\)（与 \(p_0\) A-共轭）直达碗底。钢青点线是 \(\mathcal K_1=\langle b\rangle\)——第一步就是在<strong>这条直线上</strong>取 \(\varphi\) 的最小点（等高线与它相切）。读数给出等高椭圆的<strong>实测半轴比——它恒等于 \(\sqrt\kappa\)</strong>。</p>
+  <canvas id="cv-geo" width="620" height="430"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>λ₁</label><input type="range" id="s-l1" min="1" max="20" step="0.5" value="12"><span class="nm" id="v-l1"></span></div>
+    <div class="ctrl"><label>λ₂</label><input type="range" id="s-l2" min="0.2" max="20" step="0.1" value="1"><span class="nm" id="v-l2"></span></div>
+    <div class="ctrl"><label>θ（特征方向）</label><input type="range" id="s-th" min="0" max="180" step="1" value="35"><span class="nm" id="v-th"></span></div>
+    <div class="ctrl"><label>ψ（\(x_*\) 方向）</label><input type="range" id="s-ps" min="0" max="360" step="1" value="90"><span class="nm" id="v-ps"></span></div>
+  </div>
+  <div class="ctrls">
+    <button id="b-g1">预设：κ=12（温和）</button>
+    <button id="b-g2">预设：κ=100（扁）</button>
+    <button id="b-g3">预设：λ₁=λ₂（圆，1 步）</button>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">λ₁ / λ₂ / κ</span><span class="v" id="ro-lam"></span></div>
+    <div class="ro"><span class="k">√κ（等高椭圆半轴比）</span><span class="v" id="ro-sqrtk"></span></div>
+    <div class="ro"><span class="k">实测半轴比（长/短）</span><span class="v" id="ro-axis"></span></div>
+    <div class="ro"><span class="k">‖e₀‖_A</span><span class="v" id="ro-e0"></span></div>
+    <div class="ro"><span class="k">‖e₁‖_A / ‖e₀‖_A</span><span class="v" id="ro-e1"></span></div>
+    <div class="ro"><span class="k">‖e₂‖_A / ‖e₀‖_A</span><span class="v" id="ro-e2"></span></div>
+    <div class="ro"><span class="k">r₁ᵀr₀ / (‖r₁‖‖r₀‖)</span><span class="v" id="ro-orth"></span></div>
+    <div class="ro"><span class="k">p₁ᵀAp₀ / (‖p₁‖_A‖p₀‖_A)</span><span class="v" id="ro-conj"></span></div>
+    <div class="ro"><span class="k">CG / SD 步数（至 1e−3）</span><span class="v" id="ro-steps"></span></div>
+  </div>
+  <p class="hint"><strong>CG 至多 2 步，这是维数的必然</strong>：精确线搜索下残差两两正交，\(\mathbb R^2\) 里两步就把方向用完了——所以读数最后一行的左边永远是 2。最速下降没有这个性质（它的方向只正交、不共轭），在同一个扁椭圆上要磨更多步才到 1e−3（读数右边）；但它的锯齿在 \(\mathbb R^2\) 里挤成一团，看不清，<em>锯齿的形状要到实验 02 的琥珀曲线才看得见</em>。本实验要看的是<em>几何</em>：等高椭圆半轴比 \(=\sqrt\kappa\)、\(p_0\) 与 \(p_1\) 的 A-共轭、残差正交，以及 \(\lambda_1=\lambda_2\) 时椭圆退化成圆、一步到位的退化情形。</p>
+</div>
+
+<h2><span class="no">03</span>CG 算法与三个定理</h2>
+<p>整部机器只有五行（教材 Algorithm 38.1）：</p>
+<div class="eq">$$ \begin{aligned}
+&\text{初值 } x_0=0,\quad r_0=b,\quad p_0=r_0\\
+&\text{for } n=1,2,3,\dots\\
+&\qquad \alpha_n=\frac{r_{n-1}^{\mathrm T}r_{n-1}}{p_{n-1}^{\mathrm T}A\,p_{n-1}} &&\text{步长}\\
+&\qquad x_n=x_{n-1}+\alpha_n p_{n-1} &&\text{近似解}\\
+&\qquad r_n=r_{n-1}-\alpha_n A\,p_{n-1} &&\text{残差}\\
+&\qquad \beta_n=\frac{r_n^{\mathrm T}r_n}{r_{n-1}^{\mathrm T}r_{n-1}} &&\text{本步改进}\\
+&\qquad p_n=r_n+\beta_n p_{n-1} &&\text{搜索方向}
+\end{aligned} $$</div>
+<p>它比带主元的高斯消元还简单——只碰 \(m\) 维向量，不碰矩阵元素。每步只有一次矩阵—向量乘积（\(Ap_{n-1}\) 在表里出现两次，只需算一次）；稠密无结构时这步是 \(2m^2\) flops，稀疏时可低到 \(O(m)\)。</p>
+<p><strong>Theorem 38.1（子空间恒等 + 两个正交性）</strong>。只要还没收敛（\(r_{n-1}\ne 0\)），就有</p>
+<div class="eq">$$ \mathcal{K}_n=\langle x_1,\dots,x_n\rangle=\langle p_0,\dots,p_{n-1}\rangle=\langle r_0,\dots,r_{n-1}\rangle=\langle b,Ab,\dots,A^{n-1}b\rangle \tag{38.3} $$</div>
+<div class="eq">$$ r_n^{\mathrm T}r_j=0\quad(j&lt;n),\qquad p_n^{\mathrm T}A\,p_j=0\quad(j&lt;n). \tag{38.4–38.5} $$</div>
+<p>第一组是<strong>残差互相正交</strong>（所以 \(m\) 步之内必然耗尽所有方向），第二组是<strong>搜索方向 A-共轭</strong>——「共轭梯度」这个名字就从这儿来。注意 (38.5) 不是普通正交：它是「在 \(A\) 内积下的正交」，几何上正好是「沿一个方向下山不会破坏另一个方向已经达到的最优」。这正是共轭方向比正交方向贵、但有效得多的原因。</p>
+<p><strong>Theorem 38.2（A-范数最优）</strong>。\(x_n\) 是 \(\mathcal{K}_n\) 中<strong>唯一</strong>使 \(\|e_n\|_A\) 最小的点，且</p>
+<div class="eq">$$ \|e_n\|_A\ \le\ \|e_{n-1}\|_A,\qquad \exists\,n\le m:\ e_n=0. \tag{38.6} $$</div>
+<p>证明只用了一句关键的话：取任意 \(x=x_*-\Delta x\in\mathcal{K}_n\)，则</p>
+<div class="eq">$$ \|e\|_A^2=\|e_n\|_A^2+\|\Delta x\|_A^2+2\,r_n^{\mathrm T}\Delta x, $$</div>
+<p>最后一项是 \(r_n\) 与 \(\mathcal{K}_n\) 中某个向量的内积，由 (38.3)+(38.4) 恒为零。于是「只有 \(\|\Delta x\|_A^2\) 依赖 \(\Delta x\)」，而 \(A\) 正定保证它非负、仅在 \(\Delta x=0\) 时取零。<strong>残差正交于整个 Krylov 子空间</strong>，才是「最小」的引擎。</p>
+<p>还有一条极端情形，本页实验 02 会实测：</p>
+<p><strong>Theorem 38.4（有限谱）</strong>。若 \(A\) 只有 \(n\) 个<strong>不同</strong>特征值，CG 至多 \(n\) 步收敛。证明是 (38.9) 的推论：取 \(p(x)=\prod_{i=1}^{n}(1-x/\lambda_i)\in\mathcal{P}_n\)，它在所有特征值上为零。</p>
+<div class="note"><strong>但定理 38.2 的「\(m\) 步收敛」在浮点里是空话。</strong>教材特意点明：对任意矩阵、在真实计算机上，跑到 \(n=m\) 时<strong>不保证</strong>看到任何决定性下降。实践中 CG 从不用于任意矩阵，只用于谱「足够好」的矩阵（往往靠预条件），此时 \(n\ll m\) 就达到目标精度；\(n=m\) 的精确收敛对科学计算毫无意义。本页实验 02 会看到这条注记的具体形状。</div>
+
+<h2><span class="no">04</span>收敛速率：\(\sqrt\kappa\) 是从哪里冒出来的</h2>
+<p>把 CG 翻译成逼近论。由 Theorem 38.1，\(e_n=p(A)e_0\) 对某个次数 \(\le n\)、满足 \(p(0)=1\) 的多项式成立。于是「CG 的最优性」变成一道<strong>多项式逼近题</strong>：</p>
+<div class="eq">$$ \textbf{CG 逼近问题：}\ \text{求 }p_n\in\mathcal{P}_n\text{ 使 }\|p_n(A)e_0\|_A=\min. \tag{38.8} $$</div>
+<p>\(\mathcal{P}_n\) 是次数 \(\le n\)、且 \(p(0)=1\) 的多项式全体。由此得到本节的主定理：</p>
+<div class="eq">$$ \frac{\|e_n\|_A}{\|e_0\|_A}=\inf_{p\in\mathcal{P}_n}\frac{\|p(A)e_0\|_A}{\|e_0\|_A}\ \le\ \inf_{p\in\mathcal{P}_n}\ \max_{\lambda\in\Lambda(A)}|p(\lambda)| \tag{38.9} $$</div>
+<p>右边只看<strong>谱</strong>，与 \(b\)、与特征向量的分布全都无关。取 Chebyshev 多项式（在区间上振荡最小）就得到教材最著名的一条界：</p>
+<div class="eq">$$ \frac{\|e_n\|_A}{\|e_0\|_A}\ \le\ \frac{2}{\Big(\dfrac{\sqrt\kappa+1}{\sqrt\kappa-1}\Big)^{n}+\Big(\dfrac{\sqrt\kappa-1}{\sqrt\kappa+1}\Big)^{n}}\ \le\ 2\Big(\dfrac{\sqrt\kappa-1}{\sqrt\kappa+1}\Big)^{n} \tag{38.10} $$</div>
+<p>其中 \(\kappa=\lambda_{\max}/\lambda_{\min}\)。记 \(\rho=(\sqrt\kappa-1)/(\sqrt\kappa+1)\)，则 \(\rho\approx 1-2/\sqrt\kappa\)，要降到 \(\varepsilon\) 大致需要</p>
+<div class="eq">$$ n\ \approx\ \frac{\sqrt\kappa}{2}\,\ln\frac{2}{\varepsilon}. $$</div>
+<p>双精度取 \(\varepsilon=10^{-10}\) 时 \(\ln(2/\varepsilon)\approx 23.7\)：\(\kappa=10^4\) 要 \(\approx 1186\) 步，\(\kappa=10^6\) 要 \(\approx 11860\) 步。这就是「\(O(\sqrt\kappa)\)」的全部内容——注意是 \(\sqrt\kappa\)，不是 \(\kappa\)；最速下降对应的界是 \(2\big((\kappa-1)/(\kappa+1)\big)^n\)，那才是 \(O(\kappa)\)。两者的差距，就是本页实验 02 要量的东西。</p>
+
+<div class="lab">
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">收敛速率：CG vs 最速下降 vs 定理上界</span><span class="tag">(38.9)(38.10) · Thm 38.5</span></div>
+  <p class="lab-sub">真跑：\(m=400\) 的对角矩阵 \(A=\mathrm{diag}(\lambda_i)\)，\(x_0=0\)，右端取 generic 向量。纵轴是 \(\log_{10}\big(\|e_n\|_A/\|e_0\|_A\big)\)（Theorem 38.2 保证它单调不增）。<strong>朱砂实线 = CG 实测</strong>，<strong>钢青虚线 = 上界 \(2\rho^{\,n}\)</strong>，<strong>琥珀实线 = 最速下降实测</strong>（精确线搜索，已是对它最有利的版本）。三种谱可切：均匀铺满 \([1,\kappa]\)、九成聚在 \([1,1.2]\) 加离群、只有 5 个不同值。</p>
+  <canvas id="cv-rate" width="620" height="400"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>κ = 10^</label><input type="range" id="s-kap" min="1" max="6" step="0.25" value="4"><span class="nm" id="v-kap"></span></div>
+    <div class="seg" id="seg-spec">
+      <button data-m="flat" class="on">均匀铺满</button>
+      <button data-m="cluster">聚簇 + 离群</button>
+      <button data-m="five">仅 5 个值</button>
+    </div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">κ / √κ</span><span class="v" id="ro-kr"></span></div>
+    <div class="ro"><span class="k">不同特征值个数</span><span class="v" id="ro-ndist"></span></div>
+    <div class="ro"><span class="k">CG 实测步数（到 1e−10）</span><span class="v" id="ro-cgstep"></span></div>
+    <div class="ro"><span class="k">最速下降步数</span><span class="v" id="ro-sdstep"></span></div>
+    <div class="ro"><span class="k">(38.10) 上界步数</span><span class="v" id="ro-bound"></span></div>
+    <div class="ro"><span class="k">CG 第 40 步误差比</span><span class="v" id="ro-cg40"></span></div>
+    <div class="ro"><span class="k">最速下降第 40 步误差比</span><span class="v" id="ro-sd40"></span></div>
+    <div class="ro"><span class="k">上界第 40 步</span><span class="v" id="ro-b40"></span></div>
+    <div class="ro"><span class="k">实测 / 上界（越小越好）</span><span class="v" id="ro-ratio"></span></div>
+  </div>
+  <p class="hint">切到「仅 5 个值」时 κ 滑杆只改那个离群值，步数应几乎不变——这就是 Theorem 38.4：<strong>不同特征值的个数</strong>才是硬上界，\(\kappa\) 只决定最坏情况。</p>
+</div>
+
+<div class="note b"><strong>读图要点</strong>：上界曲线（钢青虚线）永远在实测（朱砂）上方，而且常常高好几个数量级。这不是定理错了，而是<strong>上界只用了 \(\lambda_{\min}\) 与 \(\lambda_{\max}\) 两个数</strong>，把中间 398 个特征值全当成最坏情形。实测之所以快得多，是因为离散谱给了 CG 额外的可利用结构。真正的教训是两条曲线的<strong>斜率依赖</strong>：上界按 \(\sqrt\kappa\) 变慢，最速下降按 \(\kappa\) 变慢，实测介于两者之间但贴着 CG 那一侧。</div>
+
+<h2><span class="no">05</span>多项式视角：谱在哪里，步数就在哪里</h2>
+<p>(38.9) 把一切推给了「找一个在谱上取值很小的多项式」。两个极端情形给出两条直觉：</p>
+<ul>
+  <li><strong>谱聚簇</strong>（Theorem 38.4）：\(n\) 个不同特征值 → 有 \(n\) 次多项式在所有特征值上为零 → \(n\) 步精确收敛。哪怕 \(\kappa\) 大到 \(10^6\)，只要「不同的值」只有 5 个，CG 至多 5 步就到（实验 02 实测：第 5 步 \(1.8\times10^{-7}\)，第 7 步才见机器精度——浮点里多走两步，精确算术下第 5 步就该是 0）。</li>
+  <li><strong>谱铺满区间</strong>（Theorem 38.5）：只知道 \(\kappa\) 时，最优选择是 Chebyshev 多项式，衰减率 \(\rho=(\sqrt\kappa-1)/(\sqrt\kappa+1)\)，于是 \(O(\sqrt\kappa)\) 步。</li>
+</ul>
+<p>Chebyshev 多项式在这里的角色值得单独看。取 \(\gamma=(\kappa+1)/(\kappa-1)\)、\(z=\gamma+\sqrt{\gamma^2-1}=(\sqrt\kappa+1)/(\sqrt\kappa-1)=1/\rho\)，则</p>
+<div class="eq">$$ p_n(\lambda)=\frac{T_n\!\Big(\dfrac{\lambda_{\max}+\lambda_{\min}-2\lambda}{\lambda_{\max}-\lambda_{\min}}\Big)}{T_n(\gamma)},\qquad
+T_n(\gamma)=\tfrac12\big(z^{n}+z^{-n}\big), $$</div>
+<p>在区间上分子被 \(1\) 压住，于是 \(\max_{[\lambda_{\min},\lambda_{\max}]}|p_n|=1/T_n(\gamma)=2\rho^{\,n}/(1+\rho^{2n})\)——正是 (38.10) 的中间那个表达式。\(n\) 小时 \(2\rho^n\) 会比它松将近一倍（\(\rho^{2n}\) 还不小），\(n\) 大了两者重合。</p>
+
+<div class="lab">
+  <div class="lab-head"><span class="no">实验 03</span><span class="t">Chebyshev 多项式：它怎么把区间上的峰值压下去</span><span class="tag">(38.9)(38.10)</span></div>
+  <p class="lab-sub">横轴 \(\lambda\)（线性，从 \(\lambda_{\min}\) 到 \(\lambda_{\max}\)），纵轴 \(p_n(\lambda)\)。曲线是上面的 \(p_n\)：注意它在整个区间上<strong>等幅振荡</strong>，每个峰都恰好是 \(\pm1/T_n(\gamma)\)——这就是 Chebyshev 的定义性质，两条钢青虚线是 \(\pm 2\rho^{\,n}\)，<strong>灰竖线</strong>是实验 02 当前那组谱的位置。<strong>注意峰值正好压在端点特征值上</strong>——Chebyshev 只用了 \(\lambda_{\min}\) 与 \(\lambda_{\max}\) 两个数，所以这个界必然很松；CG 实际选的是「在这组<em>离散</em>谱上最优」的多项式，这就是实测远低于界的原因（读数最后两行对账）。</p>
+  <canvas id="cv-poly" width="620" height="340"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>n（次数 = 步数）</label><input type="range" id="s-n" min="1" max="40" step="1" value="8"><span class="nm" id="v-n"></span></div>
+    <div class="ctrl"><label>κ = 10^</label><input type="range" id="s-kap2" min="1" max="6" step="0.25" value="4"><span class="nm" id="v-kap2"></span></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">γ = (κ+1)/(κ−1)</span><span class="v" id="ro-gam"></span></div>
+    <div class="ro"><span class="k">ρ = (√κ−1)/(√κ+1)</span><span class="v" id="ro-rho"></span></div>
+    <div class="ro"><span class="k">max|pₙ| 于区间 = 1/Tₙ(γ)</span><span class="v" id="ro-maxint"></span></div>
+    <div class="ro"><span class="k">2ρⁿ（(38.10) 简式）</span><span class="v" id="ro-tworho"></span></div>
+    <div class="ro"><span class="k">实测 CG 第 n 步 ‖eₙ‖_A 比</span><span class="v" id="ro-cgn"></span></div>
+    <div class="ro"><span class="k">实测 / 1/Tₙ(γ)（≤1）</span><span class="v" id="ro-cgr"></span></div>
+    <div class="ro"><span class="k">降到 1e−10 所需 n（按上界）</span><span class="v" id="ro-need"></span></div>
+    <div class="ro"><span class="k">≈ (√κ/2)·ln(2/ε)</span><span class="v" id="ro-rule"></span></div>
+  </div>
+  <p class="hint">把 κ 从 \(10^2\) 拖到 \(10^6\)：曲线峰值几乎不动（\(n=8\) 时还在 \(0.9\) 附近），说明<strong>小 n 时 Chebyshev 无能为力</strong>；只有 \(n\) 到 \(\sqrt\kappa\) 量级，峰值才真正塌下去。</p>
+</div>
+
+<h2><span class="no">06</span>预条件：把椭圆的轴比搬回 1</h2>
+<p>抽象的预条件只有一行字。对任何非奇异 \(M\)，</p>
+<div class="eq">$$ M^{-1}Ax=M^{-1}b \tag{40.2} $$</div>
+<p>与原方程同解，但迭代的收敛性现在由 \(M^{-1}A\) 的性质决定。两个极端把「有用」的区间夹住了：\(M=A\) 时 (40.3) 与 (40.1) 一样难（没收获），\(M=I\) 时应用预条件子不花力气（也没收获）。有用的预条件子活在中间：<strong>结构上足够简单，使 \(My=c\) 能快速解</strong>；<strong>又足够接近 \(A\)，使迭代变快</strong>。注意 (40.3) 从来不是「显式求 \(M^{-1}\)」，而是「解一次 \(My=c\)」。</p>
+<p>「足够接近」是什么意思？教材给了完整的答案（就是本页前四节的内容）：如果 \(M^{-1}A\) 的特征值聚在 1 附近、\(\|M^{-1}A-I\|_2\) 小，什么迭代都快。但更强的条件并不必要——特征值聚在别的数附近也行，有离群点也行；若用 CGN，只要<strong>奇异值</strong>聚簇就够。工程上常用的经验法则是这一句：</p>
+<div class="note"><strong>经验法则（教材 p. 314）</strong>：预条件子 \(M\) 好，当且仅当 \(M^{-1}A\) <strong>不离正规（normal）太远</strong>，且它的<strong>特征值聚簇</strong>。</div>
+<p>\(A\) hermitian 正定时通常希望保持这个性质：取 \(M\) 也 hermitian 正定、\(M=CC^{*}\)，则</p>
+<div class="eq">$$ \big[C^{-1}AC^{-*}\big]C^{*}x=C^{-1}b \tag{40.4} $$</div>
+<p>方括号里仍是 hermitian 正定，可以继续用 CG；同时它与 \(C^{*}C^{-1}A=M^{-1}A\) 相似，所以<strong>看 \(M^{-1}A\) 的特征值就够</strong>。这就是 PCG（preconditioned CG）的全部理论。</p>
+
+<table class="tb">
+<tr><th class="l">预条件子</th><th class="l">\(M\) 取什么</th><th class="l">什么时候灵</th></tr>
+<tr class="hi"><td class="l">对角缩放 / Jacobi</td><td class="l">\(M=\mathrm{diag}(A)\)（或 \(\mathrm{diag}(c)\)）</td><td class="l">对角元素差异大时；对光滑变系数问题几乎无效</td></tr>
+<tr><td class="l">不完全 Cholesky / LU</td><td class="l">只允许在 \(A\) 的非零位置有非零的 \(R\)，\(M=R^{*}R\)</td><td class="l">稀疏 SPD；ICCG / ILU 是 1970 年代让它出名的例子</td></tr>
+<tr class="hi"><td class="l">粗网格近似</td><td class="l">\(M=(\text{延拓})\circ A_{\text{coarse}}\circ(\text{限制})\)　(40.5)</td><td class="l">PDE 离散；管住低频，高频留给 Krylov，递归即成多重网格</td></tr>
+<tr><td class="l">局部近似</td><td class="l">\(A\) 去掉长程作用（只留主对角附近几条带）</td><td class="l">远近耦合并存的问题；对角预条件的推广</td></tr>
+<tr><td class="l">块 / 区域分解</td><td class="l">块对角（块 Jacobi），或各子区域解子的组合</td><td class="l">天然可并行；本页实验 04 的第三档</td></tr>
+<tr><td class="l">低阶离散</td><td class="l">同一问题的低阶格式（谱方法 → 有限差分）</td><td class="l">高阶格式矩阵稠、低阶格式矩阵稀疏</td></tr>
+<tr><td class="l">常系数 / 对称近似</td><td class="l">变系数 → 常系数（配快速 Poisson 解）</td><td class="l">有快速解子的特殊方程</td></tr>
+<tr><td class="l">多项算子分裂</td><td class="l">\(A=A_1+A_2\) 中易求逆的那一半</td><td class="l">多物理耦合（扩散 + 对流）</td></tr>
+<tr><td class="l">维分裂 / ADI</td><td class="l">按维度拆开的算子</td><td class="l">Laplacian 型（各维独立）</td></tr>
+<tr><td class="l">经典迭代一步</td><td class="l">Jacobi / SSOR 走一两步</td><td class="l">也是多重网格光滑子的来源</td></tr>
+<tr><td class="l">周期 / 卷积近似</td><td class="l">Toeplitz → 循环矩阵（FFT 求逆）</td><td class="l">边界条件是麻烦、周期域才舒服的问题</td></tr>
+<tr><td class="l">不稳定的直接法</td><td class="l">快速但不准的解法（无主元消元）</td><td class="l">「fly by wire」：粗解塞进稳健的控制回路</td></tr>
+<tr><td class="l">多项式预条件</td><td class="l">\(M^{-1}=p(A)\)（近似 \(A^{-1}\)）</td><td class="l">只需黑箱；系数可自适应</td></tr>
+</table>
+
+<div class="lab">
+  <div class="lab-head"><span class="no">实验 04</span><span class="t">预条件实验台：同一道一维变系数扩散，四档预条件</span><span class="tag">(40.2)(40.4)(40.5)</span></div>
+  <p class="lab-sub">\(m=127\) 的一维变系数扩散 \(-(c(x)u')'=f\)，\(c(x)=1+(K-1)x^2\)（\(K\) 由滑杆给），右端取 generic 向量（\(b=Ax_*\)，\(x_*\) 由确定性伪随机数生成）。四档预条件：<strong>无</strong>（\(M=I\)）、<strong>Jacobi</strong>（\(M=\mathrm{diag}A\)）、<strong>块 Jacobi</strong>（4 块，每块三对角，Thomas 解）、<strong>两层 V-cycle</strong>（(40.5) 的粗网格形式：加权 Jacobi 光滑 + 粗网格残差修正，粗网格 \(m_c=63\)）。纵轴 \(\log_{10}(\|r_n\|/\|r_0\|)\)。</p>
+  <canvas id="cv-pre" width="620" height="360"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>系数反差 K</label><input type="range" id="s-con" min="0" max="3" step="0.25" value="2"><span class="nm" id="v-con"></span></div>
+  </div>
+  <table class="tb" style="margin-top:12px">
+    <tr><th class="l">预条件</th><th>κ(M⁻¹A) 实测</th><th>步数（到 1e−10）</th><th>‖r‖/‖r₀‖ @10</th><th>@20</th><th>@40</th></tr>
+    <tr><td class="l">无（M = I）</td><td id="tb-k0"></td><td id="tb-s0"></td><td id="tb-a0"></td><td id="tb-b0"></td><td id="tb-c0"></td></tr>
+    <tr><td class="l">Jacobi（对角）</td><td id="tb-k1"></td><td id="tb-s1"></td><td id="tb-a1"></td><td id="tb-b1"></td><td id="tb-c1"></td></tr>
+    <tr class="hi"><td class="l">块 Jacobi（4 块）</td><td id="tb-k2"></td><td id="tb-s2"></td><td id="tb-a2"></td><td id="tb-b2"></td><td id="tb-c2"></td></tr>
+    <tr class="hi"><td class="l">两层 V-cycle（粗网格）</td><td id="tb-k3"></td><td id="tb-s3"></td><td id="tb-a3"></td><td id="tb-b3"></td><td id="tb-c3"></td></tr>
+  </table>
+  <p class="hint">κ 用幂法 + 反幂法实测（反幂需要解 \(Ay=Mx\)，三对角走 Thomas）；V-cycle 没有显式矩阵 \(M\)，所以那一格留「—」。把 K 拖到 0（常系数）：<strong>Jacobi 与「无预条件」的曲线完全重合</strong>——对角是常数，缩放等于乘一个数，一步没省。</p>
+</div>
+
+<div class="note"><strong>为什么 Jacobi 在这里几乎没用，而粗网格一步到位</strong>：\(c(x)\) 光滑变化时 \(d_i=(c_{i-1/2}+c_{i+1/2})/h^2\) 的<strong>相对</strong>变化很小（不到 10 倍），对角缩放近似于整体乘一个常数，\(\kappa\) 只从 \(4.3\times10^4\) 降到 \(6.1\times10^3\)。真正难的是<strong>低频分量</strong>：光滑的误差向量处处残差小，任何局部操作都看不出来。粗网格修正正是为它设计的——把残差限制到粗网格上，低频在粗网格上变成高频，一解就掉。这就是 (40.5) 的全部思想，也是「用神经网络修正粗网格解」那条科研线的数学骨架：网络替掉的是 \(A_{\text{coarse}}^{-1}\) 这一块，外面那层 Krylov 迭代不变。</div>
+
+<h2><span class="no">07</span>顺带一句：CGN 与「条件数被平方」的代价</h2>
+<p>把 CG 直接用到正规方程上，就得到 CGN（也叫 CGNR）：</p>
+<div class="eq">$$ A^{*}Ax=A^{*}b \tag{39.1} $$</div>
+<p>\(A\) 非奇异时 \(A^{*}A\) 自动 hermitian 正定，上一节所有定理直接可用。收敛由 \(A^{*}A\) 的特征值控制，也就是 \(A\) 的<strong>奇异值</strong>的平方——与 \(A\) 自身的特征值毫无关系。代价立刻出现：\(\kappa(A^{*}A)=\kappa(A)^2\)，(38.10) 变成</p>
+<div class="eq">$$ \frac{\|r_n\|_2}{\|r_0\|_2}\ \le\ 2\Big(\frac{\kappa-1}{\kappa+1}\Big)^{n}, \tag{39.4} $$</div>
+<p>于是要 \(O(\kappa)\) 步而不是 \(O(\sqrt\kappa)\) 步——这就是「条件数被平方」的坏名声的由来（NLA-06 最小二乘页实验 03 在误差层面见过同一件事：正规方程 \(\sim\varepsilon\kappa^2\)，QR/SVD \(\sim\varepsilon\kappa\)）。</p>
+<p>但 CGN 也有反杀的场合：只要奇异值好而特征值坏，CGN 就大胜。教材的极端例子是循环移位矩阵（39.5）：奇异值全为 1，特征值是 \(m\) 次单位根绕着原点一圈。CGN 一步收敛，GMRES 要 \(m\) 步。</p>
+
+<h2><span class="no">08</span>要点清单与接口</h2>
+<ul>
+  <li><strong>为什么迭代</strong>：直接法 \(O(m^3)\) 是一道墙；迭代法把 \(A\) 当黑箱，只要 \(Ax\)。大矩阵来自离散化，所以有结构可用。</li>
+  <li><strong>Krylov 投影</strong>：\(\mathcal{K}_n=\langle b,Ab,\dots,A^{n-1}b\rangle\)，把 \(m\) 维问题降成 \(n\) 维；hermitian → 三对角，非 hermitian → Hessenberg。</li>
+  <li><strong>CG 的三个事实</strong>：残差互相正交 (38.4)、方向 A-共轭 (38.5)、每步 A-范数最优 (38.6)。单调性只对 A-范数成立，<em>残差不单调</em>。</li>
+  <li><strong>\(\sqrt\kappa\) 的来源</strong>：\(\varphi\) 的等高椭圆半轴比是 \(\sqrt\kappa\)（实验 01 实测），Chebyshev 在 \([1,\kappa]\) 上的衰减率是 \(\rho=(\sqrt\kappa-1)/(\sqrt\kappa+1)\)，两者是同一件事的几何版与分析版。</li>
+  <li><strong>上界很松</strong>：离散谱让 CG 远快于 \(2\rho^n\)；真正决定步数的是<strong>不同特征值的个数与聚簇程度</strong>（Theorem 38.4），\(\kappa\) 只给最坏情况。</li>
+  <li><strong>预条件</strong>：\(M^{-1}Ax=M^{-1}b\)，判据是「\(M^{-1}A\) 不离正规太远 + 谱聚簇」；好预条件子必须<strong>又好解又像 \(A\)</strong>。粗网格 (40.5) 是 PDE 场景的王者，且递归即成多重网格。</li>
+</ul>
+<div class="note g"><strong>伏笔回收 · NLA-10</strong>：条件数页说「\(\kappa\) 是椭圆的轴比，扁得越狠误差放大越狠」。本页给出它的<strong>算法后果</strong>：同一个 \(\kappa\)，在直接法里是「丢 \(\log_{10}\kappa\) 位数字」，在迭代法里是「要 \(\sqrt\kappa\) 步」。实验 01 的等高椭圆与 NLA-10 实验 02 的像椭圆是同一族椭圆——前者轴比 \(\sqrt\kappa\)（\(\varphi\) 的等高线），后者轴比 \(\kappa\)（\(A\) 把单位圆压成的像）。差一个平方根，正是 CG 比最速下降快一个量级的几何原因。</div>
+<div class="note b"><strong>科研连接</strong>：粗网格修正 = 空间预条件。把「细网格解」拆成「粗网格解 + 细网格修正」，残差方程 \(Ae=r\) 在粗网格上被近似求逆——这就是 (40.5)。本页实验 04 的两层 V-cycle 是它的最小可运行版本（6 步对 276 步）；把 \(A_{\text{coarse}}^{-1}\) 换成神经网络，其余不动，就是那条研究路线的全部骨架。要读懂那类论文的收敛性证明，需要的就是本页 §05 的多项式语言：<strong>预条件子的作用，是让 \(M^{-1}A\) 的谱落进一个能用低次多项式压住的区间</strong>。</div>
+<div class="note"><strong>范围说明</strong>：本页（Lecture 32–40）不在本学期考试范围，考试只到最小二乘。数值分析学科第 5 章「解线性方程组的迭代法」按课件覆盖了 Jacobi / Gauss-Seidel / SOR 等经典迭代，与本页互为参照（经典迭代在本页表里只作为「预条件子的一个来源」出现）。</div>
+
+<div class="pager noprint">
+  <a href="条件数-几何与误差放大.html">← 上一页 · 条件数（L12）</a>
+  <a href="./index.html">返回目录 →</a>
+</div>
+
+<footer>
+<p>教材引用：Trefethen &amp; Bau, <em>Numerical Linear Algebra</em>, Lecture 32（Overview of Iterative Methods，书页 241–249）、Lecture 33（Krylov 子空间定义 (33.5)）、Lecture 38（Conjugate Gradients，书页 293–302）、Lecture 39（Biorthogonalization Methods，CGN 与 (39.1)(39.4)）、Lecture 40（Preconditioning，书页 313–320）。公式编号 (38.1)–(38.10)、(39.1)、(39.4)、(40.2)–(40.5) 与定理 38.1–38.5 均按教材原编号引用；Algorithm 38.1 按原样复刻。教材 p. 245 的 Krylov 四格表与 p. 316–318 的预条件子巡览按原意重排为中文表格。</p>
+<p>本页四个实验的内核（CG、最速下降、Chebyshev 闭式、一维变系数扩散 + Thomas + 幂法/反幂法、四档预条件）都在页面里真跑，读数由工作区根脚本 <span class="mono">verify_readout_cg.js</span>（vm + DOM 桩，独立重算）实测；公式经 <span class="mono">verify_formulas.js</span> 本地编译 0 failed。</p>
+</footer>
+
+</div>
+<script>
+"use strict";
+/* ===================== 通用 ===================== */
+const $ = function(id){ return document.getElementById(id); };
+function fmt(x, d){ if(!isFinite(x)) return "—"; d=(d===undefined)?3:d;
+  if(x!==0 && (Math.abs(x)>=1e5 || Math.abs(x)<1e-3)) return x.toExponential(2);
+  return x.toFixed(d); }
+function fmtE(x, d){ if(!isFinite(x)) return "—"; return x.toExponential(d===undefined?2:d); }
+function lg(x){ return Math.log(x)/Math.LN10; }
+function dot2(a,b){ return a[0]*b[0]+a[1]*b[1]; }
+function mv2(A,v){ return [A[0][0]*v[0]+A[0][1]*v[1], A[1][0]*v[0]+A[1][1]*v[1]]; }
+
+/* 自动取景：把一组世界坐标点塞进画布，留 pad 边距 */
+function autoView(cv, pts, pad){
+  let x0=Infinity, x1=-Infinity, y0=Infinity, y1=-Infinity;
+  for(let i=0;i<pts.length;i++){ const p=pts[i];
+    if(p[0]<x0)x0=p[0]; if(p[0]>x1)x1=p[0]; if(p[1]<y0)y0=p[1]; if(p[1]>y1)y1=p[1]; }
+  if(!isFinite(x0)){ x0=-1;x1=1;y0=-1;y1=1; }
+  if(x1-x0<1e-9){ x0-=1; x1+=1; } if(y1-y0<1e-9){ y0-=1; y1+=1; }
+  const W=cv.width, H=cv.height, m=(pad===undefined)?0.14:pad;
+  const cx=(x0+x1)/2, cy=(y0+y1)/2;
+  const s=Math.min(W*(1-2*m)/(x1-x0), H*(1-2*m)/(y1-y0));
+  return { s:s, cx:cx, cy:cy,
+    X:function(x){ return W/2+(x-cx)*s; }, Y:function(y){ return H/2-(y-cy)*s; },
+    xw:function(px){ return cx+(px-W/2)/s; }, yw:function(py){ return cy-(py-H/2)/s; } };
+}
+function niceStep(range, target){
+  const raw=range/Math.max(1,target), p=Math.pow(10, Math.floor(Math.log(raw)/Math.LN10));
+  const c=[1,2,2.5,5,10];
+  for(let i=0;i<c.length;i++) if(c[i]*p>=raw) return c[i]*p;
+  return 10*p;
+}
+function gridWorld(ctx, v, W, H, xr, yr){
+  const sx=niceStep(xr,6), sy=niceStep(yr,5);
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  for(let x=Math.ceil(xr[0]/sx)*sx; x<=xr[1]; x+=sx){ ctx.beginPath();
+    ctx.moveTo(v.X(x), v.Y(yr[0])); ctx.lineTo(v.X(x), v.Y(yr[1])); ctx.stroke(); }
+  for(let y=Math.ceil(yr[0]/sy)*sy; y<=yr[1]; y+=sy){ ctx.beginPath();
+    ctx.moveTo(v.X(xr[0]), v.Y(y)); ctx.lineTo(v.X(xr[1]), v.Y(y)); ctx.stroke(); }
+  ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.5;
+  if(xr[0]<0 && xr[1]>0){ ctx.beginPath(); ctx.moveTo(v.X(0), v.Y(yr[0])); ctx.lineTo(v.X(0), v.Y(yr[1])); ctx.stroke(); }
+  if(yr[0]<0 && yr[1]>0){ ctx.beginPath(); ctx.moveTo(v.X(xr[0]), v.Y(0)); ctx.lineTo(v.X(xr[1]), v.Y(0)); ctx.stroke(); }
+  ctx.restore();
+}
+function arrow(ctx, x1, y1, x2, y2, color, w, dash){
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.2;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+  const a=Math.atan2(y2-y1,x2-x1), L=Math.hypot(x2-x1,y2-y1);
+  if(L>2){ const h=Math.min(8, L*0.3);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
+    ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
+    ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+function dotAt(ctx,x,y,color,r){ ctx.save(); ctx.fillStyle=color;
+  ctx.beginPath(); ctx.arc(x,y,r||3.5,0,7); ctx.fill(); ctx.restore(); }
+function label(ctx, txt, x, y, color, size, align){
+  ctx.save(); ctx.fillStyle=color||"#22303F";
+  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+  ctx.fillText(txt,x,y); ctx.restore();
+}
+/* 带纸底的字：曲线/网格穿过标注时先垫一层底色，避免叠字 */
+function labelBg(ctx, txt, x, y, color, size, align){
+  ctx.save();
+  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+  const w=ctx.measureText(txt).width, h=(size||12)+3;
+  const x0=(ctx.textAlign==="center")?x-w/2:((ctx.textAlign==="right")?x-w:x);
+  ctx.fillStyle="#FFFFFF"; ctx.fillRect(x0-2, y-h/2, w+4, h);
+  ctx.fillStyle=color||"#22303F";
+  ctx.fillText(txt,x,y); ctx.restore();
+}
+function polyline(ctx, pts, color, w, dash){
+  ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=w||2; if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.stroke(); ctx.restore();
+}
+
+/* ===================== 实验 01 · 2×2 Krylov 几何 ===================== */
+const cvG = $("cv-geo"), WG = 620, HG = 430;
+const stateG = { l1:12, l2:1, th:35, ps:90 };
+function matG(){
+  const t=stateG.th*Math.PI/180, c=Math.cos(t), s=Math.sin(t);
+  const l1=stateG.l1, l2=Math.min(stateG.l2, stateG.l1);
+  return { A:[[c*c*l1+s*s*l2, c*s*(l1-l2)], [c*s*(l1-l2), s*s*l1+c*c*l2]],
+           R:[[c,-s],[s,c]], l1:l1, l2:l2 };
+}
+function cg2(A, b, xstar){
+  let x=[0,0], r=[b[0],b[1]], p=[r[0],r[1]], rr=dot2(r,r);
+  const rec=[];
+  for(let n=1;n<=2;n++){
+    const Ap=mv2(A,p), al=rr/dot2(p,Ap);
+    x=[x[0]+al*p[0], x[1]+al*p[1]];
+    r=[r[0]-al*Ap[0], r[1]-al*Ap[1]];
+    const rrN=dot2(r,r);
+    rec.push({ x:x.slice(), r:r.slice(), p:p.slice(), al:al, rr:rrN });
+    const be=rrN/rr; rr=rrN;
+    p=[r[0]+be*p[0], r[1]+be*p[1]];
+  }
+  return rec;
+}
+function eAnorm(A, e){ const Ae=mv2(A,e); return Math.sqrt(dot2(e,Ae)); }
+function sd2(A, b, xstar, maxit){
+  let x=[0,0], r=[b[0],b[1]], rr=dot2(r,r);
+  const path=[[0,0]]; let step=-1;
+  const e0=eAnorm(A,[xstar[0],xstar[1]]);
+  for(let n=1;n<=maxit;n++){
+    const Ar=mv2(A,r), al=rr/dot2(r,Ar);
+    x=[x[0]+al*r[0], x[1]+al*r[1]];
+    r=[r[0]-al*Ar[0], r[1]-al*Ar[1]];
+    rr=dot2(r,r);
+    path.push(x.slice());
+    if(step<0 && eAnorm(A,[xstar[0]-x[0], xstar[1]-x[1]])/e0 < 1e-3) step=n;
+  }
+  return { path:path, step:step };
+}
+function drawGeo(){
+  const ctx=cvG.getContext("2d"); ctx.clearRect(0,0,WG,HG);
+  const M=matG(), A=M.A, l1=M.l1, l2=M.l2, kap=l1/l2;
+  const ps=stateG.ps*Math.PI/180;
+  const xs=[Math.cos(ps), Math.sin(ps)];                 /* ‖x*‖ = 1 固定，保证取景稳定 */
+  const b=mv2(A,xs);
+  const rec=cg2(A,b,xs);
+  const sd=sd2(A,b,xs,2000);
+  const e0=eAnorm(A,xs);
+  const e1=eAnorm(A,[xs[0]-rec[0].x[0], xs[1]-rec[0].x[1]]);
+  const e2=eAnorm(A,[xs[0]-rec[1].x[0], xs[1]-rec[1].x[1]]);
+  const cmax=e0*e0/2;                                    /* 过原点的等高线 */
+  const v1=[M.R[0][0], M.R[1][0]], v2=[M.R[0][1], M.R[1][1]];
+
+  /* 取景：原点、x*、CG 两个迭代点、前 6 个 SD 点、最外层椭圆极值 */
+  const pts=[[0,0], xs, rec[0].x, rec[1].x];
+  for(let i=1;i<Math.min(7,sd.path.length);i++) pts.push(sd.path[i]);
+  const a1=Math.sqrt(2*cmax/l1), a2=Math.sqrt(2*cmax/l2);
+  const ex=Math.hypot(a1*v1[0], a2*v2[0]), ey=Math.hypot(a1*v1[1], a2*v2[1]);
+  pts.push([xs[0]+ex, xs[1]+ey], [xs[0]-ex, xs[1]-ey]);
+  const v=autoView(cvG, pts, 0.13);
+  const xr=[v.xw(0), v.xw(WG)], yr=[v.yw(HG), v.yw(0)];
+  gridWorld(ctx, v, WG, HG, xr, yr);
+
+  /* φ 的等高椭圆 */
+  const lv=[1, 0.76, 0.56, 0.40, 0.27, 0.17, 0.09, 0.04];
+  for(let k=0;k<lv.length;k++){
+    const c=cmax*lv[k], p1=Math.sqrt(2*c/l1), p2=Math.sqrt(2*c/l2);
+    ctx.save(); ctx.strokeStyle=(k===0?"#9AA7B4":"#D8E0E8"); ctx.lineWidth=(k===0?1.6:1.1);
+    if(k===0) ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    for(let i=0;i<=140;i++){ const t=i/140*2*Math.PI;
+      const px=xs[0]+p1*Math.cos(t)*v1[0]+p2*Math.sin(t)*v2[0];
+      const py=xs[1]+p1*Math.cos(t)*v1[1]+p2*Math.sin(t)*v2[1];
+      if(i===0) ctx.moveTo(v.X(px),v.Y(py)); else ctx.lineTo(v.X(px),v.Y(py)); }
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+  }
+
+  /* 椭圆主轴：半轴比 = √κ（标注放在半轴 62% 处，沿法向偏 9px） */
+  {
+    const p1=Math.sqrt(2*cmax/l1), p2=Math.sqrt(2*cmax/l2);
+    function axisLine(p, vec, name){
+      const ax=v.X(xs[0]+p*vec[0]), ay=v.Y(xs[1]+p*vec[1]);
+      const bx=v.X(xs[0]-p*vec[0]), by=v.Y(xs[1]-p*vec[1]);
+      ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.globalAlpha=.45; ctx.lineWidth=1.1;
+      ctx.setLineDash([3,4]); ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(ax,ay); ctx.stroke(); ctx.restore();
+      /* 法向偏移，避免压线 */
+      const mx=v.X(xs[0]+0.78*p*vec[0]), my=v.Y(xs[1]+0.78*p*vec[1]);
+      const dx=ax-bx, dy=ay-by, L=Math.hypot(dx,dy)||1;
+      label(ctx, name, mx-9*dy/L, my+9*dx/L, "#B04A2F", 11, "center");
+    }
+    /* 半轴长度与 λ 成反比：p1 = √(2c/λ₁) 是**短**半轴，p2 是**长**半轴 */
+    axisLine(p2, v2, "长半轴");
+    axisLine(p1, v1, "短半轴");
+  }
+
+  /* K₁ = ⟨b⟩：CG 第一步的搜索直线，等高线与它相切处就是 x₁ */
+  {
+    const nb=Math.hypot(b[0],b[1]), u=[b[0]/nb, b[1]/nb];
+    const R=Math.max(1.6*Math.hypot(rec[0].x[0], rec[0].x[1]), 0.75*Math.max(ex, ey));
+    ctx.save(); ctx.strokeStyle="#2F5D8A"; ctx.globalAlpha=.5; ctx.lineWidth=1.3;
+    ctx.setLineDash([2,5]);
+    ctx.beginPath(); ctx.moveTo(v.X(-R*u[0]), v.Y(-R*u[1]));
+    ctx.lineTo(v.X(R*u[0]), v.Y(R*u[1])); ctx.stroke(); ctx.restore();
+    const tx=v.X(-0.92*R*u[0]), ty=v.Y(-0.92*R*u[1]);
+    label(ctx, "K₁ = ⟨b⟩", Math.max(52, Math.min(WG-56, tx)), Math.max(20, Math.min(HG-16, ty)),
+          "#2F5D8A", 11.5, "center");
+  }
+
+  /* CG 路径：0 → x₁ → x* */
+  const cx0=v.X(0), cy0=v.Y(0);
+  const p1x=v.X(rec[0].x[0]), p1y=v.Y(rec[0].x[1]);
+  const p2x=v.X(rec[1].x[0]), p2y=v.Y(rec[1].x[1]);
+  arrow(ctx, cx0, cy0, p1x, p1y, "#B04A2F", 2.8);
+  if(Math.hypot(p2x-p1x, p2y-p1y) > 3)
+    arrow(ctx, p1x, p1y, p2x, p2y, "#B04A2F", 2.8);
+  dotAt(ctx, cx0, cy0, "#22303F", 4);
+  label(ctx, "x₀ = 0", cx0-9, cy0+15, "#22303F", 12, "right");
+  dotAt(ctx, p1x, p1y, "#B04A2F", 4.5);
+  label(ctx, "x₁", p1x-11, p1y-13, "#B04A2F", 13, "right");
+  dotAt(ctx, v.X(xs[0]), v.Y(xs[1]), "#1F7A4D", 5);
+  label(ctx, "x*（碗底）", v.X(xs[0])+11, v.Y(xs[1])+15, "#1F7A4D", 12.5, "left");
+
+  /* 读数 */
+  const axis=(l1>=l2)?Math.sqrt(l1/l2):Math.sqrt(l2/l1);
+  $("v-l1").textContent=fmt(l1,1); $("v-l2").textContent=fmt(l2,1);
+  $("v-th").textContent=stateG.th+"°"; $("v-ps").textContent=stateG.ps+"°";
+  $("ro-lam").textContent=fmt(l1,1)+" / "+fmt(l2,2)+" / "+fmt(kap,1);
+  $("ro-sqrtk").textContent=fmt(Math.sqrt(kap),4);
+  $("ro-axis").textContent=fmt(axis,4);
+  $("ro-e0").textContent=fmt(e0,4);
+  $("ro-e1").textContent=fmtE(e1/e0,2);
+  $("ro-e2").textContent=fmtE(e2/e0,2);
+  const r0=b, r1=rec[0].r;                 /* r₀ = b（第 0 步），r₁ = 第 1 步残差 */
+  const n0=Math.hypot(r0[0],r0[1]), n1=Math.hypot(r1[0],r1[1]);
+  $("ro-orth").textContent=(n1<1e-10*n0)?"—（已收敛）":fmtE(Math.abs(dot2(r1,r0))/(n1*n0),1);
+  const Ap0=mv2(A,rec[0].p), Ap1=mv2(A,rec[1].p);
+  const nA0=Math.sqrt(Math.abs(dot2(rec[0].p,Ap0))), nA1=Math.sqrt(Math.abs(dot2(rec[1].p,Ap1)));
+  $("ro-conj").textContent=(nA1<1e-10*nA0)?"—（已收敛）":fmtE(Math.abs(dot2(rec[1].p,Ap0))/(nA1*nA0),1);
+  $("ro-steps").textContent="2 / "+((sd.step>0)?sd.step:"∞");
+}
+["s-l1","s-l2","s-th","s-ps"].forEach(function(id){
+  $(id).addEventListener("input", function(){
+    stateG.l1=Math.max(1, Math.min(20, parseFloat($("s-l1").value)||12));
+    stateG.l2=Math.max(0.2, Math.min(20, parseFloat($("s-l2").value)||1));
+    stateG.th=Math.max(0, Math.min(180, parseInt($("s-th").value,10)||0));
+    stateG.ps=Math.max(0, Math.min(360, parseInt($("s-ps").value,10)||0));
+    drawGeo();
+  });
+});
+function setGeo(l1,l2,th,ps){
+  stateG.l1=l1; stateG.l2=l2; stateG.th=th; stateG.ps=ps;
+  $("s-l1").value=String(l1); $("s-l2").value=String(l2);
+  $("s-th").value=String(th); $("s-ps").value=String(ps);
+  drawGeo();
+}
+$("b-g1").addEventListener("click", function(){ setGeo(12,1,35,90); });
+$("b-g2").addEventListener("click", function(){ setGeo(20,0.2,35,90); });
+$("b-g3").addEventListener("click", function(){ setGeo(6,6,35,90); });
+drawGeo();
+/* ===================== 实验 02 · 收敛速率 ===================== */
+const cvR = $("cv-rate"), WR = 620, HR = 400;
+const stateR = { kap:1e4, mode:"flat", m:400, NMAX:260 };
+
+/* 确定性 LCG 造 generic 右端（x* 的每个分量都不在低维不变子空间里） */
+function lcgVec(m, seed){
+  const v=new Float64Array(m); let s=seed||12345;
+  for(let i=0;i<m;i++){ s=(s*1103515245+12345)%2147483648; v[i]=s/2147483648-0.5; }
+  return v;
+}
+function spectrumOf(mode, kap, m){
+  const lam=new Float64Array(m);
+  if(mode==="flat"){ for(let i=0;i<m;i++) lam[i]=1+(kap-1)*i/(m-1); }
+  else if(mode==="cluster"){
+    const kc=Math.round(0.9*m);
+    for(let i=0;i<kc;i++) lam[i]=1+0.2*i/(kc-1);
+    for(let i=kc;i<m;i++) lam[i]=1.2+(kap-1.2)*(i-kc+1)/(m-kc);
+  } else {
+    const five=[1, 1.3, 2, 3, Math.max(kap,3.5)];
+    for(let i=0;i<m;i++) lam[i]=five[i%5];
+  }
+  return lam;
+}
+function cgRun(lam, b, xs, maxit, tol){
+  const m=lam.length;
+  const x=new Float64Array(m), r=Float64Array.from(b), p=Float64Array.from(b);
+  let rr=0, rr0=0;
+  for(let i=0;i<m;i++){ rr+=r[i]*r[i]; }
+  rr0=rr;
+  let e0=0; for(let i=0;i<m;i++) e0+=lam[i]*xs[i]*xs[i];
+  e0=Math.sqrt(e0);
+  const hist=[1]; let steps=-1;
+  for(let n=1;n<=maxit;n++){
+    const Ap=new Float64Array(m); let pAp=0;
+    for(let i=0;i<m;i++){ Ap[i]=lam[i]*p[i]; pAp+=p[i]*Ap[i]; }
+    if(!(pAp>0)) break;
+    const al=rr/pAp;
+    let eA=0;
+    for(let i=0;i<m;i++){ x[i]+=al*p[i]; r[i]-=al*Ap[i]; const e=xs[i]-x[i]; eA+=lam[i]*e*e; }
+    const rel=Math.sqrt(eA)/e0;
+    hist.push(rel);
+    let rrN=0; for(let i=0;i<m;i++) rrN+=r[i]*r[i];
+    if(steps<0 && rel<tol) steps=n;
+    if(rrN<=1e-30*rr0){ if(steps<0) steps=n; break; }
+    const be=rrN/rr;
+    for(let i=0;i<m;i++) p[i]=r[i]+be*p[i];
+    rr=rrN;
+  }
+  return { hist:hist, steps:steps };
+}
+function sdRun(lam, b, xs, maxit, tol){
+  const m=lam.length;
+  const x=new Float64Array(m), r=Float64Array.from(b);
+  let rr=0; for(let i=0;i<m;i++) rr+=r[i]*r[i];
+  let e0=0; for(let i=0;i<m;i++) e0+=lam[i]*xs[i]*xs[i];
+  e0=Math.sqrt(e0);
+  const hist=[1]; let steps=-1;
+  for(let n=1;n<=maxit;n++){
+    const Ar=new Float64Array(m); let rAr=0;
+    for(let i=0;i<m;i++){ Ar[i]=lam[i]*r[i]; rAr+=r[i]*Ar[i]; }
+    if(!(rAr>0)) break;
+    const al=rr/rAr;
+    let eA=0;
+    for(let i=0;i<m;i++){ x[i]+=al*r[i]; r[i]-=al*Ar[i]; const e=xs[i]-x[i]; eA+=lam[i]*e*e; }
+    const rel=Math.sqrt(eA)/e0;
+    hist.push(rel);
+    if(steps<0 && rel<tol) steps=n;
+    rr=0; for(let i=0;i<m;i++) rr+=r[i]*r[i];
+  }
+  return { hist:hist, steps:steps };
+}
+function logFrame(ctx, W, H, box, xmax, ymin, ymax){
+  const X=function(x){ return box[0]+x/xmax*(W-box[0]-box[2]); };
+  const Y=function(y){ return H-box[3]-(y-ymin)/(ymax-ymin)*(H-box[1]-box[3]); };
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  for(let y=Math.ceil(ymin/4)*4; y<=ymax; y+=4){ ctx.beginPath();
+    ctx.moveTo(box[0], Y(y)); ctx.lineTo(W-box[2], Y(y)); ctx.stroke(); }
+  for(let x=0; x<=xmax; x+=40){ ctx.beginPath();
+    ctx.moveTo(X(x), box[1]); ctx.lineTo(X(x), H-box[3]); ctx.stroke(); }
+  ctx.strokeStyle="#B9C4CF"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(box[0], H-box[3]); ctx.lineTo(W-box[2], H-box[3]); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(box[0], box[1]); ctx.lineTo(box[0], H-box[3]); ctx.stroke();
+  ctx.restore();
+  for(let y=Math.ceil(ymin/4)*4; y<=ymax; y+=4)
+    label(ctx, "1e"+y, box[0]-7, Y(y), "#7A8794", 10.5, "right");
+  for(let x=0; x<=xmax; x+=40)
+    label(ctx, String(x), X(x), H-box[3]+13, "#7A8794", 10.5, "center");
+  label(ctx, "步数 n", W/2, H-8, "#7A8794", 10.5, "center");
+  label(ctx, "‖eₙ‖_A / ‖e₀‖_A", box[0]-2, box[1]-7, "#7A8794", 10.5, "left");
+  return { X:X, Y:Y };
+}
+function clipY(y, ymin, ymax){ return Math.max(ymin, Math.min(ymax, y)); }
+function drawRate(){
+  const ctx=cvR.getContext("2d"); ctx.clearRect(0,0,WR,HR);
+  const m=stateR.m, kap=Math.max(10, Math.min(1e6, stateR.kap));
+  const lam=spectrumOf(stateR.mode, kap, m);
+  const xs=lcgVec(m, 12345);
+  const b=new Float64Array(m); for(let i=0;i<m;i++) b[i]=lam[i]*xs[i];
+  const cg=cgRun(lam,b,xs,m,1e-10), sd=sdRun(lam,b,xs,400,1e-10);
+  const rho=(Math.sqrt(kap)-1)/(Math.sqrt(kap)+1);
+  const YMIN=-16, YMAX=1;
+  const g=logFrame(ctx, WR, HR, [56,20,20,42], stateR.NMAX, YMIN, YMAX);
+
+  /* (38.10) 上界曲线 */
+  {
+    const pts=[];
+    for(let n=0;n<=stateR.NMAX;n++){
+      const v=lg(2)+n*Math.log(rho)/Math.LN10;
+      pts.push([g.X(n), g.Y(clipY(v,YMIN,YMAX))]);
+    }
+    polyline(ctx, pts, "#2F5D8A", 2, [6,4]);
+  }
+  /* CG 实测 */
+  {
+    const pts=[]; const N=Math.min(stateR.NMAX, cg.hist.length-1);
+    for(let n=0;n<=N;n++) pts.push([g.X(n), g.Y(clipY(lg(cg.hist[n]),YMIN,YMAX))]);
+    polyline(ctx, pts, "#B04A2F", 2.6);
+  }
+  /* 最速下降 */
+  {
+    const pts=[]; const N=Math.min(stateR.NMAX, sd.hist.length-1);
+    for(let n=0;n<=N;n++) pts.push([g.X(n), g.Y(clipY(lg(sd.hist[n]),YMIN,YMAX))]);
+    polyline(ctx, pts, "#8A6D1F", 2.2);
+  }
+  /* 图例：放左下空白区（n 小、误差已很低，那里没有曲线） */
+  arrow(ctx, 74, 262, 110, 262, "#B04A2F", 2.6);
+  label(ctx, "CG 实测", 116, 262, "#B04A2F", 11.5);
+  arrow(ctx, 74, 284, 110, 284, "#2F5D8A", 2, [6,4]);
+  label(ctx, "上界 2ρⁿ (38.10)", 116, 284, "#2F5D8A", 11.5);
+  arrow(ctx, 74, 306, 110, 306, "#8A6D1F", 2.2);
+  label(ctx, "最速下降", 116, 306, "#8A6D1F", 11.5);
+
+  /* 读数 */
+  const ndist=(function(){ const s={}; let c=0;
+    for(let i=0;i<m;i++){ const k=lam[i].toFixed(9); if(!s[k]){ s[k]=1; c++; } } return c; })();
+  const nb=(rho>0)?Math.ceil(Math.log(2/1e-10)/Math.log(1/rho)):Infinity;
+  const at=function(h,n){ return (h[n]!==undefined)?lg(h[n]):NaN; };
+  $("v-kap").textContent=fmtE(kap,2);
+  $("ro-kr").textContent=fmtE(kap,2)+" / "+fmt(Math.sqrt(kap),1);
+  $("ro-ndist").textContent=String(ndist);
+  $("ro-cgstep").textContent=(cg.steps>0)?String(cg.steps):">400";
+  $("ro-sdstep").textContent=(sd.steps>0)?String(sd.steps):">400";
+  $("ro-bound").textContent=isFinite(nb)?String(nb):"—";
+  $("ro-cg40").textContent=(cg.hist[40]!==undefined)?fmtE(cg.hist[40],2):("已收敛@"+cg.steps+"步");
+  $("ro-sd40").textContent=isFinite(at(sd.hist,40))?fmtE(sd.hist[40],2):"—";
+  $("ro-b40").textContent=fmtE(2*Math.pow(rho,40),2);
+  $("ro-ratio").textContent=(cg.hist[40]!==undefined)?fmtE(cg.hist[40]/(2*Math.pow(rho,40)),2):"（40 步前已收敛）";
+  stateR.cgHist=cg.hist; stateR.sdHist=sd.hist; stateR.lam=lam; stateR.rho=rho;
+}
+$("s-kap").addEventListener("input", function(){
+  stateR.kap=Math.max(10, Math.min(1e6, Math.pow(10, parseFloat(this.value))));
+  $("s-kap2").value=this.value; drawRate(); drawPoly();
+});
+$("seg-spec").addEventListener("click", function(e){
+  const t=e.target||{}; const md=t.dataset?t.dataset.m:null;
+  if(!md) return;
+  stateR.mode=md;
+  const btns=this.querySelectorAll?this.querySelectorAll("button"):[];
+  for(let i=0;i<btns.length;i++) btns[i].classList.toggle("on", btns[i].dataset.m===md);
+  if(t.classList) t.classList.add("on");
+  drawRate(); drawPoly();
+});
+drawRate();
+
+/* ===================== 实验 03 · Chebyshev 多项式 ===================== */
+const cvP = $("cv-poly"), WP = 620, HP = 340;
+const stateP = { n:8 };
+function chebInfo(kap, n){
+  const gam=(kap+1)/(kap-1);
+  const z=gam+Math.sqrt(gam*gam-1);
+  const lnz=Math.log(z);
+  const logTn=n*lnz+Math.log1p(Math.exp(-2*n*lnz))-Math.log(2);
+  return { gam:gam, z:z, lnz:lnz, rho:1/z, logTn:logTn, maxInt:Math.exp(-logTn) };
+}
+function drawPoly(){
+  const ctx=cvP.getContext("2d"); ctx.clearRect(0,0,WP,HP);
+  const kap=Math.max(1.0001, Math.min(1e9, stateR.kap));   /* 钳制：∞/NaN 会让刻度循环失控 */
+  const n=Math.max(1, Math.min(60, stateP.n));
+  const lmin=1, lmax=kap;
+  const c=chebInfo(kap,n);
+  const twoRho=2*Math.pow(c.rho,n);
+  /* 纵轴要装得下 ±2ρⁿ（n 小时它接近 2，比 1/Tₙ(γ) 松将近一倍）；
+     只画 ±1.18 会把它压到画布外，看上去像「界只比峰值高一点」，正好把该看的对比藏掉 */
+  const yTop=Math.max(1.18, 1.12*Math.min(twoRho, 2.4));
+  const box=[58,30,20,46], YMIN=-yTop, YMAX=yTop;
+  /* 线性横轴：Chebyshev 的定义性质就是「等幅振荡」，对数轴会把它压扁 */
+  const X=function(x){ return box[0]+(x-lmin)/(lmax-lmin)*(WP-box[0]-box[2]); };
+  const Y=function(y){ return HP-box[3]-(y-YMIN)/(YMAX-YMIN)*(HP-box[1]-box[3]); };
+  function tk(v){
+    if(v===0) return "0";
+    if(v>=1e6) return (v/1e6).toFixed((v%1e6===0)?0:1).replace(/\.0$/,"")+"M";
+    if(v>=1e3) return (v/1e3).toFixed((v%1e3===0)?0:1).replace(/\.0$/,"")+"k";
+    return String(Math.round(v));
+  }
+  /* 网格 */
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  const xt=[];
+  for(let i=0;i<=4;i++){ xt.push(lmin+(lmax-lmin)*i/4); }
+  for(let i=0;i<xt.length;i++){
+    ctx.beginPath(); ctx.moveTo(X(xt[i]), box[1]); ctx.lineTo(X(xt[i]), HP-box[3]); ctx.stroke(); }
+  for(let y=-2;y<=2;y+=0.25){ if(y<-yTop+0.02||y>yTop-0.02) continue; ctx.beginPath();
+    ctx.moveTo(box[0], Y(y)); ctx.lineTo(WP-box[2], Y(y)); ctx.stroke(); }
+  ctx.strokeStyle="#B9C4CF"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(box[0], Y(0)); ctx.lineTo(WP-box[2], Y(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(box[0], box[1]); ctx.lineTo(box[0], HP-box[3]); ctx.stroke();
+  ctx.restore();
+  for(let i=0;i<xt.length;i++)
+    label(ctx, tk(xt[i]), X(xt[i]), HP-box[3]+13, "#7A8794", 10.5, "center");
+  for(let y=-2;y<=2;y+=0.5){ if(y<-yTop+0.02||y>yTop-0.02) continue;
+    label(ctx, y.toFixed(1), box[0]-7, Y(y), "#7A8794", 10.5, "right"); }
+  label(ctx, "λ（线性轴，λmin=1 → λmax=κ）", WP/2, HP-8, "#7A8794", 10.5, "center");
+  labelBg(ctx, "pₙ(λ)", box[0], 12, "#7A8794", 10.5, "left");
+
+  /* 谱点位置：抽样 + 最小间距过滤，避免糊成一块 */
+  const lam=stateR.lam || spectrumOf(stateR.mode, kap, stateR.m);
+  const stride=Math.max(1, Math.floor(lam.length/45));
+  ctx.save(); ctx.strokeStyle="#C9D3DC"; ctx.lineWidth=1;
+  let lastX=-1e9;
+  for(let i=0;i<lam.length;i+=stride){
+    const x=X(Math.max(lmin,Math.min(lmax,lam[i])));
+    if(x-lastX<9) continue;
+    lastX=x;
+    ctx.beginPath(); ctx.moveTo(x, box[1]); ctx.lineTo(x, HP-box[3]); ctx.stroke();
+  }
+  ctx.restore();
+
+  /* ±2ρⁿ */
+  ctx.save(); ctx.strokeStyle="#2F5D8A"; ctx.lineWidth=1.6; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(box[0], Y(clipY(twoRho,YMIN,YMAX))); ctx.lineTo(WP-box[2], Y(clipY(twoRho,YMIN,YMAX))); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(box[0], Y(clipY(-twoRho,YMIN,YMAX))); ctx.lineTo(WP-box[2], Y(clipY(-twoRho,YMIN,YMAX))); ctx.stroke();
+  ctx.restore();
+  labelBg(ctx, "±2ρⁿ = "+twoRho.toFixed(2), box[0]+8, Y(clipY(twoRho,YMIN,YMAX))-9, "#2F5D8A", 10.5);
+
+  /* p_n 曲线 */
+  {
+    const pts=[]; const K=520;
+    for(let i=0;i<=K;i++){
+      const x=lmin+(lmax-lmin)*i/K;
+      const y=(lmax+lmin-2*x)/(lmax-lmin);
+      const v=Math.cos(n*Math.acos(Math.max(-1,Math.min(1,y))))/Math.exp(c.logTn);
+      pts.push([X(x), Y(clipY(v,YMIN,YMAX))]);
+    }
+    polyline(ctx, pts, "#B04A2F", 2.2);
+  }
+  /* 实测 CG 第 n 步的误差比（与界对账） */
+  const hist=stateR.cgHist||[];
+  const cgn=(hist[n]!==undefined)?hist[n]:NaN;
+  $("v-n").textContent=String(n);
+  $("v-kap2").textContent=fmtE(kap,2);
+  $("ro-gam").textContent=(c.gam<1.01)?c.gam.toFixed(6):fmt(c.gam,4);
+  $("ro-rho").textContent=fmt(c.rho,5);
+  $("ro-maxint").textContent=fmtE(c.maxInt,3);
+  $("ro-tworho").textContent=fmtE(twoRho,3);
+  $("ro-cgn").textContent=isFinite(cgn)?fmtE(cgn,2):("已收敛@"+Math.max(0,hist.length-1)+"步");
+  $("ro-cgr").textContent=(isFinite(cgn)&&c.maxInt>0)?fmtE(cgn/c.maxInt,2):"—";
+  const need=(c.rho>0 && c.rho<1)?Math.ceil(Math.log(2/1e-10)/Math.log(1/c.rho)):Infinity;
+  $("ro-need").textContent=isFinite(need)?String(need):"—";
+  $("ro-rule").textContent=fmt(Math.sqrt(kap)/2*Math.log(2/1e-10),0);
+}
+$("s-n").addEventListener("input", function(){
+  stateP.n=Math.max(1, Math.min(60, parseInt(this.value,10)||8)); drawPoly(); });
+$("s-kap2").addEventListener("input", function(){
+  stateR.kap=Math.max(10, Math.min(1e6, Math.pow(10, parseFloat(this.value))));
+  $("s-kap").value=this.value; drawRate(); drawPoly();
+});
+drawPoly();
+/* ===================== 实验 04 · 预条件实验台 ===================== */
+const cvN = $("cv-pre"), WN = 620, HN = 360;
+const stateN = { K:100, cache:null, NMAX:80 };
+function make1D(m, K){
+  const h=1/(m+1);
+  const c=new Float64Array(m+1);
+  for(let i=0;i<=m;i++){ const x=(i+0.5)/(m+1); c[i]=1+(K-1)*x*x; }
+  const d=new Float64Array(m), off=new Float64Array(m-1);
+  for(let i=0;i<m;i++) d[i]=(c[i]+c[i+1])/(h*h);
+  for(let i=0;i<m-1;i++) off[i]=-c[i+1]/(h*h);
+  return { m:m, h:h, c:c, d:d, off:off };
+}
+function amul(A,x){
+  const m=A.m, y=new Float64Array(m);
+  for(let i=0;i<m;i++) y[i]=A.d[i]*x[i];
+  for(let i=0;i<m-1;i++){ y[i]+=A.off[i]*x[i+1]; y[i+1]+=A.off[i]*x[i]; }
+  return y;
+}
+function thomas(A,b){
+  const m=A.m, cp=new Float64Array(m), dp=new Float64Array(m);
+  cp[0]=A.off[0]/A.d[0]; dp[0]=b[0]/A.d[0];
+  for(let i=1;i<m;i++){
+    const lo=A.off[i-1], den=A.d[i]-lo*cp[i-1];
+    if(i<m-1) cp[i]=A.off[i]/den;
+    dp[i]=(b[i]-lo*dp[i-1])/den;
+  }
+  const y=new Float64Array(m); y[m-1]=dp[m-1];
+  for(let i=m-2;i>=0;i--) y[i]=dp[i]-cp[i]*y[i+1];
+  return y;
+}
+function vnorm(x){ let s=0; for(let i=0;i<x.length;i++) s+=x[i]*x[i]; return Math.sqrt(s); }
+function vdot(a,b){ let s=0; for(let i=0;i<a.length;i++) s+=a[i]*b[i]; return s; }
+
+function makePre(A, kind){
+  const m=A.m;
+  if(kind==="none") return {
+    label:"无（M = I）",
+    solve:function(r){ return Float64Array.from(r); },
+    mul:function(x){ return Float64Array.from(x); } };
+  if(kind==="jacobi") return {
+    label:"Jacobi（对角）",
+    solve:function(r){ const y=new Float64Array(m); for(let i=0;i<m;i++) y[i]=r[i]/A.d[i]; return y; },
+    mul:function(x){ const y=new Float64Array(m); for(let i=0;i<m;i++) y[i]=A.d[i]*x[i]; return y; } };
+  if(kind==="block"){
+    const nb=4, e=[];
+    for(let k=0;k<=nb;k++) e.push(Math.round(k*m/nb));
+    return {
+      label:"块 Jacobi（4 块）",
+      solve:function(r){
+        const y=new Float64Array(m);
+        for(let k=0;k<nb;k++){
+          const s=e[k], en=e[k+1], sz=en-s;
+          const dd=new Float64Array(sz), oo=new Float64Array(Math.max(0,sz-1)), bb=new Float64Array(sz);
+          for(let i=0;i<sz;i++){ dd[i]=A.d[s+i]; bb[i]=r[s+i]; }
+          for(let i=0;i<sz-1;i++) oo[i]=A.off[s+i];
+          const sub=thomas({m:sz,d:dd,off:oo},bb);
+          for(let i=0;i<sz;i++) y[s+i]=sub[i];
+        }
+        return y;
+      },
+      mul:function(x){
+        const y=new Float64Array(m);
+        for(let k=0;k<nb;k++){
+          const s=e[k], en=e[k+1];
+          for(let i=s;i<en;i++) y[i]=A.d[i]*x[i];
+          for(let i=s;i<en-1;i++){ y[i]+=A.off[i]*x[i+1]; y[i+1]+=A.off[i]*x[i]; }
+        }
+        return y;
+      } };
+  }
+  /* 两层 V-cycle（(40.5) 的粗网格形式）：加权 Jacobi 光滑 + Galerkin 粗网格修正 */
+  const mc=Math.floor((m-1)/2);
+  const Ac={ m:mc, d:new Float64Array(mc), off:new Float64Array(mc-1) };
+  const cols=[];
+  for(let j=0;j<mc;j++){
+    const p=new Float64Array(m);
+    p[2*j+1]=1; p[2*j]=0.5; if(2*j+2<m) p[2*j+2]=0.5;
+    const ap=amul(A,p), rc=new Float64Array(mc);
+    for(let i=0;i<mc;i++){
+      let s=ap[2*i+1];
+      if(2*i<m) s+=0.5*ap[2*i];
+      if(2*i+2<m) s+=0.5*ap[2*i+2];
+      rc[i]=0.5*s;
+    }
+    cols.push(rc);
+  }
+  for(let i=0;i<mc;i++) Ac.d[i]=cols[i][i];
+  for(let i=0;i<mc-1;i++) Ac.off[i]=cols[i+1][i];
+  const omega=2/3, nu=2;
+  function smooth(x, r){
+    for(let t=0;t<nu;t++){
+      const Ax=amul(A,x), res=new Float64Array(m);
+      for(let i=0;i<m;i++) res[i]=r[i]-Ax[i];
+      for(let i=0;i<m;i++) x[i]+=omega*res[i]/A.d[i];
+    }
+  }
+  function restrict(res){
+    const rc=new Float64Array(mc);
+    for(let i=0;i<mc;i++){
+      let s=res[2*i+1];
+      if(2*i<m) s+=0.5*res[2*i];
+      if(2*i+2<m) s+=0.5*res[2*i+2];
+      rc[i]=0.5*s;
+    }
+    return rc;
+  }
+  return {
+    label:"两层 V-cycle（粗网格）",
+    solve:function(r){
+      const x=new Float64Array(m);
+      smooth(x, r);
+      const Ax=amul(A,x), res=new Float64Array(m);
+      for(let i=0;i<m;i++) res[i]=r[i]-Ax[i];
+      const ec=thomas(Ac, restrict(res));
+      for(let j=0;j<mc;j++){
+        x[2*j+1]+=ec[j];
+        x[2*j]+=0.5*ec[j];
+        if(2*j+2<m) x[2*j+2]+=0.5*ec[j];
+      }
+      smooth(x, r);                      /* 后光滑（对称，保证 M 对称正定） */
+      return x;
+    },
+    mul:null };
+}
+function pcgRun(A, b, pre, maxit, tol){
+  const m=A.m;
+  const x=new Float64Array(m), r=Float64Array.from(b);
+  let z=pre.solve(r), p=Float64Array.from(z);
+  let rz=vdot(r,z), rr0=vdot(r,r), rr=rr0, steps=-1;
+  const hist=[1];
+  for(let n=1;n<=maxit;n++){
+    const Ap=amul(A,p), pAp=vdot(p,Ap);
+    if(!(pAp>0)) break;
+    const al=rz/pAp;
+    for(let i=0;i<m;i++){ x[i]+=al*p[i]; r[i]-=al*Ap[i]; }
+    rr=vdot(r,r);
+    hist.push(Math.sqrt(rr/rr0));
+    if(steps<0 && Math.sqrt(rr/rr0)<tol) steps=n;
+    z=pre.solve(r);
+    const rzN=vdot(r,z), be=rzN/rz; rz=rzN;
+    if(!isFinite(be)) break;
+    for(let i=0;i<m;i++) p[i]=z[i]+be*p[i];
+  }
+  return { hist:hist, steps:steps, rr:Math.sqrt(rr/rr0) };
+}
+function kappaEst(A, pre, iters){
+  const m=A.m;
+  function ray(v){ const Av=amul(A,v), Mv=pre.mul(v); return vdot(v,Av)/vdot(v,Mv); }
+  let x=new Float64Array(m);
+  for(let i=0;i<m;i++) x[i]=Math.sin((i+1)*1.7)+0.3;
+  let lmax=0;
+  for(let k=0;k<iters;k++){
+    const y=pre.solve(amul(A,x)), ny=vnorm(y);
+    for(let i=0;i<m;i++) x[i]=y[i]/ny;
+    lmax=ray(x);
+  }
+  let y=new Float64Array(m);
+  for(let i=0;i<m;i++) y[i]=Math.cos((i+1)*2.3)+0.5;
+  let lmin=0;
+  for(let k=0;k<iters;k++){
+    const v=thomas(A, pre.mul(y)), nv=vnorm(v);
+    for(let i=0;i<m;i++) y[i]=v[i]/nv;
+    lmin=ray(y);
+  }
+  return { lmax:lmax, lmin:lmin, kappa:lmax/lmin };
+}
+function runPre(){
+  const A=make1D(127, stateN.K);
+  const xs=lcgVec(A.m, 777), b=amul(A, xs);
+  const kinds=["none","jacobi","block","vcycle"];
+  const out={};
+  for(let i=0;i<kinds.length;i++){
+    const pre=makePre(A, kinds[i]);
+    const r=pcgRun(A, b, pre, 300, 1e-10);
+    let kap=null;
+    if(pre.mul){ const ke=kappaEst(A, pre, 300); kap=ke.kappa; }
+    out[kinds[i]]={ hist:r.hist, steps:r.steps, kap:kap, pre:pre };
+  }
+  out.A=A;
+  return out;
+}
+function drawPre(){
+  const ctx=cvN.getContext("2d"); ctx.clearRect(0,0,WN,HN);
+  const res=runPre();
+  const cols={ none:"#7A8794", jacobi:"#8A6D1F", block:"#2F5D8A", vcycle:"#1F7A4D" };
+  const YMIN=-16, YMAX=1;
+  const g=logFrame(ctx, WN, HN, [56,20,20,42], stateN.NMAX, YMIN, YMAX);
+  const order=["none","jacobi","block","vcycle"];
+  for(let i=0;i<order.length;i++){
+    const h=res[order[i]].hist, pts=[];
+    const N=Math.min(stateN.NMAX, h.length-1);
+    for(let n=0;n<=N;n++) pts.push([g.X(n), g.Y(clipY(lg(h[n]),YMIN,YMAX))]);
+    if(pts.length>1) polyline(ctx, pts, cols[order[i]], 2.2, (order[i]==="none")?[5,4]:null);
+  }
+  /* 图例 */
+  const ly=[36,56,76,96];
+  for(let i=0;i<order.length;i++){
+    arrow(ctx, 300, ly[i], 336, ly[i], cols[order[i]], 2.2, (order[i]==="none")?[5,4]:null);
+    label(ctx, res[order[i]].pre.label, 342, ly[i], cols[order[i]], 11.5);
+  }
+  /* 表格 */
+  for(let i=0;i<order.length;i++){
+    const r=res[order[i]];
+    $("tb-k"+i).textContent = r.kap? fmtE(r.kap,2) : "—";
+    $("tb-s"+i).textContent = (r.steps>0)? String(r.steps) : ">300";
+    $("tb-a"+i).textContent = (r.hist[10]!==undefined)? fmtE(r.hist[10],1) : "—";
+    $("tb-b"+i).textContent = (r.hist[20]!==undefined)? fmtE(r.hist[20],1) : "—";
+    $("tb-c"+i).textContent = (r.hist[40]!==undefined)? fmtE(r.hist[40],1) : "—";
+  }
+  $("v-con").textContent="K="+fmt(stateN.K,0);
+  stateN.cache=res;
+}
+$("s-con").addEventListener("input", function(){
+  stateN.K=Math.max(1, Math.min(1e6, Math.round(Math.pow(10, parseFloat(this.value)))));
+  drawPre();
+});
+drawPre();
+
+
+</script>
+</body>
+</html>

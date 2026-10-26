@@ -12,7 +12,7 @@
   3. 规划中的章节：把对应卡片从 .planned 改成 <a> 并填 href。
   4. 更新线上：对整个 math_visualization/site/ 目录重新发布（app 已存在，链接不变，内容覆盖）。
   5. 验证脚本在 math_visualization/ 根（相对路径 ../../verify_formulas.js），改完公式后跑一遍再发布。
-  6. 版式身份「制图台」：暖纸底 + 深墨 + 朱砂/钢青 + 等宽数字 + 图签（NLA-01…NLA-10）。全系列统一。
+  6. 版式身份「制图台」：暖纸底 + 深墨 + 朱砂/钢青 + 等宽数字 + 图签（NLA-01…NLA-11）。全系列统一。
 -->
 <style>
 :root{
@@ -52,7 +52,7 @@ footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
 <div class="wrap">
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a></p>
 <h1>数值线性代数 · 可视化系列</h1>
-<p class="lead">Trefethen &amp; Bau《Numerical Linear Algebra》（SIAM，1997）40 讲的配套交互教学页。每个页面零依赖、可离线打开（公式渲染需联网）；教材向已覆盖 Lecture 1–12（矩阵—向量乘积、正交性、范数、SVD、投影算子、QR、最小二乘、条件数），另加三页「作业向」专题与一份期中复习指南，对应当前课程的课后测试。版式身份「制图台」：图签 + 等宽读数 + 全部数值结论本地实测。</p>
+<p class="lead">Trefethen &amp; Bau《Numerical Linear Algebra》（SIAM，1997）40 讲的配套交互教学页。每个页面零依赖、可离线打开（公式渲染需联网）；教材向已覆盖 Lecture 1–12（矩阵—向量乘积、正交性、范数、SVD、投影算子、QR、最小二乘、条件数）与 Lecture 32–40（迭代法与共轭梯度、预条件），另加三页「作业向」专题与一份期中复习指南，对应当前课程的课后测试。版式身份「制图台」：图签 + 等宽读数 + 全部数值结论本地实测。</p>
 
 <h2>第一部分 · 基础（Lectures 1–5）</h2>
 <a class="card" href="./线性映射-矩阵向量乘积与正交性.html">
@@ -107,10 +107,10 @@ footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">L12</span>条件数 · 几何与误差放大</p>
 <p class="d">绝对/相对条件数定义 (12.1–12.6) 与三个标量例子 · 抵消实验台（Example 12.3：拖动 x 看 κ=2·max|xᵢ|/|x₁−x₂| 在对角线爆炸，实测相对变化 = κ̂·ρ 恒等）· 椭圆实验台（四滑杆拖矩阵 + 拖 x：κ̂(x)=‖A‖₂‖x‖₂/‖Ax‖₂ ≤ κ₂(A)=σ₁/σₙ，x ∥ vₙ 精确取等、x ∥ v₁ 最稳；κ≈1 与 κ≈100 预设）· 误差放大对账台（扰 b (12.14) 与扰 A (12.18) 双模式，实测相对误差 = κ·ε 精确取等；丢失 log₁₀κ 位数字、剩余可靠数字读数）· 回收 NLA-02/03/06 各页 κ₂ 伏笔</p>
 </a>
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L32–40</span>共轭梯度与预条件子</p>
-<p class="d">CG 的 Krylov 空间几何、预条件子的作用——与「神经网络修正粗网格解」的科研完全同构（粗网格修正 ≈ 空间预条件）。</p>
-</div>
+<a class="card" href="./共轭梯度-Krylov几何与预条件.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">L32–40</span>共轭梯度 · Krylov 几何与预条件</p>
+<p class="d">为什么 O(m³) 是一道墙（迭代法把 A 当黑箱）· Krylov 子空间与四格表 · 2×2 实验台：等高椭圆半轴比实测 = √κ、p₀ 与 p₁ 的 A-共轭、残差正交、κ=1 退化成圆 · Algorithm 38.1 与三定理 · 收敛速率（m=400 真跑 CG vs 最速下降 vs 2ρⁿ 上界；κ=10⁴ 时 142 步对 &gt;400 步）· Chebyshev 多项式等幅振荡与 1/Tₙ(γ) 对账 · 预条件四档实测（一维变系数扩散 m=127：无 276 步 / Jacobi 127 / 块 Jacobi 7 / 两层 V-cycle 6）· 粗网格修正 = 空间预条件，直通「神经网络修正粗网格解」</p>
+</a>
 <div class="card planned">
 <p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L13–19</span>浮点灾难与抵消 · 最小二乘的稳定性</p>
 <p class="d">机器精度探测、相近数相减的误差爆炸；QR/SVD 解最小二乘为何稳（NLA-06 实验 03 的续篇）。</p>
@@ -126,7 +126,7 @@ footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
 
 <footer>
 <p>添加新页面：把 .html 放入本目录，在 index.html 对应章节加一张卡片，随全站重新发布即可（本页 HTML 注释里有详细维护说明）。</p>
-<p>目录：math_visualization/site/numerical_linear_algebra/ · 发布根：math_visualization/site/ · 验证脚本在工作区根（相对路径 ../../） · 教材引用单位「Trefethen &amp; Bau, Lecture N」，书页 = PDF 页 − 15 · 2026-10-19 建站，Lecture 1–11 六页上线 · 2026-10-21 补作业向三页（NLA-07…09）与期中复习指南（NLA-R1） · 2026-10-25 转教材向，补 NLA-10（Lecture 12 条件数，作业向 27 题已完结）</p>
+<p>目录：math_visualization/site/numerical_linear_algebra/ · 发布根：math_visualization/site/ · 验证脚本在工作区根（相对路径 ../../） · 教材引用单位「Trefethen &amp; Bau, Lecture N」，书页 = PDF 页 − 15 · 2026-10-19 建站，Lecture 1–11 六页上线 · 2026-10-21 补作业向三页（NLA-07…09）与期中复习指南（NLA-R1） · 2026-10-25 转教材向，补 NLA-10（Lecture 12 条件数，作业向 27 题已完结） · 2026-10-26 补 NLA-11（Lecture 32–40 共轭梯度与预条件，四个真跑实验台）</p>
 </footer>
 
 </div>

@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一阶偏微分方程组：特征理论、对角化与柯西问题 — 谷超豪《数学物理方程》第 5 章可视化</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --teal-soft:#E1F5EE; --amber:#854F0B; --amber-soft:#FDF6EC;
+  --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:28px;line-height:1.35;margin:0 0 12px;font-weight:600}
+h2{font-size:22px;margin:64px 0 16px;font-weight:600;padding-top:8px;border-top:1px solid var(--border)}
+h2 .no{color:var(--accent);font-family:var(--mono);font-size:16px;margin-right:10px;font-weight:400}
+h3{font-size:17px;margin:36px 0 10px;font-weight:600}
+h4{font-size:15px;margin:24px 0 8px;font-weight:600;color:var(--accent-dark)}
+p{margin:12px 0}
+.hero{padding:56px 0 8px}
+.hero p.lead{font-size:17px;color:var(--muted);max-width:790px;margin:0}
+.crumb{font-size:13px;margin:0 0 18px;color:var(--muted)}
+.crumb a{color:var(--accent)}
+nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+nav .wrap{padding:10px 20px;display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px}
+nav a{color:var(--muted)}
+nav a:hover{color:var(--accent);text-decoration:none}
+.eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
+  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+table.fix{table-layout:fixed}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--card);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+tr.hi td{background:var(--coral-soft)}
+.ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
+.ctl input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+.ctl .lb{white-space:nowrap;color:var(--muted)}
+button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
+.val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
+figure{margin:20px 0}
+figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+canvas.plot{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+#e1c{height:340px}
+#e2c{height:380px}
+#e3c{height:400px}
+#e4c{height:340px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kv .cell{background:var(--card);border-radius:8px;padding:10px 14px}
+.kv .k{font-size:12.5px;color:var(--muted)}
+.kv .v{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent-dark)}
+.kv .v.txt{font-size:14px;font-family:inherit;padding-top:3px}
+.lab{background:#fbfcfd;border:1px solid var(--border);border-radius:12px;padding:4px 18px 16px;margin:22px 0}
+.lab .h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:14px 0 2px}
+.lab .h b{font-size:15.5px}
+.lab .h .tag{font-family:var(--mono);font-size:11.5px;color:var(--muted);
+  border:1px solid var(--border);border-radius:5px;padding:1px 7px;white-space:nowrap}
+.lab p.sub{font-size:13.5px;color:var(--muted);margin:4px 0 10px}
+.std3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:14px 0}
+.std3 .sf{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13.5px}
+.std3 .sf b{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.std3 .sf.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.std3 .sf .f{font-family:var(--mono);font-size:13px}
+mjx-container{display:block!important;margin:.35em 0!important}
+mjx-container[display="true"]>svg{display:block;margin:0 auto}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+p mjx-container,li mjx-container,td mjx-container,h4 mjx-container,figcaption mjx-container,.note mjx-container,.warn mjx-container,.key mjx-container,.sf mjx-container,.cell mjx-container{display:inline-block!important;margin:0!important;vertical-align:baseline}
+p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,h4 mjx-container>svg,figcaption mjx-container>svg,.note mjx-container>svg,.warn mjx-container>svg,.key mjx-container>svg,.sf mjx-container>svg,.cell mjx-container>svg{display:inline!important;margin:0!important;vertical-align:-1px}
+#mjx-offline{background:#fdf6ec;border:1px solid #EF9F27;border-radius:8px;padding:8px 14px;font-size:13px;color:#854F0B;margin:14px 0}
+#mjx-offline[hidden]{display:none}
+footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+ul.tight li{margin:6px 0}
+@media print{
+  nav,.ctl,button,#mjx-offline{display:none!important}
+  h2{page-break-after:avoid;break-after:avoid}
+  figure,.card,.note,.warn,.key,table,.kv,.std3,.lab{page-break-inside:avoid;break-inside:avoid}
+  body{font-size:12.5px}
+}
+</style>
+</head>
+<body>
+<div id="mjx-offline" hidden>公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响但内容不受影响。</div>
+
+<div class="hero"><div class="wrap">
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> · <a href="./index.html">数学物理方程</a></p>
+<h1>一阶偏微分方程组：特征方程、对角化与双曲型柯西问题</h1>
+<p class="lead">谷超豪 等《数学物理方程（第四版）》第 5 章 §1–§3（书页 171–188，PDF 182–199）的交互可视化。前三章讨论的都是<b>单个未知函数</b>的线性方程。本章换一个视角：把方程写成一阶方程组 \(\partial_t U+A\,\partial_x U+\cdots=0\)，于是「方程属于什么类型」变成一个纯代数问题——<b>矩阵 \(A\) 有没有 \(N\) 个实的、互异的特征值</b>；而「解长什么样」变成另一件事——<b>能不能把 \(A\) 对角化，把耦合系统拆成 \(N\) 个互不相干的单向输运</b>。页面全部数值结论由工作区根 <code>verify_readout_pde5.js</code> 端到端实测。</p>
+</div></div>
+
+<nav><div class="wrap">
+<a href="#map">本章地图</a>
+<a href="#reduce">降阶：高阶 → 一阶</a>
+<a href="#char">特征方程与分类</a>
+<a href="#diag">对角化与不变量</a>
+<a href="#cauchy">柯西问题</a>
+<a href="#domain">依赖区间</a>
+<a href="#ex">习题选讲</a>
+<a href="#cheat">速查表</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ============ 00 地图 ============ -->
+<h2 id="map"><span class="no">00</span>本章地图：一次换语言，换来一个矩阵</h2>
+<p>第 4 章用主部二次型的判别式 \(\Delta=a_{12}^2-a_{11}a_{22}\) 给二阶方程分类，那是一套「二次型语言」。本章 §1 先把高阶方程降成一阶方程组，§2 立刻发现：一阶方程组的类型只由系数矩阵 \(A\) 的<b>特征值</b>决定，这是一套「矩阵语言」。两套语言在页末的对照表里会精确对齐。</p>
+
+<figure>
+<svg viewBox="0 0 680 268" width="100%" role="img">
+<title>第 5 章的逻辑链</title>
+<desc>高阶方程通过引入新未知函数降为一阶方程组，特征方程 det(A−λI)=0 给出特征值，特征值决定类型，严格双曲时特征向量矩阵把系统对角化成独立输运，最后用积分方程与逐次逼近证明柯西问题适定</desc>
+<defs>
+<marker id="ar5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<g font-family="system-ui,sans-serif">
+<rect x="16" y="16" width="140" height="52" rx="8" fill="#f6f8fa" stroke="#57606a" stroke-width="0.7"/>
+<text x="86" y="37" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">高阶方程</text>
+<text x="86" y="54" font-size="10.5" fill="#57606a" text-anchor="middle" font-family="ui-monospace,monospace">u_tt = ∂ₓσ(uₓ)</text>
+
+<line x1="156" y1="42" x2="184" y2="42" stroke="#185FA5" stroke-width="1.4" marker-end="url(#ar5)"/>
+<text x="170" y="30" font-size="9.5" fill="#57606a" text-anchor="middle">引入 p,q</text>
+
+<rect x="186" y="16" width="140" height="52" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.7"/>
+<text x="256" y="37" font-size="12.5" font-weight="600" fill="#0C447C" text-anchor="middle">一阶方程组</text>
+<text x="256" y="54" font-size="10.5" fill="#185FA5" text-anchor="middle" font-family="ui-monospace,monospace">U_t + A U_x + BU = 0</text>
+
+<line x1="326" y1="42" x2="354" y2="42" stroke="#185FA5" stroke-width="1.4" marker-end="url(#ar5)"/>
+<text x="340" y="30" font-size="9.5" fill="#57606a" text-anchor="middle">弱间断</text>
+
+<rect x="356" y="16" width="140" height="52" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.7"/>
+<text x="426" y="34" font-size="12.5" font-weight="600" fill="#0C447C" text-anchor="middle">特征方程</text>
+<text x="426" y="52" font-size="10.5" fill="#185FA5" text-anchor="middle" font-family="ui-monospace,monospace">det(A − λI) = 0</text>
+
+<line x1="496" y1="42" x2="524" y2="42" stroke="#185FA5" stroke-width="1.4" marker-end="url(#ar5)"/>
+<text x="510" y="30" font-size="9.5" fill="#57606a" text-anchor="middle">λ 的谱</text>
+
+<rect x="526" y="16" width="138" height="52" rx="8" fill="#FAECE7" stroke="#D85A30" stroke-width="0.7"/>
+<text x="595" y="34" font-size="12.5" font-weight="600" fill="#712D17" text-anchor="middle">类型判定</text>
+<text x="595" y="52" font-size="10.5" fill="#A04A22" text-anchor="middle" font-family="ui-monospace,monospace">实/复 · 互异/重根</text>
+
+<line x1="595" y1="68" x2="595" y2="94" stroke="#D85A30" stroke-width="1.3" marker-end="url(#ar5)"/>
+
+<rect x="16" y="96" width="648" height="1" fill="#d0d7de"/>
+<rect x="16" y="104" width="140" height="52" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.7"/>
+<text x="86" y="125" font-size="12.5" font-weight="600" fill="#085041" text-anchor="middle">特征线</text>
+<text x="86" y="142" font-size="10.5" fill="#0F6E56" text-anchor="middle" font-family="ui-monospace,monospace">dx/dt = λᵢ</text>
+
+<line x1="156" y1="130" x2="184" y2="130" stroke="#0F6E56" stroke-width="1.4" marker-end="url(#ar5)"/>
+
+<rect x="186" y="104" width="140" height="52" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.7"/>
+<text x="256" y="125" font-size="12.5" font-weight="600" fill="#085041" text-anchor="middle">对角化</text>
+<text x="256" y="142" font-size="10.5" fill="#0F6E56" text-anchor="middle" font-family="ui-monospace,monospace">U = RV, V_t + ΛV_x = 0</text>
+
+<line x1="326" y1="130" x2="354" y2="130" stroke="#0F6E56" stroke-width="1.4" marker-end="url(#ar5)"/>
+
+<rect x="356" y="104" width="140" height="52" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.7"/>
+<text x="426" y="125" font-size="12.5" font-weight="600" fill="#085041" text-anchor="middle">积分方程组</text>
+<text x="426" y="142" font-size="10.5" fill="#0F6E56" text-anchor="middle" font-family="ui-monospace,monospace">V = φ + ∫ (αV+β) dτ</text>
+
+<line x1="496" y1="130" x2="524" y2="130" stroke="#0F6E56" stroke-width="1.4" marker-end="url(#ar5)"/>
+
+<rect x="526" y="104" width="138" height="52" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.7"/>
+<text x="595" y="125" font-size="12.5" font-weight="600" fill="#26215C" text-anchor="middle">适定性</text>
+<text x="595" y="142" font-size="10.5" fill="#3C3489" text-anchor="middle" font-family="ui-monospace,monospace">2M(ANt)ⁿ/n! → 0</text>
+
+<text x="340" y="186" font-size="12" fill="#57606a" text-anchor="middle">§1 降阶　→　§2 特征与分类　→　§2.3 对角化　→　§3 柯西问题（存在·唯一·稳定）</text>
+<text x="340" y="212" font-size="12" fill="#57606a" text-anchor="middle">第 4 章的「二次型语言」与本页的「矩阵语言」说的是同一件事，见 02 节末的对照表。</text>
+<text x="340" y="240" font-size="11.5" fill="#854F0B" text-anchor="middle">§4（其他定解问题：Goursat 问题、混合问题）与 §5（幂级数解法、Cauchy–Kovalevskaya 定理）本页只给结论，不作交互。</text>
+</g>
+</svg>
+<figcaption>图 0-1　第 5 章的逻辑链：降阶 → 特征方程 → 分类 → 对角化 → 适定性。</figcaption>
+</figure>
+
+<div class="key"><b>一句话记住本章：</b>单个高阶方程降成一阶方程组后，<b>「类型」= 系数矩阵 \(A\) 的谱在实轴上的分布</b>，<b>「可解性」= \(A\) 能不能对角化</b>。严格双曲（\(N\) 个互异实特征值）是最舒服的情形：对角化保证能把系统拆成 \(N\) 条互不干扰的信息通道，柯西问题的解就是「初值沿特征线搬运」。</div>
+
+<!-- ============ 01 降阶 ============ -->
+<h2 id="reduce"><span class="no">01</span>§1 降阶：把高阶方程装进一阶方程组（书页 171–175）</h2>
+<p>教材开篇先摆三个例子，说明「方程组」不是数学家的玩具，而是力学与物理的默认语言。</p>
+
+<p><b>例 1（柯西–黎曼方程组）</b>解析函数的实部与虚部满足</p>
+$$\frac{\partial u}{\partial x}-\frac{\partial v}{\partial y}=0,\qquad
+\frac{\partial v}{\partial x}+\frac{\partial u}{\partial y}=0 \tag{1.1}$$
+<p>这是最简单的一阶线性方程组——流体力学中平面定常不可压缩无旋流也归结为它。</p>
+
+<p><b>例 2（欧拉方程组）</b>用 \(\rho,p,e\) 记密度、压强、内能，\(\boldsymbol u\) 记流速，\(\boldsymbol F\) 记外力，无黏可压缩流体的质量、动量、能量守恒律给出</p>
+$$\begin{cases}
+\dfrac{\partial\rho}{\partial t}+\operatorname{div}(\rho\boldsymbol u)=0,\\[2mm]
+\dfrac{\partial\boldsymbol u}{\partial t}+(\boldsymbol u\cdot\nabla)\boldsymbol u+\dfrac{1}{\rho}\operatorname{grad}p=\boldsymbol F,\\[2mm]
+\dfrac{\partial}{\partial t}\Big(e+\dfrac{1}{2}|\boldsymbol u|^2\Big)+(\boldsymbol u\cdot\nabla)\Big(e+\dfrac{1}{2}|\boldsymbol u|^2\Big)+\dfrac{1}{\rho}\operatorname{div}(p\boldsymbol u)=\boldsymbol F\cdot\boldsymbol u,
+\end{cases} \tag{1.2}$$
+<p>再补一个状态方程 \(p=p(\rho,e)\)。注意 (1.2) 关于未知函数的<b>一阶偏导数</b>是线性的，但对未知函数及其偏导数的整体并非线性——这样的方程组叫<b>一阶拟线性偏微分方程组</b>。这个区分很重要：§2 会看到，线性方程组的类型只由系数决定，而拟线性方程组的类型还依赖解本身的取值。</p>
+
+<p><b>例 3（一维非线性弹性振动）</b></p>
+$$\frac{\partial^2u}{\partial t^2}-\frac{\partial}{\partial x}\Big(\sigma\Big(\frac{\partial u}{\partial x}\Big)\Big)=0 \tag{1.4}$$
+<p>当作用力与形变不服从胡克定律时，\(\sigma(\cdot)\) 就是非线性函数。令 \(p=\dfrac{\partial u}{\partial x},\ q=\dfrac{\partial u}{\partial t}\)，立刻得到</p>
+$$\begin{cases}
+\dfrac{\partial p}{\partial t}-\dfrac{\partial q}{\partial x}=0,\\[2mm]
+\dfrac{\partial q}{\partial t}-\dfrac{\partial\sigma(p)}{\partial x}=0.
+\end{cases} \tag{1.5}$$
+
+<h3>1.1　降阶的一般处方：柯瓦列夫斯卡娅型</h3>
+<p>把 (1.4) 化成 (1.5) 的手法可以一般化。所谓<b>柯瓦列夫斯卡娅型</b>方程，是指最高阶 \(m\) 阶导数能对某个自变量 \(t\) 明显解出的方程：</p>
+$$\frac{\partial^m u}{\partial t^m}=F\Big(t,x_1,\dots,x_n,\ u,\ \dots,\ \frac{\partial^k u}{\partial t^{k_0}\partial x_1^{k_1}\cdots\partial x_n^{k_n}},\ \dots\Big),\quad k_0+k_1+\cdots+k_n=k\le m,\ k_0&lt;m. \tag{1.6}$$
+<p>把 \(u\) 的各阶偏导数统统当成新未知函数，就能把 (1.6) 化成一阶方程组。反过来<b>不一定成立</b>：一般形式的一阶方程组并不总能化成一个高阶方程——教材明确指出 (1.2) 在一般情形下就化不了。这正是方程组值得单独研究的原因。</p>
+
+<h3>1.2　定解问题也一起搬过去</h3>
+<p>降阶不是形式游戏，柯西问题要跟着搬。(1.4) 的柯西问题</p>
+$$\begin{cases}\text{方程 }(1.4),\\ t=0:\ u=\varphi_0(x),\ \dfrac{\partial u}{\partial t}=\varphi_1(x)\end{cases} \tag{1.7}$$
+<p>等价于一阶方程组的柯西问题</p>
+$$\begin{cases}\text{方程组 }(1.5),\\ t=0:\ p=\varphi_0'(x),\ q=\varphi_1(x).\end{cases} \tag{1.8}$$
+<p>两个方向都要证。若 \(u\) 是 (1.7) 的 \(C^2\) 解，令 \(p=u_x,q=u_t\) 就得到 (1.8) 的 \(C^1\) 解；反之若 \((p,q)\) 是 (1.8) 的 \(C^1\) 解，作</p>
+$$u(x,t)=\varphi_0(0)+\int_{(0,0)}^{(x,t)}p\,\mathrm dx+q\,\mathrm dt \tag{1.9}$$
+<p>由 (1.5) 第一式 \(p_t=q_x\)，这个曲线积分<b>与路径无关</b>，于是 (1.9) 定义一个 \(C^2\) 函数，且 \(u_x=p,\ u_t=q\)，代入 (1.5) 第二式即得 (1.4)；初始条件也自动满足（因为 \(u(x,0)=\varphi_0(0)+\int_0^x\varphi_0'(s)\mathrm ds=\varphi_0(x)\)）。</p>
+
+<div class="key"><b>(1.9) 是本页最值得动手验的一条。</b>它把「解一阶方程组」和「解原方程」之间架了一座桥，而桥墩就是路径无关性 \(p_t=q_x\)。下面的实验 01 直接对这座桥做数值对账：沿两条不同折线积分，看结果是否重合、是否复原原来的 \(u\)。</div>
+
+<div class="lab">
+<div class="h"><b>实验 01　降阶机器：三种方程，同一台机器</b><span class="tag">降阶 · 路径无关 · 拟线性</span></div>
+<p class="sub">选一个方程，看它被降成什么方程组；页面用中心差分核对「降阶后方程组是否真的等价」，再用 (1.9) 沿两条折线积分复原 \(u\)。</p>
+<div class="std3" id="e1-modes">
+<div class="sf on" data-m="wave"><b>弦振动（线性）</b><span class="f">u_tt = a²u_xx</span></div>
+<div class="sf" data-m="heat"><b>热传导（抛物）</b><span class="f">u_t = a²u_xx</span></div>
+<div class="sf" data-m="nonlin"><b>非线性弹性（拟线性）</b><span class="f">u_tt = ∂ₓσ(uₓ)</span></div>
+</div>
+<div class="ctl"><span class="lb">探针 x₀</span><input type="range" id="e1-x" min="-2" max="2" step="0.05" value="0.6"><span class="val" id="e1-xv">0.60</span>
+<span class="lb">t₀</span><input type="range" id="e1-t" min="0.05" max="1.2" step="0.05" value="0.50"><span class="val" id="e1-tv">0.50</span></div>
+<div class="ctl" id="e1-nl" style="display:none"><span class="lb">非线性强度 ε（σ(p)=p+εp³/3）</span><input type="range" id="e1-eps" min="0" max="3" step="0.1" value="1"><span class="val" id="e1-epsv">1.0</span></div>
+<canvas id="e1c" class="plot" width="840" height="340"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">降阶后方程组</div><div class="v txt" id="e1-sys">—</div></div>
+<div class="cell"><div class="k">方程①残差（相对）</div><div class="v" id="e1-res1">—</div></div>
+<div class="cell"><div class="k">方程②残差（相对）</div><div class="v" id="e1-res2">—</div></div>
+<div class="cell"><div class="k">两条路径的积分差</div><div class="v" id="e1-path">—</div></div>
+<div class="cell"><div class="k">复原误差 |u_rec − u|</div><div class="v" id="e1-rec">—</div></div>
+<div class="cell"><div class="k">特征速度 λ±</div><div class="v txt" id="e1-lam">—</div></div>
+</div>
+<p class="sub" id="e1-note">—</p>
+</div>
+
+<p>实验 01 的第三格预设值得多看一眼。线性情形 \(\sigma'(p)\equiv a^2\) 是常数，特征速度 \(\lambda_\pm=\pm a\) 与解无关，特征线是直线族；非线性情形 \(\lambda_\pm=\pm\sqrt{\sigma'(p(x,t))}\) <b>随解变化</b>，特征线因此弯曲——这就是「拟线性」三个字在几何上的全部含义。教材 (1.5) 式把 \(\sigma(p)\) 原样留着、不做线性化，正是为了不丢掉这一点。</p>
+
+<!-- ============ 02 特征方程与分类 ============ -->
+<h2 id="char"><span class="no">02</span>§2 特征方程与分类：类型只由矩阵 A 的谱决定（书页 176–179）</h2>
+<p>考虑两个自变量的一阶线性方程组（系数 \(a_{ij},b_{ij},c_i\) 都是 \((x,t)\) 的连续可微函数）</p>
+$$L_i u\equiv\frac{\partial u_i}{\partial t}+\sum_{j=1}^{N}a_{ij}\frac{\partial u_j}{\partial x}+\sum_{j=1}^{N}b_{ij}u_j+c_i=0\quad(i=1,2,\dots,N) \tag{2.1}$$
+$$\frac{\partial U}{\partial t}+A\frac{\partial U}{\partial x}+BU+C=0,\qquad A=(a_{ij}),\ B=(b_{ij}),\ U=(u_1,\dots,u_N)^{\mathsf T}. \tag{2.1}'$$
+<p>注意 (2.1) 的写法：时间导数前的系数已经被规范成单位矩阵，于是<b>所有关于类型的信息都压在 \(A\) 里</b>。这个规范化不是偷懒——若写成 \(A\partial_tU+B\partial_xU+\cdots=0\) 的一般形式，特征方程是广义特征值问题 \(\det(B-\lambda A)=0\)；只要 \(A\) 可逆，两边左乘 \(A^{-1}\) 就回到 (2.1)。</p>
+
+<h3>2.1　弱间断与特征线</h3>
+<p>设 \(u_i\) 本身连续，但一阶偏导数在一条光滑曲线 \(C\) 上有第一类间断。若利用 \(u_i\) 在 \(C\) 上的值加上方程组 (2.1) <b>仍不能唯一确定</b> \(u_i\) 的一阶偏导数在 \(C\) 上的值，则 \(C\) 称为<b>特征线</b>。把 \(u_i=f_i(\sigma)\) 沿 \(C\) 求导得 \(\partial_tu_i\,t'(\sigma)+\partial_xu_i\,x'(\sigma)=f_i'(\sigma)\)，与 (2.1) 联立，系数行列式是</p>
+$$\det\big(a_{ij}t'(\sigma)-\delta_{ij}x'(\sigma)\big).$$
+<p>行列式非零就能唯一解出偏导数；为零就不行。于是特征线的条件是</p>
+$$\det\big(a_{ij}t'(\sigma)-\delta_{ij}x'(\sigma)\big)=0
+\quad\Longleftrightarrow\quad
+\det\Big(a_{ij}-\delta_{ij}\frac{\mathrm dx}{\mathrm dt}\Big)=0 \tag{2.7}$$
+<p>把 \(\mathrm dx/\mathrm dt\) 记作 \(\lambda\)，得到本章的主方程：</p>
+$$\det(a_{ij}-\delta_{ij}\lambda)=0
+\quad\Longleftrightarrow\quad
+\det(A-\lambda I)=0 \tag{2.8}$$
+<p>它是关于 \(\lambda\) 的 \(N\) 次代数方程。<b>特征线方向 \(\mathrm dx/\mathrm dt=\lambda\) 就是 \(A\) 的特征值</b>，特征线就是 \(\mathrm dx/\mathrm dt=\lambda_i(x,t)\) 的积分曲线。教材还强调：特征线方向在未知函数的可逆变换与自变量的可逆坐标变换下都不变，所以类型是不变量。</p>
+
+<h3>2.2　三个类型</h3>
+<table class="fix">
+<colgroup><col style="width:16%"><col style="width:42%"><col style="width:42%"></colgroup>
+<tr><th>名称</th><th>谱的条件</th><th>几何含义</th></tr>
+<tr class="hi"><td><b>严格双曲型</b></td><td>每一点 (2.8) 都有 \(N\) 个<b>互异实根</b></td><td>每点 \(N\) 条互不相同的实特征线，弱间断可沿任一条传播</td></tr>
+<tr><td><b>双曲型</b></td><td>根都是实的（可以不互异），且仍能找到 \(N\) 个线性无关特征向量</td><td>有 \(N\) 条实特征方向（可能重合），\(A\) 可对角化</td></tr>
+<tr><td><b>椭圆型</b></td><td>每一点都<b>没有实根</b></td><td>没有实特征方向，解<b>不可能</b>有实的弱间断曲线</td></tr>
+</table>
+<p>介于两者之间的情形（一部分实根、一部分复根，或出现实的重根而不可对角化）在教材里被明确承认存在，需要时另划类别——实验 02 的「退化」预设就是这种情形。</p>
+
+<p><b>例 1（柯西–黎曼，(2.9)）</b>把 \(\partial_y\) 当作时间导数，\(U=(u,v)\)，则 \(A=\begin{pmatrix}0&amp;-1\\1&amp;0\end{pmatrix}\)，特征方程 \(\lambda^2+1=0\)，<b>椭圆型</b>。</p>
+<p><b>例 2（一维声学方程组，(2.10)）</b></p>
+$$\begin{cases}
+\dfrac{\partial u}{\partial t}+\dfrac{c_0^2}{\rho_0}\dfrac{\partial\rho}{\partial x}=0,\\[2mm]
+\dfrac{\partial\rho}{\partial t}+\rho_0\dfrac{\partial u}{\partial x}=0,
+\end{cases}\qquad
+A=\begin{pmatrix}0&amp;c_0^2/\rho_0\\ \rho_0&amp;0\end{pmatrix},\qquad
+\det(A-\lambda I)=\lambda^2-c_0^2=0 \tag{2.10}$$
+<p>\(\lambda=\pm c_0\)，<b>严格双曲型</b>，特征线 \(x\mp c_0t=\text{常数}\)。\(u,\rho\) 是扰动速度与密度，\(\rho_0,c_0\) 是未扰动密度与音速（\(c_0^2=p'(\rho_0)\)）。这个例子会一路用到实验 03。</p>
+
+<div class="lab">
+<div class="h"><b>实验 02　特征方程沙盘：λ 在实轴上还是虚轴上</b><span class="tag">det(A−λI) · 分类 · 特征向量</span></div>
+<p class="sub">取一族迹为零的矩阵 \(A=\begin{pmatrix}a&amp;b\\c&amp;-a\end{pmatrix}\)，于是 \(\det(A-\lambda I)=\lambda^2-(a^2+bc)\)，判别式只看一个量 \(\mu=a^2+bc\)。拖三个滑杆，看 \(\mu\) 变号时类型怎么翻。</p>
+<div class="std3" id="e2-modes">
+<div class="sf on" data-m="ac"><b>声学 (2.10)</b><span class="f">a=0, b=1, c=1 → λ=±1</span></div>
+<div class="sf" data-m="cr"><b>柯西–黎曼 (2.9)</b><span class="f">a=0, b=−1, c=1 → λ=±i</span></div>
+<div class="sf" data-m="el"><b>线性弹性 (1.5)</b><span class="f">a=0, b=−1, c=−1 → λ=±1</span></div>
+<div class="sf" data-m="nil"><b>退化（幂零）</b><span class="f">a=0, b=1, c=0 → λ=0 二重</span></div>
+</div>
+<div class="ctl"><span class="lb">a</span><input type="range" id="e2-a" min="-1.5" max="1.5" step="0.05" value="0"><span class="val" id="e2-av">0.00</span>
+<span class="lb">b</span><input type="range" id="e2-b" min="-3" max="3" step="0.05" value="1"><span class="val" id="e2-bv">1.00</span>
+<span class="lb">c</span><input type="range" id="e2-c" min="-3" max="3" step="0.05" value="1"><span class="val" id="e2-cv">1.00</span></div>
+<canvas id="e2c" class="plot" width="840" height="380"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">μ = a² + bc（判别式 / 4）</div><div class="v" id="e2-mu">—</div></div>
+<div class="cell"><div class="k">λ₁</div><div class="v" id="e2-l1">—</div></div>
+<div class="cell"><div class="k">λ₂</div><div class="v" id="e2-l2">—</div></div>
+<div class="cell"><div class="k">类型</div><div class="v txt" id="e2-type">—</div></div>
+<div class="cell"><div class="k">实特征方向数</div><div class="v" id="e2-ns">—</div></div>
+<div class="cell"><div class="k">‖Ar − λr‖（两个特征向量取大者）</div><div class="v" id="e2-res">—</div></div>
+</div>
+<p class="sub" id="e2-note">—</p>
+</div>
+
+<h3>2.3　两套语言的对账：第四章的判别式 vs 本章的特征值</h3>
+<p>同一个二阶方程，第四章看 \(\Delta=a_{12}^2-a_{11}a_{22}\)，本章看一阶化之后 \(A\) 的特征值。两条路必须给出同一个答案，否则一定有一处算错。下表是三种基本方程的对账（\(a>0\)，取 \(t\) 为「时间」变量）：</p>
+<table class="fix">
+<colgroup><col style="width:19%"><col style="width:25%"><col style="width:16%"><col style="width:16%"><col style="width:24%"></colgroup>
+<tr><th>二阶方程</th><th>降阶后的一阶方程组</th><th>矩阵 A</th><th>特征值 λ</th><th>第四章 Δ / 本章类型</th></tr>
+<tr><td>弦振动<br>\(u_{tt}=a^2u_{xx}\)</td><td>\(p_t-q_x=0\)<br>\(q_t-a^2p_x=0\)</td><td>\(\begin{pmatrix}0&amp;-1\\-a^2&amp;0\end{pmatrix}\)</td><td>\(\pm a\)</td><td>\(\Delta=a^2&gt;0\)　<b>双曲型</b></td></tr>
+<tr class="hi"><td>热传导<br>\(u_t=a^2u_{xx}\)</td><td>\(p_t-q_x=0\)<br>\(q-a^2p_x=0\)（约束）</td><td>\(\begin{pmatrix}0&amp;-1\\0&amp;0\end{pmatrix}\)</td><td>\(0\)（二重，A 幂零）</td><td>\(\Delta=0\)　<b>抛物型</b></td></tr>
+<tr><td>调和（柯西–黎曼）<br>\(u_x=v_y,\ v_x=-u_y\)</td><td>直接就是一阶组 (2.9)</td><td>\(\begin{pmatrix}0&amp;-1\\1&amp;0\end{pmatrix}\)</td><td>\(\pm\mathrm i\)</td><td>\(\Delta&lt;0\)　<b>椭圆型</b></td></tr>
+</table>
+<div class="warn"><b>热传导这一行要看仔细。</b>\(u_t=a^2u_{xx}\) 关于 \(t\) 只含一阶导数，但右端出现 \(u_{xx}\)，\(x\) 方向的阶数是 2，所以它<b>不是</b>对 \(t\) 的柯瓦列夫斯卡娅型 (1.6)，不能真正降成「只含一阶导数」的演化方程组：降阶后第二式 \(q=a^2p_x\) 是<b>约束</b>而不是演化方程，矩阵 \(A\) 奇异、特征值 \(0\) 是二重的且不可对角化。抛物型的「退化」在一阶方程组语言里就是这个样子——只有一族特征方向，信息只能原地扩散、不能双向传播。</div>
+
+<!-- ============ 03 对角化 ============ -->
+<h2 id="diag"><span class="no">03</span>§2.3 对角化：把耦合系统拆成独立的信息通道（书页 179–181）</h2>
+<p>严格双曲给了 \(N\) 个互异实根，下一步是把方程组「解耦」。这需要两个引理。</p>
+
+<p><b>引理 2.1</b>　若 \(\lambda_k\) 是 (2.8) 的两两相异实特征根，则对应的特征向量 \(r_1,\dots,r_N\) 线性无关。</p>
+<p>证明用的是范德蒙德行列式：若 \(\sum_k c^k r_k=0\)，左乘 \(A\) 并用 \(Ar_k=\lambda_k r_k\) 反复操作，得到 \(\sum_k c^k\lambda_k^{j-1}r_k=0\ (j=1,\dots,N)\)。固定分量 \(j\) 后，这是以 \(c^kr_k^{(j)}\) 为未知量的方程组，系数行列式是</p>
+$$\begin{vmatrix}1&amp;1&amp;\cdots&amp;1\\ \lambda_1&amp;\lambda_2&amp;\cdots&amp;\lambda_N\\ \vdots&amp;&amp;&amp;\vdots\\ \lambda_1^{N-1}&amp;\lambda_2^{N-1}&amp;\cdots&amp;\lambda_N^{N-1}\end{vmatrix}\neq0$$
+<p>因为特征根互异。于是每个 \(c^k=0\)，与假设矛盾。</p>
+
+<p><b>引理 2.2</b>　严格双曲方程组必可通过未知函数的可逆线性变换化为对角型。以 \(R=(r_1,\dots,r_N)\) 作变换</p>
+$$U=RV \tag{2.16}$$
+<p>代入 (2.1)′ 并在两端左乘 \(R^{-1}\)，利用 \(AR=R\Lambda\)（\(\Lambda=\operatorname{diag}(\lambda_1,\dots,\lambda_N)\)）得</p>
+$$\frac{\partial V}{\partial t}+\Lambda\frac{\partial V}{\partial x}+\tilde BV+\tilde C=0,\qquad
+\tilde B=R^{-1}\Big(\frac{\partial R}{\partial t}+A\frac{\partial R}{\partial x}+BR\Big),\ \tilde C=R^{-1}C \tag{2.18}$$
+$$\frac{\partial V_i}{\partial t}+\lambda_i(x,t)\frac{\partial V_i}{\partial x}=\sum_{j=1}^{N}\alpha_{ij}(x,t)V_j+\beta_i(x,t)\qquad(i=1,\dots,N) \tag{2.19}$$
+<p>(2.19) 的第 \(i\) 个方程左端恰好是 \(V_i\) <b>沿第 \(i\) 条特征线</b>的方向导数——这就是「对角型」的全部意思：每个方程只管一个未知函数，但只沿自己那条特征线管。§3 与 §4 的讨论从此都只对 (2.19) 做。</p>
+
+<h3>3.1　例 3：声学方程组的两个黎曼不变量</h3>
+<p>对 (2.10)，\(\lambda=+c_0\) 的特征向量取 \((c_0,\rho_0)^{\mathsf T}\)，\(\lambda=-c_0\) 的取 \((c_0,-\rho_0)^{\mathsf T}\)。取</p>
+$$v_1=\rho_0u+c_0\rho,\qquad v_2=\rho_0u-c_0\rho, \tag{2.20 前的变换}$$
+<p>直接代入即得两个<b>互不相干</b>的输运方程</p>
+$$\begin{cases}
+\dfrac{\partial v_1}{\partial t}+c_0\dfrac{\partial v_1}{\partial x}=0,\\[2mm]
+\dfrac{\partial v_2}{\partial t}-c_0\dfrac{\partial v_2}{\partial x}=0.
+\end{cases} \tag{2.20}$$
+<p>结论干净得不像话：<b>沿特征线 \(x-c_0t=\text{常数}\)，\(v_1\) 恒等于常数；沿 \(x+c_0t=\text{常数}\)，\(v_2\) 恒等于常数。</b>于是给定 \(t=0\) 时的 \(u,\rho\)（从而 \(v_1,v_2\)），\(t>0\) 的解立刻写出：</p>
+$$v_1(x,t)=v_1^0(x-c_0t),\quad v_2(x,t)=v_2^0(x+c_0t),\quad
+u=\frac{v_1+v_2}{2\rho_0},\quad \rho=\frac{v_1-v_2}{2c_0}$$
+$$u(x,t)=\frac{v_1^0(x-c_0t)+v_2^0(x+c_0t)}{2\rho_0}$$
+<div class="note"><b>这就是达朗贝尔公式的声学版。</b>第 1 章对 \(u_{tt}=c_0^2u_{xx}\) 得到「左行波 + 右行波」，本章从一阶方程组出发，走的是同一条路——只不过「左行」「右行」这两个词，在一阶语言里就是「沿两族特征线各搬一个不变量」。<b>对角化 = 找到守恒量。</b></div>
+
+<div class="lab">
+<div class="h"><b>实验 03　黎曼不变量搬运机</b><span class="tag">对角化 · 不变量 · 特征线</span></div>
+<p class="sub">给一个初值，页面沿两族特征线搬运 \(v_1,v_2\) 得到精确解，再把解代回 (2.10) 用中心差分核对残差。拖探针看它「从哪儿来」。</p>
+<div class="std3" id="e3-modes">
+<div class="sf on" data-m="pulse"><b>单脉冲</b><span class="f">u 一个鼓包，ρ=0 → 左右各一半</span></div>
+<div class="sf" data-m="right"><b>纯右行波</b><span class="f">v₂≡0，整个波形只向右走</span></div>
+<div class="sf" data-m="left"><b>纯左行波</b><span class="f">v₁≡0，整个波形只向左走</span></div>
+<div class="sf" data-m="step"><b>阶跃</b><span class="f">u=0.8·tanh(x/0.35)</span></div>
+</div>
+<div class="ctl"><span class="lb">c₀</span><input type="range" id="e3-c" min="0.4" max="1.6" step="0.05" value="1"><span class="val" id="e3-cv">1.00</span>
+<span class="lb">ρ₀</span><input type="range" id="e3-r" min="0.5" max="2" step="0.05" value="1"><span class="val" id="e3-rv">1.00</span>
+<span class="lb">t*</span><input type="range" id="e3-t" min="0" max="2" step="0.02" value="0.8"><span class="val" id="e3-tv">0.80</span></div>
+<div class="ctl"><span class="lb">探针 x*</span><input type="range" id="e3-x" min="-3" max="3" step="0.02" value="0.3"><span class="val" id="e3-xv">0.30</span>
+<span class="lb" style="color:var(--muted)">（也可在左图画布上直接点）</span></div>
+<canvas id="e3c" class="plot" width="840" height="400"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">u(x*,t*)</div><div class="v" id="e3-u">—</div></div>
+<div class="cell"><div class="k">ρ(x*,t*)</div><div class="v" id="e3-rho">—</div></div>
+<div class="cell"><div class="k">v₁ / v₂</div><div class="v txt" id="e3-v">—</div></div>
+<div class="cell"><div class="k">回溯点 x₁ = x*−c₀t*</div><div class="v" id="e3-x1">—</div></div>
+<div class="cell"><div class="k">回溯点 x₂ = x*+c₀t*</div><div class="v" id="e3-x2">—</div></div>
+<div class="cell"><div class="k">不变量守恒误差</div><div class="v" id="e3-inv">—</div></div>
+<div class="cell"><div class="k">(2.10) 第一式残差</div><div class="v" id="e3-res1">—</div></div>
+<div class="cell"><div class="k">(2.10) 第二式残差</div><div class="v" id="e3-res2">—</div></div>
+</div>
+<p class="sub" id="e3-note">—</p>
+</div>
+
+<!-- ============ 04 柯西问题 ============ -->
+<h2 id="cauchy"><span class="no">04</span>§3 柯西问题：积分方程、逐次逼近与稳定估计（书页 182–187）</h2>
+<p>从这一节起只讨论对角型方程组（引理 2.2 保证一般线性严格双曲组都能化成它）</p>
+$$\frac{\partial V_i}{\partial t}+\lambda_i(x,t)\frac{\partial V_i}{\partial x}=\sum_{j=1}^{N}\alpha_{ij}(x,t)V_j+\beta_i(x,t),\qquad V_i(x,0)=\varphi_i(x) \tag{3.1}$$
+<p>假定在整个区域内 \(\lambda_1&lt;\lambda_2&lt;\cdots&lt;\lambda_N\)，于是每点有 \(N\) 条实特征线 \(L_i:\ \mathrm dx/\mathrm dt=\lambda_i(x,t)\)。初始条件给在 \(x\) 轴的区间 \([a,b]\) 上：过 \(a\) 作 \(L_N\)、过 \(b\) 作 \(L_1\)，与 \(t=0\)、\(t=T\) 围成区域 \(G\)（图 5.1）。</p>
+
+<h3>4.1　第一步：把微分方程变成积分方程</h3>
+<p>(3.1) 第 \(i\) 式的左端正是 \(V_i\) 沿 \(L_i\) 对 \(t\) 的方向导数。沿 \(L_i\) 从 \((x_i,0)\) 积到 \((x,t)\)：</p>
+$$V_i(x,t)-V_i(x_i,0)=\int_{l_i}\Big(\sum_{j=1}^{N}\alpha_{ij}V_j+\beta_i\Big)\mathrm d\tau \tag{3.5}$$
+$$V_i(x,t)=\varphi_i(x_i)+\int_{l_i}\Big(\sum_{j=1}^{N}\alpha_{ij}V_j+\beta_i\Big)\mathrm d\tau \qquad(i=1,\dots,N) \tag{3.6}$$
+<p>这是<b>沃尔泰拉型</b>积分方程组。(3.1)–(3.2) 的每个经典解都是 (3.6) 的解；反之 (3.6) 的光滑解反推回去也是原柯西问题的解。于是问题变成「(3.6) 有没有连续解」。</p>
+
+<h3>4.2　第二步：逐次逼近，误差按 1/n! 掉</h3>
+<p>取 \(V_i^{(0)}(x,t)=\varphi_i(x_i)\)，并定义</p>
+$$V_i^{(n+1)}(x,t)=\varphi_i\big(x_i(0;x,t)\big)+\int_0^t\Big(\sum_{j=1}^{N}\alpha_{ij}V_j^{(n)}+\beta_i\Big)\Big|_{x=x_i(\tau;x,t)}\mathrm d\tau \tag{3.7}$$
+<p>记 \(M=\max_G\{|V^{(0)}|,|V^{(1)}|\}\)，\(A=\max_G|\alpha_{ij}|\)，归纳可得（每迭代一次多一个 \(t\) 的因子，除以 \(n!\) 来自重积分）</p>
+$$\big|V_i^{(n+1)}(x,t)-V_i^{(n)}(x,t)\big|\le 2M\frac{(ANt)^n}{n!} \tag{4.1}$$
+<p>右端与 \((x,t)\) 无关且 \(\sum (ANT_0)^n/n!=e^{ANT_0}&lt;\infty\)，所以级数一致收敛，解存在。唯一性用同一把刀：两解之差 \(M_1\) 满足 \(M_1\le M_1(ANT_0)^n/n!\)，令 \(n\to\infty\) 得 \(M_1=0\)。</p>
+
+<h3>4.3　第三步：稳定性，常数是 \(e^{ANT_0}\)</h3>
+<p>把初始资料换成 \(\bar\varphi_i\)，记 \(\varphi_i-\bar\varphi_i=\eta_i\)、\(V_i-\bar V_i=Z_i\)，则 \(Z_i\) 满足</p>
+$$Z_i(x,t)=\eta_i(x_i)+\int_{l_i}\sum_{j=1}^{N}\alpha_{ij}Z_j\,\mathrm d\tau \tag{3.11}$$
+<p>同样的迭代给出 \(\varepsilon=\max|Z_i|\le\eta\,e^{ANT_0}\)，其中 \(\eta=\max|\eta_i|\)，\(C=e^{ANT_0}\) 只依赖 \(T\) 与系数。<b>定理 3.1</b> 把三件事合起来：系数与初始资料连续可导时，柯西问题在 \(G\) 上存在唯一解，且解对初始资料连续依赖（扰动小于 \(C\eta\)）。</p>
+
+<div class="lab">
+<div class="h"><b>实验 04　逐次逼近对账台</b><span class="tag">收敛界 2M(ANt)ⁿ/n! · 稳定性 e^{ANT₀}</span></div>
+<p class="sub">取 \(\lambda_1=-1,\ \lambda_2=+1\)，耦合 \(\alpha_{12}=\alpha_{21}=\alpha\)，\(\beta=0\)，初值 \(\varphi_1=e^{-x^2},\ \varphi_2=\tfrac12e^{-(x-0.3)^2}\)。页面真做 (3.7) 的迭代（沿特征线回溯 + Simpson 积分），实测相邻两次迭代之差，与教材的界逐项比。</p>
+<div class="ctl"><span class="lb">耦合 α</span><input type="range" id="e4-a" min="0" max="2" step="0.05" value="1"><span class="val" id="e4-av">1.00</span>
+<span class="lb">T₀</span><input type="range" id="e4-t" min="0.4" max="2" step="0.05" value="1.2"><span class="val" id="e4-tv">1.20</span>
+<span class="lb">迭代次数 n</span><input type="range" id="e4-n" min="2" max="20" step="1" value="8"><span class="val" id="e4-nv">8</span></div>
+<div class="ctl"><span class="lb">初值扰动 η</span><input type="range" id="e4-e" min="0.01" max="0.2" step="0.01" value="0.05"><span class="val" id="e4-ev">0.05</span></div>
+<canvas id="e4c" class="plot" width="840" height="340"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">M = max|V⁽⁰⁾|,|V⁽¹⁾|</div><div class="v" id="e4-M">—</div></div>
+<div class="cell"><div class="k">实测 |V⁽ⁿ⁺¹⁾−V⁽ⁿ⁾|</div><div class="v" id="e4-d">—</div></div>
+<div class="cell"><div class="k">教材界 2M(ANT₀)ⁿ/n!</div><div class="v" id="e4-bd">—</div></div>
+<div class="cell"><div class="k">比值（须 ≤ 1）</div><div class="v" id="e4-ratio">—</div></div>
+<div class="cell"><div class="k">实测 ε = max|V−V̄|</div><div class="v" id="e4-eps">—</div></div>
+<div class="cell"><div class="k">上界 η·e^{ANT₀}</div><div class="v" id="e4-eb">—</div></div>
+<div class="cell"><div class="k">ε / (η e^{αT₀})</div><div class="v" id="e4-eps2">—</div></div>
+<div class="cell"><div class="k">迭代到 n 时的相对残差</div><div class="v" id="e4-tail">—</div></div>
+</div>
+<p class="sub" id="e4-note">—</p>
+</div>
+
+<div class="note"><b>这个实验最值得看的是最后一格。</b>教材的界 \(\varepsilon\le\eta e^{ANT_0}\) 里 \(N=2\) 是「方程个数」，于是界是 \(\eta e^{2\alpha T_0}\)。本实验把两个分量同时抬 \(+\eta\)，此时真解恰好是 \(Z_1=Z_2=\eta e^{\alpha t}\)（把它代回 (3.11) 可验证：\((1/2)\int_\xi^\eta \eta e^{\alpha t'}\mathrm d\xi'=\eta(e^{\alpha t}-1)/\alpha\cdot\alpha\)，正好补齐），所以实测 \(\varepsilon=\eta e^{\alpha T_0}\)，<b>比界小一个 \(e^{\alpha T_0}\) 因子</b>。界是宽松的，但方向没错：稳定性常数确实是指数型的，指数由 \(ANT_0\) 控制。</div>
+
+<!-- ============ 05 依赖区间 ============ -->
+<h2 id="domain"><span class="no">05</span>§3.4 依赖区间、决定区域与影响区域（书页 187–188）</h2>
+<p>存在性证明里其实藏着一个几何结论：过 \(M(x,t)\) 向下作第 \(i\) 条特征线交 \(x\) 轴于 \(x_i(0;x,t)\)，解在 \(M\) 的值<b>只</b>由 \(x_N(0)&lt;s&lt;x_1(0)\) 这段初始资料决定，段外怎么改都影响不到 \(M\)。这就是「扰动沿特征线传播」的精确版本。</p>
+
+<figure>
+<svg viewBox="0 0 680 250" width="100%" role="img">
+<title>依赖区间、决定区域与影响区域</title>
+<desc>四格分别画出：点 M 的依赖区间 AB；区间 AB 的决定区域；区间 AB 的影响区域；点 A 的影响区域</desc>
+<defs>
+<marker id="ar5b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<g font-family="system-ui,sans-serif" font-size="10.5">
+<!-- 图 5.2 -->
+<g transform="translate(8,8)">
+<line x1="18" y1="170" x2="164" y2="170" stroke="#57606a" stroke-width="1" marker-end="url(#ar5b)"/>
+<line x1="18" y1="170" x2="18" y2="26" stroke="#57606a" stroke-width="1" marker-end="url(#ar5b)"/>
+<text x="164" y="183" fill="#57606a" text-anchor="end">x</text>
+<text x="10" y="34" fill="#57606a">t</text>
+<line x1="50" y1="170" x2="108" y2="50" stroke="#0F6E56" stroke-width="1.2"/>
+<line x1="86" y1="170" x2="108" y2="50" stroke="#0F6E56" stroke-width="1.2"/>
+<circle cx="108" cy="50" r="2.6" fill="#D85A30"/>
+<text x="112" y="48" fill="#712D17" font-weight="600">M</text>
+<line x1="50" y1="170" x2="86" y2="170" stroke="#D85A30" stroke-width="2.6"/>
+<text x="47" y="183" fill="#085041">A</text>
+<text x="83" y="183" fill="#085041">B</text>
+<text x="68" y="196" fill="#712D17" font-size="9.5" text-anchor="middle">依赖区间</text>
+<text x="63" y="126" fill="#0F6E56" font-size="9.5">L_N</text>
+<text x="97" y="126" fill="#0F6E56" font-size="9.5">L_1</text>
+<text x="4" y="216" fill="#1f2328" font-size="11" font-weight="600">图 5.2　点 M 的依赖区间 AB</text>
+</g>
+<!-- 图 5.3 -->
+<g transform="translate(176,8)">
+<line x1="18" y1="170" x2="164" y2="170" stroke="#57606a" stroke-width="1" marker-end="url(#ar5b)"/>
+<line x1="18" y1="170" x2="18" y2="26" stroke="#57606a" stroke-width="1" marker-end="url(#ar5b)"/>
+<text x="164" y="183" fill="#57606a" text-anchor="end">x</text>
+<text x="10" y="34" fill="#57606a">t</text>
+<path d="M50 170 L86 170 L108 50 Z" fill="#E6F1FB" stroke="none"/>
+<line x1="18" y1="50" x2="164" y2="50" stroke="#185FA5" stroke-width="0.9" stroke-dasharray="3 3"/>
+<text x="21" y="45" fill="#0C447C" font-size="9.5">t = T</text>
+<line x1="50" y1="170" x2="108" y2="50" stroke="#0F6E56" stroke-width="1.2"/>
+<line x1="86" y1="170" x2="108" y2="50" stroke="#0F6E56" stroke-width="1.2"/>
+<line x1="50" y1="170" x2="86" y2="170" stroke="#D85A30" stroke-width="2.6"/>
+<text x="47" y="183" fill="#085041">A</text>
+<text x="83" y="183" fill="#085041">B</text>
+<text x="70" y="132" fill="#0C447C" font-size="11" font-weight="600">G₂</text>
+<text x="4" y="216" fill="#1f2328" font-size="11" font-weight="600">图 5.3　AB 的决定区域 G₂</text>
+</g>
+<!-- 图 5.4 -->
+<g transform="translate(344,8)">
+<line x1="18" y1="170" x2="164" y2="170" stroke="#57606a" stroke-width="1" marker-end="url(#ar5b)"/>
+<line x1="18" y1="170" x2="18" y2="26" stroke="#57606a" stroke-width="1" marker-end="url(#ar5b)"/>
+<text x="164" y="183" fill="#57606a" text-anchor="end">x</text>
+<text x="10" y="34" fill="#57606a">t</text>
+<path d="M50 170 L72 50 L144 50 L86 170 Z" fill="#FAECE7" stroke="none"/>
+<line x1="18" y1="50" x2="164" y2="50" stroke="#D85A30" stroke-width="0.9" stroke-dasharray="3 3"/>
+<text x="21" y="45" fill="#712D17" font-size="9.5">t = T</text>
+<line x1="50" y1="170" x2="72" y2="50" stroke="#0F6E56" stroke-width="1.2"/>
+<line x1="86" y1="170" x2="144" y2="50" stroke="#0F6E56" stroke-width="1.2"/>
+<line x1="50" y1="170" x2="86" y2="170" stroke="#D85A30" stroke-width="2.6"/>
+<text x="47" y="183" fill="#085041">A</text>
+<text x="83" y="183" fill="#085041">B</text>
+<text x="80" y="140" fill="#712D17" font-size="11" font-weight="600">G₃</text>
+<text x="4" y="216" fill="#1f2328" font-size="11" font-weight="600">图 5.4　AB 的影响区域 G₃</text>
+</g>
+<!-- 图 5.5 -->
+<g transform="translate(512,8)">
+<line x1="18" y1="170" x2="164" y2="170" stroke="#57606a" stroke-width="1" marker-end="url(#ar5b)"/>
+<line x1="18" y1="170" x2="18" y2="26" stroke="#57606a" stroke-width="1" marker-end="url(#ar5b)"/>
+<text x="164" y="183" fill="#57606a" text-anchor="end">x</text>
+<text x="10" y="34" fill="#57606a">t</text>
+<path d="M50 170 L72 50 L108 50 Z" fill="#EEEDFE" stroke="none"/>
+<line x1="18" y1="50" x2="164" y2="50" stroke="#534AB7" stroke-width="0.9" stroke-dasharray="3 3"/>
+<text x="21" y="45" fill="#26215C" font-size="9.5">t = T</text>
+<line x1="50" y1="170" x2="72" y2="50" stroke="#0F6E56" stroke-width="1.2"/>
+<line x1="50" y1="170" x2="108" y2="50" stroke="#0F6E56" stroke-width="1.2"/>
+<circle cx="50" cy="170" r="2.8" fill="#D85A30"/>
+<text x="47" y="183" fill="#085041">A</text>
+<text x="72" y="132" fill="#26215C" font-size="11" font-weight="600">G₄</text>
+<text x="4" y="216" fill="#1f2328" font-size="11" font-weight="600">图 5.5　点 A 的影响区域 G₄</text>
+</g>
+</g>
+</svg>
+<figcaption>图 5-1　重绘教材图 5.2–5.5（四格的 \(\lambda_N,\lambda_1\) 取同一组值，可互相对照）。注意斜率的读法：特征线满足 \(\mathrm dx/\mathrm dt=\lambda\)，\(\lambda\) 越大在 \((x,t)\) 图上越<b>平</b>。所以 \(\lambda_N\) 最大 ⇒ \(L_N\) 最平，从 \(M\) 往下走时 \(x\) 掉得最多，交到左边的 \(A\)；\(\lambda_1\) 最小 ⇒ \(L_1\) 最陡，交到右边的 \(B\)。这正是 \(A=x_N(0;x,t)\)、\(B=x_1(0;x,t)\) 的来历。</figcaption>
+</figure>
+
+<p>四张图其实只差「过哪个点、作哪两条特征线」：</p>
+<table>
+<tr><th>对象</th><th>由什么界定</th><th>含义</th></tr>
+<tr><td>点 \(M\) 的<b>依赖区间</b> \([A,B]\)</td><td>过 \(M\) 的 \(L_N\)、\(L_1\) 与 \(t=0\) 的交点</td><td>只有这段初值能影响 \(M\)</td></tr>
+<tr><td>区间 \(AB\) 的<b>决定区域</b> \(G_2\)</td><td>\(AB\) ＋ 过 \(A\) 的 \(L_N\) ＋ 过 \(B\) 的 \(L_1\)</td><td>在 \(AB\) 上初值相同 ⇒ 在 \(G_2\) 上解完全相同</td></tr>
+<tr><td>区间 \(AB\) 的<b>影响区域</b> \(G_3\)</td><td>\(AB\) ＋ 过 \(A\) 的 \(L_1\) ＋ 过 \(B\) 的 \(L_N\)</td><td>只有改 \(AB\) 上的初值，解只在 \(G_3\) 里变</td></tr>
+<tr><td>点 \(A\) 的<b>影响区域</b> \(G_4\)</td><td>过 \(A\) 的 \(L_1\) 与 \(L_N\)</td><td>单个点的扰动被夹在一个锥里</td></tr>
+</table>
+<p>把 \(t\) 读成时间，这几句话就是「信号以有限速度沿特征线传播」。第 1 章对波动方程用特征线网格讲过同一件事；本章的推广在于：\(N\) 个未知函数就有 \(N\) 条特征线，扰动被夹在<b>最慢</b>与<b>最快</b>两条之间。</p>
+
+<!-- ============ 06 习题选讲 ============ -->
+<h2 id="ex"><span class="no">06</span>习题选讲：两道分类/对角化题（§2 习题 3、4(3)）</h2>
+
+<h3>6.1　§2 习题 3：这是哪一类？</h3>
+$$\begin{cases}
+\dfrac{\partial u_1}{\partial t}=a(x,t)\dfrac{\partial u_1}{\partial x}-b(x,t)\dfrac{\partial u_2}{\partial x}+f_1,\\[2mm]
+\dfrac{\partial u_2}{\partial t}=b(x,t)\dfrac{\partial u_1}{\partial x}+a(x,t)\dfrac{\partial u_2}{\partial x}+f_2.
+\end{cases}$$
+<p>搬成 (2.1)′ 的形式：\(A=\begin{pmatrix}a&amp;-b\\ b&amp;a\end{pmatrix}\)，于是</p>
+$$\det(A-\lambda I)=(a-\lambda)^2+b^2=0\ \Longrightarrow\ \lambda=a\pm \mathrm ib.$$
+<p>只要 \(b(x,t)\neq0\)，特征值就是一对共轭复根，<b>没有实特征方向 → 椭圆型</b>。若 \(b\equiv0\)，\(A=aI\) 是单位阵的倍数，\(\lambda=a\) 是二重根但 \(A\) 可对角化，属双曲型（退化的双曲）。这道题与例 1 的柯西–黎曼组是同一个模子：\(a=0,b=1\) 就是 (2.9)。</p>
+
+<h3>6.2　§2 习题 4(3)：化成对角型</h3>
+$$\begin{cases}
+\dfrac{\partial u_1}{\partial t}+6\dfrac{\partial u_1}{\partial x}+5\dfrac{\partial u_2}{\partial x}=0,\\[2mm]
+\dfrac{\partial u_2}{\partial t}+5\dfrac{\partial u_1}{\partial x}+6\dfrac{\partial u_2}{\partial x}=2u_1.
+\end{cases}$$
+<p>\(A=\begin{pmatrix}6&amp;5\\5&amp;6\end{pmatrix}\)，\(\det(A-\lambda I)=(6-\lambda)^2-25=0\) 给 \(\lambda_1=11,\ \lambda_2=1\)，特征向量 \(r_1=(1,1)^{\mathsf T},\ r_2=(1,-1)^{\mathsf T}\)（互异实根 ⇒ 严格双曲）。取</p>
+$$v_1=u_1+u_2,\qquad v_2=u_1-u_2,$$
+<p>代入即得对角型（源项来自 \(2u_1=2(v_1+v_2)\)）：</p>
+$$\begin{cases}
+\dfrac{\partial v_1}{\partial t}+11\dfrac{\partial v_1}{\partial x}=v_1+v_2,\\[2mm]
+\dfrac{\partial v_2}{\partial t}+\dfrac{\partial v_2}{\partial x}=-(v_1+v_2).
+\end{cases}$$
+<p>验证只需把两式相加/相减还原：第一式加第二式给 \(v_{1t}+v_{2t}+11v_{1x}+v_{2x}=0\)，即 \(u_{1t}+6u_{1x}+5u_{2x}=0\)（因为 \(u_1=v_1+v_2,\ u_{1x}=v_{1x}+v_{2x}\)）；相减给第二式。这一步在闸门里也做了数值对账。</p>
+
+<div class="note"><b>为什么「化对角型」值得练手：</b>对角型不只是好看。一旦化成 (2.19)，每个方程只沿自己那条特征线管一个未知函数，柯西问题的积分方程 (3.6) 就成立，§3 的存在唯一稳定整套机器立刻可用。<b>不能对角化 = 不能拆通道 = §3 的结论要重新论证</b>——这就是引理 2.2 在整章里的位置。</div>
+
+<!-- ============ 07 速查表 ============ -->
+<h2 id="cheat"><span class="no">07</span>速查表</h2>
+<table class="fix">
+<colgroup><col style="width:30%"><col style="width:70%"></colgroup>
+<tr><th>对象</th><th>公式 / 结论</th></tr>
+<tr><td>方程组标准形</td><td>\(\partial_tU+A\partial_xU+BU+C=0\)，(2.1)′。时间导数系数规范成 \(I\)</td></tr>
+<tr><td>特征方程</td><td>\(\det(a_{ij}-\delta_{ij}\lambda)=0\)，即 \(\det(A-\lambda I)=0\) (2.8)。\(\lambda=\mathrm dx/\mathrm dt\)</td></tr>
+<tr class="hi"><td>分类判据</td><td>\(N\) 个互异实根 → 严格双曲；全实且可对角化 → 双曲；无实根 → 椭圆</td></tr>
+<tr><td>特征线</td><td>\(\mathrm dx/\mathrm dt=\lambda_i(x,t)\) 的积分曲线，共 \(N\) 条过每一点</td></tr>
+<tr><td>对角化</td><td>\(U=RV\)，\(R=(r_1,\dots,r_N)\)，\(Ar_k=\lambda_kr_k\)；得 \(V_{it}+\lambda_iV_{ix}=\sum_j\alpha_{ij}V_j+\beta_i\)</td></tr>
+<tr><td>声学组不变量</td><td>\(v_1=\rho_0u+c_0\rho\) 沿 \(x-c_0t\) 守恒，\(v_2=\rho_0u-c_0\rho\) 沿 \(x+c_0t\) 守恒</td></tr>
+<tr><td>降阶复原</td><td>\(u(x,t)=\varphi_0(0)+\int_{(0,0)}^{(x,t)}p\,\mathrm dx+q\,\mathrm dt\)（需 \(p_t=q_x\)）</td></tr>
+<tr><td>柯西问题</td><td>积分方程 (3.6)＋逐次逼近 (3.7)；误差 \(\le 2M(ANt)^n/n!\)</td></tr>
+<tr><td>稳定估计</td><td>\(\varepsilon\le\eta e^{ANT_0}\)，\(C=e^{ANT_0}\) 只依赖 \(T\) 与系数</td></tr>
+<tr><td>依赖区间</td><td>过 \(M\) 的 \(L_N,L_1\) 与 \(t=0\) 的交点之间；解只由这段初值决定</td></tr>
+</table>
+
+<div class="key"><b>本章没做的事（诚实交代）：</b>§4 讨论两个自变量线性双曲组的其他定解问题（Goursat 问题、混合问题），§5 用幂级数证明 Cauchy–Kovalevskaya 定理（解析解的存在唯一）。这两节的结论本页只在 00 节的图里点到，没有做交互——它们更适合单独一页。另外，「方程组情形的基本解」属于第 6 章（广义函数与基本解）的内容，本页不越界。</div>
+
+<footer>
+<p>素材：谷超豪 等《数学物理方程（第四版）》第 5 章（高等教育出版社，2023；书页 = PDF 页 − 11，本页覆盖书页 171–188 / PDF 182–199）。OCR 切片公式已按 PDF 渲染逐页核对，引用精确到章节与式号。</p>
+<p>数值闸门：工作区根 <code>verify_readout_pde5.js</code>（vm + DOM 桩真实执行页面脚本，对每个读数独立重算）。相关页：<a href="./方程分类-判别式特征线与三类比较.html">第 4 章 方程分类</a> · <a href="./波动方程-达朗贝尔公式与驻波.html">第 1 章 达朗贝尔公式</a> · <a href="./index.html">本学科目录</a></p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ==================== 公共 ==================== */
+function $(id){ return document.getElementById(id); }
+function fx(x, d){
+  d = (d === undefined) ? 4 : d;
+  if (x === null || x === undefined || !isFinite(x)) return "—";
+  if (x === 0) return "0";
+  var a = Math.abs(x);
+  if (a < 1e-3 || a >= 1e5) return x.toExponential(2);
+  return x.toFixed(d);
+}
+function setTxt(id, s){ var e = $(id); if (e) e.textContent = s; }
+var CVS = {};
+function cx(id){ if (!CVS[id]) CVS[id] = $(id).getContext("2d"); return CVS[id]; }
+function panel(x0, y0, w, h, xmin, xmax, ymin, ymax){
+  var sx = w / (xmax - xmin), sy = h / (ymax - ymin);
+  return {
+    x0: x0, y0: y0, w: w, h: h,
+    X: function(x){ return x0 + (x - xmin) * sx; },
+    Y: function(y){ return y0 + h - (y - ymin) * sy; },
+    invX: function(px){ return xmin + (px - x0) / sx; },
+    invY: function(py){ return ymin + (y0 + h - py) / sy; }
+  };
+}
+function frame(c, P, xlab, tlab){
+  c.fillStyle = "#fff"; c.fillRect(P.x0, P.y0, P.w, P.h);
+  c.strokeStyle = "#d0d7de"; c.lineWidth = 1;
+  c.strokeRect(P.x0 + .5, P.y0 + .5, P.w - 1, P.h - 1);
+  c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = "right"; c.textBaseline = "top";
+  c.fillText(xlab, P.x0 + P.w - 4, P.y0 + P.h + 4);
+  c.textAlign = "left"; c.textBaseline = "bottom";
+  c.fillText(tlab, P.x0 - 14, P.y0 + 12);
+}
+function clamp01(v){ return v < 0 ? 0 : (v > 1 ? 1 : v); }
+
+/* ==================== 实验 01：降阶机器 ==================== */
+var L1 = { mode: "wave", a: 1.0, k: 1.0, eps: 1.0, x0: 0.6, t0: 0.5 };
+var L1X = { min: -4.5, max: 4.5, tmax: 1.2 };
+
+function l1U(x, t){
+  if (L1.mode === "wave") return Math.sin(L1.k * x) * Math.cos(L1.a * L1.k * t);
+  if (L1.mode === "heat") return Math.exp(-L1.a * L1.a * L1.k * L1.k * t) * Math.sin(L1.k * x);
+  return NaN;
+}
+function l1P(x, t){
+  if (L1.mode === "wave") return L1.k * Math.cos(L1.k * x) * Math.cos(L1.a * L1.k * t);
+  if (L1.mode === "heat") return L1.k * Math.cos(L1.k * x) * Math.exp(-L1.a * L1.a * L1.k * L1.k * t);
+  return NaN;
+}
+function l1Q(x, t){
+  if (L1.mode === "wave") return -L1.a * L1.k * Math.sin(L1.k * x) * Math.sin(L1.a * L1.k * t);
+  if (L1.mode === "heat") return -L1.a * L1.a * L1.k * L1.k * Math.sin(L1.k * x) * Math.exp(-L1.a * L1.a * L1.k * L1.k * t);
+  return NaN;
+}
+/* 非线性弹性：σ(p)=p+εp³/3，给定光滑 p 场做链式法则核对 */
+function l1Sigma(p){ return p + L1.eps * p * p * p / 3; }
+function l1SigmaD(p){ return 1 + L1.eps * p * p; }
+function l1Pn(x, t){ return 0.7 * Math.sin(1.0 * x - 0.9 * t); }
+
+var L1H = 1e-4;
+function dX(f, x, t){ return (f(x + L1H, t) - f(x - L1H, t)) / (2 * L1H); }
+function dT(f, x, t){ return (f(x, t + L1H) - f(x, t - L1H)) / (2 * L1H); }
+
+function l1Residuals(){
+  var i, x, t, e1 = 0, e2 = 0, s1 = 0, s2 = 0, f1, f2;
+  var NX = 13, NT = 9;
+  if (L1.mode === "nonlin"){
+    var e3 = 0, s3 = 0;
+    for (i = 0; i < NX; i++){
+      for (var j = 0; j < NT; j++){
+        x = -1.6 + 3.2 * i / (NX - 1); t = 0.02 + 0.9 * j / (NT - 1);
+        var sx = (l1Sigma(l1Pn(x + L1H, t)) - l1Sigma(l1Pn(x - L1H, t))) / (2 * L1H);
+        var ref = l1SigmaD(l1Pn(x, t)) * dX(l1Pn, x, t);
+        e3 = Math.max(e3, Math.abs(sx - ref)); s3 = Math.max(s3, Math.abs(sx));
+      }
+    }
+    return { res1: e3 / (s3 || 1), res2: NaN };
+  }
+  for (i = 0; i < NX; i++){
+    for (var jj = 0; jj < NT; jj++){
+      x = -1.6 + 3.2 * i / (NX - 1); t = 0.02 + 0.9 * jj / (NT - 1);
+      f1 = dT(l1P, x, t) - dX(l1Q, x, t);            /* p_t − q_x = 0 */
+      s1 = Math.max(s1, Math.abs(dT(l1P, x, t)));
+      if (L1.mode === "wave"){
+        f2 = dT(l1Q, x, t) - L1.a * L1.a * dX(l1P, x, t);   /* q_t − a²p_x = 0 */
+        s2 = Math.max(s2, Math.abs(dT(l1Q, x, t)));
+      } else {
+        f2 = l1Q(x, t) - L1.a * L1.a * dX(l1P, x, t);       /* q − a²p_x = 0（约束） */
+        s2 = Math.max(s2, Math.abs(l1Q(x, t)));
+      }
+      e1 = Math.max(e1, Math.abs(f1)); e2 = Math.max(e2, Math.abs(f2));
+    }
+  }
+  return { res1: e1 / (s1 || 1), res2: e2 / (s2 || 1) };
+}
+
+function l1Path(){
+  var x0 = L1.x0, t0 = L1.t0, n = 1200, i, s, h;
+  /* 路径 A：先沿 x 再沿 t */
+  var IA = 0; h = x0 / n;
+  for (i = 0; i < n; i++){ s = h * (i + 0.5); IA += h * l1P(s, 0); }
+  h = t0 / n;
+  for (i = 0; i < n; i++){ s = h * (i + 0.5); IA += h * l1Q(x0, s); }
+  /* 路径 B：先沿 t 再沿 x */
+  var IB = 0; h = t0 / n;
+  for (i = 0; i < n; i++){ s = h * (i + 0.5); IB += h * l1Q(0, s); }
+  h = x0 / n;
+  for (i = 0; i < n; i++){ s = h * (i + 0.5); IB += h * l1P(s, t0); }
+  var uRec = l1U(0, 0) + IA;
+  return { IA: IA, IB: IB, diff: Math.abs(IA - IB), uRec: uRec, uEx: l1U(x0, t0) };
+}
+
+function l1Update(){
+  var out = {};
+  var r = l1Residuals();
+  out.res1 = r.res1; out.res2 = r.res2;
+  if (L1.mode === "nonlin"){
+    var p = l1Pn(L1.x0, L1.t0), sd = l1SigmaD(p);
+    out.lam1 = Math.sqrt(sd); out.lam2 = -Math.sqrt(sd); out.lam = Math.sqrt(sd);
+    out.path = 0; out.diff = 0; out.rec = 0;
+    setTxt("e1-sys", "p_t − q_x = 0,  q_t − ∂ₓσ(p) = 0");
+    setTxt("e1-res1", fx(out.res1, 2) + "（链式法则）");
+    setTxt("e1-res2", "—（无解析 u）");
+    setTxt("e1-path", "—");
+    setTxt("e1-rec", "—");
+    setTxt("e1-lam", "±" + fx(out.lam, 3));
+    setTxt("e1-note", "拟线性：特征速度 λ± = ±√σ′(p) 在探针处为 ±" + fx(out.lam, 3) +
+      "，随 p 变化 ⇒ 特征线是曲线。上一格读数核对的是 ∂ₓσ(p) = σ′(p)pₓ 这条链式法则（相对误差 " +
+      fx(out.res1, 2) + "）。");
+  } else {
+    var pp = l1Path();
+    out.path = pp.diff; out.diff = pp.diff; out.rec = Math.abs(pp.uRec - pp.uEx);
+    out.lam1 = (L1.mode === "wave") ? L1.a : 0;
+    out.lam2 = (L1.mode === "wave") ? -L1.a : 0;
+    out.lam = (L1.mode === "wave") ? L1.a : 0;
+    setTxt("e1-sys", (L1.mode === "wave")
+      ? "p_t − q_x = 0,  q_t − a²p_x = 0"
+      : "p_t − q_x = 0,  q − a²p_x = 0（约束）");
+    setTxt("e1-res1", fx(out.res1, 2));
+    setTxt("e1-res2", fx(out.res2, 2));
+    setTxt("e1-path", fx(out.path, 2));
+    setTxt("e1-rec", fx(out.rec, 2));
+    setTxt("e1-lam", (L1.mode === "wave") ? "±" + fx(out.lam, 2) : "0（二重，A 幂零）");
+    setTxt("e1-note", (L1.mode === "wave")
+      ? "线性：λ±=±a=±" + fx(out.lam, 2) + " 与解无关 ⇒ 特征线是直线族。两条折线的积分差 " +
+        fx(out.path, 2) + " ≈ 0，说明 (1.9) 的路径无关性成立；复原误差 " + fx(out.rec, 2) + "。"
+      : "抛物：降阶后第二式是约束而非演化方程，A 奇异、λ=0 二重且不可对角化——只有一族特征方向。两条折线的积分差 " +
+        fx(out.path, 2) + " 仍为 0（因为 p_t=q_x 依旧成立），复原误差 " + fx(out.rec, 2) + "。");
+  }
+  l1Draw();
+  return out;
+}
+
+function l1Col(v){
+  var t = clamp01(Math.abs(v));
+  if (v >= 0) return [Math.round(255 - t * (255 - 24)), Math.round(255 - t * (255 - 95)), Math.round(255 - t * (255 - 165))];
+  return [Math.round(255 - t * (255 - 216)), Math.round(255 - t * (255 - 90)), Math.round(255 - t * (255 - 48))];
+}
+function l1Draw(){
+  var c = cx("e1c"), W = $("e1c").width, H = $("e1c").height;
+  c.clearRect(0, 0, W, H);
+  var P = panel(56, 22, W - 96, H - 66, L1X.min, L1X.max, 0, L1X.tmax);
+  frame(c, P, "x", "t");
+  var i, j, n;
+  if (L1.mode === "nonlin"){
+    /* 特征线族：dx/dt = ±√σ′(p(x,t))，RK2 积分 */
+    for (n = -10; n <= 10; n++){
+      var xs0 = n * 0.42;
+      var dirs = [1, -1];
+      for (var dd = 0; dd < 2; dd++){
+        var sg = dirs[dd], x = xs0, t = 0, N = 90, ht = L1X.tmax / N;
+        c.beginPath(); c.moveTo(P.X(x), P.Y(t));
+        var ok = true;
+        for (i = 0; i < N; i++){
+          var k1 = sg * Math.sqrt(l1SigmaD(l1Pn(x, t)));
+          var xm = x + 0.5 * ht * k1, tm = t + 0.5 * ht;
+          var k2 = sg * Math.sqrt(l1SigmaD(l1Pn(xm, tm)));
+          x += ht * k2; t += ht;
+          if (x < L1X.min || x > L1X.max){ ok = false; break; }
+          c.lineTo(P.X(x), P.Y(t));
+        }
+        c.strokeStyle = (sg > 0) ? "rgba(15,110,86,.75)" : "rgba(216,90,48,.75)";
+        c.lineWidth = 1.1; c.stroke();
+      }
+    }
+    c.fillStyle = "#57606a"; c.font = "12px system-ui,sans-serif";
+    c.textAlign = "left"; c.textBaseline = "top";
+    c.fillText("特征线族 dx/dt = ±√σ′(p(x,t))，ε = " + L1.eps.toFixed(1) + "：ε=0 时退化为直线", P.x0 + 8, P.y0 + 8);
+  } else {
+    var pw = Math.round(P.w), ph = Math.round(P.h);
+    var img = c.createImageData(pw, ph), d = img.data;
+    var vmax = 1;
+    for (j = 0; j < ph; j++){
+      var tt = L1X.tmax * (1 - j / (ph - 1));
+      for (i = 0; i < pw; i++){
+        var xx = L1X.min + (L1X.max - L1X.min) * i / (pw - 1);
+        var col = l1Col(l1U(xx, tt) / vmax);
+        var id = 4 * (j * pw + i);
+        d[id] = col[0]; d[id + 1] = col[1]; d[id + 2] = col[2]; d[id + 3] = 255;
+      }
+    }
+    c.putImageData(img, Math.round(P.x0), Math.round(P.y0));
+    c.strokeStyle = "#d0d7de"; c.strokeRect(P.x0 + .5, P.y0 + .5, P.w - 1, P.h - 1);
+  }
+  /* 探针 */
+  var px = P.X(L1.x0), py = P.Y(L1.t0);
+  c.strokeStyle = "#534AB7"; c.lineWidth = 1; c.setLineDash([3, 3]);
+  c.beginPath(); c.moveTo(px, P.y0); c.lineTo(px, P.y0 + P.h); c.stroke();
+  c.beginPath(); c.moveTo(P.x0, py); c.lineTo(P.x0 + P.w, py); c.stroke();
+  c.setLineDash([]);
+  c.fillStyle = "#534AB7"; c.beginPath(); c.arc(px, py, 4, 0, 6.2832); c.fill();
+  c.fillStyle = "#26215C"; c.font = "11px ui-monospace,monospace";
+  c.textAlign = "left"; c.textBaseline = "bottom";
+  c.fillText("(" + L1.x0.toFixed(2) + ", " + L1.t0.toFixed(2) + ")", px + 7, py - 4);
+  /* 色标 */
+  var bx = P.x0 + P.w + 10, by = P.y0, bh = P.h;
+  for (i = 0; i < 60; i++){
+    var v = 1 - 2 * i / 59, col2 = l1Col(v);
+    c.fillStyle = "rgb(" + col2[0] + "," + col2[1] + "," + col2[2] + ")";
+    c.fillRect(bx, by + bh * i / 60, 12, bh / 60 + 1);
+  }
+  c.strokeStyle = "#d0d7de"; c.strokeRect(bx + .5, by + .5, 12, bh - 1);
+  c.fillStyle = "#57606a"; c.font = "10px ui-monospace,monospace";
+  c.textAlign = "left"; c.textBaseline = "middle";
+  c.fillText("+1", bx + 16, by + 8);
+  c.fillText("0", bx + 16, by + bh / 2);
+  c.fillText("−1", bx + 16, by + bh - 8);
+}
+
+/* ==================== 实验 02：特征方程沙盘 ==================== */
+var L2 = { a: 0, b: 1, c: 1 };
+
+function l2Mu(){ return L2.a * L2.a + L2.b * L2.c; }
+function l2Eigvec(lam){
+  /* A=[[a,b],[c,−a]]，λ 为实根时取 (b, λ−a)；b=0 时取 (λ+a, c) */
+  if (Math.abs(L2.b) > 1e-12) return [L2.b, lam - L2.a];
+  if (Math.abs(L2.c) > 1e-12) return [lam + L2.a, L2.c];
+  return [1, 0];
+}
+function l2Res(lam, re, im){
+  /* 复数残差 ‖A r − λ r‖（λ = re + i·im），r = (b, λ−a) 或 (λ+a, c) */
+  var r;
+  if (Math.abs(L2.b) > 1e-12){
+    r = [[L2.b, 0], [lam - L2.a, im]];
+  } else {
+    r = [[lam + L2.a, im], [L2.c, 0]];
+  }
+  var lr = [re, im], best = 0;
+  for (var i = 0; i < 2; i++){
+    /* (A r)_i，r 为复数 */
+    var ar = L2.a * r[0][0] + L2.b * r[1][0];
+    var ai = L2.a * r[0][1] + L2.b * r[1][1];
+    if (i === 1){ ar = L2.c * r[0][0] - L2.a * r[1][0]; ai = L2.c * r[0][1] - L2.a * r[1][1]; }
+    /* λ r */
+    var br = lr[0] * r[i][0] - lr[1] * r[i][1];
+    var bi = lr[0] * r[i][1] + lr[1] * r[i][0];
+    best = Math.max(best, Math.hypot(ar - br, ai - bi));
+  }
+  return best;
+}
+
+function l2Update(){
+  var mu = l2Mu(), out = { mu: mu };
+  var zero = (Math.abs(L2.a) + Math.abs(L2.b) + Math.abs(L2.c) < 1e-12);
+  if (mu > 1e-9){
+    out.type = "hyp"; out.l1 = Math.sqrt(mu); out.l2 = -Math.sqrt(mu);
+    out.re = Math.sqrt(mu); out.im = 0; out.ns = 2;
+    out.res = Math.max(l2Res(out.l1, out.l1, 0), l2Res(out.l2, out.l2, 0));
+    setTxt("e2-l1", fx(out.l1, 3)); setTxt("e2-l2", fx(out.l2, 3));
+    setTxt("e2-type", "严格双曲型");
+    setTxt("e2-ns", "2");
+    setTxt("e2-note", "λ = ±√(a²+bc) = ±" + fx(out.l1, 3) + " 为两个互异实根 ⇒ 过每点两条实特征线，斜率 dx/dt = ±" + fx(out.l1, 3) + "。特征向量 (b, λ−a) 的残差 ‖Ar−λr‖ = " + fx(out.res, 2) + "。");
+  } else if (mu < -1e-9){
+    out.type = "ell"; out.l1 = 0; out.l2 = 0; out.re = 0; out.im = Math.sqrt(-mu);
+    out.ns = 0;
+    out.res = Math.max(l2Res(0, 0, out.im), l2Res(0, 0, -out.im));
+    setTxt("e2-l1", "+" + fx(out.im, 3) + "i"); setTxt("e2-l2", "−" + fx(out.im, 3) + "i");
+    setTxt("e2-type", "椭圆型");
+    setTxt("e2-ns", "0");
+    setTxt("e2-note", "λ = ±" + fx(out.im, 3) + "i 是一对共轭复根 ⇒ 无实特征方向，解不可能有实的弱间断曲线。特征向量取复向量，残差 ‖Ar−λr‖ = " + fx(out.res, 2) + "（复数运算下仍为 0）。");
+  } else {
+    out.type = zero ? "triv" : "nil";
+    out.l1 = 0; out.l2 = 0; out.re = 0; out.im = 0;
+    out.ns = zero ? 2 : 1;
+    out.res = l2Res(0, 0, 0);
+    setTxt("e2-l1", "0"); setTxt("e2-l2", "0（二重）");
+    setTxt("e2-type", zero ? "双曲型（A=0 平凡）" : "退化：重根且不可对角化");
+    setTxt("e2-ns", zero ? "2" : "1");
+    setTxt("e2-note", zero
+      ? "A = 0，任何方向都是特征方向，λ=0 二重但 A 可对角化，属双曲型的平凡情形。"
+      : "a²+bc = 0 而 A ≠ 0 ⇒ A² = (a²+bc)I = 0，A 是幂零矩阵、只有一个线性无关特征向量，不可对角化。它既不是严格双曲型（根不互异），也不满足「双曲型」要求的 N 个无关特征向量——教材明确指出这类情形需要另划类别。特征线退化为 t = 常数（水平），信息不沿 x 传播。");
+  }
+  setTxt("e2-mu", fx(mu, 3));
+  setTxt("e2-res", fx(out.res, 2));
+  l2Draw();
+  return out;
+}
+
+function l2Draw(){
+  var c = cx("e2c"), W = $("e2c").width, H = $("e2c").height;
+  c.clearRect(0, 0, W, H);
+  var P = panel(50, 22, 400, H - 66, -3, 3, 0, 2.2);
+  frame(c, P, "x", "t");
+  var i, n;
+  if (L2.a * L2.a + L2.b * L2.c > 1e-9){
+    var lam = Math.sqrt(L2.a * L2.a + L2.b * L2.c);
+    for (n = -6; n <= 6; n++){
+      var x0 = n * 0.5;
+      for (var s = 0; s < 2; s++){
+        var L = (s === 0) ? lam : -lam;
+        var x1 = x0 + L * 2.2;
+        c.beginPath(); c.moveTo(P.X(x0), P.Y(0)); c.lineTo(P.X(x1), P.Y(2.2));
+        c.strokeStyle = (s === 0) ? "rgba(15,110,86,.55)" : "rgba(216,90,48,.55)";
+        c.lineWidth = 1; c.stroke();
+      }
+    }
+    c.fillStyle = "#57606a"; c.font = "12px system-ui,sans-serif";
+    c.textAlign = "left"; c.textBaseline = "top";
+    c.fillText("两族实特征线：dx/dt = ±" + lam.toFixed(2), P.x0 + 8, P.y0 + 8);
+  } else if (Math.abs(L2.a * L2.a + L2.b * L2.c) <= 1e-9){
+    for (n = 1; n <= 5; n++){
+      var yy = 2.2 * n / 6;
+      c.beginPath(); c.moveTo(P.x0, P.Y(yy)); c.lineTo(P.x0 + P.w, P.Y(yy));
+      c.strokeStyle = "rgba(83,74,183,.45)"; c.lineWidth = 1; c.stroke();
+    }
+    c.fillStyle = "#3C3489"; c.font = "12px system-ui,sans-serif";
+    c.textAlign = "left"; c.textBaseline = "top";
+    c.fillText("特征线退化为 t = 常数（λ=0），只有一族", P.x0 + 8, P.y0 + 8);
+  } else {
+    c.strokeStyle = "#eef0f2"; c.lineWidth = 1;
+    for (n = 1; n < 12; n++){
+      c.beginPath(); c.moveTo(P.x0 + P.w * n / 12, P.y0); c.lineTo(P.x0 + P.w * n / 12, P.y0 + P.h); c.stroke();
+      c.beginPath(); c.moveTo(P.x0, P.y0 + P.h * n / 12); c.lineTo(P.x0 + P.w, P.y0 + P.h * n / 12); c.stroke();
+    }
+    c.fillStyle = "#0F6E56"; c.font = "13px system-ui,sans-serif";
+    c.textAlign = "center"; c.textBaseline = "middle";
+    c.fillText("无实特征方向", P.x0 + P.w / 2, P.y0 + P.h / 2 - 10);
+    c.font = "12px ui-monospace,monospace"; c.fillStyle = "#57606a";
+    c.fillText("λ = ±" + Math.sqrt(-(L2.a * L2.a + L2.b * L2.c)).toFixed(2) + "i", P.x0 + P.w / 2, P.y0 + P.h / 2 + 12);
+    c.font = "11px system-ui,sans-serif";
+    c.fillText("椭圆型：不存在实的弱间断曲线", P.x0 + P.w / 2, P.y0 + P.h / 2 + 34);
+  }
+  /* 右：复平面 */
+  var Q = panel(520, 22, 200, H - 66, -2, 2, -2, 2);
+  frame(c, Q, "Re λ", "Im λ");
+  c.strokeStyle = "#c9d1d9"; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(Q.x0, Q.Y(0)); c.lineTo(Q.x0 + Q.w, Q.Y(0)); c.stroke();
+  c.beginPath(); c.moveTo(Q.X(0), Q.y0); c.lineTo(Q.X(0), Q.y0 + Q.h); c.stroke();
+  c.fillStyle = "#57606a"; c.font = "10px ui-monospace,monospace";
+  c.textAlign = "center"; c.textBaseline = "top";
+  c.fillText("1", Q.X(1), Q.Y(0) + 3); c.fillText("−1", Q.X(-1), Q.Y(0) + 3);
+  c.textAlign = "right"; c.textBaseline = "middle";
+  c.fillText("i", Q.X(0) - 3, Q.Y(1)); c.fillText("−i", Q.X(0) - 3, Q.Y(-1));
+  var pts = [];
+  if (L2.a * L2.a + L2.b * L2.c > 1e-9){
+    var l0 = Math.sqrt(L2.a * L2.a + L2.b * L2.c);
+    pts = [[l0, 0], [-l0, 0]];
+  } else if (L2.a * L2.a + L2.b * L2.c < -1e-9){
+    var m0 = Math.sqrt(-(L2.a * L2.a + L2.b * L2.c));
+    pts = [[0, m0], [0, -m0]];
+  } else {
+    pts = [[0, 0]];
+  }
+  for (i = 0; i < pts.length; i++){
+    c.fillStyle = (pts[i][1] === 0) ? "#D85A30" : "#0F6E56";
+    c.beginPath(); c.arc(Q.X(pts[i][0]), Q.Y(pts[i][1]), 4.5, 0, 6.2832); c.fill();
+  }
+  c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = "center"; c.textBaseline = "top";
+  c.fillText("λ 的谱", Q.x0 + Q.w / 2, Q.y0 + Q.h + 4);
+}
+
+/* ==================== 实验 03：黎曼不变量 ==================== */
+var L3 = { mode: "pulse", c0: 1.0, rho0: 1.0, t: 0.8, x: 0.3 };
+function l3U0(x){
+  if (L3.mode === "pulse") return Math.exp(-Math.pow(x / 0.7, 2));
+  if (L3.mode === "right") return Math.exp(-Math.pow((x + 1.4) / 0.45, 2));
+  if (L3.mode === "left") return Math.exp(-Math.pow((x - 1.4) / 0.45, 2));
+  return 0.8 * Math.tanh(x / 0.35);
+}
+function l3R0(x){
+  if (L3.mode === "right") return (L3.rho0 / L3.c0) * l3U0(x);
+  if (L3.mode === "left") return -(L3.rho0 / L3.c0) * l3U0(x);
+  return 0;
+}
+function l3V10(x){ return L3.rho0 * l3U0(x) + L3.c0 * l3R0(x); }
+function l3V20(x){ return L3.rho0 * l3U0(x) - L3.c0 * l3R0(x); }
+function l3U(x, t){ return (l3V10(x - L3.c0 * t) + l3V20(x + L3.c0 * t)) / (2 * L3.rho0); }
+function l3Rho(x, t){ return (l3V10(x - L3.c0 * t) - l3V20(x + L3.c0 * t)) / (2 * L3.c0); }
+
+function l3Res(){
+  var h = 1e-4, e1 = 0, e2 = 0, s1 = 0, s2 = 0, i, x, t;
+  for (i = 0; i < 15; i++){
+    x = -2 + 4 * i / 14; t = 0.05 + ((i * 7) % 11) * 0.1;
+    var ut = (l3U(x, t + h) - l3U(x, t - h)) / (2 * h);
+    var rx = (l3Rho(x + h, t) - l3Rho(x - h, t)) / (2 * h);
+    e1 = Math.max(e1, Math.abs(ut + L3.c0 * L3.c0 / L3.rho0 * rx));
+    s1 = Math.max(s1, Math.abs(ut));
+    var rt = (l3Rho(x, t + h) - l3Rho(x, t - h)) / (2 * h);
+    var ux = (l3U(x + h, t) - l3U(x - h, t)) / (2 * h);
+    e2 = Math.max(e2, Math.abs(rt + L3.rho0 * ux));
+    s2 = Math.max(s2, Math.abs(rt));
+  }
+  return { res1: e1 / (s1 || 1), res2: e2 / (s2 || 1) };
+}
+
+function l3Update(){
+  var x = L3.x, t = L3.t, out = {};
+  var u = l3U(x, t), rho = l3Rho(x, t);
+  var v1 = L3.rho0 * u + L3.c0 * rho, v2 = L3.rho0 * u - L3.c0 * rho;
+  var x1 = x - L3.c0 * t, x2 = x + L3.c0 * t;
+  out.u = u; out.rho = rho; out.v1 = v1; out.v2 = v2; out.x1 = x1; out.x2 = x2;
+  out.inv = Math.abs(v1 - l3V10(x1)) + Math.abs(v2 - l3V20(x2));
+  var r = l3Res(); out.res1 = r.res1; out.res2 = r.res2;
+  setTxt("e3-u", fx(u, 4));
+  setTxt("e3-rho", fx(rho, 4));
+  setTxt("e3-v", fx(v1, 4) + " / " + fx(v2, 4));
+  setTxt("e3-x1", fx(x1, 3));
+  setTxt("e3-x2", fx(x2, 3));
+  setTxt("e3-inv", fx(out.inv, 2));
+  setTxt("e3-res1", fx(out.res1, 2));
+  setTxt("e3-res2", fx(out.res2, 2));
+  var txt = {
+    pulse: "单脉冲：u 的鼓包一半向右（v₁ 通道）、一半向左（v₂ 通道），这正是达朗贝尔公式里 ½φ(x−ct)+½φ(x+ct) 的来源。",
+    right: "纯右行波：v₂ ≡ 0，全部信息只走 x−c₀t 一族特征线，波形不变地平移。",
+    left: "纯左行波：v₁ ≡ 0，全部信息只走 x+c₀t 一族特征线。",
+    step: "阶跃：向左右各散出一半台阶，中间留下 0（tanh 的对称性）。"
+  };
+  setTxt("e3-note", txt[L3.mode] + " 不变量守恒误差 " + fx(out.inv, 2) +
+    "（v₁ 与 v₁⁰(x−c₀t) 之差加 v₂ 与 v₂⁰(x+c₀t) 之差）；把解代回 (2.10) 的中心差分残差为 " +
+    fx(out.res1, 2) + " 与 " + fx(out.res2, 2) + "（相对量级，截断误差 O(h²)）。");
+  l3Draw();
+  return out;
+}
+
+function l3Draw(){
+  var c = cx("e3c"), W = $("e3c").width, H = $("e3c").height;
+  c.clearRect(0, 0, W, H);
+  var P = panel(48, 22, 380, H - 70, -3, 3, 0, 2.0);
+  frame(c, P, "x", "t");
+  var i, n, x0, L = L3.c0;
+  for (n = -8; n <= 8; n++){
+    x0 = n * 0.4;
+    for (var s = 0; s < 2; s++){
+      var lam = (s === 0) ? L : -L;
+      var x1 = x0 + lam * 2.0;
+      c.beginPath(); c.moveTo(P.X(x0), P.Y(0)); c.lineTo(P.X(x1), P.Y(2.0));
+      c.strokeStyle = "rgba(24,95,165,.16)"; c.lineWidth = 1; c.stroke();
+    }
+  }
+  /* 过探针的两条特征线 + 依赖区间 */
+  var px = P.X(L3.x), py = P.Y(L3.t);
+  var xa = L3.x - L3.c0 * L3.t, xb = L3.x + L3.c0 * L3.t;
+  c.beginPath(); c.moveTo(P.X(xb), P.Y(0)); c.lineTo(px, py);
+  c.strokeStyle = "#0F6E56"; c.lineWidth = 1.6; c.stroke();
+  c.beginPath(); c.moveTo(P.X(xa), P.Y(0)); c.lineTo(px, py);
+  c.strokeStyle = "#D85A30"; c.lineWidth = 1.6; c.stroke();
+  c.beginPath(); c.moveTo(P.X(xa), P.Y(0)); c.lineTo(P.X(xb), P.Y(0));
+  c.strokeStyle = "#D85A30"; c.lineWidth = 3.2; c.stroke();
+  c.fillStyle = "#712D17"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = "center"; c.textBaseline = "top";
+  c.fillText("依赖区间", P.X((xa + xb) / 2), P.Y(0) + 5);
+  c.fillStyle = "#534AB7"; c.beginPath(); c.arc(px, py, 4.5, 0, 6.2832); c.fill();
+  c.fillStyle = "#26215C"; c.font = "11px ui-monospace,monospace";
+  c.textAlign = "left"; c.textBaseline = "bottom";
+  c.fillText("(" + L3.x.toFixed(2) + ", " + L3.t.toFixed(2) + ")", px + 7, py - 4);
+  c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = "left"; c.textBaseline = "top";
+  c.fillText("v₁ 沿绿线不变 · v₂ 沿橙线不变（点画布可移动探针）", P.x0 + 8, P.y0 + 8);
+
+  /* 右：t* 时刻的 u 与 ρ 剖面 */
+  var Q = panel(470, 22, W - 510, H - 70, -3, 3, -1.1, 1.1);
+  frame(c, Q, "x", "值");
+  c.strokeStyle = "#eef0f2"; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(Q.x0, Q.Y(0)); c.lineTo(Q.x0 + Q.w, Q.Y(0)); c.stroke();
+  var drawCurve = function(f, col, lw){
+    c.beginPath();
+    for (var k = 0; k <= 260; k++){
+      var xx = -3 + 6 * k / 260, yy = f(xx, L3.t);
+      if (k === 0) c.moveTo(Q.X(xx), Q.Y(yy)); else c.lineTo(Q.X(xx), Q.Y(yy));
+    }
+    c.strokeStyle = col; c.lineWidth = lw; c.stroke();
+  };
+  drawCurve(l3U, "#185FA5", 1.8);
+  drawCurve(l3Rho, "#D85A30", 1.4);
+  c.fillStyle = "#185FA5"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = "left"; c.textBaseline = "top";
+  c.fillText("u(x, t*)", Q.x0 + 6, Q.y0 + 6);
+  c.fillStyle = "#D85A30";
+  c.fillText("ρ(x, t*)", Q.x0 + 56, Q.y0 + 6);
+  c.strokeStyle = "#534AB7"; c.lineWidth = 1; c.setLineDash([3, 3]);
+  c.beginPath(); c.moveTo(Q.X(L3.x), Q.y0); c.lineTo(Q.X(L3.x), Q.y0 + Q.h); c.stroke();
+  c.setLineDash([]);
+}
+
+/* ==================== 实验 04：逐次逼近 ==================== */
+var L4 = { alpha: 1.0, T0: 1.2, n: 8, eta: 0.05 };
+var L4D = 0.04, L4XI0 = -2.64, L4NG = 133;
+
+function l4phi(k, x){
+  if (k === 0) return Math.exp(-x * x);
+  return 0.5 * Math.exp(-Math.pow(x - 0.3, 2));
+}
+function l4Nodes(){
+  var pts = [], a, b, x, t, i, j;
+  for (a = 0; a < 11; a++){
+    for (b = 0; b < 9; b++){
+      x = -1.2 + 2.4 * a / 10; t = L4.T0 * b / 8;
+      i = Math.round((x - t - L4XI0) / L4D);
+      j = Math.round((x + t - L4XI0) / L4D);
+      if (i >= 0 && i < L4NG && j >= 0 && j < L4NG && j >= i) pts.push([i, j, x, t]);
+    }
+  }
+  return pts;
+}
+function l4MaxDiff(A, B, pts){
+  var m = 0;
+  for (var k = 0; k < pts.length; k++){
+    var idx = pts[k][0] * L4NG + pts[k][1];
+    m = Math.max(m, Math.abs(A[0][idx] - B[0][idx]), Math.abs(A[1][idx] - B[1][idx]));
+  }
+  return m;
+}
+function l4Solve(shift, nlev){
+  var NG = L4NG, d = L4D, XI0 = L4XI0, i, j, S, lev;
+  var V = [new Float64Array(NG * NG), new Float64Array(NG * NG)];
+  for (i = 0; i < NG; i++){
+    var xi = XI0 + i * d;
+    for (j = 0; j < NG; j++){
+      var eta = XI0 + j * d;
+      V[0][i * NG + j] = l4phi(0, eta) + shift;
+      V[1][i * NG + j] = l4phi(1, xi) + shift;
+    }
+  }
+  var init = V, hist = [], al = L4.alpha;
+  for (lev = 0; lev < nlev; lev++){
+    var N0 = new Float64Array(NG * NG), N1 = new Float64Array(NG * NG);
+    for (j = 0; j < NG; j++){
+      var p0 = l4phi(0, XI0 + j * d) + shift;
+      S = 0;
+      for (i = j; i >= 0; i--){
+        if (i < j) S += 0.5 * d * (V[1][(i + 1) * NG + j] + V[1][i * NG + j]);
+        N0[i * NG + j] = p0 + 0.5 * al * S;
+      }
+    }
+    for (i = 0; i < NG; i++){
+      var p1 = l4phi(1, XI0 + i * d) + shift;
+      S = 0;
+      for (j = i; j < NG; j++){
+        if (j > i) S += 0.5 * d * (V[0][i * NG + (j - 1)] + V[0][i * NG + j]);
+        N1[i * NG + j] = p1 + 0.5 * al * S;
+      }
+    }
+    var nv = [N0, N1];
+    hist.push(l4MaxDiff(nv, V, l4Nodes()));
+    V = nv;
+  }
+  return { V: V, init: init, hist: hist };
+}
+function l4Fact(n){ var r = 1; for (var i = 2; i <= n; i++) r *= i; return r; }
+
+function l4Update(){
+  var pts = l4Nodes(), out = {};
+  var A = L4.alpha, N = 2, T0 = L4.T0;
+  var sol = l4Solve(0, L4.n);
+  /* M = max(|V⁽⁰⁾|, |V⁽¹⁾|) */
+  var M = 0, k;
+  for (k = 0; k < pts.length; k++){
+    var id = pts[k][0] * L4NG + pts[k][1];
+    M = Math.max(M, Math.abs(sol.init[0][id]), Math.abs(sol.init[1][id]));
+  }
+  /* 第一层迭代的幅值也计入 M */
+  var sol1 = l4Solve(0, 1);
+  for (k = 0; k < pts.length; k++){
+    var id1 = pts[k][0] * L4NG + pts[k][1];
+    M = Math.max(M, Math.abs(sol1.V[0][id1]), Math.abs(sol1.V[1][id1]));
+  }
+  var n = L4.n;
+  var d = sol.hist[sol.hist.length - 1];
+  var bound = 2 * M * Math.pow(A * N * T0, n) / l4Fact(n);
+  out.M = M; out.d = d; out.bound = bound;
+  out.ratio = (bound > 0) ? d / bound : (d === 0 ? 0 : Infinity);
+  out.hist = sol.hist;
+  /* 稳定性：初值整体抬 η，比较解 */
+  var nst = 16;
+  var Va = l4Solve(0, nst), Vb = l4Solve(L4.eta, nst);
+  var eps = l4MaxDiff(Va.V, Vb.V, pts);
+  out.eps = eps;
+  out.eb = L4.eta * Math.exp(A * N * T0);
+  out.epsTheory = L4.eta * Math.exp(A * T0);
+  out.ratio2 = (out.eb > 0) ? eps / out.eb : 0;
+  /* 尾部相对残差 */
+  var mx = 0;
+  for (k = 0; k < pts.length; k++){
+    var id2 = pts[k][0] * L4NG + pts[k][1];
+    mx = Math.max(mx, Math.abs(sol.V[0][id2]), Math.abs(sol.V[1][id2]));
+  }
+  out.tail = d / (mx || 1);
+  setTxt("e4-M", fx(M, 4));
+  setTxt("e4-d", fx(d, 2));
+  setTxt("e4-bd", fx(bound, 2));
+  setTxt("e4-ratio", fx(out.ratio, 3));
+  setTxt("e4-eps", fx(eps, 5));
+  setTxt("e4-eb", fx(out.eb, 5));
+  setTxt("e4-eps2", fx(eps / (out.epsTheory || 1), 4));
+  setTxt("e4-tail", fx(out.tail, 2));
+  setTxt("e4-note", "n = " + n + " 时相邻迭代差 " + fx(d, 2) + " ≤ 界 " + fx(bound, 2) +
+    "，比值 " + fx(out.ratio, 3) + "。稳定性：初值同时抬 η = " + L4.eta.toFixed(2) +
+    "，实测 ε = " + fx(eps, 5) + "，与闭式 η·e^{αT₀} = " + fx(out.epsTheory, 5) +
+    " 相符；教材界 η·e^{ANT₀} = " + fx(out.eb, 5) + "（N=2 的粗化），实测比界小 " +
+    fx(out.eb / (eps || 1), 3) + " 倍。");
+  l4Draw(sol, Va, Vb, pts);
+  return out;
+}
+
+function l4Draw(sol, Va, Vb, pts){
+  var c = cx("e4c"), W = $("e4c").width, H = $("e4c").height;
+  c.clearRect(0, 0, W, H);
+  var A = L4.alpha, T0 = L4.T0, M = 0, k;
+  for (k = 0; k < pts.length; k++){
+    var id = pts[k][0] * L4NG + pts[k][1];
+    M = Math.max(M, Math.abs(sol.init[0][id]), Math.abs(sol.init[1][id]));
+  }
+  /* 左：收敛曲线（对数，纵轴按数据自适应） */
+  var nmax = Math.max(L4.n, 1);
+  var vals = [], i, pos = [];
+  for (i = 0; i <= nmax; i++){
+    var b = 2 * M * Math.pow(A * 2 * T0, i) / l4Fact(i);
+    vals.push(b);
+    if (b > 0) pos.push(b);
+  }
+  for (i = 0; i < sol.hist.length; i++) if (sol.hist[i] > 0) pos.push(sol.hist[i]);
+  var lo = pos.length ? Math.min.apply(null, pos) : 1e-6;
+  var hi = pos.length ? Math.max.apply(null, pos) : 1;
+  var vmin = Math.max(1e-18, lo / 20), vmax = hi * 4;
+  var l0 = Math.log10(vmin), l1 = Math.log10(vmax);
+  var P = panel(70, 24, 330, H - 92, 0, nmax, l0, l1);
+  frame(c, P, "n", "log₁₀");
+  c.strokeStyle = "#eef0f2"; c.lineWidth = 1;
+  c.fillStyle = "#8b949e"; c.font = "9.5px ui-monospace,monospace";
+  c.textAlign = "right"; c.textBaseline = "middle";
+  for (i = 0; i <= 4; i++){
+    var lv = l0 + (l1 - l0) * i / 4;
+    var yy = P.Y(lv);
+    c.beginPath(); c.moveTo(P.x0, yy); c.lineTo(P.x0 + P.w, yy); c.stroke();
+    c.fillText("1e" + Math.round(lv), P.x0 - 4, yy);
+  }
+  var drawLine = function(arr, col, lw, dots){
+    c.beginPath();
+    var started = false;
+    for (var q = 0; q < arr.length; q++){
+      var val = arr[q];
+      if (!isFinite(val) || val <= 0) continue;
+      var xx = P.X(q), yy = P.Y(Math.log10(val));
+      if (!started){ c.moveTo(xx, yy); started = true; } else c.lineTo(xx, yy);
+    }
+    c.strokeStyle = col; c.lineWidth = lw; c.stroke();
+    if (dots){
+      for (var q2 = 0; q2 < arr.length; q2++){
+        if (!isFinite(arr[q2]) || arr[q2] <= 0) continue;
+        c.fillStyle = col; c.beginPath();
+        c.arc(P.X(q2), P.Y(Math.log10(arr[q2])), 2.6, 0, 6.2832); c.fill();
+      }
+    }
+  };
+  drawLine(vals, "#0F6E56", 1.4, false);
+  drawLine(sol.hist, "#D85A30", 1.8, true);
+  c.font = "11px system-ui,sans-serif";
+  c.textAlign = "left"; c.textBaseline = "top";
+  c.fillStyle = "#712D17";
+  c.fillText("红点 = 实测 |V⁽ⁿ⁺¹⁾−V⁽ⁿ⁾|", P.x0, P.y0 + P.h + 10);
+  c.fillStyle = "#085041";
+  c.fillText("绿线 = 教材界 2M(ANt)ⁿ/n!", P.x0, P.y0 + P.h + 26);
+
+  /* 右：稳定性曲线 ε(t) 与两条界 */
+  var Q = panel(500, 24, W - 540, H - 74, 0, T0, 0, Math.max(0.05, L4.eta * Math.exp(2 * A * T0) * 1.08));
+  frame(c, Q, "t", "偏差");
+  var epsAt = function(t){
+    var m = 0;
+    for (var a = 0; a < 11; a++){
+      var x = -1.2 + 2.4 * a / 10;
+      var ii = Math.round((x - t - L4XI0) / L4D), jj = Math.round((x + t - L4XI0) / L4D);
+      if (ii < 0 || ii >= L4NG || jj < 0 || jj >= L4NG || jj < ii) continue;
+      var id3 = ii * L4NG + jj;
+      m = Math.max(m, Math.abs(Va.V[0][id3] - Vb.V[0][id3]), Math.abs(Va.V[1][id3] - Vb.V[1][id3]));
+    }
+    return m;
+  };
+  var ce = [], cb = [], ct = [], q;
+  for (q = 0; q <= 40; q++){
+    var tt = T0 * q / 40;
+    ce.push([tt, epsAt(tt)]);
+    cb.push([tt, L4.eta * Math.exp(2 * A * tt)]);
+    ct.push([tt, L4.eta * Math.exp(A * tt)]);
+  }
+  var poly = function(arr, col, lw, dash){
+    c.beginPath();
+    for (var z = 0; z < arr.length; z++){
+      var xx2 = Q.X(arr[z][0]), yy2 = Q.Y(arr[z][1]);
+      if (z === 0) c.moveTo(xx2, yy2); else c.lineTo(xx2, yy2);
+    }
+    c.strokeStyle = col; c.lineWidth = lw;
+    if (dash) c.setLineDash([4, 3]); else c.setLineDash([]);
+    c.stroke(); c.setLineDash([]);
+  };
+  poly(cb, "#0F6E56", 1.3, true);
+  poly(ct, "#534AB7", 1.3, true);
+  poly(ce, "#D85A30", 1.9, false);
+  /* 图例放在右下角（曲线在右上，左下从 η 起，右下角是空白区） */
+  c.font = "11px system-ui,sans-serif";
+  c.textAlign = "left"; c.textBaseline = "top";
+  var lx = Q.x0 + Q.w - 128, ly = Q.y0 + Q.h - 62;
+  c.strokeStyle = "#D85A30"; c.lineWidth = 1.9;
+  c.beginPath(); c.moveTo(lx, ly + 5); c.lineTo(lx + 18, ly + 5); c.stroke();
+  c.fillStyle = "#712D17"; c.fillText("实测 ε(t)", lx + 24, ly - 2);
+  c.strokeStyle = "#0F6E56"; c.lineWidth = 1.3; c.setLineDash([4, 3]);
+  c.beginPath(); c.moveTo(lx, ly + 25); c.lineTo(lx + 18, ly + 25); c.stroke();
+  c.setLineDash([]);
+  c.fillStyle = "#085041"; c.fillText("η e^{ANt}（教材界）", lx + 24, ly + 18);
+  c.strokeStyle = "#534AB7"; c.setLineDash([4, 3]);
+  c.beginPath(); c.moveTo(lx, ly + 45); c.lineTo(lx + 18, ly + 45); c.stroke();
+  c.setLineDash([]);
+  c.fillStyle = "#3C3489"; c.fillText("η e^{αt}（闭式解）", lx + 24, ly + 38);
+  c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
+  c.fillText("扰动增长 ε(t) 与两条上界", Q.x0, Q.y0 + Q.h + 10);
+}
+
+/* ==================== 交互绑定 ==================== */
+function bindModes(boxId, attr, cb){
+  var box = $(boxId);
+  if (!box) return;
+  var kids = box.children;
+  if (!kids || !kids.length){
+    kids = (box.querySelectorAll ? box.querySelectorAll(".sf") : []) || [];
+  }
+  if (!kids.length) return;
+  for (var i = 0; i < kids.length; i++){
+    (function(el){
+      el.addEventListener("click", function(){
+        for (var k = 0; k < kids.length; k++) kids[k].className = "sf";
+        el.className = "sf on";
+        cb(el.getAttribute(attr));
+      });
+    })(kids[i]);
+  }
+}
+bindModes("e1-modes", "data-m", function(m){
+  L1.mode = m;
+  var nl = $("e1-nl"); if (nl) nl.style.display = (m === "nonlin") ? "flex" : "none";
+  l1Update();
+});
+bindModes("e2-modes", "data-m", function(m){
+  var S = { ac: [0, 1, 1], cr: [0, -1, 1], el: [0, -1, -1], nil: [0, 1, 0] }[m];
+  if (!S) return;
+  L2.a = S[0]; L2.b = S[1]; L2.c = S[2];
+  $("e2-a").value = S[0]; $("e2-b").value = S[1]; $("e2-c").value = S[2];
+  setTxt("e2-av", S[0].toFixed(2)); setTxt("e2-bv", S[1].toFixed(2)); setTxt("e2-cv", S[2].toFixed(2));
+  l2Update();
+});
+bindModes("e3-modes", "data-m", function(m){ L3.mode = m; l3Update(); });
+
+function onRange(id, valId, dec, fn){
+  var el = $(id); if (!el) return;
+  el.addEventListener("input", function(){
+    var v = parseFloat(el.value);
+    if (valId) setTxt(valId, v.toFixed(dec));
+    fn(v);
+  });
+}
+onRange("e1-x", "e1-xv", 2, function(v){ L1.x0 = v; l1Update(); });
+onRange("e1-t", "e1-tv", 2, function(v){ L1.t0 = v; l1Update(); });
+onRange("e1-eps", "e1-epsv", 1, function(v){ L1.eps = v; l1Update(); });
+onRange("e2-a", "e2-av", 2, function(v){ L2.a = v; l2Update(); });
+onRange("e2-b", "e2-bv", 2, function(v){ L2.b = v; l2Update(); });
+onRange("e2-c", "e2-cv", 2, function(v){ L2.c = v; l2Update(); });
+onRange("e3-c", "e3-cv", 2, function(v){ L3.c0 = v; l3Update(); });
+onRange("e3-r", "e3-rv", 2, function(v){ L3.rho0 = v; l3Update(); });
+onRange("e3-t", "e3-tv", 2, function(v){ L3.t = v; l3Update(); });
+onRange("e3-x", "e3-xv", 2, function(v){ L3.x = v; l3Update(); });
+onRange("e4-a", "e4-av", 2, function(v){ L4.alpha = v; l4Update(); });
+onRange("e4-t", "e4-tv", 2, function(v){ L4.T0 = v; l4Update(); });
+onRange("e4-n", "e4-nv", 0, function(v){ L4.n = Math.round(v); l4Update(); });
+onRange("e4-e", "e4-ev", 2, function(v){ L4.eta = v; l4Update(); });
+
+(function(){
+  var cv = $("e3c");
+  if (!cv || !cv.addEventListener) return;
+  cv.addEventListener("click", function(ev){
+    var rect = cv.getBoundingClientRect();
+    var px = (ev.clientX - rect.left) * (cv.width / rect.width);
+    var py = (ev.clientY - rect.top) * (cv.height / rect.height);
+    var P = panel(48, 22, 380, cv.height - 70, -3, 3, 0, 2.0);
+    var x = P.invX(px), t = P.invY(py);
+    if (x < -3 || x > 3 || t < 0 || t > 2) return;
+    L3.x = Math.max(-3, Math.min(3, x)); L3.t = Math.max(0, Math.min(2, t));
+    $("e3-x").value = L3.x; $("e3-t").value = L3.t;
+    setTxt("e3-xv", L3.x.toFixed(2)); setTxt("e3-tv", L3.t.toFixed(2));
+    l3Update();
+  });
+})();
+
+/* ==================== 首屏 ==================== */
+l1Update();
+l2Update();
+l3Update();
+l4Update();
+
+/* ==================== 闸门钩子 ==================== */
+window.PDE5 = {
+  L1: {
+    set: function(o){
+      if (o.mode !== undefined) L1.mode = o.mode;
+      if (o.a !== undefined) L1.a = o.a;
+      if (o.k !== undefined) L1.k = o.k;
+      if (o.eps !== undefined) L1.eps = o.eps;
+      if (o.x0 !== undefined) L1.x0 = o.x0;
+      if (o.t0 !== undefined) L1.t0 = o.t0;
+      return l1Update();
+    },
+    get: function(){ return l1Update(); },
+    path: l1Path
+  },
+  L2: {
+    set: function(a, b, c){ L2.a = a; L2.b = b; L2.c = c; return l2Update(); },
+    get: function(){ return l2Update(); }
+  },
+  L3: {
+    set: function(o){
+      if (o.mode !== undefined) L3.mode = o.mode;
+      if (o.c0 !== undefined) L3.c0 = o.c0;
+      if (o.rho0 !== undefined) L3.rho0 = o.rho0;
+      if (o.t !== undefined) L3.t = o.t;
+      if (o.x !== undefined) L3.x = o.x;
+      return l3Update();
+    },
+    get: function(){ return l3Update(); },
+    fields: function(x, t){ return { u: l3U(x, t), rho: l3Rho(x, t), v10: l3V10(x), v20: l3V20(x) }; }
+  },
+  L4: {
+    set: function(o){
+      if (o.alpha !== undefined) L4.alpha = o.alpha;
+      if (o.T0 !== undefined) L4.T0 = o.T0;
+      if (o.n !== undefined) L4.n = o.n;
+      if (o.eta !== undefined) L4.eta = o.eta;
+      return l4Update();
+    },
+    get: function(){ return l4Update(); },
+    solve: l4Solve
+  },
+  util: { fx: fx, phi: l4phi, D: L4D, XI0: L4XI0, NG: L4NG }
+};
+
+setTimeout(function(){
+  var off = $("mjx-offline");
+  var ok = false;
+  try { ok = document.body.classList.contains("mjx-ready"); } catch (e){ ok = true; }
+  if (off && !ok) off.hidden = false;
+}, 12000);
+
+})();
+</script>
+</body>
+</html>

@@ -62,14 +62,14 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <p class="kicker">并行算法 · 交互教学页</p>
 <h1>并行算法 · 可视化系列</h1>
 <p class="lead">Quinn《Parallel Programming in C with MPI and OpenMP》的配套交互页。并行不是「同时跑很多」——分解、通信、同步、加速比，每个概念配可拖动的实验台，页内所有数字都由工作区脚本实测得出。</p>
-<p class="meta">教材按章取材（ch3 / ch5–7 / ch12 / ch14–15）· 图号 PC-01 起顺编 · 2026-10-25 重建索引</p>
+<p class="meta">教材按章取材（ch3 / ch5–7 / ch12 / ch14–15）· 图号 PC-01 起顺编 · 2026-10-25 重建索引 · 2026-10-26 PC-01 上线</p>
 
 <h2>第 7 章 · 并行程序性能分析 <span>ch07</span></h2>
 
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">PC-01 · ch7</span>Amdahl 定律与 Gustafson 定律</p>
-<p class="d">串行比例 s 固定时加速比的天花板（交互实验室：拖 s、拖核数，看曲线贴顶）· 放大问题规模走通另一条路 · 实测计时对照（本机可跑小规模 MPI/OpenMP 样例）· 课程与科研（大规模求解）的双场景入口</p>
-</div>
+<a class="card" href="Amdahl与Gustafson-加速比定律.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">PC-01 · ch7</span>Amdahl 定律与 Gustafson 定律</p>
+<p class="d">固定问题规模的加速比天花板 ψ≤1/(f+(1−f)/p) 与固定时间的 ψ≤p−(p−1)s——一对「向前看 / 向后看」的定律，加通信项后的拐点与 Karp–Flatt 诊断。四个实验台：加速比曲线（拖 s、拖核数、教材三例一键载入）、Gantt 时间轴（σ/φ/p/κ 四段式，复现图 7.2 的峰值与拐点）、Gustafson 曲线族（p 对数滑杆到 16384）、e(p) 柱状诊断（平坦=并行性不足 / 上升=并行开销）。本机实测：worker_threads 双模式（结构化克隆 vs 共享内存零拷贝）2 规模 × 4 核数共 8 组，消息传递模式 32 MiB 即遇拐点、128 MiB 峰值 ψ≈1.86</p>
+</a>
 
 <h2>第 3 章 · 并行算法设计 <span>ch03</span></h2>
 
@@ -95,7 +95,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <footer>
 <p>教材：Michael J. Quinn《Parallel Programming in C with MPI and OpenMP》（知识库代号 <code>quinn</code>，切片 <code>raw/textbook-quinn-mpi-openmp-*</code>，按章命名）。引用位置精确到章；英文教材文本层可靠，公式引用前仍抽查核对。</p>
 <p>版式身份「时间线」：浅灰纸底 + 墨 + 钢青（主结构）+ 橙（强调）+ 等宽读数；Gantt / 时间轴类交互本科目特色。图号 PC-01 起顺编。</p>
-<p>校验：公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed；计时类结论必须本机实测（vm 冒烟耗时不当性能依据）。2026-10-25 由占位门牌重建。</p>
+<p>校验：公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed；计时类结论必须本机实测（vm 冒烟耗时不当性能依据）。2026-10-25 由占位门牌重建；2026-10-26 PC-01 上线（读数闸门 <code>verify_readout_pc01.js</code> 180 项、公式 174 项、DOM 冒烟 0 异常）。</p>
 </footer>
 
 </div>

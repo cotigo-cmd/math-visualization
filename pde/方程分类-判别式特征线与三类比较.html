@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>二阶线性方程的分类 — 谷超豪《数学物理方程》第 4 章可视化</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --teal-soft:#E1F5EE; --amber:#854F0B; --amber-soft:#FDF6EC;
+  --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:28px;line-height:1.35;margin:0 0 12px;font-weight:600}
+h2{font-size:22px;margin:64px 0 16px;font-weight:600;padding-top:8px;border-top:1px solid var(--border)}
+h2 .no{color:var(--accent);font-family:var(--mono);font-size:16px;margin-right:10px;font-weight:400}
+h3{font-size:17px;margin:36px 0 10px;font-weight:600}
+p{margin:12px 0}
+.hero{padding:56px 0 8px}
+.hero p.lead{font-size:17px;color:var(--muted);max-width:780px;margin:0}
+.crumb{font-size:13px;margin:0 0 18px;color:var(--muted)}
+.crumb a{color:var(--accent)}
+nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+nav .wrap{padding:10px 20px;display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px}
+nav a{color:var(--muted)}
+nav a:hover{color:var(--accent);text-decoration:none}
+.eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
+  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+table.fix{table-layout:fixed}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--card);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+tr.hi td{background:var(--coral-soft)}
+.ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
+.ctl input[type=range]{flex:1;min-width:150px;accent-color:var(--accent)}
+.ctl .lb{white-space:nowrap;color:var(--muted)}
+button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
+.val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
+figure{margin:20px 0}
+figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+canvas.plot{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+#e1c{height:360px}
+#e2c{height:420px}
+#e3c{height:420px}
+#e4c{height:320px}
+#e5c{height:330px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kv .cell{background:var(--card);border-radius:8px;padding:10px 14px}
+.kv .k{font-size:12.5px;color:var(--muted)}
+.kv .v{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent-dark)}
+.kv .v.txt{font-size:14px;font-family:inherit;padding-top:3px}
+.std3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:14px 0}
+.std3 .sf{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13.5px}
+.std3 .sf b{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.std3 .sf.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.std3 .sf .f{font-family:var(--mono);font-size:13px}
+mjx-container{display:block!important;margin:.35em 0!important}
+mjx-container[display="true"]>svg{display:block;margin:0 auto}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+p mjx-container,li mjx-container,td mjx-container,h4 mjx-container,.note mjx-container,.warn mjx-container,.key mjx-container,.sf mjx-container,.cell mjx-container{display:inline-block!important;margin:0!important;vertical-align:baseline}
+p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,h4 mjx-container>svg,.note mjx-container>svg,.warn mjx-container>svg,.key mjx-container>svg,.sf mjx-container>svg,.cell mjx-container>svg{display:inline!important;margin:0!important;vertical-align:-1px}
+#mjx-offline{background:#fdf6ec;border:1px solid #EF9F27;border-radius:8px;padding:8px 14px;font-size:13px;color:#854F0B;margin:14px 0}
+#mjx-offline[hidden]{display:none}
+footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+ul.tight li{margin:6px 0}
+@media print{
+  nav,.ctl,button,#mjx-offline{display:none!important}
+  h2{page-break-after:avoid;break-after:avoid}
+  figure,.card,.note,.warn,.key,table,.kv,.std3{page-break-inside:avoid;break-inside:avoid}
+  body{font-size:12.5px}
+}
+</style>
+</head>
+<body>
+<div id="mjx-offline" hidden>公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响但内容不受影响。</div>
+
+<div class="hero"><div class="wrap">
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> · <a href="./index.html">数学物理方程</a></p>
+<h1>二阶线性方程的分类：判别式、特征线与三类方程的统一视角</h1>
+<p class="lead">谷超豪 等《数学物理方程（第四版）》第 4 章 §1–§4（书页 134–170）的交互可视化。前三章把弦振动、热传导、调和三个方程各自算了一遍；本章退后一步问：<b>这三个方程凭什么代表全部二阶线性方程？</b>答案是一个只依赖主部系数的判别式 \(\Delta=a_{12}^2-a_{11}a_{22}\)——它决定特征线有几族，决定方程能化成哪种标准形，也决定了信息怎么传播、定解条件该怎么给。页面数值结论由工作区根 <code>verify_readout_pde4.js</code> 端到端实测。</p>
+</div></div>
+
+<nav><div class="wrap">
+<a href="#map">本章地图</a>
+<a href="#classify">判别式与标准形</a>
+<a href="#charlines">特征线与化简</a>
+<a href="#tricomi">混合型</a>
+<a href="#chartheory">特征理论</a>
+<a href="#compare">三类比较</a>
+<a href="#illposed">不适定反例</a>
+<a href="#cheat">速查表</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ============ 00 地图 ============ -->
+<h2 id="map"><span class="no">00</span>本章地图：一个判别式，三条岔路</h2>
+<p>第 4 章的四节是一条链：§1 用自变量的可逆变换把方程化简，发现「能化成哪种标准形」只由主部二次型 \(Q(l,m)=a_{11}l^2+2a_{12}lm+a_{22}m^2\) 的代数性质决定；§2 把「特征线」升级成一般的<b>特征曲面</b>理论，说明弱间断只能沿特征面传播；§3 用先验估计（能量方法）给出三类方程解的唯一性与稳定性；§4 把三类方程摆在一起逐项比较。本页把 §1、§2、§4 的几何与数值部分做成实验台，§3 的能量估计只在表格里给结论——它属于第 1 章 §6 的延伸。</p>
+
+<figure>
+<svg viewBox="0 0 680 300" width="100%" role="img">
+<title>判别式决定方程类型与标准形</title>
+<desc>一般二阶线性方程的主部二次型，按判别式的符号分成双曲、抛物、椭圆三支，各自对应一种标准形与一种信息传播方式</desc>
+<defs>
+<marker id="ar4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<g font-family="system-ui,sans-serif">
+<rect x="40" y="14" width="600" height="46" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.7"/>
+<text x="340" y="34" font-size="13" font-weight="600" fill="#0C447C" text-anchor="middle">一般二阶线性方程 (1.1)</text>
+<text x="340" y="52" font-size="12" fill="#185FA5" text-anchor="middle">a₁₁u_xx + 2a₁₂u_xy + a₂₂u_yy + b₁u_x + b₂u_y + cu = f</text>
+
+<line x1="340" y1="60" x2="340" y2="82" stroke="#185FA5" stroke-width="1.4" marker-end="url(#ar4)"/>
+<rect x="200" y="84" width="280" height="34" rx="7" fill="#fff" stroke="#185FA5" stroke-width="0.7"/>
+<text x="340" y="106" font-size="12.5" fill="#0C447C" text-anchor="middle">判别式 Δ = a₁₂² − a₁₁a₂₂（只看主部）</text>
+
+<line x1="340" y1="118" x2="340" y2="132" stroke="#185FA5" stroke-width="1.2"/>
+<line x1="130" y1="132" x2="550" y2="132" stroke="#185FA5" stroke-width="1.2"/>
+<line x1="130" y1="132" x2="130" y2="146" stroke="#185FA5" stroke-width="1.2" marker-end="url(#ar4)"/>
+<line x1="340" y1="132" x2="340" y2="146" stroke="#185FA5" stroke-width="1.2" marker-end="url(#ar4)"/>
+<line x1="550" y1="132" x2="550" y2="146" stroke="#185FA5" stroke-width="1.2" marker-end="url(#ar4)"/>
+
+<rect x="40" y="148" width="180" height="42" rx="8" fill="#FAECE7" stroke="#D85A30" stroke-width="0.7"/>
+<text x="130" y="166" font-size="13" font-weight="600" fill="#712D17" text-anchor="middle">双曲型　Δ &gt; 0</text>
+<text x="130" y="182" font-size="11.5" fill="#A04A22" text-anchor="middle">两族实特征线</text>
+
+<rect x="250" y="148" width="180" height="42" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.7"/>
+<text x="340" y="166" font-size="13" font-weight="600" fill="#26215C" text-anchor="middle">抛物型　Δ = 0</text>
+<text x="340" y="182" font-size="11.5" fill="#3C3489" text-anchor="middle">一族实特征线（重特征）</text>
+
+<rect x="460" y="148" width="180" height="42" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.7"/>
+<text x="550" y="166" font-size="13" font-weight="600" fill="#085041" text-anchor="middle">椭圆型　Δ &lt; 0</text>
+<text x="550" y="182" font-size="11.5" fill="#0F6E56" text-anchor="middle">无实特征线（复特征）</text>
+
+<text x="130" y="212" font-size="10" fill="#57606a" text-anchor="middle" font-family="ui-monospace,monospace">u_ξη = Au_ξ+Bu_η+Cu+D</text>
+<text x="340" y="212" font-size="10" fill="#57606a" text-anchor="middle" font-family="ui-monospace,monospace">u_ηη = A₁u_ξ+B₁u_η+C₁u+D₁</text>
+<text x="550" y="212" font-size="10" fill="#57606a" text-anchor="middle" font-family="ui-monospace,monospace">u_ξξ+u_ηη = Au_ξ+Bu_η+Cu+D</text>
+<text x="130" y="230" font-size="11.5" fill="#57606a" text-anchor="middle">(1.11)　或 (1.12)</text>
+<text x="340" y="230" font-size="11.5" fill="#57606a" text-anchor="middle">(1.13)　或 (1.14)</text>
+<text x="550" y="230" font-size="11.5" fill="#57606a" text-anchor="middle">(1.17)</text>
+
+<line x1="40" y1="248" x2="640" y2="248" stroke="#d0d7de" stroke-width="1"/>
+<text x="130" y="268" font-size="12" fill="#712D17" text-anchor="middle">波：有限速度、可逆</text>
+<text x="340" y="268" font-size="12" fill="#3C3489" text-anchor="middle">扩散：无穷速度、不可逆</text>
+<text x="550" y="268" font-size="12" fill="#085041" text-anchor="middle">平衡：无时间、整体影响</text>
+<text x="340" y="290" font-size="12" fill="#57606a" text-anchor="middle">同一个判别式，同时决定了标准形、特征线与信息的传播方式。</text>
+</g>
+</svg>
+<figcaption>图 0-1　判别式 → 标准形 → 传播方式，一条链贯穿本章四节。</figcaption>
+</figure>
+
+<div class="key"><b>为什么只盯主部：</b>低阶项 \(b_1u_x+b_2u_y+cu\) 与 \(f\) 在可逆变换下会换一身系数，但<b>换不掉类型</b>。§2 会把这个事实说成一句更强的话：特征曲面的定义 (2.7) 只依赖主部系数，与低阶项、与方程的解都无关。</div>
+
+<!-- ============ 01 判别式 ============ -->
+<h2 id="classify"><span class="no">01</span>判别式与标准形（§1.1–§1.3，书页 134–139）</h2>
+<p>用 \((x,y)\) 记两个自变量，一般的二阶线性方程写成</p>
+$$a_{11}u_{xx}+2a_{12}u_{xy}+a_{22}u_{yy}+b_1u_x+b_2u_y+cu=f \tag{1.1}$$
+<p>作可逆变换 \(\xi=\xi(x,y),\ \eta=\eta(x,y)\)（要求雅可比 (1.3) 非零），代入后二阶项的系数变成</p>
+$$\bar a_{11}=a_{11}\xi_x^2+2a_{12}\xi_x\xi_y+a_{22}\xi_y^2$$
+$$\bar a_{12}=a_{11}\xi_x\eta_x+a_{12}(\xi_x\eta_y+\xi_y\eta_x)+a_{22}\xi_y\eta_y$$
+$$\bar a_{22}=a_{11}\eta_x^2+2a_{12}\eta_x\eta_y+a_{22}\eta_y^2 \tag{1.6}$$
+<p>注意 (1.6) 的第一式与第三式形状完全相同（只把 \(\xi\) 换成 \(\eta\)）。于是「让 \(\bar a_{11}=\bar a_{22}=0\)」等价于求一阶方程</p>
+$$a_{11}\varphi_x^2+2a_{12}\varphi_x\varphi_y+a_{22}\varphi_y^2=0 \tag{1.7}$$
+<p>的两个函数无关解，而 (1.7) 又等价于在 \((x,y)\) 平面上求常微分方程的积分曲线</p>
+$$a_{11}\,\mathrm dy^2-2a_{12}\,\mathrm dx\,\mathrm dy+a_{22}\,\mathrm dx^2=0 \tag{1.8}$$
+<p>把 (1.8) 当成关于 \(s=\mathrm dy/\mathrm dx\) 的二次方程 \(a_{11}s^2-2a_{12}s+a_{22}=0\)，它的判别式是 \(4(a_{12}^2-a_{11}a_{22})\)。所以<b>实特征线有几族，完全由 \(\Delta=a_{12}^2-a_{11}a_{22}\) 的符号决定</b>：</p>
+<table class="fix">
+<colgroup><col style="width:13%"><col style="width:27%"><col style="width:13%"><col style="width:47%"></colgroup>
+<tr><th>判别式</th><th>特征线（(1.8) 的实积分曲线）</th><th>类型</th><th>标准形</th></tr>
+<tr><td>\(\Delta&gt;0\)</td><td>两族互不相同的实曲线 \(\varphi_1=c,\ \varphi_2=c\)</td><td><b>双曲型</b></td><td>取 \(\xi=\varphi_1,\eta=\varphi_2\)：\(u_{\xi\eta}=Au_\xi+Bu_\eta+Cu+D\) (1.11)；再令 \(\xi=(s+t)/2,\ \eta=(s-t)/2\) 得 \(u_{ss}-u_{tt}=A_1u_s+B_1u_t+C_1u+D_1\) (1.12)</td></tr>
+<tr><td>\(\Delta=0\)</td><td>只有一族 \(\varphi_1=c\)（两族重合，重特征）</td><td><b>抛物型</b></td><td>取 \(\xi=\varphi_1\)，\(\eta\) 任取与 \(\xi\) 函数无关：\(u_{\eta\eta}=A_1u_\xi+B_1u_\eta+C_1u+D_1\) (1.13)；再作 \(v=u\exp(-\tfrac12\int B_1\,\mathrm d\eta)\) 消去 \(u_\eta\) 项得 (1.14)</td></tr>
+<tr><td>\(\Delta&lt;0\)</td><td>无实特征线（(1.8) 的通积分是复函数）</td><td><b>椭圆型</b></td><td>取复特征 \(\varphi=\varphi_1+i\varphi_2\)，令 \(\xi=\operatorname{Re}\varphi,\ \eta=\operatorname{Im}\varphi\)：\(u_{\xi\xi}+u_{\eta\eta}=Au_\xi+Bu_\eta+Cu+D\) (1.17)</td></tr>
+</table>
+<p>这三个式子是<b>标准形式</b>的完整清单：任何一点附近的二阶线性方程，只要在该点是双曲/椭圆型，就能在邻域内化成对应标准形；抛物型点则不一定存在一个整邻域使方程恒为抛物型，故不能保证化到 (1.13)。三个典型代表立刻对号入座：弦振动 \(u_{tt}-a^2u_{xx}=0\) 双曲、一维热传导 \(u_t-a^2u_{xx}=0\) 抛物、二维调和 \(u_{xx}+u_{yy}=0\) 椭圆。</p>
+
+<h3>1.1　交互：二次型分类沙盘</h3>
+<p>教材的判据可以一句话说完：类型由二次型 \(Q(l,m)=a_{11}l^2+2a_{12}lm+a_{22}m^2\) 的代数性质决定，也就是由 \((l,m)\) 平面上二次曲线 \(Q(l,m)=1\) 是椭圆、双曲线还是抛物线决定。下图左边画的就是这条二次曲线（方向空间，不是物理平面！），珊瑚色虚线是 \(Q=0\) 的零方向——它们正是<b>特征方向</b>（法向）。右边按同一组系数画物理平面里的特征线。拖三个系数看类型怎么跳变。</p>
+<div class="ctl">
+<span class="lb">\(a_{11}\)</span><input id="e1-a11" type="range" min="-30" max="30" step="1" value="10"><span class="val" id="e1-a11v">1.0</span>
+<span class="lb">\(a_{12}\)</span><input id="e1-a12" type="range" min="-30" max="30" step="1" value="0"><span class="val" id="e1-a12v">0.0</span>
+<span class="lb">\(a_{22}\)</span><input id="e1-a22" type="range" min="-30" max="30" step="1" value="10"><span class="val" id="e1-a22v">1.0</span>
+</div>
+<div class="ctl">
+<button class="e1p on" data-p="lap">调和（椭圆）</button>
+<button class="e1p" data-p="wave">弦振动（双曲）</button>
+<button class="e1p" data-p="heat">热传导（抛物）</button>
+<button class="e1p" data-p="obl">斜特征（双曲·非正交）</button>
+<button class="e1p" data-p="tri">Tricomi 在 y=1（椭圆）</button>
+</div>
+<canvas id="e1c" class="plot" width="840" height="360"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">判别式 \(\Delta=a_{12}^2-a_{11}a_{22}\)</div><div class="v" id="e1-d">—</div></div>
+<div class="cell"><div class="k">类型</div><div class="v txt" id="e1-type">—</div></div>
+<div class="cell"><div class="k">\(Q=1\) 的曲线</div><div class="v txt" id="e1-conic">—</div></div>
+<div class="cell"><div class="k">特征线斜率 \(s=\mathrm dy/\mathrm dx\)</div><div class="v" id="e1-s">—</div></div>
+<div class="cell"><div class="k">特征方向（法向）斜率</div><div class="v" id="e1-n">—</div></div>
+<div class="cell"><div class="k">\(2\times2\) 主部矩阵特征值</div><div class="v" id="e1-eig">—</div></div>
+</div>
+<div class="std3" id="e1-stdbox">
+<div class="sf" data-t="hyp"><b>双曲型标准形 (1.11)</b><span class="f">u_ξη = A u_ξ + B u_η + C u + D</span></div>
+<div class="sf" data-t="par"><b>抛物型标准形 (1.13)</b><span class="f">u_ηη = A₁ u_ξ + B₁ u_η + C₁ u + D₁</span></div>
+<div class="sf" data-t="ell"><b>椭圆型标准形 (1.17)</b><span class="f">u_ξξ + u_ηη = A u_ξ + B u_η + C u + D</span></div>
+</div>
+<div class="note"><b>读法：</b>把 \(a_{12}\) 从 0 往上推，\(\Delta\) 从负穿过零变正：二次曲线从椭圆（\(Q=1\) 是闭合的）经退化抛物线裂成双曲线，物理平面上「一条实特征线」也随之裂成两条。\(a_{11}\) 或 \(a_{22}\) 过零会让 \(\Delta\) 变号（因为它们是乘积项），所以「系数变小」与「类型改变」不是同一件事——只有 \(a_{12}^2\) 与 \(a_{11}a_{22}\) 的<b>大小关系</b>说了算。</div>
+
+<!-- ============ 02 特征线与化简 ============ -->
+<h2 id="charlines"><span class="no">02</span>特征线与化简：三种类型的三条路（§1.2–§1.4，书页 135–141）</h2>
+<p>(1.8) 分解成两个一阶方程</p>
+$$\frac{\mathrm dy}{\mathrm dx}=\frac{a_{12}+\sqrt{a_{12}^2-a_{11}a_{22}}}{a_{11}},\qquad
+\frac{\mathrm dy}{\mathrm dx}=\frac{a_{12}-\sqrt{a_{12}^2-a_{11}a_{22}}}{a_{11}} \tag{1.9}$$
+<p>于是三条路很清楚：</p>
+<ul class="tight">
+<li><b>\(\Delta&gt;0\)</b>：两个右端取相异的实值，得到两族实曲线 \(\varphi_1=c,\varphi_2=c\)。取 \(\xi=\varphi_1,\eta=\varphi_2\)，则 \(\bar a_{11}=\bar a_{22}=0\)；可逆变换不会把二阶方程降成一阶，故必有 \(\bar a_{12}\ne0\)，方程化为 (1.11)。</li>
+<li><b>\(\Delta=0\)</b>：(1.7) 变成完全平方 \((\sqrt{a_{11}}\varphi_x+\sqrt{a_{22}}\varphi_y)^2=0\)，只剩一族特征线。取 \(\xi=\varphi_1\)、\(\eta\) 任取（与 \(\xi\) 函数无关），则 \(\bar a_{11}\) 与 \(\bar a_{12}\) 同时为零，方程化为 (1.13)。</li>
+<li><b>\(\Delta&lt;0\)</b>：没有实特征线，(1.8) 的通积分是复函数 \(\varphi=\varphi_1+i\varphi_2\)。为了避免复自变量，取 \(\xi=\varphi_1,\eta=\varphi_2\)（可证函数无关），实部虚部分开后 \(\bar a_{11}=\bar a_{22}\ne0,\ \bar a_{12}=0\)，方程化为 (1.17)。</li>
+</ul>
+<p>教材例 1 是最干净的示范：弦振动方程 \(u_{tt}-a^2u_{xx}=0\) 的特征线族是 \(x+at=c\) 与 \(x-at=c\)，取 \(\xi=x+at,\eta=x-at\) 后方程化为 \(u_{\xi\eta}=0\)，两次积分即得达朗贝尔公式</p>
+$$u=\varphi(\xi)+\psi(\eta)=\varphi(x+at)+\psi(x-at) \tag{1.19}$$
+<p>——<a href="./波动方程-达朗贝尔公式与驻波.html">《达朗贝尔公式与驻波》</a>整页都在用这条公式。特征线在这里不是装饰：它把「解沿 \(x-at=\text{常数}\) 为常数」这件事直接写成了可画的几何。</p>
+
+<h3>2.1　交互：特征线族与标准形对账</h3>
+<p>选一个方程（都是 (1.1) 的特例，变量记作 \((x,y)\)），左图画它的特征线族，右下角按 (1.6) <b>数值</b>算出变换后的三个二阶系数——\(\bar a_{11},\bar a_{12},\bar a_{22}\) 是不是恰好 \(0,0,\ne0\)（双曲/抛物）或 \(0,0\) 以外的椭圆情形，一眼可验。导数用中心差分数值求，所以非线性变换（如 Tricomi 的 \(\eta=\tfrac23y^{3/2}\)）也一样能算。</p>
+<div class="ctl">
+<button class="e2p on" data-p="wave">弦振动（双曲）</button>
+<button class="e2p" data-p="heat">热传导（抛物）</button>
+<button class="e2p" data-p="laplace">调和（椭圆）</button>
+<button class="e2p" data-p="obl">u_xx+2u_xy=0（双曲·非正交）</button>
+</div>
+<canvas id="e2c" class="plot" width="840" height="420"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">系数 \((a_{11},a_{12},a_{22})\)</div><div class="v txt" id="e2-coef">—</div></div>
+<div class="cell"><div class="k">判别式 \(\Delta\)</div><div class="v" id="e2-d">—</div></div>
+<div class="cell"><div class="k">类型</div><div class="v txt" id="e2-type">—</div></div>
+<div class="cell"><div class="k">特征线斜率 \(s_1,s_2\)</div><div class="v" id="e2-s">—</div></div>
+<div class="cell"><div class="k">变换 \(\xi,\eta\)</div><div class="v txt" id="e2-tr">—</div></div>
+<div class="cell"><div class="k">\(\bar a_{11}\)（(1.6) 数值）</div><div class="v" id="e2-b11">—</div></div>
+<div class="cell"><div class="k">\(\bar a_{12}\)（(1.6) 数值）</div><div class="v" id="e2-b12">—</div></div>
+<div class="cell"><div class="k">\(\bar a_{22}\)（(1.6) 数值）</div><div class="v" id="e2-b22">—</div></div>
+</div>
+<div class="std3" id="e2-stdbox">
+<div class="sf" data-t="hyp"><b>双曲 (1.11)</b><span class="f">u_ξη = A u_ξ + B u_η + C u + D</span></div>
+<div class="sf" data-t="par"><b>抛物 (1.13)</b><span class="f">u_ηη = A₁ u_ξ + B₁ u_η + C₁ u + D₁</span></div>
+<div class="sf" data-t="ell"><b>椭圆 (1.17)</b><span class="f">u_ξξ + u_ηη = A u_ξ + B u_η + C u + D</span></div>
+</div>
+<div class="note"><b>实测备注（verify_readout_pde4.js）：</b>四个预设的 \((\bar a_{11},\bar a_{12},\bar a_{22})\) 依次为 弦振动 <b>(0, −2, 0)</b>、热传导 <b>(0, 0, −1)</b>、调和 <b>(1, 0, 1)</b>、\(u_{xx}+2u_{xy}=0\) <b>(0, −2, 0)</b>——前两个的 \(\bar a_{11},\bar a_{22}\) 精确为 0（数值导数误差 \(&lt;10^{-8}\)），与 (1.6) 的手算完全一致；椭圆情形 \(\bar a_{11}=\bar a_{22}=1\)、\(\bar a_{12}=0\)，正对应 (1.17) 的 \(u_{\xi\xi}+u_{\eta\eta}\)。<b>注意热传导那一列：</b>特征线是 \(y=\text{常数}\)，所以必须取 \(\xi=y\)（不是 \(\xi=x\)）；取错方向 \(\bar a_{11}\) 会是 \(-1\)，方程化不到 (1.13)。</div>
+
+<!-- ============ 03 Tricomi ============ -->
+<h2 id="tricomi"><span class="no">03</span>混合型：Tricomi 方程与跨音速流（§1.3 末 + 例 2，书页 139–141）</h2>
+<p>有些方程在一个区域里是双曲型、另一部分是椭圆型，分界线上是抛物型，这类方程称为<b>混合型</b>。标准例子是特里科米方程</p>
+$$y\,u_{xx}+u_{yy}=0 \tag{1.18}$$
+<p>它的主部系数是 \(a_{11}=y,\ a_{12}=0,\ a_{22}=1\)，于是 \(\Delta=-y\)：上半平面 \(y&gt;0\) 椭圆型，下半平面 \(y&lt;0\) 双曲型，分界线 \(y=0\) 上抛物型。在研究空气动力学中的跨音速流（流速跨过声速，方程类型随之改变）时，常遇到这类方程。</p>
+<p>两个半平面里的特征线都能算出来。椭圆区（\(y&gt;0\)）(1.8) 化为 \(\mathrm dx\pm i\sqrt{y}\,\mathrm dy=0\)，通积分 \(x\pm i\tfrac23y^{3/2}=c\)，取</p>
+$$\xi=x,\qquad \eta=\tfrac23 y^{3/2}\quad\Longrightarrow\quad u_{\xi\xi}+u_{\eta\eta}+\frac{1}{3\eta}u_{\eta}=0 \tag{1.20}$$
+<p>双曲区（\(y&lt;0\)）(1.8) 化为 \(\mathrm dx\pm\sqrt{-y}\,\mathrm dy=0\)，通积分</p>
+$$x\pm\tfrac23(-y)^{3/2}=c$$
+<p>——两族抛物线弧，在 \(y=0\) 处竖直相切、向上汇合成一点（下图把它们画出来了）。<b>退化</b>就发生在那里：两族特征线在分界线上重合成一族，正是 \(\Delta=0\) 的几何含义。</p>
+
+<h3>3.1　交互：判别式场与特征线（拖动探针）</h3>
+<p>上图整幅是 \((x,y)\) 平面：青色区椭圆、珊瑚区双曲、\(y=0\) 虚线是抛物分界。实线是双曲区的两族特征线 \(x\pm\tfrac23(-y)^{3/2}=c\)；虚线是椭圆区复特征的实部/虚部等值线（\(x=c\) 与 \(y=c\)）——它们<b>不是</b>特征线，只是变换 (1.20) 的坐标线。拖动探针看 \(\Delta\) 与类型怎么随 \(y\) 变号。</p>
+<canvas id="e3c" class="plot" width="840" height="420"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">探针 \((x_0,y_0)\)</div><div class="v txt" id="e3-pt">—</div></div>
+<div class="cell"><div class="k">\(\Delta=-y_0\)</div><div class="v" id="e3-d">—</div></div>
+<div class="cell"><div class="k">类型</div><div class="v txt" id="e3-type">—</div></div>
+<div class="cell"><div class="k">特征不变量 \(\varphi_+=x_0+\tfrac23(-y_0)^{3/2}\)</div><div class="v" id="e3-p1">—</div></div>
+<div class="cell"><div class="k">特征不变量 \(\varphi_-=x_0-\tfrac23(-y_0)^{3/2}\)</div><div class="v" id="e3-p2">—</div></div>
+<div class="cell"><div class="k">特征线局部斜率 \(\mathrm dx/\mathrm dy=\pm\sqrt{-y_0}\)</div><div class="v" id="e3-slope">—</div></div>
+<div class="cell"><div class="k">椭圆区坐标 \(\eta=\tfrac23y_0^{3/2}\)</div><div class="v" id="e3-eta">—</div></div>
+</div>
+<div class="note"><b>实测备注（verify_readout_pde4.js）：</b>探针取 \((0.4,-0.36)\) 时 \(\Delta=0.36\)、\(\tfrac23(0.36)^{3/2}=0.144\)，故 \(\varphi_+=0.4+0.144=\mathbf{0.544}\)、\(\varphi_-=0.4-0.144=\mathbf{0.256}\)；沿特征线移动的数值导数 \(\mathrm dx/\mathrm dy\) 与解析值 \(\pm\sqrt{0.36}=\pm0.6\) 一致到 \(10^{-6}\)，把它代回 (1.8) 的残差 \(y+(\mathrm dx/\mathrm dy)^2=0\) 精确到 \(10^{-6}\) 以内——这验证了画出来的曲线<b>确实是</b>特征线，不是长得像的抛物线。探针移到 \(y_0=0.81\) 时类型翻成椭圆、\(\eta=\tfrac23(0.81)^{3/2}=\mathbf{0.486}\)，此时 \(\varphi_\pm\) 不再有意义（该公式只在 \(y&lt;0\) 成立，页面显示 —）。把探针拖过 \(y=0\)：\(\Delta\) 连续穿过 0，类型在抛物线上「瞬时」切换——这正是跨音速流里方程变型的数学影子。</div>
+
+<!-- ============ 04 特征理论 ============ -->
+<h2 id="chartheory"><span class="no">04</span>特征理论：弱间断只沿特征面走（§2，书页 143–149）</h2>
+<p>§1 里特征线是「化简方程的工具」，§2 给它一个不依赖坐标、不依赖变换的身份。<b>弱间断解</b>是这样一种函数：在区域内有一阶连续偏导数，除了一张 \(n-1\) 维光滑曲面 \(S\)（\(n=2\) 时是曲线）之外有二阶连续偏导数，处处满足方程，而二阶偏导数在 \(S\) 上的左右极限存在（第一类间断）。这种解在 \(S\) 上不满足方程，但物理上完全合理——回忆前三章建立方程的过程：原始物理问题只要求未知函数一阶连续可导，二阶连续可导是套格林公式时才额外要求的。<b>波传播的波阵面就是弱间断面。</b></p>
+<p>教材的例子最直观：右传播波 \(u=f(x-at)\)，若 \(t=0\) 时取 \(\varphi(x)=[(x^2-1)^2,\ |x|\le1;\ 0,\ |x|&gt;1]\)，则 \(\varphi\) 在 \(x=\pm1\) 处一阶导连续、二阶导间断，对应的解</p>
+$$u(x,t)=\begin{cases}\big[(x-at)^2-1\big]^2, & |x-at|\le1,\\[2pt] 0, & |x-at|&gt;1\end{cases}$$
+<p>在 \(x-at=\pm1\) 上有弱间断——这两条弱间断线正是波的前阵面与后阵面，而它们<b>恰好是特征线</b>。「弱间断沿特征线发生、沿特征线传播」不是巧合：对一般的 \(n\) 元二阶线性方程</p>
+$$\sum_{i,j=1}^{n}a_{ij}\frac{\partial^2u}{\partial x_i\partial x_j}+\sum_{i=1}^{n}b_i\frac{\partial u}{\partial x_i}+cu=f \tag{2.1}$$
+<p>超曲面 \(S:\varphi(x_1,\dots,x_n)=0\) 能作为弱间断面的必要条件是（把 \(S\) 局部拉平成坐标面，看 \(u\) 的二阶导数能不能被方程唯一决定，答案是不能，当且仅当）</p>
+$$\sum_{i,j=1}^{n}a_{ij}\frac{\partial\varphi}{\partial x_i}\frac{\partial\varphi}{\partial x_j}=0\quad\text{在 }S\text{ 上} \tag{2.7}$$
+<p>满足 (2.7) 的 \(S\) 就叫<b>特征曲面</b>。这个定义只看主部系数，与低阶项无关、与方程的解无关。把 \(\varphi\) 的梯度方向 \(\alpha=(\alpha_1,\dots,\alpha_n)\) 单独拿出来，配上归一化 \(\sum\alpha_i^2=1\)（取方向余弦），就得到<b>特征方向</b>：</p>
+$$\sum_{i,j=1}^{n}a_{ij}\alpha_i\alpha_j=0,\qquad \sum_{i=1}^{n}\alpha_i^2=1 \tag{2.8},\ (2.9)$$
+<div class="warn"><b>最容易混的一步（教材 p.147 脚注）：</b>特征方向 \(\alpha\) 是特征曲面的<b>法向</b>，不是切向。两个自变量时，(2.8) 是 \(a_{11}\alpha_1^2+2a_{12}\alpha_1\alpha_2+a_{22}\alpha_2^2=0\)，而特征线的切向 \(\beta\) 满足的是 \(a_{11}\beta_2^2-2a_{12}\beta_1\beta_2+a_{22}\beta_1^2=0\)——两者差一个 90° 旋转。所以下面实验室里同一组系数的「法向角」与「特征线斜率」互为倒数，别当成同一个数。</div>
+<p>四个必背的例子：</p>
+<table>
+<tr><th>方程</th><th>(2.8) 的具体形式</th><th>特征方向 / 特征曲面</th></tr>
+<tr><td>拉普拉斯（\(n\) 维）</td><td>\(\alpha_1^2+\cdots+\alpha_n^2=0\)</td><td><b>没有实特征方向</b>（椭圆型的标志）</td></tr>
+<tr><td>二维波动（\(a\) 为波速）</td><td>\(\alpha_t^2=a^2(\alpha_x^2+\alpha_y^2)\)</td><td>特征方向与 \(t\) 轴夹角 \(\arctan(1/a)\)；特征锥 \((x-x_0)^2+(y-y_0)^2=a^2(t-t_0)^2\)</td></tr>
+<tr class="hi"><td>热传导（\(u_t=a^2\Delta u\)）</td><td>\(\alpha_x^2+\alpha_y^2+\alpha_z^2=0\Rightarrow\alpha_t^2=1\)</td><td>特征曲面是超平面 \(t=\text{常数}\)。<b>柯西资料的初始面 \(t=0\) 恰好是特征面</b></td></tr>
+<tr><td>二维波动（对照）</td><td>同上</td><td>初始面 \(t=0\) <b>不是</b>特征面（\(\alpha_t\ne0\)）</td></tr>
+</table>
+<p>最后两行的对照值得记住：抛物型方程把柯西资料给在特征面上（所以热传导的柯西问题只能单向求解、逆时向不适定），而双曲型方程的初始面横切特征锥、资料给在非特征面上（所以能双向求解）。这条差别在 <a href="#illposed">§06</a> 会变成具体的反例。</p>
+
+<h3>4.1　交互：方向空间 ↔ 物理空间</h3>
+<p>左图是方向空间：单位圆（(2.9) 的归一化）上标出满足 (2.8) 的方向 \(\alpha\)，箭头从原点指出，角度按「与 \(t\) 轴（竖直）的夹角」标。右图是物理 \((x,t)\) 平面里对应的特征曲线。三组系数分别对应波、热、调和，拖波速 \(a\) 看锥角怎么变。</p>
+<div class="ctl">
+<button class="e4p on" data-p="wave">二维波动</button>
+<button class="e4p" data-p="heat">热传导</button>
+<button class="e4p" data-p="lap">调和（拉普拉斯）</button>
+<span class="lb" style="margin-left:12px">波速 \(a\)</span>
+<input id="e4-a" type="range" min="5" max="30" step="1" value="10"><span class="val" id="e4-av">a = 1.0</span>
+</div>
+<canvas id="e4c" class="plot" width="840" height="320"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">实特征方向个数</div><div class="v" id="e4-cnt">—</div></div>
+<div class="cell"><div class="k">特征方向与 \(t\) 轴夹角</div><div class="v" id="e4-ang">—</div></div>
+<div class="cell"><div class="k">特征锥母线与 \(t\) 轴夹角</div><div class="v" id="e4-cone">—</div></div>
+<div class="cell"><div class="k">特征曲线</div><div class="v txt" id="e4-curve">—</div></div>
+<div class="cell"><div class="k">\(t=0\) 是特征面吗</div><div class="v txt" id="e4-iso">—</div></div>
+</div>
+<div class="note"><b>实测备注（verify_readout_pde4.js）：</b>\(a=1\) 时波动方程给出 4 个方向（\(\pm45^\circ\) 两条直线与单位圆的 4 个交点，法向角 <b>45.000°</b>），特征锥母线角也是 <b>45.000°</b>——两者数值相同只是因为 \(a=1\) 时 \(\arctan a=\arctan(1/a)\)；把 \(a\) 拖到 2，法向角变 <b>26.565°</b>、锥半角变 <b>63.435°</b>，两者严格互余（和 \(=90.000°\)）。热传导给出 2 个方向（\(\alpha_x=0\)，竖直，夹角 <b>0°</b>）且 \(t=0\) 判定为<b>是</b>特征面；拉普拉斯给出 <b>0</b> 个实方向（\(\alpha_x^2+\alpha_t^2=0\) 只有复解）。</div>
+
+<!-- ============ 05 三类比较 ============ -->
+<h2 id="compare"><span class="no">05</span>三类方程的比较（§4，书页 161–170）</h2>
+<p>§4 先讲共性再讲差异。共性只有一条，但它是全书一半方法的来源：</p>
+<div class="key"><b>叠加原理（三个版本）：</b>Ⅰ 有限叠加 \(u=\sum_{i=1}^{n}C_iu_i\) 满足 \(Lu=\sum C_if_i\)；Ⅱ 无限叠加（级数）在收敛且可逐项求导的条件下同样成立——分离变量法就靠它；Ⅲ 含参数的积分叠加 \(U(M)=\int u(M,M_0)\,\mathrm dM_0\) 满足 \(LU=\int f\,\mathrm dM_0\)——齐次化原理、傅里叶变换、格林函数法都靠它。对<b>非线性</b>方程或非线性定解条件，叠加原理不成立，那些方法就都不能直接用。</div>
+<p>差异有五个方面，逐项对比：</p>
+<table class="fix">
+<colgroup><col style="width:14%"><col style="width:29%"><col style="width:29%"><col style="width:28%"></colgroup>
+<tr><th>方面</th><th>椭圆型（调和）</th><th>抛物型（热传导）</th><th>双曲型（波动）</th></tr>
+<tr><td>解的正则性</td><td>任何连续解在定义区域内<b>解析</b></td><td>初值只要<b>有界</b>，\(t&gt;0\) 时解无穷可微；固定 \(t\) 时对空间变量解析</td><td>只到初值的正则性：\(\varphi\in C^2,\psi\in C^1\) 且 \(\varphi'''\) 不存在时，解的三阶导数也不存在</td></tr>
+<tr><td>极值原理</td><td><b>有</b>：内部最大值不超过边界最大值（强极值、Hopf 引理）</td><td><b>有</b>：内部温度不超过「抛物边界」（侧边 + 初始面）上的最大值</td><td><b>没有</b>：波可以叠加增大，扰动的峰能超过初值上界</td></tr>
+<tr><td>影响 / 依赖区域</td><td>边界上任意小的一段 \(\Gamma_1\) 的影响区域是<b>整个区域</b>（解析性定理）</td><td>一点的影响区域是它以上的<b>整个上半平面</b>（扰动传播速度视为无穷）</td><td>影响区域是<b>特征锥内部</b>（三维时只是锥面）；依赖区域是向下的特征锥与 \(t=0\) 的交</td></tr>
+<tr><td>渐近性态</td><td>无时间变量，不谈</td><td>初边值解以<b>指数</b>速率趋于平衡态；柯西问题按 \(t^{-n/2}\)（\(n\) 为空间维数）</td><td>初边值解<b>不衰减</b>（能量守恒，解是 \(\sin,\cos\) 的级数）；柯西问题按 \(t^{-(n-1)/2}\)（三维 \(t^{-1}\)）</td></tr>
+<tr><td>时间反演</td><td>无时间变量</td><td><b>不可逆</b>：\(t\to-t\) 后方程变成 \(u_t+a^2u_{xx}=0\)，不是原方程</td><td><b>可逆</b>：\(t\to-t\) 方程不变，故可反向求解 (4.2)–(4.4)</td></tr>
+</table>
+<p>差异的根源是物理：波动方程描述能量守恒的保守系统（可逆、有限传播速度、无平滑效应），热传导描述耗散过程（不可逆、无穷传播速度、强平滑效应），调和方程描述平衡态（无时间、整体影响、最高正则性）。</p>
+
+<h3>5.1　定解问题提法的差异（教材图 4.1）</h3>
+<p>把三个典型方程都写成 \(u_{xx}=u_{yy}\)、\(u_{xx}=u_y\)、\(u_{xx}=-u_{yy}\) 的形状放在矩形 \(0\le x\le a,\ 0\le y\le b\) 上，定解条件该给在哪几条边上，一眼就看得出：</p>
+<figure>
+<svg viewBox="0 0 680 210" width="100%" role="img">
+<title>三类方程在矩形区域上的定解条件分布</title>
+<desc>弦振动方程底边给两个初始条件、两侧给边界条件；热传导方程底边给一个初始条件、两侧给边界条件；调和方程四条边全给边界条件</desc>
+<g font-family="system-ui,sans-serif">
+<!-- 弦振动 -->
+<g>
+<rect x="60" y="45" width="150" height="110" fill="#fff" stroke="#d0d7de" stroke-width="1"/>
+<line x1="60" y1="155" x2="210" y2="155" stroke="#D85A30" stroke-width="3.5"/>
+<line x1="60" y1="45" x2="60" y2="155" stroke="#185FA5" stroke-width="3.5"/>
+<line x1="210" y1="45" x2="210" y2="155" stroke="#185FA5" stroke-width="3.5"/>
+<text x="135" y="34" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">弦振动（双曲）</text>
+<text x="135" y="100" font-size="11.5" fill="#57606a" text-anchor="middle">u_tt − a²u_xx = 0</text>
+<text x="135" y="172" font-size="11" fill="#A04A22" text-anchor="middle">u, u_t 两个初始条件</text>
+<text x="46" y="104" font-size="11" fill="#0C447C" text-anchor="end">边界</text>
+<text x="224" y="104" font-size="11" fill="#0C447C">边界</text>
+<text x="135" y="192" font-size="11" fill="#57606a" text-anchor="middle">上边 \(y=b\)：不能给数据</text>
+</g>
+<!-- 热传导 -->
+<g>
+<rect x="265" y="45" width="150" height="110" fill="#fff" stroke="#d0d7de" stroke-width="1"/>
+<line x1="265" y1="155" x2="415" y2="155" stroke="#534AB7" stroke-width="3.5"/>
+<line x1="265" y1="45" x2="265" y2="155" stroke="#185FA5" stroke-width="3.5"/>
+<line x1="415" y1="45" x2="415" y2="155" stroke="#185FA5" stroke-width="3.5"/>
+<text x="340" y="34" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">热传导（抛物）</text>
+<text x="340" y="100" font-size="11.5" fill="#57606a" text-anchor="middle">u_y − a²u_xx = 0</text>
+<text x="340" y="172" font-size="11" fill="#3C3489" text-anchor="middle">u 一个初始条件</text>
+<text x="251" y="104" font-size="11" fill="#0C447C" text-anchor="end">边界</text>
+<text x="429" y="104" font-size="11" fill="#0C447C">边界</text>
+<text x="340" y="192" font-size="11" fill="#57606a" text-anchor="middle">上边 \(y=b\)：不能给数据</text>
+</g>
+<!-- 调和 -->
+<g>
+<rect x="470" y="45" width="150" height="110" fill="#fff" stroke="#0F6E56" stroke-width="3.5"/>
+<text x="545" y="34" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">调和（椭圆）</text>
+<text x="545" y="100" font-size="11.5" fill="#57606a" text-anchor="middle">u_xx + u_yy = 0</text>
+<text x="545" y="172" font-size="11" fill="#085041" text-anchor="middle">四条边全给边界条件</text>
+<text x="545" y="192" font-size="11" fill="#57606a" text-anchor="middle">没有初始条件，不提柯西问题</text>
+</g>
+<text x="340" y="16" font-size="12" fill="#57606a" text-anchor="middle">数据给在哪些边上（教材图 4.1 的重画）</text>
+</g>
+</svg>
+<figcaption>图 5-1　双曲要两个初始条件，抛物只要一个，椭圆一个都不要。</figcaption>
+</figure>
+<p>反过来问「能不能换着给」？三个回答都是否，各有各的失败方式：</p>
+<ul class="tight">
+<li><b>椭圆型不能提柯西问题</b>：把 \(y\) 当时间给调和方程初边值问题 (4.10)–(4.11)，解存在且唯一，但<b>不稳定</b>——见 <a href="#illposed">§06</a> 的阿达马例子。</li>
+<li><b>双曲型不能提狄利克雷问题</b>：把 \(u_{tt}-a^2u_{xx}=0\) 写成 \(u_{\xi\eta}=0\)（(4.13)），通解 \(u=f(\xi)+g(\eta)\)。在矩形四边全给值，前两个条件就已经把解完全定死为 \(u=f_1(\xi)+f_2(\eta)-f_1(0)\)，另外两边的值必须满足相容性关系，一般<b>无解</b>。</li>
+<li><b>抛物型也不能提狄利克雷问题</b>：热传导在底边与两侧给数据后，解在顶边 \(y=b\) 上的值已被唯一确定，不可能再任意指定，所以「四边全给」一般无解。</li>
+</ul>
+<div class="note"><b>适定性的三要素</b>（第 1 章 §1）：存在性、唯一性、稳定性。上面三个反例里，椭圆那个是「存在且唯一但不稳定」，双曲与抛物那两个是「无解」——它们说明「随便凑一个边值问题」并不能保证适定，定解条件的数目与位置必须与方程类型匹配。</div>
+
+<!-- ============ 06 不适定 ============ -->
+<h2 id="illposed"><span class="no">06</span>不适定反例：资料趋于零，解却趋于无穷</h2>
+<p>§05 说「椭圆型不能提柯西型问题」，理由不能只说「没时间变量」。教材给的是硬证据：把 \(y\) 当时间，在条带 \(0&lt;x&lt;\pi,\ y&gt;0\) 上解调和方程的初边值问题</p>
+$$\frac{\partial^2u}{\partial x^2}+\frac{\partial^2u}{\partial y^2}=0,\qquad 0&lt;x&lt;\pi,\ y&gt;0 \tag{4.10}$$
+$$u\big|_{y=0}=0,\qquad \frac{\partial u}{\partial y}\Big|_{y=0}=\frac{1}{n^k}\sin nx,\qquad u\big|_{x=0}=u\big|_{x=\pi}=0 \tag{4.11}$$
+<p>（\(n,k\) 为正整数）。分离变量得</p>
+$$u_n(x,y)=\frac{1}{n^{k+1}}\sin nx\,\operatorname{sh}ny$$
+<p>解存在且唯一，但<b>不稳定</b>：把 \(u_n\) 与零解 \(u_0\equiv0\)（满足齐次初边值条件 (4.12)）相比，当 \(n\to\infty\) 时 \(u_n\) 的初始资料本身及其直到 \(k-1\) 阶导数都一致趋于零，可是</p>
+$$\max_x|u_n(x,y)|=\frac{\operatorname{sh}ny}{n^{k+1}}\longrightarrow\infty\quad(y&gt;0\ \text{固定}),\qquad
+\|u_n-u_0\|^2_{L^2}=\frac{\pi\big(\operatorname{sh}2ny-2ny\big)}{8n^{2k+3}}\longrightarrow\infty$$
+<p>这就是著名的<b>阿达马（Hadamard）例子</b>。初始资料可以任意小，解却任意大——稳定性彻底失效，故调和方程的柯西型问题<b>不适定</b>。同样的机制在热传导方程的<b>逆时向</b>问题里重现（教材扩展阅读）：取 \(u_t=a^2u_{xx}\) 在 \(t&lt;0\) 上求解，初值 \(\varphi_n(x)=\frac{1}{n^k}\sin\frac{n\pi x}{l}\)，则</p>
+$$u_n(x,t)=\frac{1}{n^k}\sin\frac{n\pi x}{l}\exp\Big[-\Big(\frac{n\pi a}{l}\Big)^2t\Big]\ \xrightarrow{\ t&lt;0\ }\ \infty$$
+<p>高频模态在正向时间里被指数压平（这正是热传导方程解「无穷可微」的原因），反过来推就等于把被压平的指数重新放大。所以<b>热传导的时间反演不可行</b>，这也是 §05 表格里「不可逆」那一行的定量版本。</p>
+
+<h3>6.1　交互：不适定对账台</h3>
+<p>两种模式，同一个剧本：初值上确界按 \(n^{-k}\) 掉到零，解的上确界却指数/双曲地涨上去。纵轴是 \(\log_{10}\)，两条曲线一降一升，交叉点就是「资料已经小到看不出来、解已经大到不可用」的位置。</p>
+<div class="ctl">
+<button class="e5m on" data-m="had">阿达马（调和方程，y 当时间）</button>
+<button class="e5m" data-m="heat">逆时向热传导</button>
+<span class="lb" style="margin-left:12px">模态 \(n\)</span>
+<input id="e5-n" type="range" min="1" max="12" step="1" value="6"><span class="val" id="e5-nv">n = 6</span>
+<span class="lb">正则阶 \(k\)</span>
+<input id="e5-k" type="range" min="0" max="4" step="1" value="1"><span class="val" id="e5-kv">k = 1</span>
+<span class="lb" id="e5-tl">观测高度 \(y_*\)</span>
+<input id="e5-t" type="range" min="10" max="100" step="1" value="50"><span class="val" id="e5-tv">y* = 0.50</span>
+</div>
+<canvas id="e5c" class="plot" width="840" height="330"></canvas>
+<div class="kv">
+<div class="cell"><div class="k">初始资料 \(\sup|\partial_yu_n(\cdot,0)|\)</div><div class="v" id="e5-data">—</div></div>
+<div class="cell"><div class="k">解 \(\sup_x|u_n(\cdot,\text{观测点})|\)</div><div class="v" id="e5-sol">—</div></div>
+<div class="cell"><div class="k">放大倍数（解 / 资料）</div><div class="v" id="e5-ratio">—</div></div>
+<div class="cell"><div class="k">\(\|u_n\|^2_{L^2}\)（阿达马模式）</div><div class="v" id="e5-l2">—</div></div>
+<div class="cell"><div class="k">判定</div><div class="v txt" id="e5-verdict">—</div></div>
+</div>
+<div class="note"><b>实测备注（verify_readout_pde4.js）：</b>阿达马模式取 \(n=6,k=1,y_*=0.5\)：资料 \(\sup=1/6=\mathbf{0.1667}\)，解 \(\sup=\operatorname{sh}3/36=\mathbf{0.2783}\)，放大 <b>1.67</b> 倍，\(\|u_6\|^2=\mathbf{0.00988}\)；把 \(n\) 推到 12：资料降到 \(\mathbf{0.0833}\)（减半），解升到 \(\operatorname{sh}6/144=\mathbf{1.401}\)（涨 5 倍），放大倍数变成 <b>16.8</b>——资料变小、解变大，两个方向同时反着走。\(L^2\) 范数按 \(\pi(\operatorname{sh}2ny-2ny)/(8n^{2k+3})\) 独立复算，与页面读数一致到 \(10^{-12}\)。逆时向模式取 \(n=6,k=1,t_*=-0.05\)：资料 \(0.1667\)，解 \(e^{9\pi^2\cdot0.05}/6=\mathbf{8.65\times10^{6}}\)，放大 <b>5.19×10⁷</b> 倍；\(n=10\) 时解到 \(2.70\times10^{20}\)、放大 \(2.70\times10^{21}\) 倍——指数压平的正向过程一旦反推，就是灾难。两个解分别代回 \(u_{xx}+u_{yy}=0\) 与 \(u_t-a^2u_{xx}=0\) 检验（中心差分），绝对残差 \(&lt;10^{-5}\)、相对残差 \(&lt;10^{-5}\)，确认页面画的是真解而不是拟合。</div>
+
+<!-- ============ 07 速查 ============ -->
+<h2 id="cheat"><span class="no">07</span>速查表与三条易错点</h2>
+<table class="fix">
+<colgroup><col style="width:15%"><col style="width:28%"><col style="width:28%"><col style="width:29%"></colgroup>
+<tr><th>项目</th><th>椭圆型</th><th>抛物型</th><th>双曲型</th></tr>
+<tr><td>判别式</td><td>\(\Delta&lt;0\)</td><td>\(\Delta=0\)</td><td>\(\Delta&gt;0\)</td></tr>
+<tr><td>特征线</td><td>无实特征线</td><td>一族（重特征）</td><td>两族</td></tr>
+<tr><td>标准形</td><td>\(u_{\xi\xi}+u_{\eta\eta}=\cdots\) (1.17)</td><td>\(u_{\eta\eta}=\cdots\) (1.13)</td><td>\(u_{\xi\eta}=\cdots\) (1.11) / \(u_{ss}-u_{tt}=\cdots\) (1.12)</td></tr>
+<tr><td>典型方程</td><td>\(u_{xx}+u_{yy}=0\)</td><td>\(u_t-a^2u_{xx}=0\)</td><td>\(u_{tt}-a^2u_{xx}=0\)</td></tr>
+<tr><td>定解条件</td><td>只有边界条件</td><td>1 个初始条件 + 边界条件</td><td>2 个初始条件 + 边界条件</td></tr>
+<tr><td>影响区域</td><td>整个区域</td><td>整个上半平面</td><td>特征锥内部（三维：锥面）</td></tr>
+<tr><td>解的正则性</td><td>解析</td><td>\(t&gt;0\) 无穷可微</td><td>不超过初值的正则性</td></tr>
+<tr><td>极值原理</td><td>有</td><td>有（抛物边界）</td><td>无</td></tr>
+<tr><td>时间反演</td><td>—</td><td>不可逆</td><td>可逆</td></tr>
+<tr><td>不能提的问题</td><td>柯西问题（Hadamard 反例）</td><td>四边全给的狄利克雷问题</td><td>狄利克雷问题</td></tr>
+</table>
+<p>三条容易记错的地方，都用本页的实验台验证过：</p>
+<ul class="tight">
+<li><b>判别式带负号。</b>本教材取 \(\Delta=a_{12}^2-a_{11}a_{22}\)（对应 (1.8) 里交叉项系数是 \(-2a_{12}\)）。若换一种写法把交叉项写成 \(+2a_{12}u_{xy}\) 并把 \(\Delta\) 定义成 \(a_{11}a_{22}-a_{12}^2\)，三个不等号的<b>方向会全部反过来</b>。做题先确认定义。</li>
+<li><b>特征方向 ≠ 特征线方向。</b>(2.8) 的 \(\alpha\) 是法向，两个自变量时它与特征线切向差 90°（教材 p.147 脚注）。实验 4.1 里「法向角」与「锥半角」互余，就是这件事的数值影子。</li>
+<li><b>抛物型的 \(\xi\) 必须选成特征函数。</b>热传导方程的特征线是 \(y=\text{常数}\)，所以要取 \(\xi=y,\eta=x\)；若顺手取 \(\xi=x\)，\(\bar a_{11}=-1\ne0\)，方程化不到 (1.13)。实验 2.1 的 \(\bar a_{11}\) 读数就是这条的检验器。</li>
+</ul>
+<div class="key"><b>把本章串成一句话：</b>主部二次型 \(Q\) 的符号决定了特征线有几族（\(\Delta\)），特征线决定了方程能化成哪种标准形（(1.11)/(1.13)/(1.17)），标准形决定了信息怎么传播（锥 / 上半平面 / 整体），传播方式又决定了定解条件该给几个、给在哪——而这三件事的物理内容，就是波、扩散与平衡。第 5 章把「高阶方程化一阶方程组」接上这条线，第 6 章则用广义函数把基本解讲透。</div>
+
+<footer>
+<p>内容取自谷超豪 等《数学物理方程（第四版）》第 4 章（书页 134–170，PDF 145–181）：§1 分类与化简（(1.1)–(1.19)）、§2 特征理论（(2.1)–(2.9)）、§4 三类方程的比较（(4.1)–(4.14)）。§3 先验估计属能量方法，本页只在表格里引用结论，详见第 1 章 §6。OCR 切片中 (1.6)(1.9) 的分式与根号有损，已按上下文与 PDF 渲染重组核对。页面全部数值结论由工作区脚本 verify_readout_pde4.js 实测。</p>
+<p>目录：math_visualization/site/pde/ · 生成于 2026-10-26 · 交互为零依赖原生 JS，公式渲染需联网（MathJax 3）。</p>
+</footer>
+
+</div>
+
+<script>
+"use strict";
+function $(id){ return document.getElementById(id); }
+function qsa(sel){ return (document.querySelectorAll ? document.querySelectorAll(sel) : []); }
+function nf(x, d){
+  if (x === null || x === undefined || !isFinite(x)) return "—";
+  if (Math.abs(x) < 5e-7) x = 0;
+  return x.toFixed(d === undefined ? 3 : d);
+}
+function nfe(x){
+  if (x === null || x === undefined || !isFinite(x)) return "—";
+  if (x === 0) return "0";
+  var a = Math.abs(x), e = Math.floor(Math.log10(a));
+  if (e >= -3 && e <= 4) return String(Number(x.toPrecision(4)));
+  return x.toExponential(2);
+}
+var CVS = {};
+function cx(id){ if (!CVS[id]) CVS[id] = $(id).getContext("2d"); return CVS[id]; }
+function seg(p, c, s, col, dash, lw){
+  c.save(); c.beginPath();
+  c.setLineDash(dash || []);
+  c.strokeStyle = col; c.lineWidth = lw || 1.4;
+  if (!isFinite(s)){ c.moveTo(p.X(0), p.y0); c.lineTo(p.X(0), p.y0 + p.h); }
+  else { c.moveTo(p.X(p.xmin), p.Y(s * p.xmin)); c.lineTo(p.X(p.xmax), p.Y(s * p.xmax)); }
+  c.stroke(); c.restore();
+}
+function labBox(c, x, y, t, col, size, align){
+  c.save();
+  var fs = size || 12;
+  c.font = fs + "px system-ui,sans-serif";
+  var w = (c.measureText ? c.measureText(t).width : t.length * fs * 0.6) || t.length * fs * 0.6;
+  var ax = x;
+  if (align === "right") ax = x - w; else if (align === "center") ax = x - w / 2;
+  c.fillStyle = "rgba(255,255,255,.88)";
+  c.fillRect(ax - 4, y - fs - 1, w + 8, fs + 7);
+  c.fillStyle = col || "#57606a"; c.textAlign = "left"; c.fillText(t, ax, y);
+  c.restore();
+}
+function lab(c, x, y, t, col, size, align){
+  c.save(); c.fillStyle = col || "#57606a";
+  c.font = (size || 11) + "px ui-monospace,monospace";
+  c.textAlign = align || "left"; c.fillText(t, x, y); c.restore();
+}
+
+/* ==================== 实验 1：二次型分类沙盘 ==================== */
+var E1 = { a11: 1, a12: 0, a22: 1 };
+function e1Type(d){ return d > 1e-12 ? "hyp" : (d < -1e-12 ? "ell" : "par"); }
+function e1Disc(a11, a12, a22){ return a12 * a12 - a11 * a22; }
+function e1Slopes(a11, a12, a22){
+  var d = e1Disc(a11, a12, a22), out = [];
+  if (Math.abs(a11) > 1e-12){
+    if (d > 1e-12){ out.push((a12 + Math.sqrt(d)) / a11); out.push((a12 - Math.sqrt(d)) / a11); }
+    else if (d >= -1e-12){ out.push(a12 / a11); }
+  } else if (Math.abs(a12) > 1e-12){
+    out.push(a22 / (2 * a12)); out.push(Infinity);
+  }
+  return out;
+}
+function e1Normal(a11, a12, a22){
+  var d = e1Disc(a11, a12, a22), out = [];
+  if (Math.abs(a22) > 1e-12){
+    if (d >= 0){ out.push((-a12 + Math.sqrt(d)) / a22); out.push((-a12 - Math.sqrt(d)) / a22); }
+  } else if (Math.abs(a12) > 1e-12){
+    out.push(-a11 / (2 * a12)); out.push(Infinity);
+  }
+  return out;
+}
+function e1Eig(a11, a12, a22){
+  var tr = a11 + a22, det = a11 * a22 - a12 * a12, dd = tr * tr - 4 * det;
+  if (dd < 0) return [NaN, NaN];
+  var r = Math.sqrt(dd);
+  return [(tr + r) / 2, (tr - r) / 2];
+}
+function e1Draw(){
+  var c = cx("e1c"), W = $("e1c").width, H = $("e1c").height;
+  c.clearRect(0, 0, W, H);
+  var p1 = panelXY(18, 24, 330, 330, -2.3, 2.3, -2.3, 2.3);
+  var p2 = panelXY(492, 24, 330, 330, -2.3, 2.3, -2.3, 2.3);
+  var a11 = E1.a11, a12 = E1.a12, a22 = E1.a22;
+
+  p1.frame(c); p1.clip(c); p1.axes(c);
+  c.save(); c.beginPath(); c.setLineDash([3, 4]); c.strokeStyle = "#b9c2cc"; c.lineWidth = 1;
+  c.arc(p1.X(0), p1.Y(0), p1.sx, 0, 2 * Math.PI); c.stroke(); c.restore();
+  var ns = e1Normal(a11, a12, a22);
+  for (var i = 0; i < ns.length; i++) seg(p1, c, ns[i], "#D85A30", [5, 4], 1.6);
+  var open = false;
+  c.save(); c.beginPath(); c.strokeStyle = "#185FA5"; c.lineWidth = 2.2;
+  for (var k = 0; k <= 1440; k++){
+    var th = k / 1440 * 2 * Math.PI, cl = Math.cos(th), sm = Math.sin(th);
+    var Q = a11 * cl * cl + 2 * a12 * cl * sm + a22 * sm * sm;
+    if (Q > 1e-9){
+      var r = 1 / Math.sqrt(Q);
+      if (r <= 4.2){
+        if (!open){ c.moveTo(p1.X(r * cl), p1.Y(r * sm)); open = true; }
+        else c.lineTo(p1.X(r * cl), p1.Y(r * sm));
+      } else open = false;
+    } else open = false;
+  }
+  c.stroke(); c.restore();
+  p1.done(c);
+  lab(c, p1.x0 + 6, p1.y0 + 14, "方向空间 (l, m)：蓝线 Q=1，珊瑚虚线 Q=0", "#57606a", 11);
+  lab(c, p1.X(2.16), p1.Y(0) - 6, "l", "#57606a", 12);
+  lab(c, p1.X(0) + 6, p1.Y(2.18), "m", "#57606a", 12);
+
+  p2.frame(c); p2.clip(c); p2.axes(c);
+  var ss = e1Slopes(a11, a12, a22), t = e1Type(e1Disc(a11, a12, a22));
+  if (ss.length){
+    for (var j = 0; j < ss.length; j++){
+      for (var q = -4; q <= 4; q += 0.5){
+        if (!isFinite(ss[j])) continue;
+        c.save(); c.beginPath(); c.strokeStyle = (j === 0 ? "#2F5D8A" : "#8A6D1F"); c.lineWidth = 1.2;
+        var xa = p2.xmin, xb = p2.xmax;
+        c.moveTo(p2.X(xa), p2.Y(ss[j] * xa + q));
+        c.lineTo(p2.X(xb), p2.Y(ss[j] * xb + q));
+        c.stroke(); c.restore();
+      }
+      if (!isFinite(ss[j])){
+        for (var q2 = -5; q2 <= 5; q2 += 1){
+          c.save(); c.beginPath(); c.strokeStyle = "#8A6D1F"; c.lineWidth = 1.2;
+          c.moveTo(p2.X(q2), p2.y0); c.lineTo(p2.X(q2), p2.y0 + p2.h); c.stroke(); c.restore();
+        }
+      }
+    }
+  } else {
+    for (var g = -2; g <= 2; g += 0.5){
+      c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
+      c.moveTo(p2.X(g), p2.y0); c.lineTo(p2.X(g), p2.y0 + p2.h);
+      c.moveTo(p2.x0, p2.Y(g)); c.lineTo(p2.x0 + p2.w, p2.Y(g)); c.stroke(); c.restore();
+    }
+  }
+  p2.done(c);
+  lab(c, p2.x0 + 6, p2.y0 + 14, t === "ell" ? "物理平面：无实特征线（虚线 = 复特征的实/虚部）"
+    : "物理平面：特征线族 y = s·x + c", "#57606a", 11);
+  lab(c, p2.X(2.16), p2.Y(0) - 6, "x", "#57606a", 12);
+  lab(c, p2.X(0) + 6, p2.Y(2.18), "y", "#57606a", 12);
+  /* 中间：从代数到几何的一支箭头 */
+  c.save();
+  c.strokeStyle = "#185FA5"; c.lineWidth = 1.6;
+  c.beginPath(); c.moveTo(360, 190); c.lineTo(476, 190); c.stroke();
+  c.beginPath(); c.moveTo(482, 190); c.lineTo(470, 184); c.lineTo(470, 196); c.closePath();
+  c.fillStyle = "#185FA5"; c.fill(); c.restore();
+  lab(c, 418, 178, "同一组 (a₁₁, a₁₂, a₂₂)", "#185FA5", 11, "center");
+  lab(c, 418, 210, "代数 → 几何", "#57606a", 11, "center");
+  lab(c, W / 2, 14, "左：判别式的代数来源　　右：它带来的几何", "#57606a", 12, "center");
+}
+function e1Update(){
+  var a11 = E1.a11, a12 = E1.a12, a22 = E1.a22;
+  var d = e1Disc(a11, a12, a22), t = e1Type(d);
+  var ss = e1Slopes(a11, a12, a22), ns = e1Normal(a11, a12, a22), ev = e1Eig(a11, a12, a22);
+  $("e1-a11v").textContent = nf(a11, 1);
+  $("e1-a12v").textContent = nf(a12, 1);
+  $("e1-a22v").textContent = nf(a22, 1);
+  $("e1-d").textContent = nf(d, 3);
+  $("e1-type").textContent = t === "hyp" ? "双曲型（Δ > 0）" : (t === "ell" ? "椭圆型（Δ < 0）" : "抛物型（Δ = 0）");
+  $("e1-conic").textContent = t === "hyp" ? "双曲线" : (t === "ell" ? "椭圆" : "退化抛物线");
+  $("e1-s").textContent = ss.length ? ss.map(function(v){ return isFinite(v) ? nf(v, 3) : "∞"; }).join(" , ") : "无实解";
+  $("e1-n").textContent = ns.length ? ns.map(function(v){ return isFinite(v) ? nf(v, 3) : "∞"; }).join(" , ") : "无实解";
+  $("e1-eig").textContent = isFinite(ev[0]) ? (nf(ev[0], 2) + " , " + nf(ev[1], 2)) : "复共轭";
+  var box = $("e1-stdbox").children || [];
+  for (var i = 0; i < box.length; i++)
+    box[i].classList.toggle("on", box[i].getAttribute("data-t") === t);
+  e1Draw();
+  return { d: d, type: t, s1: ss.length ? ss[0] : NaN, s2: ss.length > 1 ? ss[1] : NaN,
+    n1: ns.length ? ns[0] : NaN, n2: ns.length > 1 ? ns[1] : NaN,
+    l1: ev[0], l2: ev[1], nslopes: ss.length };
+}
+var E1P = { lap: [1, 0, 1], wave: [-1, 0, 1], heat: [-1, 0, 0], obl: [1, 1, 0] };
+function e1Preset(k){
+  var v = E1P[k]; if (!v) return;
+  E1.a11 = v[0]; E1.a12 = v[1]; E1.a22 = v[2];
+  $("e1-a11").value = String(Math.round(v[0] * 10));
+  $("e1-a12").value = String(Math.round(v[1] * 10));
+  $("e1-a22").value = String(Math.round(v[2] * 10));
+  e1Update();
+}
+$("e1-a11").addEventListener("input", function(){ E1.a11 = Number(this.value) / 10; e1Update(); });
+$("e1-a12").addEventListener("input", function(){ E1.a12 = Number(this.value) / 10; e1Update(); });
+$("e1-a22").addEventListener("input", function(){ E1.a22 = Number(this.value) / 10; e1Update(); });
+Array.prototype.forEach.call(qsa(".e1p"), function(b){
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(qsa(".e1p"), function(x){ x.classList.remove("on"); });
+    b.classList.add("on"); e1Preset(b.getAttribute("data-p"));
+  });
+});
+
+/* ==================== 实验 2：特征线族与标准形对账 ==================== */
+function panelXY(x0, y0, w, h, xmin, xmax, ymin, ymax){
+  var sx = w / (xmax - xmin), sy = h / (ymax - ymin);
+  return {
+    x0: x0, y0: y0, w: w, h: h, xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax, sx: sx, sy: sy,
+    X: function(x){ return x0 + (x - xmin) * sx; },
+    Y: function(y){ return y0 + h - (y - ymin) * sy; },
+    clip: function(c){ c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip(); },
+    done: function(c){ c.restore(); },
+    frame: function(c){ c.strokeStyle = "#d0d7de"; c.lineWidth = 1; c.strokeRect(x0 + .5, y0 + .5, w - 1, h - 1); },
+    axes: function(c){
+      c.strokeStyle = "#e6e9ec"; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(x0, this.Y(0)); c.lineTo(x0 + w, this.Y(0));
+      c.moveTo(this.X(0), y0); c.lineTo(this.X(0), y0 + h); c.stroke();
+    }
+  };
+}
+var E2P = {
+  wave: { a11: -1, a12: 0, a22: 1, nm: "u_yy − u_xx = 0", xi: "ξ = x + y", eta: "η = x − y",
+    fx: function(x, y){ return x + y; }, fy: function(x, y){ return x - y; } },
+  heat: { a11: -1, a12: 0, a22: 0, nm: "u_y − u_xx = 0", xi: "ξ = y", eta: "η = x",
+    fx: function(x, y){ return y; }, fy: function(x, y){ return x; } },
+  laplace: { a11: 1, a12: 0, a22: 1, nm: "u_xx + u_yy = 0", xi: "ξ = x", eta: "η = y",
+    fx: function(x, y){ return x; }, fy: function(x, y){ return y; } },
+  obl: { a11: 1, a12: 1, a22: 0, nm: "u_xx + 2u_xy = 0", xi: "ξ = y − 2x", eta: "η = y",
+    fx: function(x, y){ return y - 2 * x; }, fy: function(x, y){ return y; } }
+};
+var E2 = { p: "wave", X0: 0.3, Y0: 0.2 };
+function e2Deriv(f, x, y, axis){
+  var h = 1e-5;
+  return axis === 0 ? (f(x + h, y) - f(x - h, y)) / (2 * h) : (f(x, y + h) - f(x, y - h)) / (2 * h);
+}
+function e2Bar(a11, a12, a22, fx, fy, x0, y0){
+  var xix = e2Deriv(fx, x0, y0, 0), xiy = e2Deriv(fx, x0, y0, 1);
+  var etx = e2Deriv(fy, x0, y0, 0), ety = e2Deriv(fy, x0, y0, 1);
+  return {
+    b11: a11 * xix * xix + 2 * a12 * xix * xiy + a22 * xiy * xiy,
+    b12: a11 * xix * etx + a12 * (xix * ety + xiy * etx) + a22 * xiy * ety,
+    b22: a11 * etx * etx + 2 * a12 * etx * ety + a22 * ety * ety,
+    jac: xix * ety - xiy * etx
+  };
+}
+function e2Draw(){
+  var c = cx("e2c"), W = $("e2c").width, H = $("e2c").height;
+  c.clearRect(0, 0, W, H);
+  var P = E2P[E2.p], p = panelXY(24, 28, 792, 372, -5.6, 5.6, -2.6, 2.6);
+  var d = e1Disc(P.a11, P.a12, P.a22), t = e1Type(d), ss = e1Slopes(P.a11, P.a12, P.a22);
+  p.frame(c); p.clip(c); p.axes(c);
+  if (ss.length){
+    for (var j = 0; j < ss.length; j++){
+      var col = (j === 0 ? "#2F5D8A" : "#8A6D1F");
+      for (var q = -8.4; q <= 8.41; q += 0.7){
+        c.save(); c.beginPath(); c.strokeStyle = col; c.lineWidth = 1.3; c.globalAlpha = .85;
+        if (!isFinite(ss[j])){
+          c.moveTo(p.X(q), p.y0); c.lineTo(p.X(q), p.y0 + p.h);
+        } else {
+          c.moveTo(p.X(p.xmin), p.Y(ss[j] * p.xmin + q));
+          c.lineTo(p.X(p.xmax), p.Y(ss[j] * p.xmax + q));
+        }
+        c.stroke(); c.restore();
+      }
+    }
+  } else {
+    for (var g = -5; g <= 5.001; g += 1){
+      c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
+      c.moveTo(p.X(g), p.y0); c.lineTo(p.X(g), p.y0 + p.h); c.stroke(); c.restore();
+    }
+    for (var g2 = -2; g2 <= 2.001; g2 += 0.5){
+      c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
+      c.moveTo(p.x0, p.Y(g2)); c.lineTo(p.x0 + p.w, p.Y(g2)); c.stroke(); c.restore();
+    }
+  }
+  p.done(c);
+  lab(c, p.x0 + 8, p.y0 + 16, P.nm, "#22303F", 12.5);
+  lab(c, p.x0 + 8, p.y0 + 34, "特征线 " + (ss.length === 0 ? "（无实特征线，虚线为复特征坐标线）"
+    : (ss.length === 1 ? "y = " + nf(ss[0], 2) + "·x + c" : "y = " + nf(ss[0], 2) + "·x + c 与 y = " + nf(ss[1], 2) + "·x + c")),
+    "#57606a", 11.5);
+  lab(c, p.X(5.4), p.Y(0) - 6, "x", "#57606a", 12);
+  lab(c, p.X(0) + 6, p.Y(2.42), "y", "#57606a", 12);
+  lab(c, W / 2, 16, "物理平面：特征线族（同族线不相交、不同族相交）", "#57606a", 12, "center");
+}
+function e2Update(){
+  var P = E2P[E2.p];
+  var d = e1Disc(P.a11, P.a12, P.a22), t = e1Type(d), ss = e1Slopes(P.a11, P.a12, P.a22);
+  var b = e2Bar(P.a11, P.a12, P.a22, P.fx, P.fy, E2.X0, E2.Y0);
+  $("e2-coef").textContent = "(" + nf(P.a11, 1) + ", " + nf(P.a12, 1) + ", " + nf(P.a22, 1) + ")";
+  $("e2-d").textContent = nf(d, 3);
+  $("e2-type").textContent = t === "hyp" ? "双曲型" : (t === "ell" ? "椭圆型" : "抛物型");
+  $("e2-s").textContent = ss.length ? ss.map(function(v){ return isFinite(v) ? nf(v, 3) : "∞"; }).join(" , ") : "无实解";
+  $("e2-tr").textContent = P.xi + " ， " + P.eta;
+  $("e2-b11").textContent = nf(b.b11, 3);
+  $("e2-b12").textContent = nf(b.b12, 3);
+  $("e2-b22").textContent = nf(b.b22, 3);
+  var box = $("e2-stdbox").children || [];
+  for (var i = 0; i < box.length; i++)
+    box[i].classList.toggle("on", box[i].getAttribute("data-t") === t);
+  e2Draw();
+  return { d: d, type: t, s1: ss.length ? ss[0] : NaN, s2: ss.length > 1 ? ss[1] : NaN,
+    b11: b.b11, b12: b.b12, b22: b.b22, jac: b.jac, nslopes: ss.length };
+}
+Array.prototype.forEach.call(qsa(".e2p"), function(b){
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(qsa(".e2p"), function(x){ x.classList.remove("on"); });
+    b.classList.add("on"); E2.p = b.getAttribute("data-p"); e2Update();
+  });
+});
+
+/* ==================== 实验 3：Tricomi 判别式场 ==================== */
+var E3 = { x: 0.4, y: -0.36, pan: null };
+function e3Draw(){
+  var c = cx("e3c"), W = $("e3c").width, H = $("e3c").height;
+  c.clearRect(0, 0, W, H);
+  var p = panelXY(30, 28, 780, 360, -3.9, 3.9, -1.8, 1.8);
+  E3.pan = p;
+  p.frame(c); p.clip(c);
+  /* 区域底色 */
+  c.fillStyle = "#E1F5EE"; c.fillRect(p.x0, p.y0, p.w, p.Y(0) - p.y0);
+  c.fillStyle = "#FAECE7"; c.fillRect(p.x0, p.Y(0), p.w, p.y0 + p.h - p.Y(0));
+  p.axes(c);
+  /* y=0 抛物分界 */
+  c.save(); c.beginPath(); c.setLineDash([7, 5]); c.strokeStyle = "#534AB7"; c.lineWidth = 2;
+  c.moveTo(p.x0, p.Y(0)); c.lineTo(p.x0 + p.w, p.Y(0)); c.stroke(); c.restore();
+  /* 双曲区特征线：x = c ∓ (2/3)(-y)^{3/2} */
+  for (var ci = -13; ci <= 13; ci++){
+    var cc = ci * 0.7;
+    for (var sgn = -1; sgn <= 1; sgn += 2){
+      c.save(); c.beginPath(); c.strokeStyle = (sgn < 0 ? "#D85A30" : "#8A6D1F");
+      c.lineWidth = 1.5; c.globalAlpha = .9;
+      var started = false;
+      for (var yy = 0; yy >= p.ymin; yy -= 0.02){
+        var xx = cc + sgn * (2 / 3) * Math.pow(-yy, 1.5);
+        if (xx < p.xmin - .2 || xx > p.xmax + .2){ started = false; continue; }
+        if (!started){ c.moveTo(p.X(xx), p.Y(yy)); started = true; }
+        else c.lineTo(p.X(xx), p.Y(yy));
+      }
+      c.stroke(); c.restore();
+    }
+  }
+  /* 椭圆区：复特征实/虚部等值线（虚线） */
+  for (var g = -3.5; g <= 3.51; g += 0.7){
+    c.save(); c.beginPath(); c.setLineDash([3, 5]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
+    c.moveTo(p.X(g), p.y0); c.lineTo(p.X(g), p.Y(0)); c.stroke(); c.restore();
+  }
+  for (var g2 = 0.3; g2 <= 1.51; g2 += 0.3){
+    c.save(); c.beginPath(); c.setLineDash([3, 5]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
+    c.moveTo(p.x0, p.Y(g2)); c.lineTo(p.x0 + p.w, p.Y(g2)); c.stroke(); c.restore();
+  }
+  /* 探针 */
+  var px = p.X(E3.x), py = p.Y(E3.y);
+  c.save();
+  c.beginPath(); c.arc(px, py, 6, 0, 2 * Math.PI);
+  c.fillStyle = "#185FA5"; c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 2; c.stroke();
+  c.beginPath(); c.setLineDash([2, 3]); c.strokeStyle = "#185FA5"; c.lineWidth = 1;
+  c.moveTo(p.x0, py); c.lineTo(p.x0 + p.w, py);
+  c.moveTo(px, p.y0); c.lineTo(px, p.y0 + p.h); c.stroke();
+  c.restore();
+  p.done(c);
+  labBox(c, p.x0 + 10, p.y0 + 20, "椭圆区 y > 0：Δ = −y < 0（无实特征线）", "#085041", 12);
+  labBox(c, p.x0 + 10, p.y0 + p.h - 12, "双曲区 y < 0：Δ = −y > 0，两族特征线 x ± ⅔(−y)^{3/2} = c", "#A04A22", 12);
+  labBox(c, p.x0 + p.w - 10, p.Y(0) - 8, "y = 0：抛物分界（两族特征线在此重合成一族）", "#26215C", 11.5, "right");
+  lab(c, p.X(3.72), p.Y(0) - 6, "x", "#57606a", 12);
+  lab(c, p.X(0) + 6, p.Y(1.68), "y", "#57606a", 12);
+  lab(c, W / 2, 16, "Tricomi 方程 y·u_xx + u_yy = 0 的类型分布（拖动探针）", "#57606a", 12, "center");
+}
+function e3Update(){
+  var y = E3.y, d = -y;
+  var t = d > 1e-9 ? "hyp" : (d < -1e-9 ? "ell" : "par");
+  $("e3-pt").textContent = "x₀ = " + nf(E3.x, 3) + "，y₀ = " + nf(y, 3);
+  $("e3-d").textContent = nf(d, 3);
+  $("e3-type").textContent = t === "hyp" ? "双曲型" : (t === "ell" ? "椭圆型" : "抛物型（分界）");
+  var p1 = NaN, p2 = NaN, sl = NaN, eta = NaN;
+  if (y < 0){
+    var A = (2 / 3) * Math.pow(-y, 1.5);
+    p1 = E3.x + A; p2 = E3.x - A; sl = Math.sqrt(-y);
+    $("e3-p1").textContent = nf(p1, 4);
+    $("e3-p2").textContent = nf(p2, 4);
+    $("e3-slope").textContent = "+" + nf(sl, 3) + " / −" + nf(sl, 3);
+    $("e3-eta").textContent = "—（该公式在 y < 0 不适用）";
+  } else {
+    eta = (2 / 3) * Math.pow(y, 1.5);
+    $("e3-p1").textContent = "—（y ≥ 0 无实特征线）";
+    $("e3-p2").textContent = "—（y ≥ 0 无实特征线）";
+    $("e3-slope").textContent = "—";
+    $("e3-eta").textContent = nf(eta, 4);
+  }
+  e3Draw();
+  return { d: d, type: t, p1: p1, p2: p2, slope: sl, eta: eta };
+}
+(function(){
+  var cv = $("e3c");
+  function toWorld(ev){
+    var p = E3.pan, r = cv.getBoundingClientRect();
+    var x = (ev.clientX - r.left) * (cv.width / r.width);
+    var yy = (ev.clientY - r.top) * (cv.height / r.height);
+    return { x: p.xmin + (x - p.x0) / p.sx, y: p.ymin + (p.y0 + p.h - yy) / p.sy };
+  }
+  function pick(ev){
+    if (!E3.pan) return;
+    var w = toWorld(ev);
+    E3.x = Math.max(E3.pan.xmin + .1, Math.min(E3.pan.xmax - .1, w.x));
+    E3.y = Math.max(E3.pan.ymin + .05, Math.min(E3.pan.ymax - .05, w.y));
+    e3Update();
+  }
+  var dragging = false;
+  cv.addEventListener("pointerdown", function(ev){ dragging = true; pick(ev); });
+  cv.addEventListener("pointermove", function(ev){ if (dragging) pick(ev); });
+  cv.addEventListener("pointerup", function(){ dragging = false; });
+  cv.addEventListener("pointerleave", function(){ dragging = false; });
+})();
+
+/* ==================== 实验 4：方向空间 ↔ 物理空间 ==================== */
+var E4 = { p: "wave", a: 1.0 };
+var E4P = {
+  wave: { axx: -1, att: 1, nm: "二维波动 u_tt − a²(u_xx+u_yy) = 0" },
+  heat: { axx: -1, att: 0, nm: "热传导 u_t − a²u_xx = 0" },
+  lap: { axx: 1, att: 1, nm: "拉普拉斯 u_xx + u_yy = 0" }
+};
+function e4Coeff(){
+  var P = E4P[E4.p];
+  if (E4.p === "wave") return { axx: -E4.a * E4.a, att: 1 };
+  return { axx: P.axx, att: P.att };
+}
+function e4Data(){
+  var cf = e4Coeff(), a = E4.a;
+  var ang = NaN, cone = NaN, cnt = 0, pts = [];
+  if (E4.p === "wave"){
+    var s = 1 / Math.sqrt(1 + a * a);
+    pts = [[s, a * s], [-s, a * s], [s, -a * s], [-s, -a * s]];
+    cnt = 4;
+    ang = Math.atan(1 / a) * 180 / Math.PI;
+    cone = Math.atan(a) * 180 / Math.PI;
+  } else if (E4.p === "heat"){
+    pts = [[0, 1], [0, -1]];
+    cnt = 2; ang = 0;
+  }
+  return { cnt: cnt, ang: ang, cone: cone, pts: pts, cf: cf };
+}
+function e4Draw(){
+  var c = cx("e4c"), W = $("e4c").width, H = $("e4c").height;
+  c.clearRect(0, 0, W, H);
+  var d = e4Data(), cf = d.cf;
+  var p1 = panelXY(36, 30, 264, 264, -1.3, 1.3, -1.3, 1.3);
+  var p2 = panelXY(470, 30, 317, 264, -2.4, 2.4, -2.0, 2.0);
+
+  /* 左：方向空间 (α_x, α_t) */
+  p1.frame(c); p1.clip(c); p1.axes(c);
+  c.save(); c.beginPath(); c.setLineDash([3, 4]); c.strokeStyle = "#b9c2cc"; c.lineWidth = 1;
+  c.arc(p1.X(0), p1.Y(0), p1.sx, 0, 2 * Math.PI); c.stroke(); c.restore();
+  if (E4.p === "wave"){
+    var a = E4.a;
+    for (var sgn = -1; sgn <= 1; sgn += 2){
+      c.save(); c.beginPath(); c.setLineDash([5, 4]); c.strokeStyle = "#D85A30"; c.lineWidth = 1.6;
+      c.moveTo(p1.X(-1.3), p1.Y(sgn * a * -1.3)); c.lineTo(p1.X(1.3), p1.Y(sgn * a * 1.3));
+      c.stroke(); c.restore();
+    }
+  } else if (E4.p === "heat"){
+    c.save(); c.beginPath(); c.setLineDash([5, 4]); c.strokeStyle = "#D85A30"; c.lineWidth = 1.6;
+    c.moveTo(p1.X(0), p1.Y(-1.3)); c.lineTo(p1.X(0), p1.Y(1.3)); c.stroke(); c.restore();
+  }
+  for (var i = 0; i < d.pts.length; i++){
+    var P = d.pts[i];
+    c.save();
+    c.beginPath(); c.arc(p1.X(P[0]), p1.Y(P[1]), 5, 0, 2 * Math.PI);
+    c.fillStyle = "#D85A30"; c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 1.5; c.stroke();
+    c.beginPath(); c.strokeStyle = "#D85A30"; c.lineWidth = 1.3;
+    c.moveTo(p1.X(0), p1.Y(0)); c.lineTo(p1.X(P[0]), p1.Y(P[1])); c.stroke();
+    c.restore();
+  }
+  if (E4.p === "wave" && isFinite(d.ang)){
+    var s0 = 1 / Math.sqrt(1 + E4.a * E4.a);
+    c.save(); c.beginPath(); c.setLineDash([2, 3]); c.strokeStyle = "#0C447C"; c.lineWidth = 1;
+    c.moveTo(p1.X(0), p1.Y(0)); c.lineTo(p1.X(0), p1.Y(1.15)); c.stroke();
+    c.beginPath(); c.arc(p1.X(0), p1.Y(0), 42, -Math.PI / 2, -Math.PI / 2 + Math.atan2(E4.a * s0, s0));
+    c.stroke(); c.restore();
+    lab(c, p1.X(0) + 10, p1.Y(0.95), "α", "#0C447C", 11.5);
+  }
+  p1.done(c);
+  labBox(c, p1.x0 + 6, p1.y0 + p1.h - 8, "方向空间：单位圆 + 零方向 Q(α)=0", "#57606a", 11);
+  lab(c, p1.X(1.12), p1.Y(0) - 6, "α_x", "#57606a", 11.5);
+  lab(c, p1.X(0) + 6, p1.Y(1.2), "α_t", "#57606a", 11.5);
+
+  /* 右：物理空间 */
+  p2.frame(c); p2.clip(c); p2.axes(c);
+  if (E4.p === "wave"){
+    var a2 = E4.a;
+    for (var kk = -3; kk <= 3; kk++){
+      var cc = kk * 0.7;
+      for (var sg = -1; sg <= 1; sg += 2){
+        c.save(); c.beginPath(); c.strokeStyle = (sg < 0 ? "#2F5D8A" : "#8A6D1F"); c.lineWidth = 1.4;
+        var tmin = p2.ymin, tmax = p2.ymax;
+        c.moveTo(p2.X(sg * a2 * tmin + cc), p2.Y(tmin));
+        c.lineTo(p2.X(sg * a2 * tmax + cc), p2.Y(tmax));
+        c.stroke(); c.restore();
+      }
+    }
+    labBox(c, p2.X(-2.3), p2.Y(1.72), "x = a·t + c", "#2F5D8A", 11.5);
+    labBox(c, p2.X(2.3), p2.Y(1.72), "x = −a·t + c", "#8A6D1F", 11.5, "right");
+  } else if (E4.p === "heat"){
+    for (var q = -1.8; q <= 1.8; q += 0.4){
+      c.save(); c.beginPath(); c.strokeStyle = "#2F5D8A"; c.lineWidth = 1.4;
+      c.moveTo(p2.x0, p2.Y(q)); c.lineTo(p2.x0 + p2.w, p2.Y(q)); c.stroke(); c.restore();
+    }
+    labBox(c, p2.X(-2.3), p2.Y(1.72), "特征面 t = c（初始面 t=0 即其中之一）", "#0C447C", 11.5);
+  } else {
+    lab(c, p2.X(-2.0), p2.Y(0.6), "无实特征曲线：椭圆型方程", "#085041", 12.5);
+    lab(c, p2.X(-2.0), p2.Y(0.2), "（复特征 φ=x+iy 给出坐标线 ξ=x, η=y）", "#57606a", 11.5);
+  }
+  p2.done(c);
+  labBox(c, p2.x0 + 6, p2.y0 + p2.h - 8, "物理空间：特征曲线（法向与 t 轴夹角 = 左图 α）", "#57606a", 11);
+  lab(c, p2.X(2.25), p2.Y(0) - 6, "x", "#57606a", 12);
+  lab(c, p2.X(0) + 6, p2.Y(1.9), "t", "#57606a", 12);
+  lab(c, W / 2, 16, "左：特征方向（法向）　　右：它生成的曲面", "#57606a", 12, "center");
+}
+function e4Update(){
+  var d = e4Data();
+  $("e4-av").textContent = "a = " + nf(E4.a, 1);
+  $("e4-cnt").textContent = String(d.cnt);
+  $("e4-ang").textContent = isFinite(d.ang) ? (nf(d.ang, 3) + "°") : "—（无实方向）";
+  $("e4-cone").textContent = isFinite(d.cone) ? (nf(d.cone, 3) + "°") : "—";
+  if (E4.p === "wave"){
+    $("e4-curve").textContent = "两条直线 x = ±a·t + c（特征锥的母线）";
+    $("e4-iso").textContent = "不是（α_t ≠ 0），柯西资料可给在 t = 0";
+  } else if (E4.p === "heat"){
+    $("e4-curve").textContent = "水平线 t = c（超平面 t = 常数）";
+    $("e4-iso").textContent = "是（α_x = 0, α_t = ±1）——资料恰给在特征面上";
+  } else {
+    $("e4-curve").textContent = "无实特征曲线";
+    $("e4-iso").textContent = "—（没有时间方向）";
+  }
+  e4Draw();
+  return { cnt: d.cnt, ang: d.ang, cone: d.cone, axx: d.cf.axx, att: d.cf.att };
+}
+Array.prototype.forEach.call(qsa(".e4p"), function(b){
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(qsa(".e4p"), function(x){ x.classList.remove("on"); });
+    b.classList.add("on"); E4.p = b.getAttribute("data-p"); e4Update();
+  });
+});
+$("e4-a").addEventListener("input", function(){ E4.a = Number(this.value) / 10; e4Update(); });
+
+/* ==================== 实验 5：不适定对账台 ==================== */
+var E5 = { mode: "had", n: 6, k: 1, t: 0.5 };
+var LN10 = Math.log(10);
+function e5Param(){
+  return E5.mode === "had" ? E5.t : E5.t / 10;
+}
+function e5Data(n, k, tp){
+  var logData = -k * Math.log10(n), logSol;
+  if (E5.mode === "had"){
+    var sh = Math.sinh(n * tp);
+    logSol = Math.log10(sh) - (k + 1) * Math.log10(n);
+  } else {
+    logSol = -k * Math.log10(n) + (n * n * Math.PI * Math.PI * tp) / LN10;
+  }
+  return { logData: logData, logSol: logSol };
+}
+function e5Draw(){
+  var c = cx("e5c"), W = $("e5c").width, H = $("e5c").height;
+  c.clearRect(0, 0, W, H);
+  var tp = e5Param(), k = E5.k, NMAX = 12, ser = [];
+  var lo = -1, hi = 2;
+  for (var n = 1; n <= NMAX; n++){
+    var v = e5Data(n, k, tp);
+    ser.push({ n: n, ld: v.logData, ls: v.logSol });
+    lo = Math.min(lo, v.logData, v.logSol);
+    hi = Math.max(hi, v.logData, v.logSol);
+  }
+  lo = Math.max(-6, Math.floor(lo) - 1);
+  hi = Math.min(70, Math.ceil(hi) + 1);
+  var p = panelXY(64, 26, 750, 252, 0.4, NMAX + 0.6, lo, hi);
+  p.frame(c); p.clip(c);
+  /* 网格 */
+  c.save(); c.strokeStyle = "#eef1f4"; c.lineWidth = 1;
+  var step = (hi - lo) > 40 ? 10 : ((hi - lo) > 12 ? 5 : 2), ticks = [];
+  for (var yv = Math.ceil(lo / step) * step; yv <= hi; yv += step){
+    c.beginPath(); c.moveTo(p.x0, p.Y(yv)); c.lineTo(p.x0 + p.w, p.Y(yv)); c.stroke();
+    ticks.push(yv);
+  }
+  c.restore();
+  p.axes(c);
+  function line(key, col){
+    c.save(); c.beginPath(); c.strokeStyle = col; c.lineWidth = 2.2;
+    for (var i = 0; i < ser.length; i++){
+      var X = p.X(ser[i].n), Y = p.Y(Math.max(lo, Math.min(hi, ser[i][key])));
+      if (i === 0) c.moveTo(X, Y); else c.lineTo(X, Y);
+    }
+    c.stroke();
+    for (var j = 0; j < ser.length; j++){
+      var X2 = p.X(ser[j].n), Y2 = p.Y(Math.max(lo, Math.min(hi, ser[j][key])));
+      c.beginPath(); c.arc(X2, Y2, 2.6, 0, 2 * Math.PI); c.fillStyle = col; c.fill();
+    }
+    c.restore();
+  }
+  line("ld", "#185FA5"); line("ls", "#D85A30");
+  var cur = null;
+  for (var i2 = 0; i2 < ser.length; i2++) if (ser[i2].n === E5.n) cur = ser[i2];
+  if (cur){
+    c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#b9c2cc"; c.lineWidth = 1;
+    c.moveTo(p.X(cur.n), p.y0); c.lineTo(p.X(cur.n), p.y0 + p.h); c.stroke(); c.restore();
+    lab(c, p.X(cur.n) + 5, p.y0 + 14, "n = " + cur.n, "#22303F", 11.5);
+  }
+  p.done(c);
+  ticks.forEach(function(v){ lab(c, p.x0 - 8, p.Y(v) + 3, String(v), "#57606a", 10.5, "right"); });
+  [1, 3, 6, 9, 12].forEach(function(v){ lab(c, p.X(v), p.y0 + p.h + 16, String(v), "#57606a", 10.5, "center"); });
+  lab(c, p.x0 - 52, p.y0 - 8, "log₁₀", "#57606a", 11);
+  lab(c, p.x0 + 4, p.y0 + p.h + 34, "模态 n →", "#57606a", 11);
+  lab(c, p.x0 + p.w - 150, p.y0 + 16, "蓝：初始资料 sup", "#185FA5", 11.5);
+  lab(c, p.x0 + p.w - 150, p.y0 + 34, "珊瑚：解 sup", "#D85A30", 11.5);
+  lab(c, W / 2, 16, E5.mode === "had" ? "阿达马模式：资料 n^(−k) 对 解 sh(ny*)/n^(k+1)"
+    : "逆时向热传导：资料 n^(−k) 对 解 e^(n²π²|t*|)/n^(k)", "#57606a", 12, "center");
+}
+function e5Update(){
+  var n = E5.n, k = E5.k, tp = e5Param();
+  var data = Math.pow(n, -k);
+  var sol, ratio, l2 = NaN, logSol;
+  if (E5.mode === "had"){
+    sol = Math.sinh(n * tp) / Math.pow(n, k + 1);
+    ratio = Math.sinh(n * tp) / n;
+    l2 = Math.PI * (Math.sinh(2 * n * tp) - 2 * n * tp) / (8 * Math.pow(n, 2 * k + 3));
+  } else {
+    logSol = -k * Math.log10(n) + (n * n * Math.PI * Math.PI * tp) / LN10;
+    sol = logSol > 300 ? Infinity : Math.pow(10, logSol);
+    ratio = Math.exp(n * n * Math.PI * Math.PI * tp);
+  }
+  $("e5-nv").textContent = "n = " + n;
+  $("e5-kv").textContent = "k = " + k;
+  $("e5-tl").textContent = E5.mode === "had" ? "观测高度 y*" : "逆推时间 |t*|";
+  $("e5-tv").textContent = E5.mode === "had" ? ("y* = " + nf(tp, 2)) : ("|t*| = " + nf(tp, 3));
+  $("e5-data").textContent = nfe(data);
+  $("e5-sol").textContent = isFinite(sol) ? nfe(sol) : ">1e300";
+  $("e5-ratio").textContent = isFinite(ratio) ? nfe(ratio) : ">1e300";
+  $("e5-l2").textContent = E5.mode === "had" ? nfe(l2) : "—（热传导模式不计）";
+  var v;
+  if (!isFinite(ratio) || ratio > 1e4) v = "强烈放大：资料几乎为零，解已完全不可用";
+  else if (ratio > 100) v = "明显放大：资料缩小 2 个量级以上，解反而更大";
+  else if (ratio > 10) v = "放大超过一个量级";
+  else if (ratio > 1) v = "略有放大（加大 n 会拉开差距）";
+  else v = "暂未放大：资料还大于解";
+  $("e5-verdict").textContent = v;
+  e5Draw();
+  return { data: data, sol: sol, ratio: ratio, l2: l2, tp: tp, mode: E5.mode };
+}
+Array.prototype.forEach.call(qsa(".e5m"), function(b){
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(qsa(".e5m"), function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    E5.mode = b.getAttribute("data-m");
+    $("e5-t").value = E5.mode === "had" ? "50" : "50";
+    E5.t = 0.5;
+    e5Update();
+  });
+});
+$("e5-n").addEventListener("input", function(){ E5.n = Number(this.value); e5Update(); });
+$("e5-k").addEventListener("input", function(){ E5.k = Number(this.value); e5Update(); });
+$("e5-t").addEventListener("input", function(){ E5.t = Number(this.value) / 100; e5Update(); });
+
+/* ==================== 初始化与外部钩子 ==================== */
+e1Update(); e2Update(); e3Update(); e4Update(); e5Update();
+
+window.PDE4 = {
+  E1: { set: function(a11, a12, a22){ E1.a11 = a11; E1.a12 = a12; E1.a22 = a22; return e1Update(); }, get: function(){ return e1Update(); } },
+  E2: { set: function(p){ E2.p = p; return e2Update(); }, get: function(){ return e2Update(); } },
+  E3: { set: function(x, y){ E3.x = x; E3.y = y; return e3Update(); }, get: function(){ return e3Update(); } },
+  E4: { set: function(p, a){ E4.p = p; if (a !== undefined) E4.a = a; return e4Update(); }, get: function(){ return e4Update(); } },
+  E5: { set: function(mode, n, k, t){ E5.mode = mode; E5.n = n; E5.k = k; E5.t = t; return e5Update(); }, get: function(){ return e5Update(); } },
+  util: { disc: e1Disc, slopes: e1Slopes, normal: e1Normal, eig: e1Eig, type: e1Type,
+    bar: e2Bar, nf: nf, nfe: nfe }
+};
+
+setTimeout(function(){
+  var off = $("mjx-offline");
+  var ok = false;
+  try { ok = document.body.classList.contains("mjx-ready"); } catch (e) { ok = true; }
+  if (off && !ok) off.hidden = false;
+}, 12000);
+</script>
+</body>
+</html>

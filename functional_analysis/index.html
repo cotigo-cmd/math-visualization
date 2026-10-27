@@ -64,7 +64,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <p class="kicker">泛函分析 · 交互教学页</p>
 <h1>泛函分析 · 可视化系列</h1>
 <p class="lead">江泽坚、孙善利《泛函分析》的配套交互页。无限维空间里直觉何时失效、投影如何选出「最近的点」、算子的谱长什么样——每页一个可拖动的实验台，页内所有数字都由工作区脚本实测得出。</p>
-<p class="meta">教材 5 章 · 图号 FA-01 起顺编 · 2026-10-25 重建索引 · FA-01–FA-02 已上线 · 页面零依赖、可离线打开（公式渲染需联网）</p>
+<p class="meta">教材 5 章 · 图号 FA-01 起顺编 · 2026-10-25 重建索引 · FA-01–FA-03 已上线 · 页面零依赖、可离线打开（公式渲染需联网）</p>
 
 <h2>第 2 章 · Hilbert 空间 <span>ch02</span></h2>
 
@@ -82,10 +82,10 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 
 <h2>第 3 章 · Banach 空间上的有界线性算子 <span>ch03</span></h2>
 
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">FA-03 · ch03</span>算子范数与共轭空间</p>
-<p class="d">算子范数的几何（把单位球映进去的最小球）· 有界 = 连续的等价 · Riesz 表示定理把泛函变成向量 · 对偶空间的直观——「泛函」从抽象名词变成看得见的映射</p>
-</div>
+<a class="card" href="算子范数与共轭空间.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">FA-03 · ch03</span>算子范数与共轭空间</p>
+<p class="d">五个实验台全部实测对账：01 单位球映成椭圆（拖探针走长轴端点，比值顶到 σ₁=1.75 就上不去；同一矩阵三种诱导范数 2 / 1.75 / 2，核对 ‖A‖₂ ≤ √(‖A‖₁‖A‖∞)；幂零 A²=0 时 ‖A‖=1 而谱半径 0）；02 有界 ⇔ 连续（微分算子 ‖Dxₙ‖/‖xₙ‖=n 沿 n 无界，积分算子 K=1/(1+s+t) 的比值封顶在 M=ln2=0.693147 且被 x≡1=sgn K 顶到）；03 Neumann 级数与谱半径（A=r[[1,k],[0,1]] 取 r=0.6,k=3 时 ‖A‖=1.98&gt;1 而 ρ=0.6，定理 1.1 前提失效却仍可逆，实测 ‖(I−A)⁻¹‖=11.78——顺手说明 1/(1−ρ) 不是界；k=0 时界精确取等；n=2000 时 ‖Aⁿ‖^{1/n}=0.603 贴住 ρ；Volterra 离散 σ₁/μ=0.6386→2/π，‖Vⁿ‖^{1/n} 单调掉到 1.11，故 I−V 对任意 μ 可逆）；04 共轭空间（Hölder 极值向量 x*=c/‖c‖₂ 使 f(x*)=‖c‖_q 精确取等，残差 2.2e−16；x* 与 ker f 的夹角只在 p=2 时是 90.00°，p=3 时 78.43°——Banach 空间没有正交的几何来源）；05 二次对偶与自反（τ 保范残差 0，c₀ 的截断列对常数 1 的距离恒为 1，故 τ(c₀) 不稠密、c₀ 非自反）。覆盖 §1 算子范数/逆算子/Neumann 级数/定理 1.2 与 §4 对偶/二次对偶/自反（定理 4.2–4.8）；c₀ 非自反为页内补充例。闸门 verify_readout_fa03.js 111 项。</p>
+</a>
 
 <h2>第 4 章 · 有界线性算子谱论 <span>ch04</span></h2>
 
@@ -104,7 +104,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <footer>
 <p>教材：江泽坚、孙善利《泛函分析》（知识库代号 <code>fhfx2</code>，切片 <code>raw/textbook/fhfx2/</code>，ch01–ch05）。切片头部有页码偏移与质量报告，先读头部确认；OCR 公式引用前按上下文重组核对，引用位置精确到章节。</p>
 <p>版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；实验台结构沿用全站约定。图号 FA-01 起顺编。</p>
-<p>校验：公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed；数值结论必须工作区根脚本实测。2026-10-25 由占位门牌重建；同日 FA-01 上线（verify_readout_fa01.js 134 项通过、公式 199 项 0 failed、链接 0 broken）。2026-10-26 FA-02 上线（第 1 章 §3–§7，书页 6–32；verify_readout_fa02.js 155 项通过、公式 338 项 0 failed、smoke_dom 0 异常、链接 147 条 0 broken）。</p>
+<p>校验：公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed；数值结论必须工作区根脚本实测。2026-10-25 由占位门牌重建；同日 FA-01 上线（verify_readout_fa01.js 134 项通过、公式 199 项 0 failed、链接 0 broken）。2026-10-26 FA-02 上线（第 1 章 §3–§7，书页 6–32；verify_readout_fa02.js 155 项通过、公式 338 项 0 failed、smoke_dom 0 异常、链接 147 条 0 broken）。2026-10-27 FA-03 上线（第 3 章 §1、§4，书页 73–78、105–116；verify_readout_fa03.js 111 项通过、公式 330 项 0 failed、smoke_dom 0 异常、链接 164 条 0 broken）。</p>
 </footer>
 
 </div>

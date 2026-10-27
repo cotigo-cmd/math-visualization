@@ -93,10 +93,11 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <p class="d" style="margin-top:6px">与第 2.1–2.2 讲页的分工：Lagrange 基、Runge 曲线、Chebyshev 节点在那边，本页只取差商视角；一阶差商的「最优步长 U 形」在第 1 讲页实验 05，本页做的是高阶版本。另订正课件两处（例 1 的 1/√π → 2/√π、余项界 2.3 漏了 1/√π 因子），并补一条结论：数据表自身误差 1.5e−7 比插值误差 1.7e−9 大两个量级。</p>
 </a>
 
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 2.4 讲</span>Hermite 插值</p>
-<p class="d">带导数条件的插值存在唯一 · 基函数拼装 · 余项与 Lagrange 余项的对照 · 两点三次 Hermite 与分段三次 Hermite 的衔接</p>
-</div>
+<a class="card" href="./Hermite插值-重结点差商与三次Hermite.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">第 2.4 讲</span>Hermite 插值：重结点差商与三次 Hermite</p>
+<p class="d">引例 sin 4πx 的 L 插值 vs H 插值（N 从 2 拖到 6：L3 误差 1.9977 → H7 0.4337；N = 4 时 L3 在 50.0% 的区间上与函数符号相反，H7 只剩 1.2%；N = 2/3 反过来是 Hermite 更差，页内如实保留）· Osculating 约束计数（三个结点各拖重数 mᵢ，真解 M×M 方程组，残差 4.4e−16；m=(0,0,0)→1.44e−2、m=(1,1,1)→5.58e−6、m=(2,2,2)→5.25e−10）· 基函数拼装（课件例 1，12 个 0/1 条件逐格核验，六个系数 4/27、64/81、5/81、4/405、−32/405、−2/405）· 重结点差商表逐列生成（表 5.3 的 21 格全复现，H5(1.5) = 0.5118277，与基函数式差 1.1e−16）· 单区间三次 Hermite 的余项界（h⁴/384·max|f⁗|，实测/界 0.951 → 0.395）· 分段三次 Hermite 收敛阶（eˣ 实测 3.99，sin 4πx 要到 m ≥ 16 才回到 3.9）· 闸门 verify_na24.js 278 项全过</p>
+<p class="d" style="margin-top:6px">与第 2.3 讲页的分工：差商表的算法本体、增量修正、舍入传播在那边，本页只做「重复结点那一行填 f⁽ᵏ⁾/k!」的推广。分段三次 Hermite 在本页起头（第 2.5 讲接分段的一般理论，第 2.6 讲的样条 = 分段三次 Hermite + 一组关于导数的方程）。另说明：课件例 1 只给数据表、未给闭式 f，故本页不计算该例的余项界。</p>
+</a>
 
 <div class="card planned">
 <p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 2.5 讲</span>分段插值</p>
@@ -176,7 +177,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 
 <footer>
 <p>课件：四川大学数学学院 2026 年数值分析课件（朱瑞；学习通课程课件，归档于知识库 <code>raw/courseware/na-2026/</code>，md 切片 + 同名 PDF）。2026-10-25 起本目录由课本（张平文、李铁军《数值分析》，北京大学出版社 2007）切换为课件讲序；张平文教材降为参考书目，课件未覆盖的课本章节（FFT、常微分方程数值方法、Monte Carlo）暂不排期。</p>
-<p>已上线五页的课件归属：「绪论」= 第 1 讲，「Lagrange 插值」= 第 2.1–2.2 讲，「Newton 插值」= 第 2.3 讲，「数值积分」= 第 4.1–4.2 讲，「非线性方程迭代法」= 第 5.5 讲前半；五页内容均可用课件对应讲次复核。</p>
+<p>已上线六页的课件归属：「绪论」= 第 1 讲，「Lagrange 插值」= 第 2.1–2.2 讲，「Newton 插值」= 第 2.3 讲，「Hermite 插值」= 第 2.4 讲，「数值积分」= 第 4.1–4.2 讲，「非线性方程迭代法」= 第 5.5 讲前半；六页内容均可用课件对应讲次复核。</p>
 <p>校验：数值脚本在工作区根 <code>math_visualization/</code>（相对路径 <code>../../verify_runge.js</code> 等）；公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed。</p>
 </footer>
 

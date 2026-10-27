@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>期中模拟卷 · 两套 · 数值线性代数</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 本页 = 复习材料，图号 NLA-R2（R2 = 第二份复习材料，配套 NLA-R1 指南）。
+  2. 范围同指南：到最小二乘为止，条件数/浮点/对偶范数不考。两套各 7 题、100 分、100 分钟。
+  3. 全部答案数字由工作区根 verify_exam.js 实测核对，改题必须同步改脚本。
+  4. 设计原则：每套覆盖四模块（矩阵代数与范数 25 分 / SVD 20 分 / 投影与 QR 30 分 / 最小二乘与综合 25 分），
+     题型对位作业原题但换数字——不是原题照抄，避免背答案。
+  5. 打印：.paper 与 .ans 各有 page-break，题目和答案会自动分页。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
+.crumb{font-size:13px;margin:0 0 16px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
+.sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
+.sheet .cell:last-child{border-right:none}
+.sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
+.sheet .v{font-size:14.5px;margin:0;font-weight:600}
+.sheet .no{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;color:var(--cinn)}
+h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:72ch}
+h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+h3{font-size:15px;font-weight:680;margin:26px 0 8px}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:5px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.eq{font-size:16.5px;text-align:center;margin:14px 0;padding:12px 14px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:14px 0;
+  border-radius:0 8px 8px 0;font-size:14px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+.note.a{border-left-color:var(--amber);background:#FBF6E7}
+.note .h{font-weight:680;display:block;margin-bottom:2px}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
+table.tb{border-collapse:collapse;margin:14px 0;font-size:14px;width:100%}
+table.tb td,table.tb th{border:1px solid var(--line);padding:6px 12px;text-align:left;vertical-align:top}
+table.tb th{background:#F2F5F8;font-weight:650;text-align:center;white-space:nowrap}
+table.tb td.c{text-align:center}
+table.tb tr.hi td{background:#FBF1ED;font-weight:600}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--ink2)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:22px 0 0;flex-wrap:wrap}
+.pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
+.pager a:hover{text-decoration:underline}
+.hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
+
+/* 卷面 */
+.paper{border:1.5px solid var(--ink);border-radius:10px;padding:22px 24px 24px;
+  background:var(--card);margin:22px 0}
+.paper .ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;
+  gap:8px;border-bottom:1px dashed var(--line);padding-bottom:10px;margin-bottom:6px}
+.paper .ph .ttl{font-size:17px;font-weight:680}
+.paper .ph .meta{font-size:12.5px;color:var(--ink2);font-family:ui-monospace,Consolas,monospace}
+.q{margin:20px 0 0;padding-top:4px}
+.q .qh{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.q .qn{font-weight:680;font-size:15px}
+.q .qs{font-size:12px;font-family:ui-monospace,Consolas,monospace;color:#fff;
+  background:var(--ink);border-radius:4px;padding:1px 7px}
+.q .qm{font-size:12px;color:var(--ink2);font-family:ui-monospace,Consolas,monospace}
+.q .qb{font-size:14.8px}
+.q .qb ol{list-style:none;padding-left:0;counter-reset:sub}
+.q .qb ol > li{counter-increment:sub;padding-left:26px;position:relative}
+.q .qb ol > li::before{content:"(" counter(sub,lower-alpha) ")";position:absolute;left:0;
+  font-family:ui-monospace,Consolas,monospace;color:var(--steel);font-size:13px}
+/* 操作步骤列表用数字，避免与小问的 (a)(b) 撞号 */
+.q .qb ol.ops{counter-reset:op}
+.q .qb ol.ops > li{counter-increment:op;padding-left:24px}
+.q .qb ol.ops > li::before{content:counter(op) ".";color:var(--ink2);font-weight:600}
+
+/* 答案 */
+.ans{border-left:3px solid var(--green);background:#F4FAF6;border-radius:0 10px 10px 0;
+  padding:16px 20px;margin:14px 0 0}
+.ans .ah{font-size:12.5px;font-weight:680;color:var(--green);letter-spacing:.06em;margin:0 0 8px;
+  font-family:ui-monospace,Consolas,monospace}
+.ans p{margin:8px 0}
+.ans .eq{background:#fff}
+.key{border-left:3px solid var(--amber);background:#FDF9EC;padding:8px 14px;margin:10px 0;
+  border-radius:0 8px 8px 0;font-size:13.5px}
+.key .h{font-weight:680;color:var(--amber)}
+.toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:14px 0}
+.toc a{display:block;border:1px solid var(--line);border-radius:8px;padding:9px 13px;
+  text-decoration:none;color:var(--ink);font-size:13.5px;background:var(--card)}
+.toc a:hover{border-color:var(--steel)}
+.toc a .n{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--cinn);display:block}
+
+@media print{
+  body{background:#fff;font-size:11.5px}
+  .wrap{max-width:none;padding:0 6mm}
+  .crumb,.pager,footer,.noprint,.toc{display:none}
+  h2{page-break-after:avoid;margin-top:16px}
+  .paper{border:1px solid #999;padding:12px 14px;page-break-inside:auto}
+  .q,.ans,.note,table.tb,.eq{page-break-inside:auto}
+  .note,table.tb,.eq,.key{page-break-inside:avoid}
+  .q .qh,.ah{page-break-after:avoid}
+  .ans{page-break-before:auto;background:#f7f7f7;border-left-color:#888}
+  .paper + h2{page-break-before:always}
+  .eq{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb noprint"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
+
+<div class="sheet">
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-R2</p></div>
+  <div class="cell" style="flex:2 1 240px"><p class="k">主题</p><p class="v">期中模拟卷 · 两套 + 详解</p></div>
+  <div class="cell"><p class="k">规格</p><p class="v">各 7 题 · 100 分 · 100 分钟</p></div>
+  <div class="cell"><p class="k">范围</p><p class="v">到最小二乘为止</p></div>
+</div>
+
+<h1>期中模拟卷：两套，各 100 分钟</h1>
+<p class="lead">按四次课后测试的题型对位设计：<strong>每套 7 题、100 分</strong>，覆盖矩阵代数与范数、SVD、投影与 QR、Householder 与最小二乘四大块。数字全部换过，不是原题照抄——背答案没用，得会推。</p>
+<p class="hint">配套材料：知识点与题型见 <a href="./期中复习-指南.html">NLA-R1 期中复习指南</a>；可视化见 NLA-07/08/09。</p>
+
+<div class="toc noprint">
+  <a href="#p1"><span class="n">SET 1</span>第一套 · 题目</a>
+  <a href="#a1"><span class="n">SET 1</span>第一套 · 详解</a>
+  <a href="#p2"><span class="n">SET 2</span>第二套 · 题目</a>
+  <a href="#a2"><span class="n">SET 2</span>第二套 · 详解</a>
+</div>
+
+<div class="note b">
+<span class="h">两套怎么用</span>
+<strong>第一套</strong>偏常规：题目结构接近作业，用来找手感、卡时间。<br>
+<strong>第二套</strong>偏综合：Householder 手算量更大、第 7 题是纯证明，用来试上限。<br>
+建议：先闭卷做一套（100 分钟），对答案后把错的题号记下来，隔一天再做另一套。两套都错同一类题，才是真不会。
+</div>
+
+<h2><span class="no">01</span>第一套 · 题目</h2>
+
+<div class="paper" id="p1">
+  <div class="ph">
+    <span class="ttl">数值线性代数 · 期中模拟（一）</span>
+    <span class="meta">100 分钟 · 满分 100 · 闭卷</span>
+  </div>
+  <p class="hint" style="margin:0">范围：范数 → SVD → QR → 最小二乘。条件数、浮点数不考。计算题保留根号，中途不要转小数。</p>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 1 题</span><span class="qs">10 分</span><span class="qm">建议 8 分钟</span></div>
+    <div class="qb">
+      <p>设 \(B\in\mathbb{R}^{4\times4}\)，对它依次执行以下五个操作：</p>
+      <ol class="ops">
+        <li>交换第 2 行与第 4 行；</li>
+        <li>将第 1 列乘以 \(3\)；</li>
+        <li>把第 3 行加到第 1 行；</li>
+        <li>删除第 3 列；</li>
+        <li>交换第 1 列与第 2 列。</li>
+      </ol>
+      <p>（a）把最终结果写成含 \(B\) 的矩阵乘积（用初等阵、置换阵、对角阵、选择矩阵表示）。（6 分）<br>
+      （b）合并成 \(ABC\) 的形式（\(B\) 为原矩阵），并写出 \(A\)、\(C\) 的阶数。（4 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 2 题</span><span class="qs">15 分</span><span class="qm">建议 12 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A=\begin{bmatrix}1&2&0\\0&1&2\\2&0&1\end{bmatrix}\)。</p>
+      <p>（a）求 \(\|A\|_1,\ \|A\|_2,\ \|A\|_\infty,\ \|A\|_F\)。（8 分）<br>
+      （b）验证 \(\|A\|_2\le\|A\|_F\le\sqrt{n}\,\|A\|_2\)（\(n\) 为列数）。（3 分）<br>
+      （c）证明对任意 \(m\times n\) 矩阵有 \(\|A\|_1\le\sqrt{m}\,\|A\|_2\)，并构造一个 \(3\times n\) 矩阵使等号成立。（4 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 3 题</span><span class="qs">20 分</span><span class="qm">建议 22 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A=\begin{bmatrix}3&4\\0&5\end{bmatrix}\)。</p>
+      <p>（a）求 \(A^{\mathrm{T}}A\) 的特征值与 \(A\) 的奇异值。（4 分）<br>
+      （b）求完整的 SVD \(A=U\Sigma V^{\mathrm{T}}\)，并说明这是负号最少的形式。（8 分）<br>
+      （c）求 \(\|A\|_1,\ \|A\|_2,\ \|A\|_\infty,\ \|A\|_F\)。（4 分）<br>
+      （d）求 \(A\) 的特征值，验证 \(\det A=\sigma_1\sigma_2\)，并说明为什么这里 \(\sigma_1\ne|\lambda_1|\)。（4 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 4 题</span><span class="qs">15 分</span><span class="qm">建议 14 分钟</span></div>
+    <div class="qb">
+      <p>设 \(P\in\mathbb{C}^{m\times m}\) 是非零投影（\(P^2=P\)），记 \(M=\mathcal{C}(P)\)、\(N=\mathcal{N}(P)\)。</p>
+      <p>（a）证明 \(M\cap N=\{0\}\) 且 \(M\oplus N=\mathbb{C}^m\)。（5 分）<br>
+      （b）证明 \(\|P\|_2\ge1\)。（4 分）<br>
+      （c）证明 \(\|P\|_2=1\) 当且仅当 \(P\) 是正交投影。（6 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 5 题</span><span class="qs">15 分</span><span class="qm">建议 14 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A=\begin{bmatrix}1&0&0\\1&1&0\\0&1&1\\0&0&1\end{bmatrix}\in\mathbb{R}^{4\times3}\)。</p>
+      <p>（a）用改进的 Gram–Schmidt（MGS）求约化 QR 分解 \(A=\hat Q\hat R\)，结果保留根号。（10 分）<br>
+      （b）验证 \(\hat Q^{\mathrm{T}}\hat Q=I_3\)。（3 分）<br>
+      （c）若改用 Householder 变换，\(\hat R\) 的对角元会有什么不同？说明通常采用什么约定使之唯一。（2 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 6 题</span><span class="qs">15 分</span><span class="qm">建议 15 分钟</span></div>
+    <div class="qb">
+      <p>仍取第 5 题的 \(A\)，设 \(b=(1,2,3,4)^{\mathrm{T}}\)，考虑最小二乘问题 \(\min_x\|Ax-b\|_2\)。</p>
+      <p>（a）用第 5 题得到的 \(\hat Q\hat R\) 求出最小二乘解 \(x\)。（8 分）<br>
+      （b）求残差 \(r=b-Ax\) 与 \(\|r\|_2\)，并验证 \(A^{\mathrm{T}}r=0\)。（5 分）<br>
+      （c）若改用正规方程 \(A^{\mathrm{T}}Ax=A^{\mathrm{T}}b\)，解是否相同？数值上有什么差别？（2 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 7 题</span><span class="qs">10 分</span><span class="qm">建议 10 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A\in\mathbb{C}^{m\times m}\) 有 SVD \(A=U\Sigma V^*\)。考虑 \(2m\times2m\) 矩阵</p>
+      <div class="eq" style="margin:10px 0">$$M=\begin{bmatrix}0&A^*\\A&0\end{bmatrix}.$$</div>
+      <p>（a）证明 \(M\) 是 Hermitian。（2 分）<br>
+      （b）求 \(M\) 的全部特征值与对应的特征向量（用 \(u_j,v_j,\sigma_j\) 表示）。（6 分）<br>
+      （c）若 \(A=\begin{bmatrix}1&2\\2&1\end{bmatrix}\)，写出 \(M\) 的 4 个特征值。（2 分）</p>
+    </div>
+  </div>
+</div>
+
+<h2><span class="no">02</span>第一套 · 详解</h2>
+
+<div class="ans" id="a1">
+<p class="ah">第 1 题 · 答案（10 分）</p>
+<p><strong>（a）逐步写矩阵形式。</strong></p>
+<p>① 交换第 2、4 行是<strong>行</strong>变换，左乘置换阵 \(P_{24}\)（\(4\times4\)）：\(B_1=P_{24}B\)。</p>
+<p>② 第 1 列乘 3 是<strong>列</strong>变换，右乘 \(D_1(3)=\mathrm{diag}(3,1,1,1)\)：\(B_2=P_{24}BD_1(3)\)。</p>
+<p>③ 第 3 行加到第 1 行，左乘 \(E_{13}=I+e_1e_3^{\mathrm{T}}\)（\(4\times4\)，非对角元位置是（行 1，列 3））：\(B_3=E_{13}P_{24}BD_1(3)\)。</p>
+<p>④ 删第 3 列，右乘选择矩阵 \(S_3\)（\(4\times4\) 去掉第 3 列，得 \(4\times3\)）：\(B_4=E_{13}P_{24}BD_1(3)S_3\)。</p>
+<p>⑤ 交换第 1、2 列，右乘 \(P_{12}\)。注意此时矩阵已经是 \(4\times3\)，所以 <strong>\(P_{12}\) 是 \(3\times3\) 的</strong>：</p>
+<div class="eq">$$B_5=E_{13}\,P_{24}\,B\,D_1(3)\,S_3\,P_{12}.$$</div>
+
+<p><strong>（b）合并为 \(ABC\)。</strong></p>
+<div class="eq">$$A=E_{13}P_{24}\ (4\times4),\qquad C=D_1(3)\,S_3\,P_{12}\ (4\times3).$$</div>
+<p>即 \(B_5=A\,B\,C\)。</p>
+
+<div class="key"><span class="h">评分要点</span>
+每个操作的左右乘判断 1 分（共 5 分，其中第 ⑤ 步的 \(3\times3\) 阶数单独算 1 分）；合并时保持顺序不交换 1 分；写出 \(A,C\) 的阶数 2 分；总述 1 分。</div>
+<div class="key"><span class="h">易错</span>
+① 第 ③ 步 \(E_{13}=I+e_1e_3^{\mathrm{T}}\)，不是 \(I+e_3e_1^{\mathrm{T}}\)——非对角元在（行 1，列 3）。<br>
+② 第 ⑤ 步若写 \(4\times4\) 的 \(P_{12}\) 直接错：矩阵已降成 \(4\times3\)，只能右乘 \(3\times3\)。<br>
+③ 合并时 \(E_{13}P_{24}\) 不能交换，\(D_1(3)S_3P_{12}\) 也不能交换。</div>
+
+<p class="ah" style="margin-top:22px">第 2 题 · 答案（15 分）</p>
+<p><strong>（a）四种范数。</strong></p>
+<p>列和：\(|1|+|0|+|2|=3\)，\(|2|+|1|+|0|=3\)，\(|0|+|2|+|1|=3\)，故 \(\|A\|_1=3\)。<br>
+行和：\(3,3,3\)，故 \(\|A\|_\infty=3\)。<br>
+\(\|A\|_F=\sqrt{1+4+0+0+1+4+4+0+1}=\sqrt{15}\approx3.873\)。</p>
+<p>求 \(\|A\|_2\) 需要奇异值：</p>
+<div class="eq">$$A^{\mathrm{T}}A=\begin{bmatrix}5&2&2\\2&5&2\\2&2&5\end{bmatrix}=3I+2J,\qquad J=\mathbf{1}\mathbf{1}^{\mathrm{T}}.$$</div>
+<p>\(J\) 的特征值是 \(3,0,0\)（\(J\mathbf{1}=3\mathbf{1}\)），故 \(A^{\mathrm{T}}A\) 的特征值是 \(3+2\cdot3=9\) 与 \(3+0=3\)（二重），于是</p>
+<div class="eq">$$\sigma_1=3,\qquad \sigma_2=\sigma_3=\sqrt3,\qquad \|A\|_2=3.$$</div>
+
+<p><strong>（b）验证。</strong> \(3\le\sqrt{15}\approx3.873\le\sqrt3\cdot3=3\sqrt3\approx5.196\)，成立。</p>
+
+<p><strong>（c）证明 \(\|A\|_1\le\sqrt m\|A\|_2\)。</strong>设 \(a_j\) 为 \(A\) 的第 \(j\) 列，则</p>
+<div class="eq">$$\|A\|_1=\max_j\|a_j\|_1\ \le\ \max_j\sqrt m\,\|a_j\|_2\ \le\ \sqrt m\,\|A\|_2,$$</div>
+<p>第一个不等号用 \(m\) 维向量的 \(\|\cdot\|_1\le\sqrt m\|\cdot\|_2\)（Cauchy–Schwarz），第二个用 \(\|a_j\|_2=\|Ae_j\|_2\le\|A\|_2\|e_j\|_2=\|A\|_2\)。</p>
+<p><strong>紧性：</strong>取 \(A\) 只有第 1 列为 \(\mathbf{1}=(1,1,1)^{\mathrm{T}}\)、其余列为零，则 \(\|A\|_1=3\)，而 \(\|A\|_2=\|\mathbf{1}\|_2=\sqrt3\)，比值 \(3/\sqrt3=\sqrt3=\sqrt m\)，等号成立。</p>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 四个范数各 2 分（\(\|A\|_2\) 要写出 \(A^{\mathrm{T}}A\) 的特征值才给满分）；(b) 3 分；(c) 证明 2 分 + 紧性例子 2 分。</div>
+<div class="key"><span class="h">易错</span>
+\(\|A\|_2\) 不是最大行和或最大列和；\(A^{\mathrm{T}}A=3I+2J\) 这个分解要看出 \(J\) 的特征值，直接算三次方程会很慢。</div>
+
+<p class="ah" style="margin-top:22px">第 3 题 · 答案（20 分）</p>
+<p><strong>（a）</strong></p>
+<div class="eq">$$A^{\mathrm{T}}A=\begin{bmatrix}3&0\\4&5\end{bmatrix}\begin{bmatrix}3&4\\0&5\end{bmatrix}=\begin{bmatrix}9&12\\12&41\end{bmatrix}.$$</div>
+<p>\(\operatorname{tr}=50\)，\(\det=369-144=225\)，特征多项式 \(\lambda^2-50\lambda+225=0\)，得</p>
+<div class="eq">$$\lambda_1=45,\quad\lambda_2=5\qquad\Longrightarrow\qquad \sigma_1=\sqrt{45}=3\sqrt5,\quad \sigma_2=\sqrt5.$$</div>
+
+<p><strong>（b）</strong>对 \(\lambda_1=45\)：\((9-45)x+12y=0\Rightarrow -36x+12y=0\Rightarrow y=3x\)，取 \(v_1=\frac{1}{\sqrt{10}}\begin{bmatrix}1\\3\end{bmatrix}\)。<br>
+对 \(\lambda_2=5\)：\((9-5)x+12y=0\Rightarrow 4x+12y=0\Rightarrow y=-\frac{x}{3}\)，取 \(v_2=\frac{1}{\sqrt{10}}\begin{bmatrix}3\\-1\end{bmatrix}\)。</p>
+<p>（两个特征值不同，\(v_1\perp v_2\) 自动成立，无需再正交化。）</p>
+<div class="eq">$$u_1=\frac{Av_1}{\sigma_1}=\frac{1}{3\sqrt5}\cdot\frac{1}{\sqrt{10}}\begin{bmatrix}15\\15\end{bmatrix}=\frac{1}{\sqrt2}\begin{bmatrix}1\\1\end{bmatrix},\qquad
+u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt5}\cdot\frac{1}{\sqrt{10}}\begin{bmatrix}5\\-5\end{bmatrix}=\frac{1}{\sqrt2}\begin{bmatrix}1\\-1\end{bmatrix}.$$</div>
+<p>拼装：</p>
+<div class="eq">$$U=\frac{1}{\sqrt2}\begin{bmatrix}1&1\\1&-1\end{bmatrix},\qquad \Sigma=\begin{bmatrix}3\sqrt5&0\\0&\sqrt5\end{bmatrix},\qquad V=\frac{1}{\sqrt{10}}\begin{bmatrix}1&3\\3&-1\end{bmatrix}.$$</div>
+<p><strong>负号最少：</strong>\(U\) 中 1 个负号、\(V\) 中 1 个负号，合计 2 个。翻转 \(u_1,v_1\) 会使 \(U\) 增至 3 个负号，翻转 \(u_2,v_2\) 会使 \(V\) 增至 3 个，所以 2 个已是最少。</p>
+<p><strong>回代验算：</strong>\(U\Sigma V^{\mathrm{T}}=\begin{bmatrix}3&4\\0&5\end{bmatrix}=A\) ✓</p>
+
+<p><strong>（c）</strong>\(\|A\|_1=\max(3+0,\ 4+5)=9\)；\(\|A\|_\infty=\max(3+4,\ 0+5)=7\)；\(\|A\|_2=3\sqrt5\approx6.708\)；\(\|A\|_F=\sqrt{9+16+0+25}=\sqrt{50}=5\sqrt2\approx7.071\)。</p>
+
+<p><strong>（d）</strong>\(A\) 是上三角，特征值就是对角元：\(\lambda_1=5,\ \lambda_2=3\)（也可由 \(\operatorname{tr}=8\)、\(\det=15\) 解 \(\lambda^2-8\lambda+15=0\) 得到）。</p>
+<p>验证 \(\det A=15=3\sqrt5\cdot\sqrt5=\sigma_1\sigma_2\) ✓</p>
+<p>\(\sigma_1=3\sqrt5\approx6.708\ne5=|\lambda_1|\) 的原因：\(\sigma_j\) 是 \(A^{\mathrm{T}}A\) 的特征值开平方，不是 \(A\) 的特征值取绝对值。只有当 \(A\) 是<strong>正规矩阵</strong>（\(A^{\mathrm{T}}A=AA^{\mathrm{T}}\)）时才有 \(\sigma_j=|\lambda_j|\)。本题 \(A\) 非正规：</p>
+<div class="eq">$$A^{\mathrm{T}}A=\begin{bmatrix}9&12\\12&41\end{bmatrix}\ne\begin{bmatrix}25&20\\20&25\end{bmatrix}=AA^{\mathrm{T}}.$$</div>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 4 分（特征值 2 + 奇异值 2）；(b) \(v_j\) 2 分、\(u_j\) 2 分、拼装 2 分、负号说明 1 分、回代验算 1 分；(c) 4 分；(d) 特征值 1 分、det 验证 1 分、\(\sigma\ne|\lambda|\) 的解释 2 分。</div>
+<div class="key"><span class="h">易错</span>
+① \(\sigma_j\) 是 \(\sqrt{\lambda_j(A^{\mathrm{T}}A)}\)，不是 \(|\lambda_j(A)|\)——本题正好是反例，答 (d) 时把这句写清就是加分点。<br>
+② \(u_j=Av_j/\sigma_j\) 只在 \(\sigma_j>0\) 时可用。<br>
+③ 别把 \(V\) 写成 \(V^{\mathrm{T}}\)，注意列向量是 \(v_j\)。</div>
+
+<p class="ah" style="margin-top:22px">第 4 题 · 答案（15 分）</p>
+<p><strong>（a）</strong>设 \(x\in M\cap N\)。由 \(x\in M=\mathcal{C}(P)\) 知存在 \(y\) 使 \(x=Py\)，于是 \(Px=P^2y=Py=x\)；又由 \(x\in N=\mathcal{N}(P)\) 知 \(Px=0\)。故 \(x=0\)，即 \(M\cap N=\{0\}\)。</p>
+<p>对任意 \(x\)，写 \(x=Px+(x-Px)\)。第一项 \(Px\in M\)；第二项 \(P(x-Px)=Px-P^2x=Px-Px=0\)，故 \(x-Px\in N\)。所以 \(\mathbb{C}^m=M+N\)，结合 \(M\cap N=\{0\}\) 得 \(M\oplus N=\mathbb{C}^m\)，且 \(\dim M=\operatorname{rank}P\)。</p>
+
+<p><strong>（b）</strong>\(P\ne0\)，故存在 \(x\) 使 \(Px\ne0\)。令 \(y=Px\)，则 \(Py=P^2x=Px=y\)。于是</p>
+<div class="eq">$$\|P\|_2\ \ge\ \frac{\|Py\|_2}{\|y\|_2}=\frac{\|y\|_2}{\|y\|_2}=1.$$</div>
+
+<p><strong>（c）充分性（正交 ⟹ 等号）。</strong>设 \(P^*=P\)。对任意 \(x\)，</p>
+<div class="eq">$$\|Px\|_2^2=\langle Px,Px\rangle=\langle x,P^*Px\rangle=\langle x,Px\rangle\le\|x\|_2\|Px\|_2,$$</div>
+<p>（末步用 Cauchy–Schwarz）。约去 \(\|Px\|_2\)（\(Px=0\) 时结论平凡）得 \(\|Px\|_2\le\|x\|_2\)，故 \(\|P\|_2\le1\)；结合 (b) 得 \(\|P\|_2=1\)。</p>
+
+<p><strong>必要性（等号 ⟹ 正交）。</strong>先说明「\(P\) 不正交」等价于「\(M\) 与 \(N\) 不正交」：若 \(M\perp N\)，则对一切 \(x\) 有 \(\langle Px,\,x-Px\rangle=0\)（左边在 \(M\)，右边在 \(N\)），即 \(\langle x,Px\rangle=\|Px\|_2^2\)，于是 \(P^*P=P\)；两边取共轭转置得 \(P^*P=P^*\)，故 \(P^*=P\)，\(P\) 是正交投影。逆否即得。</p>
+<p>于是可反设存在 \(x\in M\)、\(y\in N\) 使 \(\langle x,y\rangle\ne0\)。</p>
+<p>对实数 \(t\) 取 \(v=x+ty\)。由 \(x\in M\) 得 \(Px=x\)，由 \(y\in N\) 得 \(Py=0\)，故 \(Pv=x\)。于是</p>
+<div class="eq">$$\frac{\|Pv\|_2^2}{\|v\|_2^2}=\frac{\|x\|_2^2}{\|x\|_2^2+2t\operatorname{Re}\langle x,y\rangle+t^2\|y\|_2^2}.$$</div>
+<p>取 \(t^*=-\dfrac{\operatorname{Re}\langle x,y\rangle}{\|y\|_2^2}\)，分母变成 \(\|x\|_2^2-\dfrac{(\operatorname{Re}\langle x,y\rangle)^2}{\|y\|_2^2}<\|x\|_2^2\)（因为 \(\langle x,y\rangle\ne0\)），故比值 \(>1\)，即 \(\|P\|_2>1\)。与 \(\|P\|_2=1\) 矛盾，所以 \(P\) 必为正交投影。</p>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 两个结论各 2 分、维数 1 分；(b) 4 分；(c) 充分性 3 分、必要性 3 分。</div>
+<div class="key"><span class="h">易错</span>
+① (c) 的必要性不能只说「显然」——必须构造出比值 \(>1\) 的向量，这是本题的主要得分点。<br>
+② 用 Cauchy–Schwarz 时别把 \(\langle x,Px\rangle\) 写成 \(\|Px\|^2\)，那正是需要 \(P^*=P\) 才能得到的。</div>
+
+<p class="ah" style="margin-top:22px">第 5 题 · 答案（15 分）</p>
+<p><strong>（a）MGS 逐列。</strong>记 \(a_1,a_2,a_3\) 为 \(A\) 的三列。</p>
+<p><strong>第 1 列：</strong>\(a_1=(1,1,0,0)^{\mathrm{T}}\)，\(\|a_1\|_2=\sqrt2\)，</p>
+<div class="eq">$$r_{11}=\sqrt2,\qquad q_1=\frac{1}{\sqrt2}(1,1,0,0)^{\mathrm{T}}.$$</div>
+<p><strong>第 2 列：</strong>先算系数再更新（这是 MGS 与 CGS 的区别）</p>
+<div class="eq">$$r_{12}=q_1^{\mathrm{T}}a_2=\frac{0+1+0+0}{\sqrt2}=\frac{1}{\sqrt2},$$</div>
+<div class="eq">$$v_2=a_2-r_{12}q_1=(0,1,1,0)^{\mathrm{T}}-\tfrac12(1,1,0,0)^{\mathrm{T}}=\big(-\tfrac12,\tfrac12,1,0\big)^{\mathrm{T}},$$</div>
+<div class="eq">$$r_{22}=\|v_2\|_2=\sqrt{\tfrac14+\tfrac14+1}=\sqrt{\tfrac32}=\frac{\sqrt6}{2},\qquad q_2=\frac{1}{\sqrt6}(-1,1,2,0)^{\mathrm{T}}.$$</div>
+<p><strong>第 3 列：</strong></p>
+<div class="eq">$$r_{13}=q_1^{\mathrm{T}}a_3=0,\qquad r_{23}=q_2^{\mathrm{T}}a_3=\frac{0+0+2+0}{\sqrt6}=\frac{2}{\sqrt6},$$</div>
+<div class="eq">$$v_3=a_3-0\cdot q_1-\tfrac{2}{\sqrt6}q_2=(0,0,1,1)^{\mathrm{T}}-\tfrac13(-1,1,2,0)^{\mathrm{T}}=\big(\tfrac13,-\tfrac13,\tfrac13,1\big)^{\mathrm{T}},$$</div>
+<div class="eq">$$r_{33}=\|v_3\|_2=\sqrt{\tfrac19+\tfrac19+\tfrac19+1}=\sqrt{\tfrac43}=\frac{2\sqrt3}{3},\qquad q_3=\frac{1}{2\sqrt3}(1,-1,1,3)^{\mathrm{T}}.$$</div>
+<p>拼装：</p>
+<div class="eq">$$\hat R=\begin{bmatrix}\sqrt2&\tfrac{1}{\sqrt2}&0\\0&\tfrac{\sqrt6}{2}&\tfrac{2}{\sqrt6}\\0&0&\tfrac{2\sqrt3}{3}\end{bmatrix},$$</div>
+<div class="eq">$$\hat Q=\begin{bmatrix}\tfrac{1}{\sqrt2}&-\tfrac{1}{\sqrt6}&\tfrac{1}{2\sqrt3}\\\tfrac{1}{\sqrt2}&\tfrac{1}{\sqrt6}&-\tfrac{1}{2\sqrt3}\\0&\tfrac{2}{\sqrt6}&\tfrac{1}{2\sqrt3}\\0&0&\tfrac{3}{2\sqrt3}\end{bmatrix}.$$</div>
+
+<p><strong>（b）验证正交性。</strong>\(\hat Q\) 的三列两两内积为 0、各列范数为 1，故 \(\hat Q^{\mathrm{T}}\hat Q=I_3\)。也可直接验算 \(\hat Q\hat R=A\)：第 1 列为 \(\sqrt2q_1=(1,1,0,0)^{\mathrm{T}}\)，第 2 列为 \(\tfrac{1}{\sqrt2}q_1+\tfrac{\sqrt6}{2}q_2=(0,1,1,0)^{\mathrm{T}}\)，第 3 列为 \(\tfrac{2}{\sqrt6}q_2+\tfrac{2\sqrt3}{3}q_3=(0,0,1,1)^{\mathrm{T}}\)，与 \(A\) 的列一致 ✓</p>
+
+<p><strong>（c）</strong>Householder 得到的 \(\hat R\) 与 MGS 只差<strong>对角元的符号</strong>（每列可整体变号）。通常约定 \(r_{jj}>0\)（\(\hat R\) 对角为正），此时分解唯一；若某步 Householder 给出了负的对角元，取 \(D=\mathrm{diag}(\pm1,\dots,\pm1)\) 使 \(\hat Q'=\hat QD\)、\(\hat R'=D\hat R\)，则</p>
+<div class="eq">$$\hat Q'\hat R'=\hat QD\cdot D\hat R=\hat Q\hat R=A,$$</div>
+<p>因为 \(D^2=I\)。所以只需对每个 \(j\) 单独选符号，就能把对角元全部调正。</p>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 三列各 3 分（系数、更新、归一化各 1 分），拼装 1 分；(b) 3 分；(c) 2 分。</div>
+<div class="key"><span class="h">易错</span>
+① \(r_{13}=0\) 是本题的一个检验点：\(a_3\perp a_1\)，若算出非零就是前面错了。<br>
+② MGS 必须「算一次投影立刻更新」，不能像 CGS 那样先算完所有 \(r_{ij}\) 再减。<br>
+③ \(q_3\) 的分母 \(2\sqrt3\)，别写成 \(\sqrt{12}\) 后忘记化简。</div>
+
+<p class="ah" style="margin-top:22px">第 6 题 · 答案（15 分）</p>
+<p><strong>（a）</strong>用约化 QR：\(\|Ax-b\|_2^2=\|\hat Rx-\hat Q^{\mathrm{T}}b\|_2^2+\|(I-\hat Q\hat Q^{\mathrm{T}})b\|_2^2\)，第二项与 \(x\) 无关，故解 \(\hat Rx=\hat Q^{\mathrm{T}}b\)。</p>
+<div class="eq">$$\hat Q^{\mathrm{T}}b=\begin{bmatrix}\frac{1+2}{\sqrt2}\\\frac{-1+2+6}{\sqrt6}\\\frac{1-2+3+12}{2\sqrt3}\end{bmatrix}=\begin{bmatrix}\frac{3}{\sqrt2}\\\frac{7}{\sqrt6}\\\frac{7}{\sqrt3}\end{bmatrix}.$$</div>
+<p>后向替换，从第 3 行往前：</p>
+<div class="eq">$$\tfrac{2\sqrt3}{3}x_3=\frac{7}{\sqrt3}\ \Longrightarrow\ x_3=\frac{7}{\sqrt3}\cdot\frac{3}{2\sqrt3}=\frac{21}{6}=\frac72,$$</div>
+<div class="eq">$$\tfrac{\sqrt6}{2}x_2+\tfrac{2}{\sqrt6}\cdot\tfrac72=\frac{7}{\sqrt6}\ \Longrightarrow\ \tfrac{\sqrt6}{2}x_2=\frac{7-7}{\sqrt6}=0\ \Longrightarrow\ x_2=0,$$</div>
+<div class="eq">$$\sqrt2\,x_1+\tfrac{1}{\sqrt2}\cdot0+0\cdot\tfrac72=\frac{3}{\sqrt2}\ \Longrightarrow\ x_1=\frac{3}{2}.$$</div>
+<div class="eq">$$x=\Big(\tfrac32,\ 0,\ \tfrac72\Big)^{\mathrm{T}}.$$</div>
+
+<p><strong>（b）</strong>\(Ax=\tfrac32(1,1,0,0)^{\mathrm{T}}+\tfrac72(0,0,1,1)^{\mathrm{T}}=(\tfrac32,\tfrac32,\tfrac72,\tfrac72)^{\mathrm{T}}\)，故</p>
+<div class="eq">$$r=b-Ax=\Big(-\tfrac12,\ \tfrac12,\ -\tfrac12,\ \tfrac12\Big)^{\mathrm{T}},\qquad \|r\|_2=\sqrt{4\cdot\tfrac14}=1.$$</div>
+<p>验证：\(A^{\mathrm{T}}r=\begin{bmatrix}-\frac12+\frac12\\ \frac12-\frac12\\ -\frac12+\frac12\end{bmatrix}=(0,0,0)^{\mathrm{T}}\) ✓ 这正是最小二乘的正交性条件（残差与列空间正交）。</p>
+
+<p><strong>（c）</strong>精确算术下两法给出同一解；但 \(\kappa_2(A^{\mathrm{T}}A)=\kappa_2(A)^2\)，正规方程把问题的条件数平方，舍入误差被放大一倍量级。本题 \(A\) 的三个奇异值就是 \(\hat R\) 的三个对角元 \(\sqrt2,\ \frac{\sqrt6}{2},\ \frac{2\sqrt3}{3}\)，故</p>
+<div class="eq">$$\kappa_2(A)=\frac{\sigma_1}{\sigma_3}=\frac{\sqrt2}{2\sqrt3/3}=\frac{3\sqrt2}{2\sqrt3}=\frac{\sqrt6}{2}\approx1.22,$$</div>
+<p>数值上影响不大；但方法上应以 QR 为准，因为 \(\kappa_2(A^{\mathrm{T}}A)\approx1.50\) 已经把它平方了，矩阵一病态这个差距会迅速拉开。</p>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 写出 \(\hat Q^{\mathrm{T}}b\) 3 分、后向替换 5 分；(b) 残差 3 分、\(\|r\|\) 1 分、\(A^{\mathrm{T}}r=0\) 1 分；(c) 2 分。</div>
+<div class="key"><span class="h">易错</span>
+① 不要用正规方程代替 QR（题目要求用 QR）。<br>
+② 残差是 \(b-Ax\)，不是 \(Ax-b\)（差一个符号，范数相同但 \(A^{\mathrm{T}}r\) 的写法要对）。<br>
+③ \(x_2=0\) 是正常的，不要以为算错了就反复重算。</div>
+
+<p class="ah" style="margin-top:22px">第 7 题 · 答案（10 分）</p>
+<p><strong>（a）</strong>\(M^*=\begin{bmatrix}0&A^*\\A&0\end{bmatrix}^*=\begin{bmatrix}0^*&A^*\\(A^*)^*&0^*\end{bmatrix}=\begin{bmatrix}0&A^*\\A&0\end{bmatrix}=M\)，故 \(M\) 是 Hermitian。</p>
+
+<p><strong>（b）</strong>取 \(x_j=\dfrac{1}{\sqrt2}\begin{bmatrix}u_j\\v_j\end{bmatrix}\)（\(j=1,\dots,n\)），则</p>
+<div class="eq">$$Mx_j=\frac{1}{\sqrt2}\begin{bmatrix}A^*v_j\\Au_j\end{bmatrix}=\frac{1}{\sqrt2}\begin{bmatrix}\sigma_j u_j\\\sigma_j v_j\end{bmatrix}=\sigma_j x_j.$$</div>
+<p>再取 \(y_j=\dfrac{1}{\sqrt2}\begin{bmatrix}-u_j\\v_j\end{bmatrix}\)，则</p>
+<div class="eq">$$My_j=\frac{1}{\sqrt2}\begin{bmatrix}A^*v_j\\-Au_j\end{bmatrix}=\frac{1}{\sqrt2}\begin{bmatrix}\sigma_j u_j\\-\sigma_j v_j\end{bmatrix}=-\sigma_j\,\frac{1}{\sqrt2}\begin{bmatrix}-u_j\\v_j\end{bmatrix}=-\sigma_j y_j.$$</div>
+<p>所以特征值为 \(\pm\sigma_1,\dots,\pm\sigma_n\)，共 \(2n\) 个；特征向量分别是 \(\frac{1}{\sqrt2}(u_j,v_j)^{\mathrm{T}}\)（对应 \(+\sigma_j\)）与 \(\frac{1}{\sqrt2}(-u_j,v_j)^{\mathrm{T}}\)（对应 \(-\sigma_j\)）。</p>
+<p>若 \(m>n\)，还有 \(m-n\) 个零特征值，对应向量 \((0,u_j)^{\mathrm{T}}\)（\(j=n+1,\dots,m\)）：因为 \(A^*u_j=0\)（\(u_j\in\mathcal{N}(A^*)\)）且 \(A\cdot0=0\)。</p>
+<p>矩阵形式：</p>
+<div class="eq">$$\begin{bmatrix}0&A^*\\A&0\end{bmatrix}=\begin{bmatrix}U&0\\0&V\end{bmatrix}\begin{bmatrix}0&\Sigma^*\\\Sigma&0\end{bmatrix}\begin{bmatrix}U&0\\0&V\end{bmatrix}^*.$$</div>
+
+<p><strong>（c）</strong>\(A=\begin{bmatrix}1&2\\2&1\end{bmatrix}\) 对称，特征值 \(3,1\)，故奇异值 \(\sigma_1=3,\ \sigma_2=1\)。于是 \(M\) 的 4 个特征值为</p>
+<div class="eq">$$3,\quad 1,\quad -1,\quad -3.$$</div>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 2 分；(b) \(+\sigma_j\) 的验证 3 分、\(-\sigma_j\) 的验证 3 分（含零特征值的说明可并入，不额外扣分）；(c) 2 分。</div>
+<div class="key"><span class="h">易错</span>
+① 特征向量里 \(u_j\) 与 \(v_j\) 的位置不能对调——\(A^*v_j=\sigma_ju_j\)、\(Au_j=\sigma_jv_j\)。<br>
+② 别漏掉 \(\frac{1}{\sqrt2}\) 这个归一化因子，\(\|(u_j,v_j)^{\mathrm{T}}\|=\sqrt2\)。</div>
+</div>
+
+<h2><span class="no">03</span>第二套 · 题目</h2>
+
+<div class="paper" id="p2">
+  <div class="ph">
+    <span class="ttl">数值线性代数 · 期中模拟（二）</span>
+    <span class="meta">100 分钟 · 满分 100 · 闭卷</span>
+  </div>
+  <p class="hint" style="margin:0">比第一套稍难：Householder 手算量更大，第 7 题是纯证明。</p>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 1 题</span><span class="qs">10 分</span><span class="qm">建议 8 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A\in\mathbb{C}^{m\times m}\) 满足 \(A^*=-A\)（称为斜 Hermitian 矩阵）。</p>
+      <p>（a）证明 \(A\) 的特征值全为纯虚数。（4 分）<br>
+      （b）证明对任意 \(x\in\mathbb{C}^m\)，\(\langle Ax,x\rangle\) 为纯虚数。（3 分）<br>
+      （c）若 \(A\) 还是实矩阵，证明当 \(m\) 为奇数时 \(A\) 必奇异。（3 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 2 题</span><span class="qs">15 分</span><span class="qm">建议 12 分钟</span></div>
+    <div class="qb">
+      <p>设 \(u=(1,2,2)^{\mathrm{T}}\in\mathbb{R}^3\)，\(v=(3,0,4)^{\mathrm{T}}\in\mathbb{R}^3\)，令 \(E=uv^{\mathrm{T}}\)。</p>
+      <p>（a）写出 \(E\) 的四个基本子空间（含维数）。（4 分）<br>
+      （b）证明 \(\|E\|_2=\|u\|_2\|v\|_2\)。（5 分）<br>
+      （c）证明 \(\|E\|_F=\|u\|_2\|v\|_2\)，并说明为什么这与 (b) 不矛盾。（3 分）<br>
+      （d）求 \(\operatorname{rank}E\) 与 \(\operatorname{tr}E\)。（3 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 3 题</span><span class="qs">20 分</span><span class="qm">建议 20 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A=\begin{bmatrix}1&1\\1&-1\\1&0\end{bmatrix}\)。</p>
+      <p>（a）求 \(A^{\mathrm{T}}A\) 的特征值与 \(A\) 的奇异值。（4 分）<br>
+      （b）求 \(v_1,v_2,u_1,u_2\)，并把 \(u_1,u_2\) 补成 \(\mathbb{R}^3\) 的标准正交基得 \(u_3\)。（8 分）<br>
+      （c）写出完全 SVD 并验算 \(U\Sigma V^{\mathrm{T}}=A\)。（4 分）<br>
+      （d）求伪逆 \(A^+\)，并验证 \(A^+A=I_2\)。（4 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 4 题</span><span class="qs">15 分</span><span class="qm">建议 12 分钟</span></div>
+    <div class="qb">
+      <p>设 \(P\in\mathbb{C}^{m\times m}\) 是正交投影，令 \(Q=I-2P\)。</p>
+      <p>（a）证明 \(Q\) 是酉矩阵。（5 分）<br>
+      （b）说明 \(Q\) 固定哪些向量、翻转哪些向量，并指出它是关于什么对象的镜面反射。（5 分）<br>
+      （c）求 \(\det Q\)，用 \(\operatorname{rank}P\) 表示，并说明理由。（5 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 5 题</span><span class="qs">15 分</span><span class="qm">建议 18 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A=\begin{bmatrix}1&2\\2&1\\2&-2\end{bmatrix}\)。</p>
+      <p>（a）用 Householder 变换求完全 QR 分解 \(A=QR\)，写出每一步的 \(H_k\)。（11 分）<br>
+      （b）说明你的 \(R\) 对角元符号；若要求 \(r_{jj}>0\)，如何调整 \(Q\) 与 \(R\)？（4 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 6 题</span><span class="qs">15 分</span><span class="qm">建议 14 分钟</span></div>
+    <div class="qb">
+      <p>仍取第 5 题的 \(A\)，设 \(b=(1,1,1)^{\mathrm{T}}\)，求 \(\min_x\|Ax-b\|_2\)。</p>
+      <p>（a）用第 5 题的 QR 分解求最小二乘解 \(x\)。（8 分）<br>
+      （b）求残差 \(r\) 与 \(\|r\|_2\)，验证 \(A^{\mathrm{T}}r=0\)。（5 分）<br>
+      （c）\(A\) 是 \(3\times2\) 矩阵，能否取到 \(\|r\|_2=0\)？为什么？（2 分）</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="qh"><span class="qn">第 7 题</span><span class="qs">10 分</span><span class="qm">建议 12 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A\in\mathbb{C}^{m\times n}\) 列满秩，且 \(A\) 的第 \(1,3,5,\dots\) 列与第 \(2,4,6,\dots\) 列两两正交。设 \(A=\hat Q\hat R\) 是约化 QR 分解。</p>
+      <p>（a）证明：若 \(r_{ij}\ne0\)，则 \(i\) 与 \(j\) 的奇偶性相同。（7 分）<br>
+      （b）当 \(m=n=4\) 时，\(\hat R\) 的严格上三角部分有几个位置必为零？（3 分）</p>
+    </div>
+  </div>
+</div>
+
+<h2><span class="no">04</span>第二套 · 详解</h2>
+
+<div class="ans" id="a2">
+<p class="ah">第 1 题 · 答案（10 分）</p>
+<p><strong>（a）</strong>设 \(Ax=\lambda x\)，\(x\ne0\)。左乘 \(x^*\) 得 \(x^*Ax=\lambda x^*x=\lambda\|x\|_2^2\)。</p>
+<p>另一方面，\(x^*Ax\) 是标量，取共轭转置等于取复共轭：</p>
+<div class="eq">$$\overline{x^*Ax}=(x^*Ax)^*=x^*A^*x=x^*(-A)x=-x^*Ax.$$</div>
+<p>故 \(x^*Ax\) 为纯虚数（或零）。由 \(\lambda=\dfrac{x^*Ax}{\|x\|_2^2}\) 且分母为正实数，\(\lambda\) 也必为纯虚数（或零）。</p>
+
+<p><strong>（b）</strong>\(\langle Ax,x\rangle^*=\langle x,Ax\rangle=\langle A^*x,x\rangle=\langle -Ax,x\rangle=-\langle Ax,x\rangle\)，故 \(\langle Ax,x\rangle\) 为纯虚数。</p>
+
+<p><strong>（c）</strong>\(A\) 是实矩阵，故特征多项式 \(\det(\lambda I-A)\) 是实系数多项式。实系数奇次多项式必有实根，所以 \(A\) 至少有一个<strong>实</strong>特征值 \(\lambda_0\)。</p>
+<p>但由 (a)，\(\lambda_0\) 必须是纯虚数；而实数是纯虚数只有一种可能：\(\lambda_0=0\)。所以 \(0\) 是 \(A\) 的特征值，即 \(A\) 奇异。</p>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 4 分（左乘 \(x^*\) 1 分、取共轭转置 2 分、得出结论 1 分）；(b) 3 分；(c) 3 分（实系数奇次多项式有实根 1 分、实特征值只能是 0 1 分、结论 1 分）。</div>
+<div class="key"><span class="h">易错</span>
+① 别把斜 Hermitian 当 Hermitian 处理：\(A^*=-A\)，不是 \(A^*=A\)。<br>
+② (c) 的关键是「实特征值 + 纯虚 ⟹ 0」，两步都不能省。</div>
+
+<p class="ah" style="margin-top:22px">第 2 题 · 答案（15 分）</p>
+<p><strong>（a）</strong>\(E=uv^{\mathrm{T}}\)，\(\operatorname{rank}E=1\)。</p>
+<table class="tb">
+<tr><th>子空间</th><th>表达式</th><th>维数</th></tr>
+<tr><td>列空间 \(\mathcal{C}(E)\)</td><td>\(\mathrm{span}\{u\}=\mathrm{span}\{(1,2,2)^{\mathrm{T}}\}\)</td><td class="c">1</td></tr>
+<tr><td>行空间 \(\mathcal{C}(E^{\mathrm{T}})\)</td><td>\(\mathrm{span}\{v\}=\mathrm{span}\{(3,0,4)^{\mathrm{T}}\}\)</td><td class="c">1</td></tr>
+<tr><td>零空间 \(\mathcal{N}(E)\)</td><td>\(\{v\}^{\perp}=\{x:3x_1+4x_3=0\}\)</td><td class="c">2</td></tr>
+<tr><td>左零空间 \(\mathcal{N}(E^{\mathrm{T}})\)</td><td>\(\{u\}^{\perp}=\{x:x_1+2x_2+2x_3=0\}\)</td><td class="c">2</td></tr>
+</table>
+
+<p><strong>（b）</strong>先算 \(E^*E\)：</p>
+<div class="eq">$$E^{\mathrm{T}}E=vu^{\mathrm{T}}uv^{\mathrm{T}}=\|u\|_2^2\,vv^{\mathrm{T}}.$$</div>
+<p>\(vv^{\mathrm{T}}\) 只有一个非零特征值 \(\|v\|_2^2\)（对应特征向量 \(v\)），故 \(E^{\mathrm{T}}E\) 的非零特征值为 \(\|u\|_2^2\|v\|_2^2\)，于是</p>
+<div class="eq">$$\|E\|_2=\sigma_1=\sqrt{\|u\|_2^2\|v\|_2^2}=\|u\|_2\|v\|_2=3\cdot5=15.$$</div>
+
+<p><strong>（c）</strong></p>
+<div class="eq">$$\|E\|_F^2=\sum_{i,j}|u_iv_j|^2=\Big(\sum_i|u_i|^2\Big)\Big(\sum_j|v_j|^2\Big)=\|u\|_2^2\|v\|_2^2,$$</div>
+<p>故 \(\|E\|_F=\|u\|_2\|v\|_2=15\)。</p>
+<p><strong>不矛盾的原因：</strong>一般有 \(\|A\|_2\le\|A\|_F\)，等号成立当且仅当 \(A\) 只有一个非零奇异值（即 \(\operatorname{rank}A\le1\)）。\(E\) 是秩一矩阵，\(\|E\|_F=\sqrt{\sigma_1^2}=\sigma_1=\|E\|_2\)，所以两者相等。</p>
+
+<p><strong>（d）</strong>\(\operatorname{rank}E=1\)（\(u,v\) 均非零）。</p>
+<div class="eq">$$\operatorname{tr}E=\sum_i E_{ii}=\sum_i u_iv_i=v^{\mathrm{T}}u=3\cdot1+0\cdot2+4\cdot2=11.$$</div>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 四个子空间各 1 分（维数错扣半分）；(b) 5 分；(c) 计算 2 分 + 解释 1 分；(d) 各 1.5 分。</div>
+<div class="key"><span class="h">易错</span>
+① \(\operatorname{tr}(uv^{\mathrm{T}})=v^{\mathrm{T}}u\) 是标量，不是 \(u^{\mathrm{T}}v\) 的矩阵形式（两者相等，但别写成矩阵）。<br>
+② (c) 的「不矛盾」必须提到秩一，只说「算出来相等」拿不到分。</div>
+
+<p class="ah" style="margin-top:22px">第 3 题 · 答案（20 分）</p>
+<p><strong>（a）</strong></p>
+<div class="eq">$$A^{\mathrm{T}}A=\begin{bmatrix}1&1&1\\1&-1&0\end{bmatrix}\begin{bmatrix}1&1\\1&-1\\1&0\end{bmatrix}=\begin{bmatrix}3&0\\0&2\end{bmatrix}.$$</div>
+<p>已经是对角阵，特征值 \(\lambda_1=3,\ \lambda_2=2\)，故 \(\sigma_1=\sqrt3,\ \sigma_2=\sqrt2\)。</p>
+
+<p><strong>（b）</strong>\(A^{\mathrm{T}}A\) 已对角，特征向量直接取坐标轴：\(v_1=(1,0)^{\mathrm{T}}\)，\(v_2=(0,1)^{\mathrm{T}}\)。</p>
+<div class="eq">$$u_1=\frac{Av_1}{\sigma_1}=\frac{1}{\sqrt3}\begin{bmatrix}1\\1\\1\end{bmatrix},\qquad u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}\begin{bmatrix}1\\-1\\0\end{bmatrix}.$$</div>
+<p>补 \(u_3\)：需与 \(u_1,u_2\) 都正交。取叉积</p>
+<div class="eq">$$\begin{bmatrix}1\\1\\1\end{bmatrix}\times\begin{bmatrix}1\\-1\\0\end{bmatrix}=\begin{bmatrix}1\cdot0-1\cdot(-1)\\1\cdot1-1\cdot0\\1\cdot(-1)-1\cdot1\end{bmatrix}=\begin{bmatrix}1\\1\\-2\end{bmatrix},$$</div>
+<p>单位化得 \(u_3=\dfrac{1}{\sqrt6}(1,1,-2)^{\mathrm{T}}\)。（验证：\(u_1^{\mathrm{T}}u_3=\frac{1-2}{\sqrt{18}}=0\)，\(u_2^{\mathrm{T}}u_3=\frac{1-1}{\sqrt{12}}=0\) ✓）</p>
+
+<p><strong>（c）</strong></p>
+<div class="eq">$$U=\begin{bmatrix}\tfrac{1}{\sqrt3}&\tfrac{1}{\sqrt2}&\tfrac{1}{\sqrt6}\\\tfrac{1}{\sqrt3}&-\tfrac{1}{\sqrt2}&\tfrac{1}{\sqrt6}\\\tfrac{1}{\sqrt3}&0&-\tfrac{2}{\sqrt6}\end{bmatrix},\quad
+\Sigma=\begin{bmatrix}\sqrt3&0\\0&\sqrt2\\0&0\end{bmatrix},\quad V=I_2.$$</div>
+<p>验算：\(U\Sigma V^{\mathrm{T}}=U\Sigma=\big[\sqrt3u_1,\ \sqrt2u_2\big]=\begin{bmatrix}1&1\\1&-1\\1&0\end{bmatrix}=A\) ✓</p>
+
+<p><strong>（d）</strong>\(A^+=V\Sigma^+U^{\mathrm{T}}=\Sigma^+U^{\mathrm{T}}\)，其中 \(\Sigma^+=\begin{bmatrix}\frac{1}{\sqrt3}&0&0\\0&\frac{1}{\sqrt2}&0\end{bmatrix}\)。</p>
+<div class="eq">$$A^+=\begin{bmatrix}\frac{1}{\sqrt3}&0&0\\0&\frac{1}{\sqrt2}&0\end{bmatrix}\begin{bmatrix}\frac{1}{\sqrt3}&\frac{1}{\sqrt3}&\frac{1}{\sqrt3}\\\frac{1}{\sqrt2}&-\frac{1}{\sqrt2}&0\\\frac{1}{\sqrt6}&\frac{1}{\sqrt6}&-\frac{2}{\sqrt6}\end{bmatrix}
+=\begin{bmatrix}\frac13&\frac13&\frac13\\\frac12&-\frac12&0\end{bmatrix}.$$</div>
+<p>验证：</p>
+<div class="eq">$$A^+A=\begin{bmatrix}\frac13&\frac13&\frac13\\\frac12&-\frac12&0\end{bmatrix}\begin{bmatrix}1&1\\1&-1\\1&0\end{bmatrix}=\begin{bmatrix}1&0\\0&1\end{bmatrix}=I_2.$$</div>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 4 分；(b) \(v_j\) 2 分、\(u_1,u_2\) 4 分、\(u_3\) 2 分；(c) 拼装 2 分、验算 2 分；(d) \(A^+\) 3 分、验证 1 分。</div>
+<div class="key"><span class="h">易错</span>
+① \(V=I_2\) 不要觉得奇怪：\(A^{\mathrm{T}}A\) 已是对角阵，右奇异向量就是坐标轴。<br>
+② \(A^+=V\Sigma^+U^{\mathrm{T}}\)，顺序不能反（\(\Sigma^+\) 是 \(2\times3\)）。<br>
+③ 补 \(u_3\) 时用叉积最快，但别忘了单位化。</div>
+
+<p class="ah" style="margin-top:22px">第 4 题 · 答案（15 分）</p>
+<p><strong>（a）</strong>\(P^*=P\) 且 \(P^2=P\)。先算 \(Q^*\)：\(Q^*=(I-2P)^*=I-2P^*=I-2P=Q\)，即 \(Q\) 是 Hermitian。再算</p>
+<div class="eq">$$Q^*Q=Q^2=(I-2P)^2=I-4P+4P^2=I-4P+4P=I.$$</div>
+<p>故 \(Q\) 是酉矩阵（实情形为正交阵）。</p>
+
+<p><strong>（b）</strong>对任意 \(x\)，按第 4 题 (a) 的直和分解写 \(x=Px+(I-P)x\)，其中 \(Px\in\mathcal{C}(P)\)、\((I-P)x\in\mathcal{N}(P)=\mathcal{C}(P)^{\perp}\)。于是</p>
+<div class="eq">$$Qx=x-2Px=-Px+(I-P)x.$$</div>
+<p>即 <strong>\(\mathcal{C}(P)\) 中的分量变号、\(\mathcal{C}(P)^{\perp}\) 中的分量保持不变</strong>。所以 \(Q\) 固定 \(\mathcal{C}(P)^{\perp}\) 上的一切向量，翻转 \(\mathcal{C}(P)\) 上的一切向量，是关于 \(\mathcal{C}(P)^{\perp}\) 的镜面反射。</p>
+<p>当 \(P\) 秩 1 时（Householder 的标准情形），\(\mathcal{C}(P)^{\perp}=v^{\perp}\) 是超平面，这就是「关于 \(v^{\perp}\) 的镜像」；当 \(P\) 秩 \(m-1\) 时 \(\mathcal{C}(P)\) 本身是超平面，两种说法重合。</p>
+
+<p><strong>（c）</strong>由 (b)，\(Q\) 在 \(\mathcal{C}(P)\) 上是 \(-I\)（\(\operatorname{rank}P\) 维），在 \(\mathcal{C}(P)^{\perp}\) 上是 \(I\)（\(m-\operatorname{rank}P\) 维）。因此</p>
+<div class="eq">$$\det Q=(-1)^{\operatorname{rank}P}\cdot 1^{\,m-\operatorname{rank}P}=(-1)^{\operatorname{rank}P}.$$</div>
+<p>特例：Householder（\(\operatorname{rank}P=1\)）有 \(\det H=-1\)。</p>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 5 分（\(Q^*=Q\) 2 分、\(Q^2=I\) 2 分、结论 1 分）；(b) 5 分（分解式 2 分、变号/不变的判断 2 分、反射对象 1 分）；(c) 5 分（特征值结构 3 分、结论 2 分）。</div>
+<div class="key"><span class="h">易错</span>
+① (b) 最容易写反：是<strong>保留 \(\mathcal{C}(P)^{\perp}\)、翻转 \(\mathcal{C}(P)\)</strong>，不是反过来。<br>
+② (c) 的指数是 \(\operatorname{rank}P\)，不是 \(m-\operatorname{rank}P\)——两者只在 \(m\) 为偶数时巧合相等。</div>
+
+<p class="ah" style="margin-top:22px">第 5 题 · 答案（15 分）</p>
+<p><strong>（a）第一步：把第 1 列打到 \(e_1\) 方向。</strong></p>
+<p>\(a_1=(1,2,2)^{\mathrm{T}}\)，\(\|a_1\|_2=3\)。取（为避免相消，用「加」号）</p>
+<div class="eq">$$v_1=a_1+\|a_1\|_2e_1=(1,2,2)^{\mathrm{T}}+(3,0,0)^{\mathrm{T}}=(4,2,2)^{\mathrm{T}},\qquad v_1^{\mathrm{T}}v_1=16+4+4=24.$$</div>
+<div class="eq">$$H_1=I-\frac{2v_1v_1^{\mathrm{T}}}{v_1^{\mathrm{T}}v_1}=I-\frac{1}{12}\begin{bmatrix}16&8&8\\8&4&4\\8&4&4\end{bmatrix}
+=\begin{bmatrix}-\frac13&-\frac23&-\frac23\\-\frac23&\frac23&-\frac13\\-\frac23&-\frac13&\frac23\end{bmatrix}.$$</div>
+<p>验证：\(H_1a_1=\begin{bmatrix}-\frac13-\frac43-\frac43\\-\frac23+\frac43-\frac23\\-\frac23-\frac23+\frac43\end{bmatrix}=\begin{bmatrix}-3\\0\\0\end{bmatrix}\) ✓</p>
+<div class="eq">$$H_1A=\begin{bmatrix}-3&0\\0&0\\0&-3\end{bmatrix}.$$</div>
+<p>（第 2 列 \(a_2=(2,1,-2)^{\mathrm{T}}\)：\(H_1a_2=\big(-\frac23-\frac23+\frac43,\ -\frac43+\frac23+\frac23,\ -\frac43-\frac13-\frac43\big)^{\mathrm{T}}=(0,0,-3)^{\mathrm{T}}\)。）</p>
+
+<p><strong>第二步：消去 \((3,1)\) 位置。</strong>只需处理子向量 \((0,-3)^{\mathrm{T}}\)（第 2、3 行）。取</p>
+<div class="eq">$$\tilde v_2=(0,-3)^{\mathrm{T}}-\big(-3\big)(1,0)^{\mathrm{T}}=(3,-3)^{\mathrm{T}},\qquad \tilde v_2^{\mathrm{T}}\tilde v_2=18,$$</div>
+<div class="eq">$$\tilde H_2=I-\frac{2}{18}\begin{bmatrix}9&-9\\-9&9\end{bmatrix}=I-\begin{bmatrix}1&-1\\-1&1\end{bmatrix}=\begin{bmatrix}0&1\\1&0\end{bmatrix}.$$</div>
+<p>补上第 1 行第 1 列的单位阵：</p>
+<div class="eq">$$H_2=\begin{bmatrix}1&0&0\\0&0&1\\0&1&0\end{bmatrix}.$$</div>
+<p>于是</p>
+<div class="eq">$$R=H_2H_1A=\begin{bmatrix}-3&0\\0&-3\\0&0\end{bmatrix},$$</div>
+<div class="eq">$$Q=H_1H_2=\begin{bmatrix}-\frac13&-\frac23&-\frac23\\-\frac23&-\frac13&\frac23\\-\frac23&\frac23&-\frac13\end{bmatrix}.$$</div>
+<p>验算 \(QR=A\)：第 1 列 \(=-3\cdot Q_{:,1}=(1,2,2)^{\mathrm{T}}\) ✓，第 2 列 \(=-3\cdot Q_{:,2}=(2,1,-2)^{\mathrm{T}}\) ✓</p>
+
+<p><strong>（b）</strong>本题得到的 \(R\) 对角元都是 \(-3\)（负）。若约定 \(r_{jj}>0\)，取 \(D=\mathrm{diag}(-1,-1)\)，令</p>
+<div class="eq">$$Q'=QD=\begin{bmatrix}\frac13&\frac23&-\frac23\\\frac23&\frac13&\frac23\\\frac23&-\frac23&-\frac13\end{bmatrix},\qquad R'=DR=\begin{bmatrix}3&0\\0&3\\0&0\end{bmatrix},$$</div>
+<p>则 \(Q'R'=QDD R=QR=A\)，且对角为正。（一般地，对每个 \(j\) 若 \(r_{jj}<0\)，把 \(Q\) 的第 \(j\) 列与 \(R\) 的第 \(j\) 行同时变号即可。）</p>
+
+<div class="key"><span class="h">评分要点</span>
+(a) \(v_1\) 与 \(v_1^{\mathrm{T}}v_1\) 2 分、\(H_1\) 3 分、\(H_1A\) 2 分、\(H_2\) 2 分、\(Q\) 与 \(R\) 各 1 分；(b) 符号说明 2 分、调整方法 2 分。</div>
+<div class="key"><span class="h">易错</span>
+① 构造 \(v\) 时用「\(a_1+\|a_1\|e_1\)」而不是减号——这是避免相消的标准做法，考「为什么」时要答这句。<br>
+② 第二步只作用于子向量（第 2 行往下），构造 \(H_2\) 时左上角要补单位阵。<br>
+③ \(Q=H_1H_2\)，顺序不能写成 \(H_2H_1\)。</div>
+
+<p class="ah" style="margin-top:22px">第 6 题 · 答案（15 分）</p>
+<p><strong>（a）</strong>解 \(Rx=Q^{\mathrm{T}}b\)。先算</p>
+<div class="eq">$$Q^{\mathrm{T}}b=\begin{bmatrix}-\frac13-\frac23-\frac23\\-\frac23-\frac13+\frac23\\-\frac23+\frac23-\frac13\end{bmatrix}=\begin{bmatrix}-\frac53\\-\frac13\\-\frac13\end{bmatrix}.$$</div>
+<p>取前两行后向替换（\(R\) 的第三行为零，对应的是残差部分）：</p>
+<div class="eq">$$-3x_1=-\frac53\ \Longrightarrow\ x_1=\frac59,\qquad -3x_2=-\frac13\ \Longrightarrow\ x_2=\frac19.$$</div>
+<div class="eq">$$x=\Big(\tfrac59,\ \tfrac19\Big)^{\mathrm{T}}.$$</div>
+
+<p><strong>（b）</strong></p>
+<div class="eq">$$Ax=\tfrac59\begin{bmatrix}1\\2\\2\end{bmatrix}+\tfrac19\begin{bmatrix}2\\1\\-2\end{bmatrix}=\begin{bmatrix}\tfrac79\\\tfrac{11}{9}\\\tfrac89\end{bmatrix},\qquad
+r=b-Ax=\begin{bmatrix}\tfrac29\\-\tfrac29\\\tfrac19\end{bmatrix}.$$</div>
+<div class="eq">$$\|r\|_2=\sqrt{\tfrac{4+4+1}{81}}=\frac{3}{9}=\frac13.$$</div>
+<p>验证：</p>
+<div class="eq">$$A^{\mathrm{T}}r=\begin{bmatrix}\frac29-\frac49+\frac29\\\frac49-\frac29-\frac29\end{bmatrix}=\begin{bmatrix}0\\0\end{bmatrix}\ ✓$$</div>
+<p>（也可直接用最小二乘的正交性条件：残差应垂直于 \(\mathcal{C}(A)\)。）</p>
+
+<p><strong>（c）</strong>不能。\(A\) 是 \(3\times2\)、列满秩（\(\operatorname{rank}A=2\)），列空间是 \(\mathbb{R}^3\) 中的一张过原点的平面，是 2 维真子空间。\(b\) 只有当它恰好落在这张平面内时残差才为零。本题 \(b=(1,1,1)^{\mathrm{T}}\) 不在 \(\mathcal{C}(A)\) 内（若在，则存在 \(x\) 使 \(Ax=b\)，而上面算出的 \(\|r\|=1/3\ne0\)），所以最小残差严格为正。</p>
+<p>更本质地说：\(m>n\) 时超定方程组一般无解，最小二乘求的是「最近点」，残差不为零是常态。</p>
+
+<div class="key"><span class="h">评分要点</span>
+(a) \(Q^{\mathrm{T}}b\) 3 分、解出 \(x\) 5 分；(b) 残差 3 分、\(\|r\|\) 1 分、验证 1 分；(c) 2 分。</div>
+<div class="key"><span class="h">易错</span>
+① \(R\) 的第三行是零行，不能拿它解方程（会得到 \(0=\) 非零）。<br>
+② \(Q^{\mathrm{T}}b\) 的第三个分量不参与求解，但它就是残差的范数 \(\|r\|=|-\frac13|=\frac13\)——这是一个很好的自检。</div>
+
+<p class="ah" style="margin-top:22px">第 7 题 · 答案（10 分）</p>
+<p><strong>（a）</strong>对列数 \(j\) 归纳。记 \(q_j\) 为 \(\hat Q\) 的第 \(j\) 列。</p>
+<p><strong>奠基 \(j=1\)：</strong>\(q_1=a_1/\|a_1\|\)，只由第 1 列（奇）张成。</p>
+<p><strong>\(j=2\)：</strong>\(v_2=a_2-r_{12}q_1\)，其中 \(r_{12}=q_1^{\mathrm{T}}a_2\propto a_1^{\mathrm{T}}a_2=0\)（奇偶不同，题设正交）。故 \(v_2=a_2\)，\(q_2=a_2/\|a_2\|\)，只由第 2 列（偶）张成。</p>
+<p><strong>归纳步：</strong>设对一切 \(i&lt;j\)，\(q_i\) 只由与 \(i\) 同奇偶的列张成。则</p>
+<div class="eq">$$q_j\ \propto\ a_j-\sum_{i&lt;j}r_{ij}q_i,\qquad r_{ij}=q_i^{\mathrm{T}}a_j.$$</div>
+<p>若 \(i\) 与 \(j\) 奇偶不同：\(q_i\) 只由与 \(j\) 奇偶不同的列线性组合而成，而 \(a_j\) 与这些列全部正交（题设），故 \(r_{ij}=0\)，该项消失。</p>
+<p>若 \(i\) 与 \(j\) 奇偶相同：该项保留，但 \(q_i\) 只由同奇偶列张成，与 \(a_j\) 同组。</p>
+<p>所以 \(q_j\) 只由与 \(j\) 同奇偶的列张成。于是 \(r_{ij}=q_i^{\mathrm{T}}a_j\ne0\) 要求 \(q_i\) 与 \(a_j\) 有共同的分量来源，即 \(i\equiv j\pmod 2\)。反之若 \(i,j\) 奇偶不同，\(r_{ij}=0\)。</p>
+
+<p><strong>（b）</strong>\(4\times4\) 的严格上三角位置共 \(\binom{4}{2}=6\) 个：\((1,2),(1,3),(1,4),(2,3),(2,4),(3,4)\)。</p>
+<p>按 \(j-i\) 的奇偶分类：</p>
+<table class="tb">
+<tr><th>位置</th><th>\(j-i\)</th><th>结论</th></tr>
+<tr><td>\((1,2)\)</td><td>1（奇）</td><td>必为零</td></tr>
+<tr><td>\((1,3)\)</td><td>2（偶）</td><td>可非零</td></tr>
+<tr><td>\((1,4)\)</td><td>3（奇）</td><td>必为零</td></tr>
+<tr><td>\((2,3)\)</td><td>1（奇）</td><td>必为零</td></tr>
+<tr><td>\((2,4)\)</td><td>2（偶）</td><td>可非零</td></tr>
+<tr><td>\((3,4)\)</td><td>1（奇）</td><td>必为零</td></tr>
+</table>
+<p>故<strong>必为零的位置有 4 个</strong>（\((1,2),(1,4),(2,3),(3,4)\)），可非零的 2 个（\((1,3),(2,4)\)）。</p>
+
+<div class="key"><span class="h">评分要点</span>
+(a) 7 分（\(q_1,q_2\) 的奠基 2 分、归纳假设 2 分、\(r_{ij}=0\) 的论证 3 分）；(b) 3 分（列位置 1 分、分类 1 分、计数 1 分）。</div>
+<div class="key"><span class="h">易错</span>
+① 归纳时要说清「\(q_i\) 只由同奇偶列张成」，这是整个论证的支点。<br>
+② (b) 别忘了 \((1,4)\)——\(j-i=3\) 是奇数，很多人在只想到相邻位置时会漏掉它。</div>
+</div>
+
+<h2><span class="no">05</span>做完之后</h2>
+<div class="note g">
+<span class="h">对答案的正确方式</span>
+不要只看结果对不对，按这三步查：<br>
+<strong>1. 第一步就错了的题</strong>（比如 SVD 的 \(A^{\mathrm{T}}A\) 算错、QR 的 \(r_{11}\) 算错）——回去重做整题，不要只改数。<br>
+<strong>2. 中间对、最后一步错的题</strong>（符号、转置、顺序）——这类错误最危险，因为考场上检查不出来。把易错点抄到一张纸上。<br>
+<strong>3. 完全不会的题</strong>——看答案的「评分要点」，学会「写出第一步能拿多少分」，考场上不要空着。
+</div>
+<div class="note a">
+<span class="h">时间不够怎么办</span>
+100 分钟 7 题，最容易超时的是 SVD 手算（第 3 题）和 Householder 手算（第二套第 5 题）。建议顺序：先做范数、投影证明、最小二乘（套路固定、分好拿），最后攻 SVD 综合题。<strong>看到「求 SVD 并求四种范数」的题，先把 \(\sigma_j\) 算出来，后面所有小问都能靠它推进。</strong>
+</div>
+
+<div class="pager noprint">
+  <a href="./期中复习-指南.html">← NLA-R1 期中复习指南</a>
+  <a href="./index.html">返回章节导航</a>
+</div>
+
+<footer>
+<p>两套各 7 题、100 分、100 分钟。范围：范数 → SVD → QR → 最小二乘；条件数、浮点数、对偶范数不考。</p>
+<p>全部答案数字由 <span class="mono">verify_exam.js</span> 实测核对（SVD、范数、QR、最小二乘解与残差、分块谱、棋盘计数）。打印用浏览器「打印 → 另存为 PDF」，题目与详解会自动分页。</p>
+</footer>
+
+</div>
+</body>
+</html>

@@ -172,7 +172,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 记 \(a_j\) 为 \(A\) 的第 \(j\) 列，\(q_j\) 为 \(\hat Q\) 的第 \(j\) 列。<br>
 <strong>1.</strong> \(q_1\propto a_1\)，只由第 1 列（奇）张成。<br>
 <strong>2.</strong> \(q_2\propto a_2-\mathrm{proj}_{q_1}a_2=a_2-\mathrm{proj}_{a_1}a_2\)。因为 \(a_2\perp a_1\)（奇偶不同），投影为 0，故 \(q_2\propto a_2\)，只由第 2 列（偶）张成。<br>
-<strong>3.</strong> 归纳：设 \(q_1,\dots,q_{j-1}\) 中，下标为奇的只由奇列张成、为偶的只由偶列张成。则 \(q_j\propto a_j-\sum_{i<j}(q_i^*a_j)q_i\)。若 \(i\) 与 \(j\) 奇偶不同，则 \(q_i\) 由与 \(j\) 不同奇偶的列张成，而 \(a_j\) 与那些列全部正交，故 \(q_i^*a_j=0\)。于是只剩同奇偶的项，\(q_j\) 只由与 \(j\) 同奇偶的列张成。<br>
+<strong>3.</strong> 归纳：设 \(q_1,\dots,q_{j-1}\) 中，下标为奇的只由奇列张成、为偶的只由偶列张成。则 \(q_j\propto a_j-\sum_{i&lt;j}(q_i^*a_j)q_i\)。若 \(i\) 与 \(j\) 奇偶不同，则 \(q_i\) 由与 \(j\) 不同奇偶的列张成，而 \(a_j\) 与那些列全部正交，故 \(q_i^*a_j=0\)。于是只剩同奇偶的项，\(q_j\) 只由与 \(j\) 同奇偶的列张成。<br>
 <strong>结论</strong>：\(r_{ij}=q_i^*a_j\)，若 \(i,j\) 奇偶不同则为 0。\(\hat R\) 上三角，所以图案是「棋盘格」：主对角、次对角、隔一条对角…… 才有非零元。
 </div>
 

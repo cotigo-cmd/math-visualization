@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>广义函数与基本解：δ 的三种身份与卷积求解 — 谷超豪《数学物理方程》第 6 章可视化</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --teal-soft:#E1F5EE; --amber:#854F0B; --amber-soft:#FDF6EC;
+  --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:28px;line-height:1.35;margin:0 0 12px;font-weight:600}
+h2{font-size:22px;margin:64px 0 16px;font-weight:600;padding-top:8px;border-top:1px solid var(--border)}
+h2 .no{color:var(--accent);font-family:var(--mono);font-size:16px;margin-right:10px;font-weight:400}
+h3{font-size:17px;margin:36px 0 10px;font-weight:600}
+h4{font-size:15px;margin:24px 0 8px;font-weight:600;color:var(--accent-dark)}
+p{margin:12px 0}
+.hero{padding:56px 0 8px}
+.hero p.lead{font-size:17px;color:var(--muted);max-width:790px;margin:0}
+.crumb{font-size:13px;margin:0 0 18px;color:var(--muted)}
+.crumb a{color:var(--accent)}
+nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+nav .wrap{padding:10px 20px;display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px}
+nav a{color:var(--muted)}
+nav a:hover{color:var(--accent);text-decoration:none}
+.eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
+  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--card);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+tr.hi td{background:var(--coral-soft)}
+.ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
+.ctl input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+.ctl .lb{white-space:nowrap;color:var(--muted)}
+button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
+.val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
+figure{margin:20px 0}
+figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+canvas.plot{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+#e1c{height:340px}
+#e1b{height:300px}
+#e2c{height:360px}
+#e3c{height:320px}
+#e4c{height:330px}
+#e5c{height:340px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kv .cell{background:var(--card);border-radius:8px;padding:10px 14px}
+.kv .k{font-size:12.5px;color:var(--muted)}
+.kv .v{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent-dark)}
+.kv .v.txt{font-size:14px;font-family:inherit;padding-top:3px}
+.lab{background:#fbfcfd;border:1px solid var(--border);border-radius:12px;padding:4px 18px 16px;margin:22px 0}
+.lab .h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:14px 0 2px}
+.lab .h b{font-size:15.5px}
+.lab .h .tag{font-family:var(--mono);font-size:11.5px;color:var(--muted);
+  border:1px solid var(--border);border-radius:5px;padding:1px 7px;white-space:nowrap}
+.lab p.sub{font-size:13.5px;color:var(--muted);margin:4px 0 10px}
+.std3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:14px 0}
+.std3 .sf{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13.5px;cursor:pointer}
+.std3 .sf b{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.std3 .sf.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.std3 .sf .f{font-family:var(--mono);font-size:12.5px;line-height:1.5}
+mjx-container{display:block!important;margin:.35em 0!important}
+mjx-container[display="true"]>svg{display:block;margin:0 auto}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+p mjx-container,li mjx-container,td mjx-container,th mjx-container,h3 mjx-container,h4 mjx-container,figcaption mjx-container,.note mjx-container,.warn mjx-container,.key mjx-container,.sf mjx-container,.cell mjx-container{display:inline-block!important;margin:0!important;vertical-align:baseline}
+p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,th mjx-container>svg,h3 mjx-container>svg,h4 mjx-container>svg,figcaption mjx-container>svg,.note mjx-container>svg,.warn mjx-container>svg,.key mjx-container>svg,.sf mjx-container>svg,.cell mjx-container>svg{display:inline!important;margin:0!important;vertical-align:-1px}
+#mjx-offline{background:#fdf6ec;border:1px solid #EF9F27;border-radius:8px;padding:8px 14px;font-size:13px;color:#854F0B;margin:14px 0}
+#mjx-offline[hidden]{display:none}
+footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+ul.tight li{margin:6px 0}
+@media print{
+  nav,.ctl,button,#mjx-offline{display:none!important}
+  h2{page-break-after:avoid;break-after:avoid}
+  figure,.card,.note,.warn,.key,table,.kv,.std3,.lab{page-break-inside:avoid;break-inside:avoid}
+  body{font-size:12.5px}
+}
+</style>
+</head>
+<body>
+<div id="mjx-offline" hidden>公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响但内容不受影响。</div>
+
+<div class="hero"><div class="wrap">
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> · <a href="./index.html">数学物理方程</a></p>
+<h1>广义函数与基本解：δ 的三种身份，与卷积求解</h1>
+<p class="lead">谷超豪 等《数学物理方程（第四版）》第 6 章（书页 203–228，PDF 214–239）的交互可视化。前五章都在「函数」这个池子里找解，本章把池子换掉两次：先把<b>解</b>的要求放松（经典 → 强 → 弱 → 广义函数解），再把<b>函数</b>本身放松（δ 不是函数，而是作用在试验函数上的连续线性泛函）。放松之后得到两件实惠：<b>任何广义函数都能求任意阶导数</b>（\(H'=\delta\)），以及<b>基本解 + 卷积</b>成为统一的求解公式（\(u=E*f\)）。页面全部数值结论由工作区根 <code>verify_readout_pde6.js</code> 端到端实测（60 项闸门）。</p>
+</div></div>
+
+<nav><div class="wrap">
+<a href="#map">本章地图</a>
+<a href="#gweak">§1 广义解三级</a>
+<a href="#delta">§2 δ 与基本空间</a>
+<a href="#ops">§3 性质与运算</a>
+<a href="#ft">§4 傅里叶变换</a>
+<a href="#fund">§5 基本解</a>
+<a href="#sign">符号账</a>
+<a href="#ex">习题选讲</a>
+<a href="#cheat">速查表</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ============ 00 地图 ============ -->
+<h2 id="map"><span class="no">00</span>本章地图：两次「放宽」，换回两件工具</h2>
+<p>第 1–5 章的路径是「找公式、验正则性」：波动方程有达朗贝尔/泊松公式，热传导有热核，调和方程有格林函数。但这条路径有个前提——<b>初始资料得够光滑</b>。一旦 \(u_0\) 有跳跃（比如弦被集中冲量敲了一下），公式给出的东西不再是 \(C^2\) 的，经典解就不存在，可物理过程明明还在。</p>
+<p>本章的处理分两级：</p>
+<table>
+<tr><th style="width:26%">放宽的对象</th><th style="width:30%">放宽成什么</th><th>换回来的工具</th></tr>
+<tr class="hi"><td><b>解</b>（§1）</td><td>只要求按 \(L^2\) 逼近（强解），或按分部积分后成立（弱解）</td><td>能量不等式给出唯一性与稳定性；形式解（分离变量、傅里叶积分）自动升级为合法解</td></tr>
+<tr class="hi"><td><b>函数</b>（§2–§4）</td><td>\(D'\)／\(S'\)／\(E'\) 广义函数：基本空间上的线性连续泛函</td><td>任意阶导数恒存在；傅里叶变换对全体 \(S'\) 封闭</td></tr>
+<tr><td>解的表达（§5）</td><td>\(P(\partial)E=\delta\) 的 \(E\) 叫基本解，解写成 \(u=E*f\)</td><td>把「解定解问题」变成「求一个基本解 + 做一次卷积」，热核、\(\delta(r-at)/(4\pi ar)\)、格林函数全落在同一框架里</td></tr>
+</table>
+<p>一句话概括：<b>经典解 → 弱解是「把导数搬给试验函数」，函数 → 广义函数是「把取值搬给对偶积」</b>。两次搬家方向一致，都是把要求从「解身上」转移到「试验函数身上」，而试验函数的正则性可以随便挑——越光滑的试验函数，能容纳越坏的解。</p>
+<div class="key">
+<b>读本章的一条主线</b>：\(\langle T,\varphi\rangle\) 这个对偶积是全部内容的支点。δ 由 \(\langle\delta,\varphi\rangle=\varphi(0)\) 定义；导数由 \(\langle \partial^\alpha T,\varphi\rangle=(-1)^{|\alpha|}\langle T,\partial^\alpha\varphi\rangle\) 定义；傅里叶变换由 \(\langle \mathcal F[T],\varphi\rangle=\langle T,\mathcal F[\varphi]\rangle\) 定义；卷积由 \(\langle S*T,\varphi\rangle=\langle S_x,\langle T_y,\varphi(x+y)\rangle\rangle\) 定义。四个定义长着同一张脸：<b>我不知道 \(T\) 长什么样，但我知道它作用在任意 \(\varphi\) 上得几</b>。
+</div>
+
+<!-- ============ 01 广义解 ============ -->
+<h2 id="gweak"><span class="no">01</span>§1 广义解的三级阶梯：经典 → 强 → 弱 → 泛函（书页 203–206）</h2>
+<p>教材 §1 用三维波动方程的柯西问题当例子，把「解」的要求一层层往下调。三级阶梯的分界线不是「光滑程度」这种模糊说法，而是<b>每一级各自用什么方式验证方程成立</b>。</p>
+
+<h3>第一级：强解——用 \(L^2\) 逼近来定义</h3>
+<p>设 \(\varphi,\psi\) 只是 \(L^2\) 的（\(\varphi_x,\varphi_y\) 也 \(L^2\)）。取 \(C^3\) 列 \(\{\varphi_n\}\)、\(C^2\) 列 \(\{\psi_n\}\)，使 (1.2) 式的四个 \(L^2\) 距离全趋于 0。记 \(u_n\) 为以 \((\varphi_n,\psi_n)\) 为初值的经典解。关键一步是：<b>\(u_n-u_m\) 本身是某个柯西问题的经典解</b>，其初值就是 \((\varphi_n-\varphi_m,\psi_n-\psi_m)\)，于是可以直接套用第一章 §6 的能量不等式</p>
+<div class="eq">$$\|u_n-u_m\|^2_{L^2(K)}\le C\Big(\|\varphi_n-\varphi_m\|^2_{L^2(\Omega_0)}+\|\varphi_{nx}-\varphi_{mx}\|^2_{L^2(\Omega_0)}+\|\varphi_{ny}-\varphi_{my}\|^2_{L^2(\Omega_0)}+\|\psi_n-\psi_m\|^2_{L^2(\Omega_0)}\Big)\tag{1.7}$$</div>
+<p>右端随 \(n,m\to\infty\) 趋零，所以 \(\{u_n\}\) 在锥体 \(K\) 上按均方模是柯西列，\(L^2\) 完备性给出极限 \(u\)。由于 \(x_0,y_0,R\) 任意，\(u\) 在整个上半空间有定义。这个 \(u\) 就叫<b>强解</b>。</p>
+<div class="note">
+强解的要点是「<b>逼近 + 一致性估计</b>」：能量不等式在这里不是用来证明稳定性，而是用来<b>把经典解的收敛性从初值传到解本身</b>。没有 (1.7)，\(\{u_n\}\) 收不收敛完全无从判断。教材紧接着指出：第一章 §3 里对不满足定理 3.1 正则性要求的初值用分离变量法写出的「形式解」，其实也是强解——形式解并不是形式上的东西。
+</div>
+<p>强解还可以脱离定解条件单独定义：若 \(f\) 只是 \(L^2\)，取 \(f_n\) 为光滑列，\(u_n\) 是 \(P u_n=f_n\) 的经典解，且 \(u_n\to u\)、\(f_n\to f\)（按 \(L^2\)），则称 \(u\) 是 \(Pu=f\) 的强解。</p>
+
+<h3>第二级：弱解——把导数搬给试验函数</h3>
+<p>先要一个概念：\(C^\infty\) 函数 \(\varphi\) 的<b>支集</b> \(\operatorname{supp}\varphi=\overline{\{x:\varphi(x)\ne 0\}}\)，支集是紧集就叫<b>紧支集</b>。若 \(u\) 是 \(u_{tt}=a^2(u_{xx}+u_{yy})+f\) 的经典解，对任意紧支于 \(t\ge 0\) 的试验函数 \(\varphi\) 用格林公式，两次分部积分把 \(u\) 上的导数全部搬到 \(\varphi\) 上：</p>
+<div class="eq">$$\iiint_{\mathbb R^3}\Big(\frac{\partial^2\varphi}{\partial t^2}-a^2\frac{\partial^2\varphi}{\partial x^2}-a^2\frac{\partial^2\varphi}{\partial y^2}\Big)u\,\mathrm dx\mathrm dy\mathrm dt=\iiint_{\mathbb R^3}f\varphi\,\mathrm dx\mathrm dy\mathrm dt\tag{1.12}$$</div>
+<p>(1.12) 左端只出现 \(\varphi\) 的二阶导数，所以只要 \(u,f\) 勒贝格可积就有意义。于是反过来把 (1.12) 当作方程的定义：<b>可积的 \(u\) 若对一切二阶连续可导的紧支 \(\varphi\) 满足 (1.12)，就称 \(u\) 为弱解</b>。若只分部积分一次，得到 (1.13)，此时 \(u\) 的一阶导数要可积，但试验函数只需一阶连续可导。</p>
+<div class="key">
+<b>弱解定义的「旋钮」是试验函数的正则性</b>：要求 \(\varphi\) 一阶可导，就能定义「一阶导数可积」的弱解；要求 \(\varphi\) 二阶可导，就能容纳「只是可积」的弱解。把试验函数限制得更窄（要求更高阶的光滑性），得到的就是意义更广的广义解。§2 的广义函数解正是把这个旋钮拧到尽头——\(\varphi\) 取 \(C^\infty\) 紧支。
+</div>
+
+<h3>三级阶梯的对照</h3>
+<table>
+<tr><th style="width:16%">级别</th><th style="width:26%">对解的要求</th><th style="width:30%">方程怎么成立</th><th>典型来源</th></tr>
+<tr><td>经典解</td><td>区域内具有方程中出现的连续偏导数</td><td>代入后逐点恒等</td><td>达朗贝尔、泊松、热核公式（资料足够光滑时）</td></tr>
+<tr><td>强解</td><td>是光滑解在 \(L^2\) 意义下的极限</td><td>作为逼近极限成立</td><td>分离变量法给出的形式解</td></tr>
+<tr><td class="hi">弱解</td><td>可积（或一阶导数可积）</td><td>对一切试验函数的分部积分等式成立</td><td>初值有跳跃、边界不相容的物理问题</td></tr>
+<tr><td class="hi">广义函数解</td><td>只需是 \(D'\) 中的元素</td><td>\(\langle u,P^*\varphi\rangle=\langle f,\varphi\rangle\)，\(\varphi\in C_c^\infty\)</td><td>集中冲量、集中热源（\(f=\delta\)）</td></tr>
+</table>
+<div class="warn">
+三级阶梯都守着同一条底线：<b>经典解一定是广义解，且广义解只要具备所要求的正则性，就一定是经典解</b>（习题 2、3 就是这个方向）。所以「放宽」不会把答案搞乱，只是把定义域扩大。反过来也要留神：广义解未必唯一，唯一性得靠能量不等式或极值原理另外证。
+</div>
+<!-- ============ 02 δ 与基本空间 ============ -->
+<h2 id="delta"><span class="no">02</span>§2 δ 不是函数：它是对偶积里的一次「取值」（书页 206–212）</h2>
+<p>§1 里最差的解也还是勒贝格可积函数。但物理上有更坏的东西：弦在一点被集中冲量敲一下，初速度是什么？物体在一点储存了热量，初始温度分布是什么？线密度在原点集中了单位质量，密度 \(\rho(x)\) 在 \(x\ne 0\) 处为 0、在 \(x=0\) 处「趋于无穷」，还要 \(\int\rho\,\mathrm dx=1\)——任何经典函数都写不出它。</p>
+
+<h3>从「\(L^2\) 函数 ↔ 线性连续泛函」到 δ</h3>
+<p>教材的切入很漂亮。\(f\in L^2[a,b]\) 通过 \(\langle f,\varphi\rangle=\int_a^b f\varphi\,\mathrm dx\) 定义了 \(L^2\) 上的一个线性连续泛函；里斯表现定理说反过来也成立，一一对应。换成 \(L^p\)（\(p>2\)）时，泛函由 \(L^q\)（\(q&lt;2\)）的函数表现，泛函类就比原空间宽了。再换成 \(C[a,b]\)：\(L^1\) 的函数仍能定义泛函，但 \(C[a,b]\) 上的线性连续泛函<b>不一定</b>能写成积分形式。例如</p>
+<div class="eq">$$F(\varphi)=\varphi(0),\qquad \forall\varphi\in C[a,b]\tag{2.2}$$</div>
+<p>它显然是线性连续的（\(\max|\varphi_\nu|\to 0\Rightarrow\varphi_\nu(0)\to 0\)），却<b>找不到</b>可积函数 \(f\) 使 \(F(\varphi)=\int f\varphi\)：若存在，则 \(f\) 在每个不含原点的区间上几乎处处为 0，从而在 \(\mathbb R\) 上几乎处处为 0，与 \(F(\varphi)=\varphi(0)\) 矛盾。这个泛函就记作 \(\langle\delta,\varphi\rangle\)。</p>
+<p>为了「看见」它，教材引入脉冲列（2.3）：\(\delta_h(x)=1/h\)（\(|x|\le h/2\)）、其余为 0。由积分中值定理 \(\int\delta_h\varphi=\varphi(\xi)\)，\(\xi\in(-h/2,h/2)\)，于是 \(h\to 0\) 时 \(\varphi(\xi)\to\varphi(0)\)：</p>
+<div class="eq">$$\lim_{h\to0}\langle\delta_h,\varphi\rangle=\langle\delta,\varphi\rangle\tag{2.4}$$</div>
+<div class="warn">
+(2.4) 的极限<b>不是经典意义的极限</b>。作为函数列 \(\delta_h\) 在每一点都不收敛：\(\delta_h(0)=1/h\to\infty\)，\(\delta_h(x)=0\)（\(x\ne0\) 固定）。所以「\(\delta(x)\) 在 \(x\ne0\) 为 0、在 \(x=0\) 为 \(\infty\)、积分为 1」这句话教材专门加了括注——<b>只是一种想象，不能作为定义</b>。严格定义只有 (2.2) 那条：作用在 \(\varphi\) 上得 \(\varphi(0)\)。
+</div>
+
+<h3>基本函数空间：三档正则性，三套极限关系</h3>
+<p>广义函数是「某个基本空间上的线性连续泛函」，所以先得说清 \(\varphi\) 住哪儿。三个空间的区别只在两处：<b>光滑性</b>与<b>支集</b>。</p>
+<table>
+<tr><th style="width:14%">空间</th><th style="width:22%">元素</th><th style="width:32%">\(\varphi_\nu\to 0\) 的含义</th><th>对偶空间</th></tr>
+<tr><td>\(C^\infty(\mathbb R^n)=\mathscr E\)</td><td>无穷次连续可导，支集不限</td><td>对任一紧集 \(K\)、任一重指标 \(\alpha\)，\(\partial^\alpha\varphi_\nu\rightrightarrows 0\)（\(K\) 上一致）</td><td>\(\mathscr E'\)</td></tr>
+<tr><td>\(C_c^\infty(\mathbb R^n)=\mathscr D\)</td><td>无穷次可导<b>且紧支</b></td><td>① 所有支集含于同一紧集；② 在该紧集上 \(\partial^\alpha\varphi_\nu\rightrightarrows 0\)</td><td>\(\mathscr D'\)</td></tr>
+<tr><td>\(\mathscr S(\mathbb R^n)\)</td><td><b>速降</b>：\(C^\infty\) 且 \(x^\alpha\partial^p\varphi(x)\to 0\)（\(|x|\to\infty\)，一致）</td><td>对任意 \(\alpha,p\)，\(x^\alpha\partial^p\varphi_\nu\rightrightarrows 0\) 于 \(\mathbb R^n\)</td><td>\(\mathscr S'\)</td></tr>
+</table>
+<p>包含关系（教材 (2.8)、(2.9)）：</p>
+<div class="eq">$$\mathscr D\subset\mathscr S\subset\mathscr E,\qquad \mathscr E'\subset\mathscr S'\subset\mathscr D'$$</div>
+<p>方向要记牢：<b>基本空间越大，其上能定义的泛函越少</b>，所以对偶空间的包含方向是反的。极限关系则一个比一个强：\(\varphi_\nu\to0(\mathscr E)\Rightarrow\varphi_\nu\to0(\mathscr S)\Rightarrow\varphi_\nu\to0(\mathscr D)\)。教材例 4 专门给了反例说明 \(\mathscr E\) 与 \(\mathscr D\) 的极限关系确实不同：取 \(\varphi_\nu(x)=\alpha(x_1-\nu,x_2,\dots)\)（\(\alpha\) 为例 1 的紧支函数），支集跑向无穷远，在任一有界集上从某个 \(\nu\) 起恒为 0，故按 \(\mathscr E\) 收敛到 0；但支集无法被一个紧集包住，故按 \(\mathscr D\) 不收敛到 0。</p>
+<div class="note">
+例 1–2 的那个 \(\alpha\) 后面反复用到：\(\alpha(x)=c^{-1}e^{1/(|x|^2-1)}\)（\(|x|&lt;1\)），\(\alpha_\varepsilon(x)=\varepsilon^{-n}\alpha(x/\varepsilon)\)。它 \(C^\infty\)、紧支于单位球、\(\int\alpha=1\)，是「磨光核」的标准件。实测归一化常数 \(c=\int_{-1}^1 e^{1/(x^2-1)}\mathrm dx=0.443993816\)，\(\alpha(0)=e^{-1}/c=0.828569\)。
+</div>
+<p>三个例子把三档空间填满：任一局部可积函数是 \(\mathscr D'\) 广义函数（例 6，靠 \(\langle f,\varphi\rangle=\int f\varphi\)）；\(\delta\) 同时是 \(\mathscr D'\)、\(\mathscr S'\)、\(\mathscr E'\)（例 7）；\(\delta\) 的支集是 \(\{0\}\)（例 8）。广义函数的支集定义为「使它取零值的最大开集的余集」，于是 \(\delta\) 只在含原点的开集上是「广义」的，在不含原点的开集上恒为 0——这一句把「集中」说得精确了。</p>
+
+<div class="lab" id="lab1">
+<div class="h"><b>实验 1 · δ 序列逼近台</b><span class="tag">弱收敛 · 收敛阶实测</span></div>
+<p class="sub">五个核族都在弱意义下收敛到 \(\delta\)：\(\langle\delta_\varepsilon,\varphi\rangle\to\varphi(0)\)。但<b>收敛速度不一样</b>，而且取决于核的对称性和矩。选核族、选试验函数、拖 \(\varepsilon\)，看第一张图的曲线怎么变尖、第二张图的误差怎么掉。</p>
+
+<div class="std3" id="e1-fam">
+<div class="sf on" data-f="box"><b>盒核 · 教材 (2.3)</b><span class="f">(1/h)·1{|x|≤h/2}</span></div>
+<div class="sf" data-f="heat"><b>热核</b><span class="f">(4πt)^{-1/2}e^{-x²/4t}</span></div>
+<div class="sf" data-f="pois"><b>泊松核</b><span class="f">(1/π)·ε/(ε²+x²)</span></div>
+<div class="sf" data-f="alph"><b>教材 α_ε · 例 1–2</b><span class="f">ε⁻¹α(x/ε)，C^∞ 紧支</span></div>
+<div class="sf" data-f="one"><b>单边指数（不对称）</b><span class="f">ε⁻¹e^{-x/ε}H(x)</span></div>
+</div>
+
+<div class="ctl">
+<span class="lb">试验函数</span>
+<button class="on" id="e1-p0">φ=e^{-x²}（偶）</button>
+<button id="e1-p1">φ=e^{-(x-0.3)²}（移位）</button>
+</div>
+<div class="ctl"><span class="lb">ε = <span class="val" id="e1-ev">0.1000</span></span>
+<input type="range" id="e1-e" min="-3.2" max="-0.3" step="0.02" value="-1"></div>
+
+<canvas id="e1c" class="plot" width="840" height="340"></canvas>
+<figcaption>图 6-1　当前核族在三个 ε 下的形状（实线＝当前 ε）。纵轴自适应：ε 越小峰越高，但曲线下的面积恒为 1。</figcaption>
+
+<div class="kv">
+<div class="cell"><div class="k">∫δ_ε dx</div><div class="v" id="e1-mass">—</div></div>
+<div class="cell"><div class="k">sup δ_ε</div><div class="v" id="e1-sup">—</div></div>
+<div class="cell"><div class="k">⟨δ_ε,φ⟩</div><div class="v" id="e1-val">—</div></div>
+<div class="cell"><div class="k">φ(0)</div><div class="v" id="e1-p0v">—</div></div>
+<div class="cell"><div class="k">误差 |⟨δ_ε,φ⟩−φ(0)|</div><div class="v" id="e1-err">—</div></div>
+<div class="cell"><div class="k">实测收敛阶</div><div class="v" id="e1-ord">—</div></div>
+</div>
+
+<canvas id="e1b" class="plot" width="840" height="300"></canvas>
+<figcaption>图 6-2　双对数：误差 vs ε（五族同时画，当前族加粗）。虚线为参考斜率 2 与 1。</figcaption>
+</div>
+
+<div class="key">
+<b>为什么阶数会掉到 1？</b>对称核的一阶矩为 0，误差的首项是 \(\tfrac{\varphi''(0)}2\int x^2\delta_\varepsilon\,\mathrm dx\)，所以是二阶。泊松核的二阶矩<b>发散</b>（\(\int x^2\varepsilon/(\varepsilon^2+x^2)\mathrm dx=\infty\)），只能到一阶；单边指数核的一阶矩 \(\int x\delta_\varepsilon=\varepsilon\ne0\)，遇到 \(\varphi'(0)\ne0\) 的试验函数也只到一阶。实测（\(\varphi=e^{-x^2}\)，取最小的四个 ε 拟合）：盒核 2.000、热核 1.995、教材 \(\alpha_\varepsilon\) 2.000、单边指数 1.990、泊松核 0.978。换成移位试验函数，前四族仍是 2 阶（偶核的一阶矩仍为 0），单边指数掉到 0.912——<b>阶数不是核的私有属性，是核与试验函数配对的属性</b>。
+</div>
+<!-- ============ 03 性质与运算 ============ -->
+<h2 id="ops"><span class="no">03</span>§3 运算规则：导数、乘子、卷积，全部搬给试验函数（书页 213–217）</h2>
+<p>广义函数的「运算」不能靠逐点定义，只能靠<b>把算子搬到对偶积的另一侧</b>。搬的方法都是同一条：让算子作用在光滑的 \(\varphi\) 上，代价是出现一个符号因子。</p>
+
+<h3>弱极限</h3>
+<p>若对基本空间中任一 \(\varphi\) 都有 \(\langle T_k,\varphi\rangle\to\langle T,\varphi\rangle\)，就称 \(T_k\) 弱收敛于 \(T\)。按这个定义，§2 的 \(\delta_h\) 确实弱收敛于 \(\delta\)。教材还给了一个不那么显眼的例子：</p>
+<div class="eq">$$f_\nu(x)=\frac1\pi\frac{\sin\nu x}{x}\ \Longrightarrow\ \langle f_\nu,\varphi\rangle\to\varphi(0)=\langle\delta,\varphi\rangle$$</div>
+<p>靠的是黎曼–勒贝格引理。<b>振荡</b>也能造出 δ，这一点在数值上很要紧：不同核族的「尖」不是同一种尖。</p>
+
+<h3>导数：符号 \((-1)^{|\alpha|}\)，其余原样搬运</h3>
+<div class="eq">$$\Big\langle\frac{\partial T}{\partial x_k},\varphi\Big\rangle=-\Big\langle T,\frac{\partial\varphi}{\partial x_k}\Big\rangle,\qquad
+\langle\partial^\alpha T,\varphi\rangle=(-1)^{|\alpha|}\langle T,\partial^\alpha\varphi\rangle\tag{3.2,3.3}$$</div>
+<p>定义合法，是因为 \(\varphi\in C_c^\infty\Rightarrow\partial^\alpha\varphi\in C_c^\infty\) 且 \(\varphi_\nu\to0\Rightarrow\partial^\alpha\varphi_\nu\to0\)。于是三条性质直接掉出来：</p>
+<ul class="tight">
+<li><b>性质 1</b>：广义函数的任意阶导数都存在。（经典函数连一阶都可能没有，这一步跨度最大。）</li>
+<li><b>性质 2</b>：求导次序可交换，\(\partial^2T/\partial x_k\partial x_j=\partial^2T/\partial x_j\partial x_k\)——因为 \(\varphi\) 光滑，经典混合偏导可交换，符号 \((-1)^2=1\) 也对消。</li>
+<li><b>性质 3</b>：\(f_\nu\to f\)（弱）\(\Rightarrow\partial^\alpha f_\nu\to\partial^\alpha f\)（弱）。<b>求导与弱极限可交换</b>，这是广义函数理论最实用的一条。</li>
+</ul>
+<p>招牌例子是赫维赛德函数 \(H(x)=1\,(x>0)\)、\(0\,(x\le0)\)。作为常义函数它在 0 处不可导，但</p>
+<div class="eq">$$\Big\langle\frac{\mathrm dH}{\mathrm dx},\varphi\Big\rangle=-\Big\langle H,\frac{\mathrm d\varphi}{\mathrm dx}\Big\rangle=-\int_0^\infty\varphi'(x)\,\mathrm dx=\varphi(0)=\langle\delta,\varphi\rangle
+\quad\Longrightarrow\quad \frac{\mathrm dH}{\mathrm dx}=\delta\tag{3.5 后}$$</div>
+<p>注意这一步只用到 \(\varphi(\infty)=0\)（紧支）——<b>边界项自动消失，正是紧支集的作用</b>。</p>
+
+<h3>乘子与偏微分算子</h3>
+<p>\(\alpha\in C^\infty\) 与 \(T\) 的乘积定义为 \(\langle\alpha T,\varphi\rangle=\langle T,\alpha\varphi\rangle\)（(3.6)），合法性同样来自 \(\alpha\varphi\in C_c^\infty\) 且保持极限。有了 (3.3) 与 (3.6)，以 \(C^\infty\) 为系数的算子 \(P(x,\partial)=\sum_{|\alpha|\le m}a_\alpha(x)\partial^\alpha\) 就能作用在广义函数上，方程 \(P(x,\partial)u=f\) 的广义函数解就是</p>
+<div class="eq">$$\langle u,P^*(x,\partial)\varphi\rangle=\langle f,\varphi\rangle,\qquad P^*(x,\partial)\varphi=\sum_{|\alpha|\le m}(-1)^{|\alpha|}\partial^\alpha\big(a_\alpha(x)\varphi\big)\tag{3.9}$$</div>
+<p>对照 §1 的弱解定义可以看出：<b>广义函数解就是「试验函数取 \(C_c^\infty\)」这一档的弱解</b>，是三级阶梯的最低一级。</p>
+
+<h3>卷积：把 \(x+y\) 的平移写进对偶积</h3>
+<div class="eq">$$\langle S*T,\varphi\rangle=\big\langle S_x,\langle T_y,\varphi(x+y)\rangle\big\rangle,\qquad \forall\varphi\in C_c^\infty\tag{3.12}$$</div>
+<p>四个性质里，最常用的是后三条：</p>
+<table>
+<tr><th style="width:12%">编号</th><th style="width:30%">式子</th><th>用处</th></tr>
+<tr><td>(3.13)</td><td>\((R*S)*T=R*(S*T)\)</td><td>多次卷积可以任意结合</td></tr>
+<tr class="hi"><td>(3.14)</td><td>\(\delta*T=T\)</td><td>δ 是卷积的单位元——所以 \(E*\delta=E\)</td></tr>
+<tr class="hi"><td>(3.15)</td><td>\(\partial_kT=(\partial_k\delta)*T\)</td><td>求导＝与 δ 的导数卷积</td></tr>
+<tr><td>(3.16)</td><td>\(\partial_k(S*T)=(\partial_kS)*T=S*\partial_kT\)</td><td>导数可以「挑一边」作用</td></tr>
+</table>
+<p>由 (3.16) 立刻得到本章的主定理：常系数算子 \(P(\partial)\) 作用于卷积时，可以只作用在其中一边，</p>
+<div class="eq">$$P(\partial)(E*T)=\big[P(\partial)E\big]*T\tag{3.17}$$</div>
+<p>§5 的全部内容都是这一行的推论：只要找到 \(P(\partial)E=\delta\) 的 \(E\)，就有 \(P(\partial)(E*f)=[P(\partial)E]*f=\delta*f=f\)。</p>
+
+<div class="lab" id="lab2">
+<div class="h"><b>实验 2 · 弱导数台：跳跃、拐角与差分商</b><span class="tag">dH/dx=δ · 跳跃公式</span></div>
+<p class="sub">左图是 \(H(x)\) 与它的中心差分商 \((H(x+h)-H(x-h))/2h\)：\(h\) 越小，差分商越像一根高 \(1/(2h)\)、宽 \(2h\) 的柱子——<b>面积恒为 1</b>，但高度发散，所以逐点极限不存在。中图是 \(\langle H',\varphi\rangle\) 的部分积分 \(-\int_0^X\varphi'\) 随 \(X\) 的增长，右端停在 \(\varphi(0)\)。下方读数对三种试验函数给出 \(\langle H',\varphi\rangle\)、\(\langle|x|'',\varphi\rangle\) 与跳跃公式两端的实测值。</p>
+
+<div class="ctl">
+<span class="lb">试验函数</span>
+<button class="on" id="e2-p0">φ=e^{-x²}</button>
+<button id="e2-p1">φ=e^{-(x-0.4)²}cos2x</button>
+<button id="e2-p2">φ=sech x</button>
+</div>
+<div class="ctl"><span class="lb">差分步长 h = <span class="val" id="e2-hv">0.050</span></span>
+<input type="range" id="e2-h" min="-3" max="0" step="0.05" value="-1.301"></div>
+
+<canvas id="e2c" class="plot" width="840" height="360"></canvas>
+<figcaption>图 6-3　左：\(H\) 与中心差分商（h 越小柱子越窄越高）。右：\(-\int_0^X\varphi'\) 单调爬到 \(\varphi(0)\)，与 h 无关——弱导数只看对偶积，不看差分商。</figcaption>
+
+<div class="kv">
+<div class="cell"><div class="k">⟨H',φ⟩</div><div class="v" id="e2-hp">—</div></div>
+<div class="cell"><div class="k">φ(0)</div><div class="v" id="e2-p0v">—</div></div>
+<div class="cell"><div class="k">⟨|x|'',φ⟩</div><div class="v" id="e2-abs">—</div></div>
+<div class="cell"><div class="k">2φ(0)</div><div class="v" id="e2-2p0">—</div></div>
+<div class="cell"><div class="k">差分商 h→0</div><div class="v" id="e2-dq">—</div></div>
+<div class="cell"><div class="k">跳跃公式两端差</div><div class="v" id="e2-jmp">—</div></div>
+</div>
+</div>
+
+<h4>跳跃公式：分段光滑函数的导数怎么算</h4>
+<p>设 \(f=H(x)g(x)\)（\(g\) 光滑）。由定义</p>
+<div class="eq">$$\langle f',\varphi\rangle=-\int_0^\infty g\varphi'\,\mathrm dx=\big[-g\varphi\big]_{0}^{\infty}+\int_0^\infty g'\varphi\,\mathrm dx=g(0)\varphi(0)+\int_0^\infty g'\varphi\,\mathrm dx$$</div>
+<p>即 \(f'=g(0)\,\delta+H(x)g'(x)\)：<b>跳跃点贡献一个 δ，高度等于跳跃量，其余部分按经典导数算</b>。取 \(g=\cos x\)、\(\varphi=e^{-x^2}\)，实测两端都是 \(0.5755636165\)（差 \(&lt;10^{-9}\)）。同一套路给出 \(|x|'=\operatorname{sgn}x\)、\(|x|''=2\delta\)——实测 \(\langle|x|'',\varphi\rangle=2.000000000\)，正是 \(2\varphi(0)\)。</p>
+<!-- ============ 04 傅里叶变换 ============ -->
+<h2 id="ft"><span class="no">04</span>§4 傅里叶变换：为什么必须请出 \(\mathscr S\)（书页 218–221）</h2>
+<p>经典傅里叶变换 \(\mathcal F[f](\xi)=\int f(x)e^{-ix\cdot\xi}\mathrm dx\) 要求 \(f\) 绝对可积，而 \(C_c^\infty\subset L^1\) 没问题，\(\mathscr E\) 里的函数（比如 \(e^{x^2}\)）就完全不行；更麻烦的是 \(C_c^\infty\) 经过变换后一般<b>不再紧支</b>。教材为此专门引进速降空间 \(\mathscr S\)：</p>
+<div class="eq">$$\mathcal F[\partial_j f]=i\xi_j\mathcal F[f],\qquad \mathcal F[-ix_jf]=\frac{\partial}{\partial\xi_j}\mathcal F[f]\tag{4.5,4.7}$$</div>
+<p>这两条说明「求导 ↔ 乘 \(i\xi\)」「乘 \(x\) ↔ 求导」在 \(\mathscr S\) 里是对称的一对，所以 \(\mathscr S\) 在 \(\mathcal F\) 下<b>封闭</b>（性质 4：\(\mathcal F\) 是 \(\mathscr S\to\mathscr S\) 的同构，逆变换也是）。证明的骨架是 (4.11)：</p>
+<div class="eq">$$i^{|\alpha|+|p|}\xi^\alpha\partial^p\mathcal F[f]=\int_{\mathbb R^n}\partial^\alpha\big[x^pf(x)\big]e^{-ix\cdot\xi}\,\mathrm dx$$</div>
+<p>再用 \((1+|x|^2)^{-k}\) 把积分压住，得 \(|\xi^\alpha\partial^p\mathcal F[f]|\le C\sup_x(1+|x|^2)^k|\partial^\alpha[x^pf]|\)，故 \(\mathcal F[f]\) 速降。反过来，\(\mathscr D\) 与 \(\mathscr E\) 都不封闭：\(\mathscr D\) 变换后不紧支，\(\mathscr E\) 里的函数可能根本不可积。<b>这就是引进 \(\mathscr S\) 的全部理由</b>。</p>
+
+<h3>\(\mathscr S'\) 上的傅里叶变换：定义即搬移</h3>
+<div class="eq">$$\langle\mathcal F[T],\varphi\rangle=\langle T,\mathcal F[\varphi]\rangle,\qquad \langle\mathcal F^{-1}[T],\varphi\rangle=\langle T,\mathcal F^{-1}[\varphi]\rangle,\qquad \forall\varphi\in\mathscr S\tag{4.13,4.14}$$</div>
+<p>合法性来自 \(\mathcal F\) 是 \(\mathscr S\to\mathscr S\) 的连续同构。两条结果值得记：</p>
+<div class="eq">$$\mathcal F[\delta(x-a)]=e^{-ia\cdot\xi}\ \ (a=0:\ \mathcal F[\delta]=1),\qquad
+\mathcal F[e^{iax}]=(2\pi)^n\delta(\xi-a)\ \ (a=0:\ \mathcal F[1]=(2\pi)^n\delta)\tag{4.15–4.18}$$</div>
+<p>\(\mathcal F[\delta]=1\) 与 \(\mathcal F[1]=(2\pi)^n\delta\) 互为对偶，正是「常义意义下不可变换的对象，在广义函数意义下可以变换」的最好例证。性质 2–4 全部原样继承：</p>
+<div class="eq">$$\mathcal F[\partial_jT]=i\xi_j\mathcal F[T],\qquad
+\mathcal F[\varphi*T]=\mathcal F[\varphi]\cdot\mathcal F[T],\qquad
+\mathcal F[R*T]=\mathcal F[R]\cdot\mathcal F[T]$$</div>
+<p>（后者要求 \(R\in\mathscr E'\)、\(T\in\mathscr S'\)，因为任意两个广义函数的乘积或卷积不一定存在。）</p>
+
+<div class="lab" id="lab3">
+<div class="h"><b>实验 3 · 傅里叶台：δ 的谱是常数</b><span class="tag">F[δ_ε]→1 · 时移 · 导数变乘</span></div>
+<p class="sub">三种模式。模式一：盒核 \(\delta_h\) 的谱是 \(\mathrm{sinc}(h\xi/2)=\sin(h\xi/2)/(h\xi/2)\)，随 \(h\to0\) 在任一有界频带内一致趋于 1——<b>δ 的谱是平的</b>，这就是「白噪声」这个词的来历。模式二：时移 \(a\) 只改变相位，不改变模。模式三：导数变乘的实测对账。</p>
+
+<div class="ctl">
+<button class="on" id="e3-m0">F[δ_ε] → 1</button>
+<button id="e3-m1">F[δ(x−a)] = e^{−iaξ}</button>
+<button id="e3-m2">F[∂T] = iξF[T]</button>
+</div>
+<div class="ctl" id="e3-row1"><span class="lb">ε（或 h）= <span class="val" id="e3-ev">0.1000</span></span>
+<input type="range" id="e3-e" min="-3" max="-0.7" step="0.02" value="-1"></div>
+<div class="ctl" id="e3-row2" style="display:none"><span class="lb">时移 a = <span class="val" id="e3-av">0.70</span></span>
+<input type="range" id="e3-a" min="-2" max="2" step="0.05" value="0.7"></div>
+
+<canvas id="e3c" class="plot" width="840" height="320"></canvas>
+<figcaption>图 6-4　模式一：三个 ε 下的 \(|\mathcal F[\delta_\varepsilon](\xi)|\) 与水平线 1；模式二：\(\cos a\xi\)、\(\sin a\xi\) 与数值积分点；模式三：\(\mathcal F[\varphi](\xi)\) 及其导数（即 \(-\mathcal F[i\xi\varphi]\)）。</figcaption>
+
+<div class="kv">
+<div class="cell"><div class="k">max|F[δ_ε]−1|（|ξ|≤50）</div><div class="v" id="e3-maxerr">—</div></div>
+<div class="cell"><div class="k">表观阶（ε 与 ε/10 之比）</div><div class="v" id="e3-ord">—</div></div>
+<div class="cell"><div class="k">F[δ(x−a)] 数值 vs 解析</div><div class="v" id="e3-shift">—</div></div>
+<div class="cell"><div class="k">⟨F[H'],φ⟩</div><div class="v" id="e3-lhs">—</div></div>
+<div class="cell"><div class="k">⟨iξF[H],φ⟩</div><div class="v" id="e3-rhs">—</div></div>
+<div class="cell"><div class="k">两端差</div><div class="v" id="e3-diff">—</div></div>
+</div>
+</div>
+
+<div class="note">
+实测（\(|\xi|\le50\)，网格步长 0.25）：\(\varepsilon=10^{-1}\) 时 \(\max|\mathcal F[\delta_\varepsilon]-1|=7.606\times10^{-1}\)，\(10^{-2}\) 时 \(1.038\times10^{-2}\)，\(10^{-3}\) 时 \(1.042\times10^{-4}\)——比值 73 与 99.6，即<b>二阶收敛</b>（因为 \(\mathrm{sinc}(z)-1\sim-z^2/6\)；\(\varepsilon=10^{-1}\) 处表观阶只有 1.86，是 sinc 展开还没进渐近区，拖滑杆到 \(10^{-3}\) 就读到 2.00）。数值积分与解析 \(\mathrm{sinc}\) 逐点相同（差 \(&lt;10^{-12}\)），说明这一族的谱确实闭式可算。时移模式取 \(a=0.7,\varepsilon=10^{-3}\)，数值复积分与 \(e^{-ia\xi}\) 的最大偏差 \(6.0\times10^{-6}\)。模式三取 \(\varphi=e^{-x^2}(1+x^2/2)\)：\(\langle\mathcal F[H'],\varphi\rangle=2.2155673136\)，\(\langle i\xi\mathcal F[H],\varphi\rangle=2.2156024868\)，差 \(3.5\times10^{-5}\)——两边的误差都来自 \(-\mathcal F[\varphi]'\) 的数值求导，量级符合预期。
+</div>
+
+<!-- ============ 05 基本解 ============ -->
+<h2 id="fund"><span class="no">05</span>§5 基本解：一个 δ 方程换一族解（书页 222–228）</h2>
+<p>定义很干脆。对 \(m\) 阶常系数方程 \(P(\partial)u=\sum_{|\alpha|\le m}a_\alpha\partial^\alpha u=0\)，若存在广义函数 \(E\in\mathscr D'(\mathbb R^n)\) 使</p>
+<div class="eq">$$P(\partial)E=\delta\tag{5.2}$$</div>
+<p>就称 \(E\) 是该方程（或算子 \(P(\partial)\)）的<b>基本解</b>。它的全部价值来自 (3.17)：</p>
+<div class="eq">$$P(\partial)(E*f)=\big[P(\partial)E\big]*f=\delta*f=f$$</div>
+<p>于是「解非齐次方程」被拆成两步：<b>求一次基本解（只跟算子有关，跟 \(f\) 无关），再做一次卷积</b>。这跟第二章热传导柯西问题的热核完全同构——热核就是热算子的基本解。</p>
+
+<h3>调和方程：二维 \(\ln r\)，三维 \(1/r\)</h3>
+<p>二维情形利用旋转不变性，只找径向解 \(E(r)\)。取 \(\bar\varphi(r)=\frac1{2\pi}\int_0^{2\pi}\varphi(r,\theta)\mathrm d\theta\)（圆周平均，与 \(\theta\) 无关，且 \(r\) 大时为零），教材先证 \(\Delta\bar\varphi=\overline{\Delta\varphi}\)，然后</p>
+<div class="eq">$$\langle\Delta E,\varphi\rangle=\langle E,\Delta\varphi\rangle=2\pi\int_0^\infty E(r)\overline{\Delta\varphi}\,r\,\mathrm dr
+=2\pi\int_0^\infty E(r)\frac{\mathrm d}{\mathrm dr}\Big[r\frac{\mathrm d}{\mathrm dr}\bar\varphi(r)\Big]\mathrm dr$$</div>
+<div class="eq">$$=2\pi\Big\{\Big[E(r)r\frac{\mathrm d}{\mathrm dr}\bar\varphi\Big]_0^\infty-\int_0^\infty E'(r)r\frac{\mathrm d}{\mathrm dr}\bar\varphi(r)\mathrm dr\Big\}$$</div>
+<p>第一项为 0（\(r\bar\varphi'\to0\) 且 \(E r\) 增长慢于 \(1/r\)）。若 \(E'(r)r=\frac1{2\pi}\)，第二项化为 \(-\int_0^\infty\frac{\mathrm d}{\mathrm dr}\bar\varphi\,\mathrm dr=\bar\varphi(0)=\varphi(0)=\langle\delta,\varphi\rangle\)，故 \(\Delta E=\delta\)。解 \(rE'=\frac1{2\pi}\) 得</p>
+<div class="eq">$$E(r)=-\frac1{2\pi}\ln\frac1r=\frac1{2\pi}\ln r\qquad(2\text{ 维}),\qquad
+E(r)=-\frac1{4\pi r}\qquad(3\text{ 维})\tag{5.5}$$</div>
+<div class="warn">
+<b>符号必须盯死</b>。\(\Delta\ln r=2\pi\delta\)，所以 \(\Delta\big(\frac1{2\pi}\ln r\big)=\delta\)、\(\Delta\big(-\frac1{2\pi}\ln\frac1r\big)=\delta\)；而 \(\Delta\frac1r=-4\pi\delta\)，所以三维基本解是 \(-\frac1{4\pi r}\)，<b>带负号</b>。等价地：\(-\Delta\) 的基本解才是 \(+\frac1{4\pi r}\)。这个负号会一路传到泊松公式：三维泊松方程的解是
+$$u(x,y,z)=-\frac1{4\pi}\iiint_\Omega\frac{f(\xi,\eta,\zeta)}{\big[(x-\xi)^2+(y-\eta)^2+(z-\zeta)^2\big]^{1/2}}\mathrm d\xi\mathrm d\eta\mathrm d\zeta\tag{5.7}$$
+前面有 \(-\frac1{4\pi}\)，不是 \(+\frac1{4\pi}\)。教材 (5.5) 与 (5.7) 的负号在 OCR 切片里被吞掉了，对照 PDF 第 223–224 页（书页）确认。
+</div>
+
+<h3>柯西问题的基本解：热核与 \(\delta(r-at)\)</h3>
+<p>热传导方程柯西问题取 \(u_0=\delta(x)\) 时的解 \(E(x,t)\) 就叫该柯西问题的基本解，它满足 \(E_t=a^2E_{xx}\)、\(E(x,0)=\delta(x)\)。两边对 \(x\) 做傅里叶变换，\(\widehat E_t=-a^2s^2\widehat E\)、\(\widehat E|_{t=0}=1\)，得 \(\widehat E=e^{-a^2s^2t}\)，逆变换即</p>
+<div class="eq">$$E(x,t)=\frac1{2a\sqrt{\pi t}}e^{-\frac{x^2}{4a^2t}}\tag{5.10}$$</div>
+<p>三维波动方程柯西问题取 \(E|_{t=0}=0\)、\(E_t|_{t=0}=\delta\) 时的解，同样用傅里叶变换：\(\widehat E=\frac{\sin a\rho t}{a\rho}\)（\(\rho=|\xi|\)）。逆变换要把 \(\mathbb R^3\) 上的积分化成球面 \(S^2\) 与矢径 \(\rho\) 的两重积分，用 \(s\cdot x=\rho r\cos\theta\)（\(r=|x|\)）、\(\mathrm d\omega=\sin\theta\,\mathrm d\theta\,\mathrm d\varphi\)，最后靠广义函数极限 \(\lim_{A\to\infty}\frac{\sin A(r-at)}{\pi(r-at)}=\delta(r-at)\) 收尾：</p>
+<div class="eq">$$E=\frac{\delta(r-at)}{4\pi ar}\tag{5.14}$$</div>
+<p>把它代进 \(u=E*\varphi\)，球面坐标下 \(\delta(r-at)\) 一压就只剩 \(r=at\) 那一层：</p>
+<div class="eq">$$u(x,t)=\int_0^\infty\frac{\delta(r-at)}{4\pi ar}\cdot4\pi r^2\overline\varphi(r)\,\mathrm dr=\frac{at}{a}\overline\varphi(at)=t\,[\varphi]_{r=at}\tag{5.17}$$</div>
+<p>这就是第一章 (4.30) 的泊松公式。注意 \(\delta(r-at)/(4\pi ar)\) 是<b>三维</b>波动方程的基本解，而 \(t[\varphi]_{r=at}\) 里出现的是球面平均——惠更斯原理「无尾迹」的代数根源就在这里：δ 把体积分压成一层球面，球面外面什么都没有。</p>
+<div class="lab" id="lab4">
+<div class="h"><b>实验 4 · 调和基本解符号账</b><span class="tag">2π / 4π 与那个负号</span></div>
+<p class="sub">直接算 \(\langle\Delta E,\varphi\rangle=\langle E,\Delta\varphi\rangle\)，看它到底等于 \(+\varphi(0)\) 还是 \(-\varphi(0)\)。左图画 \(E(r)\)；右图画<b>累积积分</b> \(\int_0^R\) 随 \(R\) 的变化——它必须在 \(R\to\infty\) 时停在 \(\pm\varphi(0)\)，停在哪一边完全由系数与符号决定。把「符号」按钮拨到 \(+\)，立刻看到它停到 \(-\varphi(0)\)。</p>
+
+<div class="ctl">
+<span class="lb">维数</span>
+<button class="on" id="e4-d2">二维：E ∝ ln(1/r)</button>
+<button id="e4-d3">三维：E ∝ 1/r</button>
+<span class="lb" style="margin-left:12px">系数符号</span>
+<button class="on" id="e4-sn">−1/2π 或 −1/4π</button>
+<button id="e4-sp">+1/2π 或 +1/4π</button>
+</div>
+<div class="ctl">
+<span class="lb">试验函数</span>
+<button class="on" id="e4-p0">φ=e^{-r²}</button>
+<button id="e4-p1">φ=1/(1+r²)</button>
+</div>
+
+<canvas id="e4c" class="plot" width="840" height="330"></canvas>
+<figcaption>图 6-5　左：\(E(r)\)（对数坐标只影响形状，不影响符号）。右：累积 \(\langle E,\Delta\varphi\rangle\) 随截断半径 \(R\) 收敛，虚线为 \(\pm\varphi(0)\)。</figcaption>
+
+<div class="kv">
+<div class="cell"><div class="k">⟨ΔE,φ⟩ 实测</div><div class="v" id="e4-lap">—</div></div>
+<div class="cell"><div class="k">φ(0)</div><div class="v" id="e4-p0v">—</div></div>
+<div class="cell"><div class="k">|实测 − φ(0)|</div><div class="v" id="e4-err">—</div></div>
+<div class="cell"><div class="k">加常数 C 的贡献</div><div class="v" id="e4-const">—</div></div>
+</div>
+</div>
+
+<div class="key">
+<b>不唯一性也在这里落地</b>：若 \(\Delta E=\delta\)，而 \(u\) 是 \(\Delta u=0\) 的经典解，则 \(\Delta(E+u)=\delta\)，所以 \(E+u\) 也是基本解 (5.18)。最简单的例子是二维加常数：\(\Delta(E+C)=\Delta E\)，因为 \(\langle\Delta C,\varphi\rangle=C\langle1,\Delta\varphi\rangle=C\int\Delta\varphi\,\mathrm dA=0\)。实测：加 \(C=3.7\) 后 \(\langle\Delta E,\varphi\rangle\) 的变化是 \(4.3\times10^{-14}\)（\(\varphi=e^{-r^2}\)）与 \(-4.6\times10^{-11}\)（\(\varphi=1/(1+r^2)\)），都在积分误差以内。三维加常数就没用了（\(1\) 不是 \(1/r\) 那一族），但可以加任意调和解——这正是格林函数 \(G=\frac1{4\pi r}-g\) 的由来。
+</div>
+
+<div class="lab" id="lab5">
+<div class="h"><b>实验 5 · 基本解流水线：从 δ 到解</b><span class="tag">热核 · δ(r−at)/(4πar)</span></div>
+<p class="sub">两种模式，都走同一条流水线：\(P(\partial)E=\delta\) → \(u=E*u_0\)。热模式画 \(E(x,t)\) 随 \(t\) 变胖变矮（面积恒为 1），并核对 \(E*u_0\) 与闭式 \(e^{-a^2k^2t}\cos kx\)；波模式画 \(u(r,t)=t\,[\varphi]_{r=at}\) 的径向剖面，并核对球面平均的数值实现与闭式解。</p>
+
+<div class="ctl">
+<button class="on" id="e5-mh">热传导：热核 E(x,t)</button>
+<button id="e5-mw">三维波：δ(r−at)/(4πar)</button>
+</div>
+<div class="ctl"><span class="lb">t = <span class="val" id="e5-tv">0.700</span></span>
+<input type="range" id="e5-t" min="-1.3" max="1.1" step="0.02" value="-0.155"></div>
+<div class="ctl"><span class="lb">波速 a = <span class="val" id="e5-av">1.00</span></span>
+<input type="range" id="e5-a" min="0.4" max="2" step="0.05" value="1"></div>
+
+<canvas id="e5c" class="plot" width="840" height="340"></canvas>
+<figcaption>图 6-6　热模式：三个时刻的 \(E(\cdot,t)\)（虚线为初值 \(\delta\) 的位置示意）。波模式：径向剖面 \(u(r,t)\) 与 \(t\to0\) 时的极限 \(\varphi(r)\)。</figcaption>
+
+<div class="kv" id="e5-kh">
+<div class="cell"><div class="k">∫E dx（应为 1）</div><div class="v" id="e5-mass">—</div></div>
+<div class="cell"><div class="k">max|E_t − a²E_xx|</div><div class="v" id="e5-res">—</div></div>
+<div class="cell"><div class="k">E*u₀ 实测</div><div class="v" id="e5-conv">—</div></div>
+<div class="cell"><div class="k">闭式 e^{-a²k²t}cos kx</div><div class="v" id="e5-exact">—</div></div>
+<div class="cell"><div class="k">t→0 时 |⟨E,φ⟩−1|</div><div class="v" id="e5-tod">—</div></div>
+</div>
+<div class="kv" id="e5-kw" style="display:none">
+<div class="cell"><div class="k">t[φ]_{r=at}（数值球面平均）</div><div class="v" id="e5-sph">—</div></div>
+<div class="cell"><div class="k">闭式 t·e^{−(ρ²+a²t²)}sinh(2atρ)/2atρ</div><div class="v" id="e5-cl">—</div></div>
+<div class="cell"><div class="k">波动方程残差</div><div class="v" id="e5-wres">—</div></div>
+<div class="cell"><div class="k">u/t → φ(ρ)</div><div class="v" id="e5-ic">—</div></div>
+<div class="cell"><div class="k">δ(r−at)/(4πar) 径向积分</div><div class="v" id="e5-drad">—</div></div>
+</div>
+</div>
+
+<div class="note">
+实测锚点（\(a=1\)）：热核在 \(t=0.7\) 时 \(\int E\,\mathrm dx=1.000000000000\)（相对误差 \(&lt;10^{-12}\)）；\(E_t-a^2E_{xx}\) 在 \(x\in[-6,6]\) 上逐点为 <b>0</b>（解析式相减，非差分）；\(E*\cos(1.3\,\cdot)\) 在 \(x_0=0.4\) 处得 \(0.2658635945\)，闭式 \(e^{-1.69\times0.7}\cos(0.52)=0.2658635945\)；\(t\to0\) 时 \(|\langle E(\cdot,t),e^{-x^2}\rangle-1|\) 依次为 \(1.56\times10^{-1},1.94\times10^{-2},1.99\times10^{-3},2.00\times10^{-4}\)（\(t=10^{-1}\sim10^{-4}\)），<b>严格一阶</b>。波模式：\(\rho=0.8\)、\(t=0.3/0.6/1.0\) 时 \(t[\varphi]_{r=at}\) 的数值球面平均与闭式 \(t\,e^{-(\rho^2+a^2t^2)}\frac{\sinh(2at\rho)}{2at\rho}\) 十位一致；闭式解的波动方程残差 \(1.36\times10^{-8}\)（中心差分 \(h=10^{-4}\)）；\(u_t|_{t=0}\) 从 \(t=10^{-2}\) 到 \(10^{-4}\) 依次 \(0.527262\to0.527292\)，收敛到 \(\varphi(0.8)=0.527292\)。\(\delta(r-at)/(4\pi ar)\) 的径向积分给 \(0.4186057909\)，与解析 \((at/a)\varphi(at)=0.4186057956\) 相符。
+</div>
+<!-- ============ 06 符号账 ============ -->
+<h2 id="sign"><span class="no">06</span>符号账：三处 OCR 陷阱与一处真正的约定问题</h2>
+<p>本章公式短、负号多，OCR 切片丢负号几乎是必然的。逐条对照 PDF 渲染页（书页 223–226）核过：</p>
+<table>
+<tr><th style="width:18%">位置</th><th style="width:30%">切片文字</th><th style="width:30%">教材原式</th><th>为什么必须带负号</th></tr>
+<tr class="hi"><td>(5.5) 二维</td><td>\(E(r)=\frac1{2\pi}\ln\frac1r\)</td><td>\(E(r)=-\frac1{2\pi}\ln\frac1r\)</td><td>\(\Delta\ln r=2\pi\delta\)，故 \(\Delta\big(\frac1{2\pi}\ln r\big)=\delta\)，而 \(\ln\frac1r=-\ln r\) 要再翻一次号</td></tr>
+<tr class="hi"><td>(5.5) 三维</td><td>\(\frac1{4\pi r}\)</td><td>\(-\frac1{4\pi r}\)</td><td>\(\Delta\frac1r=-4\pi\delta\)；\(+\frac1{4\pi r}\) 是 \(-\Delta\) 的基本解</td></tr>
+<tr class="hi"><td>(5.7) 泊松解</td><td>\(u=\frac1{4\pi}\iiint\frac{f}{r}\mathrm dV\)</td><td>\(u=-\frac1{4\pi}\iiint\frac{f}{r}\mathrm dV\)</td><td>与上一条同源，符号必须一致</td></tr>
+<tr><td>脚注</td><td>「系数 \(\frac1{2\pi}\) 与 \(\frac1{4\pi}\) 是为保证 \(\Delta E=\delta\) 而引入」</td><td>系数为 \(-\frac1{2\pi}\) 与 \(-\frac1{4\pi}\)</td><td>同一处负号，脚注也跟着错（或切片漏字）</td></tr>
+</table>
+<div class="warn">
+<b>一处教材自己的印刷瑕疵</b>（不是 OCR 问题）：推导中「若 \(E'(r)r=\frac1{2\pi}\)，则第二项化为 \(-\int_0^\infty\frac{\mathrm d}{\mathrm dr}\bar\varphi\,\mathrm dr=-\bar\varphi(0)=\varphi(0)\)」。这一步的中间等号应为 \(-\bar\varphi(0)+\bar\varphi(\infty)=\bar\varphi(0)\)——因为 \(\bar\varphi(\infty)=0\)。结论 \(\Delta E=\delta\) 是对的，中间那个「\(-\bar\varphi(0)=\varphi(0)\)」是把 \(\bar\varphi(\infty)\) 漏掉了。看到这里别以为自己算错。
+</div>
+<p>实验 4 就是把这笔账做成可点的：拨「系数符号」按钮，累积积分从 \(+1\) 翻到 \(-1\)。数值上 \(\langle\Delta E,\varphi\rangle\) 用 \(2\pi\int_0^\infty E(r)\overline{\Delta\varphi}\,r\,\mathrm dr\)（二维）与 \(4\pi\int_0^\infty E(r)\overline{\Delta\varphi}\,r^2\mathrm dr\)（三维）算，\(r\to0\) 的对数奇点用 \(r=e^{-s}\) 替换吸收，远场用等比分段 Gauss–Legendre 一路积到 \(10^6\)（截断到 60 时二维 \(\varphi=1/(1+r^2)\) 会残留 \(2.6\times10^{-3}\) 的假误差，这是幂律尾，不是方法错）。</p>
+
+<!-- ============ 07 习题选讲 ============ -->
+<h2 id="ex"><span class="no">07</span>习题选讲：三题各补一块拼图</h2>
+
+<h3>§3 习题 5：\(\alpha(x)\delta(x)=\alpha(0)\delta(x)\)</h3>
+<p>一行。由乘子定义 (3.6) 与 δ 定义 (2.2)：</p>
+<div class="eq">$$\langle\alpha\delta,\varphi\rangle=\langle\delta,\alpha\varphi\rangle=\alpha(0)\varphi(0)=\alpha(0)\langle\delta,\varphi\rangle$$</div>
+<p>这条说明 <b>δ 的支集是 \(\{0\}\) 的直接后果</b>：\(\alpha\) 在原点之外取什么值完全无关。它的推论是 \(\xi\,\delta(\xi)=0\)——傅里叶变换里处理 \(1/(i\xi)+\pi\delta\) 这类式子时，全靠这一条把「乘 \(\xi\) 后该消失的项」抹掉。</p>
+
+<h3>§3 习题 8(1)：热核弱收敛于 δ</h3>
+<p>要证 \(\big((4\pi t)^{-n/2}e^{-|x|^2/4t},\varphi\big)\to\varphi(0)\)（\(t\to0^+\)）。这就是实验 5 的热模式：\(t=10^{-1}\sim10^{-4}\) 时误差 \(1.56\times10^{-1}\to2.00\times10^{-4}\)，每降一个数量级误差降一个数量级——<b>一阶</b>。原因是热核的对称性使一阶矩为 0，误差首项为 \(\tfrac{\varphi''(0)}2\int x^2E\,\mathrm dx=\varphi''(0)\,t\)，正比于 \(t\) 而不是 \(\sqrt t\)。</p>
+
+<h3>§5 习题 4：弦振动方程柯西问题的基本解</h3>
+<p>求 \(E_{tt}=a^2E_{xx}\)、\(E|_{t=0}=0\)、\(E_t|_{t=0}=\delta(x)\)。对 \(x\) 做傅里叶变换：\(\widehat E_{tt}+a^2s^2\widehat E=0\)，\(\widehat E(0)=0\)、\(\widehat E_t(0)=1\)，故 \(\widehat E=\tfrac{\sin ast}{as}\)。逆变换用狄利克雷间断因子 \(\int_{-\infty}^{\infty}\frac{\sin ast}{s}e^{isx}\mathrm ds=\pi\,\mathbf 1_{\{|x|&lt;at\}}\)：</p>
+<div class="eq">$$E(x,t)=\frac1{2\pi}\int_{-\infty}^{\infty}\frac{\sin ast}{as}e^{isx}\,\mathrm ds=\frac1{2a}\mathbf 1_{\{|x|&lt;at\}}=\frac1{2a}\Big[H(x+at)-H(x-at)\Big]$$</div>
+<p>于是 \(u=E*\varphi=\dfrac1{2a}\int_{x-at}^{x+at}\varphi(\xi)\,\mathrm d\xi\)，正是达朗贝尔公式里「只有初速度」的那一半。实测（\(a=1\)，\(\varphi=e^{-\xi^2}\)，\(x=0.3\)，\(t=0.8\)）：盒式基本解的卷积给 \(0.6206712195\)，达朗贝尔闭式给 \(0.6206712195\)，另一条路径（直接对 \(E=\frac1{2a}[H(x+at)-H(x-at)]\) 做平移积分）给 \(0.6206712195\)，三者差 \(&lt;10^{-15}\)。<b>一维波的基本解是一个盒</b>——这解释了为什么一维波有「尾迹」而三维没有：三维的 \(E\) 是 \(\delta(r-at)/(4\pi ar)\)（一层球面），一维的 \(E\) 是整段区间上的常数。</p>
+
+<!-- ============ 08 速查表 ============ -->
+<h2 id="cheat"><span class="no">08</span>速查表</h2>
+<h3>δ 与广义函数的运算</h3>
+<table>
+<tr><th style="width:30%">式子</th><th style="width:34%">含义／用法</th><th>备注</th></tr>
+<tr><td>\(\langle\delta,\varphi\rangle=\varphi(0)\)</td><td>δ 的唯一定义</td><td>不是函数，是 \(\mathscr D'\) 元素</td></tr>
+<tr><td>\(\langle\partial^\alpha T,\varphi\rangle=(-1)^{|\alpha|}\langle T,\partial^\alpha\varphi\rangle\)</td><td>导数定义</td><td>任意阶恒存在，次序可换</td></tr>
+<tr><td>\(H'=\delta\)，\(|x|'=\operatorname{sgn}x\)，\(|x|''=2\delta\)</td><td>跳跃／拐角</td><td>跳跃量 × δ 是通式</td></tr>
+<tr><td>\(f'=g(0)\delta+H g'\)（\(f=Hg\)）</td><td>分段光滑求导</td><td>跳跃点高度＝跳跃量</td></tr>
+<tr><td>\(\alpha\delta=\alpha(0)\delta\)，\(\xi\delta=0\)</td><td>乘子</td><td>支集集中在原点</td></tr>
+<tr><td>\(\delta*T=T\)，\(\partial_kT=(\partial_k\delta)*T\)</td><td>卷积单位元</td><td>\(P(\partial)(E*T)=[P(\partial)E]*T\)</td></tr>
+</table>
+
+<h3>傅里叶变换对（\(\mathscr S'\) 意义）</h3>
+<table>
+<tr><th style="width:34%">时域</th><th style="width:30%">频域</th><th>出处</th></tr>
+<tr><td>\(\delta(x-a)\)</td><td>\(e^{-ia\cdot\xi}\)</td><td>(4.15)</td></tr>
+<tr><td>\(\delta(x)\)</td><td>\(1\)</td><td>(4.16)</td></tr>
+<tr><td>\(e^{iax}\)</td><td>\((2\pi)^n\delta(\xi-a)\)</td><td>(4.17)</td></tr>
+<tr><td>\(1\)</td><td>\((2\pi)^n\delta(\xi)\)</td><td>(4.18)</td></tr>
+<tr><td>\(\partial_jT\)</td><td>\(i\xi_j\mathcal F[T]\)</td><td>(4.21)</td></tr>
+<tr><td>\(-ix_jT\)</td><td>\(\partial_{\xi_j}\mathcal F[T]\)</td><td>(4.23)</td></tr>
+<tr><td>\(\varphi*T\)（\(\varphi\in\mathscr S\)）</td><td>\(\mathcal F[\varphi]\cdot\mathcal F[T]\)</td><td>(4.25)</td></tr>
+<tr><td>\(\tfrac{\sin ast}{as}\)（弦振动）</td><td>\(\tfrac1{2a}\mathbf 1_{\{|x|&lt;at\}}\)</td><td>习题 4</td></tr>
+</table>
+
+<h3>基本解一览</h3>
+<table>
+<tr><th style="width:24%">算子／定解问题</th><th style="width:34%">基本解 \(E\)</th><th>解的表达</th></tr>
+<tr class="hi"><td>二维 \(\Delta\)（书页 223）</td><td>\(-\dfrac1{2\pi}\ln\dfrac1r=\dfrac1{2\pi}\ln r\)</td><td>\(u=E*f\)（须 \(f\) 赫尔德连续）</td></tr>
+<tr class="hi"><td>三维 \(\Delta\)（书页 224）</td><td>\(-\dfrac1{4\pi r}\)</td><td>\(u=-\dfrac1{4\pi}\iiint\dfrac{f}{r}\mathrm dV\)</td></tr>
+<tr><td>热传导柯西（(5.10)）</td><td>\(\tfrac1{2a\sqrt{\pi t}}e^{-x^2/4a^2t}\)</td><td>\(u=E*u_0\)</td></tr>
+<tr><td>三维波柯西（(5.14)）</td><td>\(\tfrac{\delta(r-at)}{4\pi ar}\)</td><td>\(u=t\,[\varphi]_{r=at}\)（泊松公式）</td></tr>
+<tr><td>一维波柯西（习题 4）</td><td>\(\tfrac1{2a}\mathbf 1_{\{|x|&lt;at\}}\)</td><td>\(u=\dfrac1{2a}\int_{x-at}^{x+at}\varphi\)</td></tr>
+<tr><td>调和第一边值（(5.19)）</td><td>格林函数 \(G\)，\(\Delta G=-\delta(M-M_0)\)，\(G|_\Gamma=0\)</td><td>第三章的边值问题解</td></tr>
+</table>
+
+<div class="note">
+<b>把这章和第三章接起来</b>：第三章的格林函数 \(G(M,M_0)=\frac1{4\pi r_{MM_0}}-g(M,M_0)\) 其实就是「带边界条件的基本解」——它满足 \(\Delta G=-\delta(M-M_0)\)（注意负号，与 \(E=-\frac1{4\pi r}\) 一致），在边界上取 0。所以「基本解」不是新东西，是把第三章做过的事放到广义函数语言里重说一遍，并且顺手把「集中源」这件事说清楚了。
+</div>
+
+<footer>
+<p>本页为谷超豪 等《数学物理方程（第四版）》第 6 章（书页 203–228／PDF 214–239）的配套交互页。全部数值结论由工作区根 <code>verify_readout_pde6.js</code> 实测（60 项闸门全通过），公式排版用 MathJax 3 <code>tex-svg</code>。引用公式编号一律沿用教材原编号；与切片文字不符处已在第 06 节逐条列出并对照 PDF 渲染页核实。</p>
+<p>返回 <a href="./index.html">数学物理方程 · 全部页面</a> 或 <a href="../index.html">全部学科</a>。</p>
+</footer>
+
+</div>
+<script>
+(function(){
+"use strict";
+
+/* ==================== 公共 ==================== */
+function $(id){ return document.getElementById(id); }
+function fx(x, d){
+  d = (d === undefined) ? 4 : d;
+  if (x === null || x === undefined || !isFinite(x)) return "—";
+  if (x === 0) return "0";
+  var a = Math.abs(x);
+  if (a < 1e-3 || a >= 1e5) return x.toExponential(2);
+  return x.toFixed(d);
+}
+function setTxt(id, s){ var e = $(id); if (e) e.textContent = s; }
+var CVS = {};
+function cx(id){ if (!CVS[id]) CVS[id] = $(id).getContext("2d"); return CVS[id]; }
+function panel(x0, y0, w, h, xmin, xmax, ymin, ymax){
+  var sx = w / (xmax - xmin), sy = h / (ymax - ymin);
+  return {
+    x0: x0, y0: y0, w: w, h: h, xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax,
+    X: function(x){ return x0 + (x - xmin) * sx; },
+    Y: function(y){ return y0 + h - (y - ymin) * sy; },
+    invX: function(px){ return xmin + (px - x0) / sx; },
+    invY: function(py){ return ymin + (y0 + h - py) / sy; },
+    clipY: function(y){ return y > ymax ? ymax : (y < ymin ? ymin : y); }
+  };
+}
+function frame(c, P){
+  c.fillStyle = "#fff"; c.fillRect(P.x0, P.y0, P.w, P.h);
+  c.strokeStyle = "#d0d7de"; c.lineWidth = 1;
+  c.strokeRect(P.x0 + .5, P.y0 + .5, P.w - 1, P.h - 1);
+}
+function curve(c, P, f, n, color, wd){
+  var i, first = true;
+  c.beginPath(); c.strokeStyle = color; c.lineWidth = wd || 2;
+  for (i = 0; i <= n; i++){
+    var x = P.xmin + (P.xmax - P.xmin) * i / n, y = f(x);
+    if (!isFinite(y)) { first = true; continue; }
+    var py = P.Y(P.clipY(y)), px = P.X(x);
+    if (first){ c.moveTo(px, py); first = false; } else c.lineTo(px, py);
+  }
+  c.stroke();
+}
+function axis0(c, P, color){
+  c.beginPath(); c.strokeStyle = color || "#c9d1d9"; c.lineWidth = 1;
+  var y0 = P.Y(P.clipY(0));
+  c.moveTo(P.x0, y0); c.lineTo(P.x0 + P.w, y0); c.stroke();
+}
+function label(c, px, py, s, color, align){
+  c.fillStyle = color || "#57606a"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = align || "left"; c.textBaseline = "middle";
+  c.fillText(s, px, py);
+}
+function dashLine(c, P, y, color, lab){
+  c.save(); c.setLineDash([4, 4]); c.strokeStyle = color; c.lineWidth = 1.2;
+  var py = P.Y(P.clipY(y));
+  c.beginPath(); c.moveTo(P.x0, py); c.lineTo(P.x0 + P.w, py); c.stroke(); c.restore();
+  if (lab) label(c, P.x0 + P.w - 4, py - 8, lab, color, "right");
+}
+
+/* ---------- 数值积分 ---------- */
+function simp(f, a, b, n){
+  if (n % 2) n++;
+  var h = (b - a) / n, s = f(a) + f(b), i;
+  for (i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * f(a + i * h);
+  return s * h / 3;
+}
+var GLC = {};
+function glNodes(n){
+  if (GLC[n]) return GLC[n];
+  var x = new Array(n), w = new Array(n), i, j, m, z, p1, p2, p3, pp, z1, k;
+  m = (n + 1) >> 1;
+  for (i = 0; i < m; i++){
+    z = Math.cos(Math.PI * (i + 0.75) / (n + 0.5));
+    for (j = 0; j < 100; j++){
+      p1 = 1; p2 = 0;
+      for (k = 0; k < n; k++){ p3 = p2; p2 = p1; p1 = ((2 * k + 1) * z * p2 - k * p3) / (k + 1); }
+      pp = n * (z * p1 - p2) / (z * z - 1);
+      z1 = z; z = z1 - p1 / pp;
+      if (Math.abs(z - z1) < 1e-15) break;
+    }
+    x[i] = -z; x[n - 1 - i] = z;
+    w[i] = 2 / ((1 - z * z) * pp * pp); w[n - 1 - i] = w[i];
+  }
+  GLC[n] = { x: x, w: w };
+  return GLC[n];
+}
+function glInt(f, a, b, n){
+  var g = glNodes(n || 40), s = 0, i, c = (a + b) / 2, r = (b - a) / 2;
+  for (i = 0; i < g.x.length; i++) s += g.w[i] * f(c + r * g.x[i]);
+  return s * r;
+}
+function farInt(f, a, b, panels, n){
+  var s = 0, r = a, ratio = Math.pow(b / a, 1 / panels), i;
+  for (i = 0; i < panels; i++){ var r2 = r * ratio; s += glInt(f, r, r2, n || 20); r = r2; }
+  return s;
+}
+
+/* ==================== 实验 1：δ 序列逼近 ==================== */
+var ALPHA_C = glInt(function(t){ return Math.exp(1 / (Math.sin(t) * Math.sin(t) - 1)) * Math.cos(t); },
+                    -Math.PI / 2, Math.PI / 2, 200);
+function alphaBase(x){
+  if (Math.abs(x) >= 1) return 0;
+  return Math.exp(1 / (x * x - 1)) / ALPHA_C;
+}
+var FAM = {
+  box:  { label: "盒核",   dens: function(x, e){ return Math.abs(x) <= e / 2 ? 1 / e : 0; },
+          sup: function(e){ return 1 / e; }, color: "#185FA5" },
+  heat: { label: "热核",   dens: function(x, e){ return Math.exp(-x * x / (4 * e * e)) / (2 * Math.sqrt(Math.PI) * e); },
+          sup: function(e){ return 1 / (2 * Math.sqrt(Math.PI) * e); }, color: "#0F6E56" },
+  pois: { label: "泊松核", dens: function(x, e){ return e / (Math.PI * (e * e + x * x)); },
+          sup: function(e){ return 1 / (Math.PI * e); }, color: "#D85A30" },
+  alph: { label: "教材 α_ε", dens: function(x, e){ return alphaBase(x / e) / e; },
+          sup: function(e){ return alphaBase(0) / e; }, color: "#534AB7" },
+  one:  { label: "单边指数", dens: function(x, e){ return x >= 0 ? Math.exp(-x / e) / e : 0; },
+          sup: function(e){ return 1 / e; }, color: "#854F0B" }
+};
+var FAMK = ["box", "heat", "pois", "alph", "one"];
+var PHI1 = {
+  g0: { label: "φ=e^{-x²}", f: function(x){ return Math.exp(-x * x); }, p0: 1, d0: 0, dd0: -2 },
+  gs: { label: "φ=e^{-(x-0.3)²}", f: function(x){ return Math.exp(-(x - 0.3) * (x - 0.3)); },
+        p0: Math.exp(-0.09), d0: 0.6 * Math.exp(-0.09), dd0: (0.36 - 2) * Math.exp(-0.09) }
+};
+function dMass(k, e){
+  if (k === "box") return 1;
+  if (k === "heat") return glInt(function(u){ return Math.exp(-u * u); }, -12, 12, 60) / Math.sqrt(Math.PI);
+  if (k === "pois") return glInt(function(s){ return 1 / Math.cosh(s); }, -40, 40, 200) / Math.PI;
+  if (k === "alph") return glInt(function(t){ return alphaBase(Math.sin(t)) * Math.cos(t); }, -Math.PI / 2, Math.PI / 2, 200);
+  return glInt(function(u){ return Math.exp(-u); }, 0, 60, 80);
+}
+function dPair(k, e, pk){
+  var P = PHI1[pk], v;
+  if (k === "box") v = glInt(P.f, -e / 2, e / 2, 40) / e;
+  else if (k === "heat") v = glInt(function(u){ return Math.exp(-u * u) * P.f(2 * e * u); }, -14, 14, 80) / Math.sqrt(Math.PI);
+  else if (k === "pois") v = glInt(function(s){ return P.f(e * Math.sinh(s)) / Math.cosh(s); }, -40, 40, 400) / Math.PI;
+  else if (k === "alph") v = glInt(function(t){ return alphaBase(Math.sin(t)) * P.f(e * Math.sin(t)) * Math.cos(t); }, -Math.PI / 2, Math.PI / 2, 200);
+  else v = glInt(function(u){ return Math.exp(-u) * P.f(e * u); }, 0, 60, 80);
+  return v;
+}
+var L1 = { fam: "box", phi: "g0", eps: 0.1 };
+var E1EPS = []; for (var _k = 1; _k <= 7; _k++) E1EPS.push(Math.pow(2, -_k));
+
+function l1ErrSeries(k, pk){
+  return E1EPS.map(function(e){ return Math.abs(dPair(k, e, pk) - PHI1[pk].p0); });
+}
+function l1Slope(k, pk){
+  var ys = l1ErrSeries(k, pk), xs = E1EPS, sx = 0, sy = 0, sxx = 0, sxy = 0, n = 0, i;
+  for (i = 3; i < 7; i++){
+    var X = Math.log(xs[i]), Y = Math.log(Math.max(ys[i], 1e-300));
+    sx += X; sy += Y; sxx += X * X; sxy += X * Y; n++;
+  }
+  return (n * sxy - sx * sy) / (n * sxx - sx * sx);
+}
+function l1Draw(){
+  var c = cx("e1c"), W = c.canvas.width, H = c.canvas.height;
+  c.clearRect(0, 0, W, H);
+  var e = L1.eps, Lx = Math.max(0.18, Math.min(1.2, 8 * e));
+  var supv = FAM[L1.fam].sup(e), ymax = supv * 1.12;
+  var P = panel(56, 26, W - 96, H - 74, -Lx, Lx, 0, ymax);
+  frame(c, P);
+  var i;
+  c.strokeStyle = "#eef1f4"; c.lineWidth = 1;
+  for (i = 1; i <= 4; i++){
+    var yy = P.Y(ymax * i / 4);
+    c.beginPath(); c.moveTo(P.x0, yy); c.lineTo(P.x0 + P.w, yy); c.stroke();
+    label(c, P.x0 - 8, yy, fx(ymax * i / 4, 2), "#8b949e", "right");
+  }
+  /* 参考：另外两个 ε */
+  [e * 4, e / 4].forEach(function(ee){
+    if (ee > 2 * Lx || FAM[L1.fam].sup(ee) > 4 * ymax) return;
+    c.save(); c.setLineDash([3, 3]);
+    curve(c, P, function(x){ return FAM[L1.fam].dens(x, ee); }, 600, "#c9d1d9", 1.4);
+    c.restore();
+  });
+  /* 试验函数（缩放到半高，虚线） */
+  c.save(); c.setLineDash([6, 4]);
+  curve(c, P, function(x){ return PHI1[L1.phi].f(x) * (0.35 * ymax); }, 600, "#8b949e", 1.4);
+  c.restore();
+  curve(c, P, function(x){ return FAM[L1.fam].dens(x, e); }, 1400, FAM[L1.fam].color, 2.4);
+  axis0(c, P);
+  label(c, P.x0 + 4, P.y0 + 12, FAM[L1.fam].label + "  ε=" + e.toFixed(4) + "   sup=" + fx(supv, 1), FAM[L1.fam].color);
+  label(c, P.x0 + P.w, P.y0 + P.h + 14, "x ∈ [−" + Lx.toFixed(2) + ", " + Lx.toFixed(2) + "]", "#8b949e", "right");
+  label(c, P.x0, P.y0 + P.h + 14, "灰虚线：φ(x)，另标尺（峰＝0.35·纵轴）", "#8b949e");
+}
+function l1DrawErr(){
+  var c = cx("e1b"), W = c.canvas.width, H = c.canvas.height;
+  c.clearRect(0, 0, W, H);
+  var P = panel(62, 22, W - 100, H - 64, -2.35, -0.05, -7.5, 0.8);
+  frame(c, P);
+  var i, j;
+  c.strokeStyle = "#eef1f4"; c.lineWidth = 1;
+  for (i = -7; i <= 0; i++){
+    var py = P.Y(i);
+    c.beginPath(); c.moveTo(P.x0, py); c.lineTo(P.x0 + P.w, py); c.stroke();
+    label(c, P.x0 - 8, py, "1e" + i, "#8b949e", "right");
+  }
+  for (i = -2; i <= 0; i++){
+    var px = P.X(i);
+    c.beginPath(); c.moveTo(px, P.y0); c.lineTo(px, P.y0 + P.h); c.stroke();
+    label(c, px, P.y0 + P.h + 12, "1e" + i, "#8b949e", "center");
+  }
+  /* 参考斜率 */
+  [[2, "#B0B7BF", "斜率 2"], [1, "#E3B7A6", "斜率 1"]].forEach(function(ref){
+    var x1 = -2.2, y1 = -6.4, x2 = -0.1, y2 = y1 + ref[0] * (x2 - x1);
+    c.save(); c.setLineDash([5, 4]); c.strokeStyle = ref[1]; c.lineWidth = 1.4;
+    c.beginPath(); c.moveTo(P.X(x1), P.Y(P.clipY(y1))); c.lineTo(P.X(x2), P.Y(P.clipY(y2))); c.stroke(); c.restore();
+    label(c, P.X(x2) - 2, P.Y(P.clipY(y2)) - 9, ref[2], ref[1], "right");
+  });
+  FAMK.forEach(function(k){
+    var ys = l1ErrSeries(k, L1.phi);
+    c.beginPath(); c.strokeStyle = FAM[k].color;
+    c.lineWidth = (k === L1.fam) ? 2.6 : 1.2;
+    for (j = 0; j < ys.length; j++){
+      var X = P.X(Math.log10(E1EPS[j])), Y = P.Y(P.clipY(Math.log10(Math.max(ys[j], 1e-30))));
+      if (j === 0) c.moveTo(X, Y); else c.lineTo(X, Y);
+    }
+    c.stroke();
+    for (j = 0; j < ys.length; j++){
+      c.beginPath(); c.fillStyle = FAM[k].color;
+      c.arc(P.X(Math.log10(E1EPS[j])), P.Y(P.clipY(Math.log10(Math.max(ys[j], 1e-30)))), (k === L1.fam) ? 2.6 : 1.6, 0, 6.284);
+      c.fill();
+    }
+  });
+  FAMK.forEach(function(k, idx){
+    label(c, P.x0 + P.w - 6, P.y0 + P.h - 58 + idx * 12, FAM[k].label + "  斜率 " + l1Slope(k, L1.phi).toFixed(3) + " ■", FAM[k].color, "right");
+  });
+  label(c, P.x0 + P.w, P.y0 + P.h + 26, "log₁₀ ε", "#8b949e", "right");
+  label(c, P.x0, P.y0 + P.h + 26, "log₁₀ |⟨δ_ε,φ⟩−φ(0)|　φ = " + PHI1[L1.phi].label, "#8b949e");
+}
+function l1Update(){
+  var e = L1.eps, k = L1.fam, pk = L1.phi;
+  var val = dPair(k, e, pk), p0 = PHI1[pk].p0;
+  setTxt("e1-ev", e.toFixed(4));
+  setTxt("e1-mass", fx(dMass(k, e), 9));
+  setTxt("e1-sup", fx(FAM[k].sup(e), 2));
+  setTxt("e1-val", fx(val, 8));
+  setTxt("e1-p0v", fx(p0, 8));
+  setTxt("e1-err", Math.abs(val - p0).toExponential(2));
+  setTxt("e1-ord", l1Slope(k, pk).toFixed(3));
+  l1Draw(); l1DrawErr();
+}
+
+/* ==================== 实验 2：弱导数 ==================== */
+var TEST = [
+  { label: "φ=e^{-x²}", f: function(x){ return Math.exp(-x * x); },
+    d1: function(x){ return -2 * x * Math.exp(-x * x); },
+    d2: function(x){ return (4 * x * x - 2) * Math.exp(-x * x); } },
+  { label: "φ=e^{-(x-0.4)²}cos2x", f: function(x){ var s = x - 0.4; return Math.exp(-s * s) * Math.cos(2 * x); },
+    d1: function(x){ var s = x - 0.4; return Math.exp(-s * s) * (-2 * s * Math.cos(2 * x) - 2 * Math.sin(2 * x)); },
+    d2: function(x){ var s = x - 0.4, e = Math.exp(-s * s), c = Math.cos(2 * x), n = Math.sin(2 * x);
+      return e * ((4 * s * s - 2) * c + 8 * s * n - 4 * c); } },
+  { label: "φ=sech x", f: function(x){ return 1 / Math.cosh(x); },
+    d1: function(x){ var c = Math.cosh(x); return -Math.sinh(x) / (c * c); },
+    d2: function(x){ var s = 1 / Math.cosh(x); return s - 2 * s * s * s; } }
+];
+var L2 = { p: 0, h: 0.05 };
+var WL = 16;
+function Hstep(x){ return x > 0 ? 1 : 0; }
+function l2Vals(){
+  var T = TEST[L2.p];
+  var hp = -simp(T.d1, 0, WL, 30000) + T.f(WL);
+  var abs2 = simp(function(x){ return Math.abs(x) * T.d2(x); }, -WL, WL, 60000)
+           + 2 * (-WL * T.d1(WL) + T.f(WL));
+  /* 跳跃公式：f=H(x)cos x */
+  var g = Math.cos, gp = function(x){ return -Math.sin(x); };
+  var lhs = -simp(function(x){ return g(x) * T.d1(x); }, 0, WL, 30000) + g(WL) * T.f(WL);
+  var rhs = g(0) * T.f(0) + simp(function(x){ return gp(x) * T.f(x); }, 0, WL, 30000);
+  return { hp: hp, p0: T.f(0), abs2: abs2, lhs: lhs, rhs: rhs };
+}
+function l2Draw(){
+  var c = cx("e2c"), W = c.canvas.width, H = c.canvas.height;
+  c.clearRect(0, 0, W, H);
+  var PL = panel(50, 26, 340, H - 78, -1.4, 1.4, -0.18, 1.16);
+  var PR = panel(470, 26, W - 520, H - 78, 0, 3, 0, 1.15);
+  frame(c, PL); frame(c, PR);
+  var i;
+  for (i = 1; i <= 4; i++){
+    var yy = PL.Y(i / 4);
+    c.strokeStyle = "#eef1f4"; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(PL.x0, yy); c.lineTo(PL.x0 + PL.w, yy); c.stroke();
+  }
+  /* H */
+  curve(c, PL, Hstep, 900, "#185FA5", 2.4);
+  /* 差分商 */
+  curve(c, PL, function(x){ return (Hstep(x + L2.h) - Hstep(x - L2.h)) / (2 * L2.h); }, 900, "#D85A30", 1.8);
+  axis0(c, PL, "#c9d1d9");
+  var peak = 1 / (2 * L2.h);
+  label(c, PL.x0 + 4, PL.y0 + 10, "H(x)（蓝）", "#185FA5");
+  label(c, PL.x0 + 4, PL.y0 + 24, "差分商（橙）", "#D85A30");
+  if (peak > 1.16){
+    label(c, PL.X(0), PL.y0 + 40, "峰值 1/(2h)=" + fx(peak, 1) + " 冲出画框", "#D85A30", "center");
+    c.beginPath(); c.fillStyle = "#D85A30";
+    c.moveTo(PL.X(0), PL.y0 + 2); c.lineTo(PL.X(0) - 5, PL.y0 + 12); c.lineTo(PL.X(0) + 5, PL.y0 + 12);
+    c.closePath(); c.fill();
+  } else {
+    label(c, PL.X(0) + 8, PL.Y(peak) + 8, "峰值 1/(2h)=" + fx(peak, 1), "#D85A30");
+  }
+  label(c, PL.x0 + PL.w, PL.y0 + PL.h + 14, "x", "#8b949e", "right");
+  /* 累积积分 */
+  var T = TEST[L2.p], N = 300, j;
+  c.beginPath(); c.strokeStyle = "#0F6E56"; c.lineWidth = 2.2;
+  for (j = 0; j <= N; j++){
+    var X = 3 * j / N, v = -simp(T.d1, 0, Math.max(X, 1e-9), 400);
+    var px = PR.X(X), py = PR.Y(PR.clipY(v));
+    if (j === 0) c.moveTo(px, py); else c.lineTo(px, py);
+  }
+  c.stroke();
+  dashLine(c, PR, T.f(0), "#534AB7", "φ(0)=" + fx(T.f(0), 4));
+  axis0(c, PR);
+  label(c, PR.x0 + 4, PR.y0 + 10, "−∫₀^X φ′(x)dx", "#0F6E56");
+  label(c, PR.x0 + PR.w, PR.y0 + PR.h + 14, "X", "#8b949e", "right");
+}
+function l2Update(){
+  var v = l2Vals();
+  setTxt("e2-hv", L2.h.toFixed(3));
+  setTxt("e2-hp", fx(v.hp, 9));
+  setTxt("e2-p0v", fx(v.p0, 9));
+  setTxt("e2-abs", fx(v.abs2, 9));
+  setTxt("e2-2p0", fx(2 * v.p0, 9));
+  setTxt("e2-dq", fx(1 / (2 * L2.h), 1));
+  setTxt("e2-jmp", Math.abs(v.lhs - v.rhs).toExponential(2));
+  l2Draw();
+}
+
+/* ==================== 实验 3：傅里叶 ==================== */
+var L3 = { mode: 0, eps: 0.1, a: 0.7 };
+function sinc(z){ return Math.abs(z) < 1e-12 ? 1 : Math.sin(z) / z; }
+function l3MaxErr(e){
+  var mx = 0, i;
+  for (i = 0; i <= 200; i++){
+    var xi = i * 0.25;
+    mx = Math.max(mx, Math.abs(sinc(e * xi / 2) - 1));
+  }
+  return mx;
+}
+function l3Draw(){
+  var c = cx("e3c"), W = c.canvas.width, H = c.canvas.height;
+  c.clearRect(0, 0, W, H);
+  if (L3.mode === 0){
+    var P = panel(58, 26, W - 96, H - 70, 0, 50, 0, 1.12);
+    frame(c, P);
+    var i;
+    for (i = 0; i <= 5; i++){
+      var yy = P.Y(i / 5);
+      c.strokeStyle = "#eef1f4"; c.beginPath(); c.moveTo(P.x0, yy); c.lineTo(P.x0 + P.w, yy); c.stroke();
+      label(c, P.x0 - 8, yy, (i / 5).toFixed(1), "#8b949e", "right");
+    }
+    dashLine(c, P, 1, "#B0B7BF", "1");
+    [L3.eps * 4, L3.eps].forEach(function(e, idx){
+      var col = idx === 0 ? "#A8C4E0" : "#185FA5";
+      curve(c, P, function(x){ return Math.abs(sinc(e * x / 2)); }, 1400, col, idx === 0 ? 1.4 : 2.4);
+    });
+    label(c, P.x0 + 4, P.y0 + 12, "|F[δ_ε](ξ)|：浅＝4ε，深＝ε=" + L3.eps.toFixed(4), "#185FA5");
+    label(c, P.x0 + P.w, P.y0 + P.h + 14, "ξ", "#8b949e", "right");
+    label(c, P.x0, P.y0 + P.h + 14, "max|F−1| = " + l3MaxErr(L3.eps).toExponential(3), "#8b949e");
+  } else if (L3.mode === 1){
+    var P2 = panel(58, 26, W - 96, H - 70, -6, 6, -1.25, 1.25);
+    frame(c, P2);
+    var j;
+    for (j = -2; j <= 2; j++){
+      var py = P2.Y(j * 0.5);
+      c.strokeStyle = "#eef1f4"; c.beginPath(); c.moveTo(P2.x0, py); c.lineTo(P2.x0 + P2.w, py); c.stroke();
+    }
+    curve(c, P2, function(x){ return Math.cos(L3.a * x); }, 1200, "#185FA5", 2.2);
+    curve(c, P2, function(x){ return Math.sin(L3.a * x); }, 1200, "#0F6E56", 2.2);
+    axis0(c, P2);
+    /* 数值点 */
+    var h = 1e-3;
+    for (j = -12; j <= 12; j++){
+      var xi = j * 0.5;
+      var re = glInt(function(x){ return Math.cos(xi * x); }, L3.a - h / 2, L3.a + h / 2, 40) / h;
+      var im = glInt(function(x){ return -Math.sin(xi * x); }, L3.a - h / 2, L3.a + h / 2, 40) / h;
+      c.fillStyle = "#D85A30";
+      c.beginPath(); c.arc(P2.X(xi), P2.Y(P2.clipY(re)), 2.4, 0, 6.284); c.fill();
+      c.beginPath(); c.arc(P2.X(xi), P2.Y(P2.clipY(im)), 2.4, 0, 6.284); c.fill();
+    }
+    label(c, P2.x0 + 4, P2.y0 + 12, "cos aξ（蓝）  sin aξ（绿）  红点＝数值复积分", "#185FA5");
+    label(c, P2.x0 + P2.w, P2.y0 + P2.h + 14, "ξ", "#8b949e", "right");
+    label(c, P2.x0, P2.y0 + P2.h + 14, "a = " + L3.a.toFixed(2) + "，h = 1e-3", "#8b949e");
+  } else {
+    var P3 = panel(58, 26, W - 96, H - 70, 0, 6, -1.4, 3.2);
+    frame(c, P3);
+    var phi = function(x){ return Math.exp(-x * x) * (1 + 0.5 * x * x); };
+    curve(c, P3, function(x){ return glInt(function(t){ return phi(t) * Math.cos(x * t); }, -14, 14, 400); }, 160, "#185FA5", 2.4);
+    curve(c, P3, function(x){
+      var d = 2e-4;
+      var F1 = glInt(function(t){ return phi(t) * Math.cos((x + d) * t); }, -14, 14, 400);
+      var F0 = glInt(function(t){ return phi(t) * Math.cos((x - d) * t); }, -14, 14, 400);
+      return -(F1 - F0) / (2 * d);
+    }, 160, "#D85A30", 2.2);
+    axis0(c, P3);
+    label(c, P3.x0 + 4, P3.y0 + 12, "F[φ](ξ)（蓝）与 −dF/dξ = F[iξφ]（橙）", "#185FA5");
+    label(c, P3.x0 + P3.w, P3.y0 + P3.h + 14, "ξ", "#8b949e", "right");
+  }
+}
+function l3Update(){
+  var e = L3.eps;
+  var e1 = l3MaxErr(e), e2 = l3MaxErr(e / 10);
+  setTxt("e3-ev", e.toFixed(4));
+  setTxt("e3-av", L3.a.toFixed(2));
+  setTxt("e3-maxerr", e1.toExponential(3));
+  setTxt("e3-ord", (Math.log10(e1 / e2)).toFixed(2) + " 阶");
+  var h = 1e-3, mx = 0, i;
+  for (i = 0; i <= 40; i++){
+    var xi = i * 0.3;
+    var re = glInt(function(x){ return Math.cos(xi * x); }, L3.a - h / 2, L3.a + h / 2, 40) / h;
+    var im = glInt(function(x){ return -Math.sin(xi * x); }, L3.a - h / 2, L3.a + h / 2, 40) / h;
+    mx = Math.max(mx, Math.hypot(re - Math.cos(L3.a * xi), im + Math.sin(L3.a * xi)));
+  }
+  setTxt("e3-shift", mx.toExponential(2));
+  var phi = function(x){ return Math.exp(-x * x) * (1 + 0.5 * x * x); };
+  var lhs = glInt(function(t){ return phi(t); }, -14, 14, 400);
+  var N = 600, L = 14, hh = L / N, s = 0, j;
+  for (j = 0; j < N; j++){
+    var xi = (j + 0.5) * hh, d = 2e-4;
+    var F1 = glInt(function(t){ return phi(t) * Math.cos((xi + d) * t); }, -14, 14, 300);
+    var F0 = glInt(function(t){ return phi(t) * Math.cos((xi - d) * t); }, -14, 14, 300);
+    s += -(F1 - F0) / (2 * d);
+  }
+  var rhs = s * hh;
+  setTxt("e3-lhs", fx(lhs, 10));
+  setTxt("e3-rhs", fx(rhs, 10));
+  setTxt("e3-diff", Math.abs(lhs - rhs).toExponential(2));
+  l3Draw();
+}
+
+/* ==================== 实验 4：调和基本解符号账 ==================== */
+var L4 = { dim: 2, sign: -1, phi: "gauss" };
+var RAD = {
+  gauss: { f: function(r){ return Math.exp(-r * r); }, p0: 1,
+           lap2: function(r){ return (4 * r * r - 4) * Math.exp(-r * r); },
+           lap3: function(r){ return (4 * r * r - 6) * Math.exp(-r * r); } },
+  cauchy: { f: function(r){ return 1 / (1 + r * r); }, p0: 1,
+            lap2: function(r){ return (4 * r * r - 4) / Math.pow(1 + r * r, 3); },
+            lap3: function(r){ return (2 * r * r - 6) / Math.pow(1 + r * r, 3); } }
+};
+function l4E(r){
+  if (L4.dim === 2) return L4.sign * Math.log(1 / r) / (2 * Math.PI);
+  return L4.sign / (4 * Math.PI * r);
+}
+function l4Integral(){
+  var R = RAD[L4.phi], sg = L4.sign, d2 = (L4.dim === 2);
+  var I1 = glInt(function(s){
+    var r = Math.exp(-s);
+    return d2 ? sg * s * R.lap2(r) * r * Math.exp(-s) : sg * R.lap3(r) * r * Math.exp(-s);
+  }, 0, 44, 200);
+  var I2 = farInt(function(r){
+    return d2 ? sg * Math.log(1 / r) * R.lap2(r) * r : sg * R.lap3(r) * r;
+  }, 1, 1e6, 200, 20);
+  return I1 + I2;
+}
+function l4Const(){
+  var R = RAD[L4.phi], C = 3.7;
+  var I1 = glInt(function(s){ var r = Math.exp(-s); return 2 * Math.PI * C * R.lap2(r) * r * Math.exp(-s); }, 0, 44, 200);
+  var I2 = farInt(function(r){ return 2 * Math.PI * C * R.lap2(r) * r; }, 1, 1e6, 200, 20);
+  return I1 + I2;
+}
+function l4Draw(){
+  var c = cx("e4c"), W = c.canvas.width, H = c.canvas.height;
+  c.clearRect(0, 0, W, H);
+  var PL = panel(58, 26, 320, H - 76, 0, 3, L4.dim === 2 ? -0.45 : -0.5, L4.dim === 2 ? 0.62 : 0.95);
+  var PR = panel(452, 26, W - 500, H - 76, 0, 8, -1.35, 1.35);
+  frame(c, PL); frame(c, PR);
+  var i;
+  for (i = 1; i <= 4; i++){
+    var yy = PL.Y(PL.ymin + (PL.ymax - PL.ymin) * i / 4);
+    c.strokeStyle = "#eef1f4"; c.beginPath(); c.moveTo(PL.x0, yy); c.lineTo(PL.x0 + PL.w, yy); c.stroke();
+  }
+  curve(c, PL, function(r){ return r < 1e-3 ? l4E(1e-3) : l4E(r); }, 900, L4.sign < 0 ? "#185FA5" : "#D85A30", 2.4);
+  axis0(c, PL, "#c9d1d9");
+  label(c, PL.x0 + 4, PL.y0 + 10, (L4.dim === 2 ? "E = −(1/2π)ln(1/r)" : "E = −1/(4πr)").replace("−", L4.sign < 0 ? "−" : "+"), L4.sign < 0 ? "#185FA5" : "#D85A30");
+  label(c, PL.x0 + PL.w, PL.y0 + PL.h + 14, "r", "#8b949e", "right");
+  /* 累积积分（r = 8t³ 加密左端） */
+  var R = RAD[L4.phi], sg = L4.sign, d2 = (L4.dim === 2), N = 600, j;
+  var acc = 0, prevT = 0;
+  c.beginPath(); c.strokeStyle = "#0F6E56"; c.lineWidth = 2.2;
+  var started = false;
+  for (j = 0; j <= N; j++){
+    var t = j / N, r = 8 * t * t * t;
+    if (j > 0){
+      var seg = glInt(function(rr){
+        return d2 ? sg * Math.log(1 / rr) * R.lap2(rr) * rr : sg * R.lap3(rr) * rr;
+      }, prevT, Math.max(r, prevT + 1e-12), 20);
+      acc += seg;
+    }
+    prevT = r;
+    var px = PR.X(r), py = PR.Y(PR.clipY(acc));
+    if (!started){ c.moveTo(px, py); started = true; } else c.lineTo(px, py);
+  }
+  c.stroke();
+  dashLine(c, PR, R.p0, "#534AB7", "+φ(0)");
+  dashLine(c, PR, -R.p0, "#D85A30", "−φ(0)");
+  axis0(c, PR);
+  label(c, PR.x0 + 4, PR.y0 + 10, "累积 ⟨E,Δφ⟩ 随 R", "#0F6E56");
+  label(c, PR.x0 + PR.w, PR.y0 + PR.h + 14, "R", "#8b949e", "right");
+}
+function l4Update(){
+  var v = l4Integral(), p0 = RAD[L4.phi].p0;
+  setTxt("e4-lap", fx(v, 8));
+  setTxt("e4-p0v", fx(p0, 8));
+  setTxt("e4-err", Math.abs(v - p0).toExponential(2));
+  setTxt("e4-const", l4Const().toExponential(2));
+  l4Draw();
+}
+
+/* ==================== 实验 5：基本解流水线 ==================== */
+var L5 = { mode: "heat", t: 0.7, a: 1 };
+function heatE(x, t, a){ return Math.exp(-x * x / (4 * a * a * t)) / (2 * a * Math.sqrt(Math.PI * t)); }
+function sphMeanExp2(rho, R, nGl, nPhi){
+  var g = glNodes(nGl || 40), s = 0, i, j, dphi = 2 * Math.PI / (nPhi || 64);
+  for (i = 0; i < g.x.length; i++){
+    var c = g.x[i], sn = Math.sqrt(Math.max(0, 1 - c * c));
+    for (j = 0; j < (nPhi || 64); j++){
+      var ph = (j + 0.5) * dphi;
+      var X = R * sn * Math.cos(ph), Y = R * sn * Math.sin(ph), Z = rho + R * c;
+      s += g.w[i] * dphi * Math.exp(-(X * X + Y * Y + Z * Z));
+    }
+  }
+  return s / (4 * Math.PI);
+}
+function waveClosed(rho, t, a){
+  var z = 2 * a * t * rho;
+  return t * Math.exp(-(rho * rho + a * a * t * t)) * (Math.abs(z) < 1e-12 ? 1 : Math.sinh(z) / z);
+}
+function l5Draw(){
+  var c = cx("e5c"), W = c.canvas.width, H = c.canvas.height;
+  c.clearRect(0, 0, W, H);
+  var a = L5.a, t = L5.t, i;
+  if (L5.mode === "heat"){
+    var ymax = 1.3 * heatE(0, t / 3, a);
+    var P = panel(58, 26, W - 96, H - 70, -4, 4, 0, ymax);
+    P = panel(58, 26, W - 96, H - 70, -4, 4, 0, ymax);
+    frame(c, P);
+    for (i = 1; i <= 4; i++){
+      var yy = P.Y(ymax * i / 4);
+      c.strokeStyle = "#eef1f4"; c.beginPath(); c.moveTo(P.x0, yy); c.lineTo(P.x0 + P.w, yy); c.stroke();
+      label(c, P.x0 - 8, yy, fx(ymax * i / 4, 2), "#8b949e", "right");
+    }
+    [3 * t, t, t / 3].forEach(function(tt, idx){
+      var col = ["#A8C4E0", "#185FA5", "#0F6E56"][idx];
+      curve(c, P, function(x){ return heatE(x, tt, a); }, 900, col, idx === 1 ? 2.6 : 1.4);
+    });
+    axis0(c, P);
+    label(c, P.x0 + 4, P.y0 + 12, "E(x,t)：深蓝 t=" + t.toFixed(2) + "，浅 3t，绿 t/3", "#185FA5");
+    label(c, P.x0 + P.w, P.y0 + P.h + 14, "x", "#8b949e", "right");
+  } else {
+    var ymax2 = 1.05;
+    var P2 = panel(58, 26, W - 96, H - 70, 0, 3, 0, ymax2);
+    frame(c, P2);
+    for (i = 1; i <= 4; i++){
+      var yy2 = P2.Y(ymax2 * i / 4);
+      c.strokeStyle = "#eef1f4"; c.beginPath(); c.moveTo(P2.x0, yy2); c.lineTo(P2.x0 + P2.w, yy2); c.stroke();
+      label(c, P2.x0 - 8, yy2, fx(ymax2 * i / 4, 2), "#8b949e", "right");
+    }
+    [2 * t, t, t / 2].forEach(function(tt, idx){
+      var col = ["#A8C4E0", "#185FA5", "#0F6E56"][idx];
+      curve(c, P2, function(r){ return waveClosed(r, tt, a); }, 900, col, idx === 1 ? 2.6 : 1.4);
+    });
+    c.save(); c.setLineDash([6, 4]);
+    curve(c, P2, function(r){ return Math.exp(-r * r); }, 900, "#8b949e", 1.4);
+    c.restore();
+    axis0(c, P2);
+    label(c, P2.x0 + 4, P2.y0 + 12, "u(r,t)=t[φ]_{r=at}：深蓝 t=" + t.toFixed(2) + "，灰虚线 φ(r)", "#185FA5");
+    label(c, P2.x0 + P2.w, P2.y0 + P2.h + 14, "r = |x|", "#8b949e", "right");
+  }
+}
+function l5Update(){
+  var a = L5.a, t = L5.t;
+  setTxt("e5-tv", t.toFixed(3));
+  setTxt("e5-av", a.toFixed(2));
+  if (L5.mode === "heat"){
+    var mass = glInt(function(x){ return heatE(x, t, a); }, -16, 16, 80);
+    var mx = 0, i;
+    for (i = -60; i <= 60; i++){
+      var x = i * 0.1, E = heatE(x, t, a);
+      var Et = E * (x * x / (4 * a * a * t * t) - 1 / (2 * t));
+      var Exx = E * (x * x / (4 * a * a * a * a * t * t) - 1 / (2 * a * a * t));
+      mx = Math.max(mx, Math.abs(Et - a * a * Exx));
+    }
+    var k = 1.3, x0 = 0.4;
+    var cn = glInt(function(y){ return heatE(x0 - y, t, a) * Math.cos(k * y); }, -18, 18, 120);
+    var ce = Math.exp(-a * a * k * k * t) * Math.cos(k * x0);
+    var tt = 1e-4;
+    var td = Math.abs(glInt(function(x){ return heatE(x, tt, a) * Math.exp(-x * x); }, -1.2, 1.2, 2000) - 1);
+    setTxt("e5-mass", mass.toFixed(10));
+    setTxt("e5-res", mx === 0 ? "0（解析恒等）" : mx.toExponential(2));
+    setTxt("e5-conv", cn.toFixed(10));
+    setTxt("e5-exact", ce.toFixed(10));
+    setTxt("e5-tod", td.toExponential(2) + "（t=1e-4）");
+  } else {
+    var rho = 0.8;
+    var sph = t * sphMeanExp2(rho, a * t, 50, 80);
+    var cl = waveClosed(rho, t, a);
+    /* 波动方程残差：闭式在 (ρ,t) 处的 u_tt − a²Δu */
+    var hh = 1e-4;
+    var utt = (waveClosed(rho, t + hh, a) - 2 * waveClosed(rho, t, a) + waveClosed(rho, t - hh, a)) / (hh * hh);
+    var d1 = (waveClosed(rho + hh, t, a) - waveClosed(rho - hh, t, a)) / (2 * hh);
+    var d2 = (waveClosed(rho + hh, t, a) - 2 * waveClosed(rho, t, a) + waveClosed(rho - hh, t, a)) / (hh * hh);
+    var res = Math.abs(utt - a * a * (d2 + 2 * d1 / rho));
+    var eps = 1e-4, at = a * t;
+    var drad = at > 1e-6 ? glInt(function(r){
+      var d = Math.exp(-Math.pow((r - at) / eps, 2)) / (eps * Math.sqrt(Math.PI));
+      return d * r * Math.exp(-r * r) / a;
+    }, at - 8 * eps, at + 8 * eps, 200) : 0;
+    setTxt("e5-sph", sph.toFixed(10));
+    setTxt("e5-cl", cl.toFixed(10));
+    setTxt("e5-wres", res.toExponential(2));
+    setTxt("e5-ic", (waveClosed(rho, 1e-4, a) / 1e-4).toFixed(6) + " / φ=" + Math.exp(-rho * rho).toFixed(6));
+    setTxt("e5-drad", drad.toFixed(10));
+  }
+  l5Draw();
+}
+
+/* ==================== 交互绑定 ==================== */
+function bindModes(boxId, attr, cb){
+  var box = $(boxId);
+  if (!box) return;
+  var kids = box.children;
+  if (!kids || !kids.length) kids = (box.querySelectorAll ? box.querySelectorAll(".sf") : []) || [];
+  if (!kids.length) return;
+  for (var i = 0; i < kids.length; i++){
+    (function(el){
+      el.addEventListener("click", function(){
+        for (var k = 0; k < kids.length; k++) kids[k].className = "sf";
+        el.className = "sf on";
+        cb(el.getAttribute(attr));
+      });
+    })(kids[i]);
+  }
+}
+function groupBtns(ids, cb){
+  ids.forEach(function(id, idx){
+    var el = $(id); if (!el) return;
+    el.addEventListener("click", function(){
+      ids.forEach(function(j){ var e2 = $(j); if (e2) e2.className = ""; });
+      el.className = "on";
+      cb(idx);
+    });
+  });
+}
+function onRange(id, valId, dec, fn){
+  var el = $(id); if (!el) return;
+  el.addEventListener("input", function(){
+    var v = parseFloat(el.value);
+    if (valId) setTxt(valId, v.toFixed(dec));
+    fn(v);
+  });
+}
+
+bindModes("e1-fam", "data-f", function(f){ L1.fam = f; l1Update(); });
+groupBtns(["e1-p0", "e1-p1"], function(i){ L1.phi = i ? "gs" : "g0"; l1Update(); });
+onRange("e1-e", "e1-ev", 4, function(v){ L1.eps = Math.pow(10, v); l1Update(); });
+
+groupBtns(["e2-p0", "e2-p1", "e2-p2"], function(i){ L2.p = i; l2Update(); });
+onRange("e2-h", "e2-hv", 3, function(v){ L2.h = Math.pow(10, v); l2Update(); });
+
+groupBtns(["e3-m0", "e3-m1", "e3-m2"], function(i){
+  L3.mode = i;
+  var r1 = $("e3-row1"), r2 = $("e3-row2");
+  if (r1) r1.style.display = (i === 0) ? "flex" : "none";
+  if (r2) r2.style.display = (i === 1) ? "flex" : "none";
+  l3Update();
+});
+onRange("e3-e", "e3-ev", 4, function(v){ L3.eps = Math.pow(10, v); l3Update(); });
+onRange("e3-a", "e3-av", 2, function(v){ L3.a = v; l3Update(); });
+
+groupBtns(["e4-d2", "e4-d3"], function(i){ L4.dim = i ? 3 : 2; l4Update(); });
+groupBtns(["e4-sn", "e4-sp"], function(i){ L4.sign = i ? 1 : -1; l4Update(); });
+groupBtns(["e4-p0", "e4-p1"], function(i){ L4.phi = i ? "cauchy" : "gauss"; l4Update(); });
+
+groupBtns(["e5-mh", "e5-mw"], function(i){
+  L5.mode = i ? "wave" : "heat";
+  var kh = $("e5-kh"), kw = $("e5-kw");
+  if (kh) kh.style.display = i ? "none" : "grid";
+  if (kw) kw.style.display = i ? "grid" : "none";
+  l5Update();
+});
+onRange("e5-t", "e5-tv", 3, function(v){ L5.t = Math.pow(10, v); l5Update(); });
+onRange("e5-a", "e5-av", 2, function(v){ L5.a = v; l5Update(); });
+
+/* MathJax 掉线提示 */
+(function(){
+  setTimeout(function(){
+    var m = document.getElementById("mjx-offline");
+    if (m && !document.body.classList.contains("mjx-ready")) m.hidden = false;
+  }, 4000);
+})();
+
+/* 首屏 */
+l1Update(); l2Update(); l3Update(); l4Update(); l5Update();
+window.__PDE6 = { L1: L1, L2: L2, L3: L3, L4: L4, L5: L5,
+                  dPair: dPair, dMass: dMass, l1Slope: l1Slope,
+                  l2Vals: l2Vals, l3MaxErr: l3MaxErr,
+                  l4Integral: l4Integral, l4Const: l4Const,
+                  heatE: heatE, waveClosed: waveClosed, sphMeanExp2: sphMeanExp2,
+                  l1Update: l1Update, l2Update: l2Update, l3Update: l3Update,
+                  l4Update: l4Update, l5Update: l5Update };
+})();
+</script>
+
+</body>
+</html>
+
+
+
+
+

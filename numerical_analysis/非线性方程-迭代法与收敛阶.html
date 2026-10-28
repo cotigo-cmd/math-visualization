@@ -5,60 +5,58 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>迭代法：不动点、Newton 与收敛阶 · 数值分析 §4.2</title>
 <!--
-  维护说明（给未来的自己）：
-  1. 教材：张平文、李铁军《数值分析》第 4 章 §4.2（书页 111–122 / PDF 127–138），
-     §4.3 方程组 Newton（书页 123 起）。书页 = PDF 页 − 16。
-     引用：定理 4.2.1（压缩映像）、定理 4.2.2（局部收敛）、式 (4.2.4)(4.2.6)(4.2.7)、
-     定理 4.2.3（Newton 二阶）、定理 4.2.4（割线 1.618 阶）、例 4.2.2。
-  2. 页内数字全部来自工作区根目录 verify_newton.js，改算例后必须重跑。
-  3. 公式改动后跑 `node verify_formulas.js 非线性方程-迭代法与收敛阶.html`（要求 0 failed）；
-     行间公式只能用 $$（配置只注册 $$ 与 \(\)），公式内 < 写成 &lt;。
-  4. 分形画布是逐像素计算（360×360，约 260 万次复数迭代），首次进入可见区域才算，别放 load 里。
+ 维护说明（给未来的自己）：
+ 引用：定理 4.2.1（压缩映像）、定理 4.2.2（局部收敛）、式 (4.2.4)(4.2.6)(4.2.7)、
+ 定理 4.2.3（Newton 二阶）、定理 4.2.4（割线 1.618 阶）、例 4.2.2。
+ 2. 页内数字全部来自工作区根目录 verify_newton.js，改算例后必须重跑。
+ 3. 公式改动后跑 `node verify_formulas.js 非线性方程-迭代法与收敛阶.html`（要求 0 failed）；
+ 行间公式只能用 $$（配置只注册 $$ 与 \(\)），公式内 < 写成 &lt;。
+ 4. 分形画布是逐像素计算（360×360，约 260 万次复数迭代），首次进入可见区域才算，别放 load 里。
 -->
 <script>
 window.MathJax = {
-  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
-  svg: { fontCache: "global" },
-  options: { enableMenu: false },
-  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "global" },
+ options: { enableMenu: false },
+ startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
-  --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
-  --line:#e3dccd; --line-2:#cfc6b2;
-  --orange:#c2531f; --orange-soft:#fbeee5;
-  --teal:#0d6b5d; --teal-soft:#e7f3ef;
-  --indigo:#39417e; --indigo-soft:#ecebf6;
-  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
-  --ghost:rgba(160,148,124,.16);
+ --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
+ --line:#e3dccd; --line-2:#cfc6b2;
+ --orange:#c2531f; --orange-soft:#fbeee5;
+ --teal:#0d6b5d; --teal-soft:#e7f3ef;
+ --indigo:#39417e; --indigo-soft:#ecebf6;
+ --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ --ghost:rgba(160,148,124,.16);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;color:var(--ink);
-  background:
-    linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
-    linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
-    var(--paper);
-  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ background:
+ linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
+ linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
+ var(--paper);
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:900px;margin:0 auto;padding:0 22px 90px}
 a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(13,107,93,.3)}
 a:hover{border-bottom-color:var(--teal)}
 h1{font-size:29px;line-height:1.3;margin:0 0 10px;font-weight:650;letter-spacing:-.01em}
 h2{font-size:21px;margin:66px 0 14px;font-weight:650;display:flex;align-items:baseline;gap:12px}
 h2 .no{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--indigo);
-  border:1px solid rgba(57,65,126,.32);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
+ border:1px solid rgba(57,65,126,.32);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
 h3{font-size:16.5px;margin:32px 0 8px;font-weight:650}
 p{margin:12px 0;max-width:74ch}
 .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
 .hero{padding:58px 0 6px}
 .hero p.lead{font-size:16.5px;color:#4a4438;max-width:74ch}
 #mjx-offline{display:none;margin:0 0 4px;padding:9px 16px;background:#fff4d6;border:1px solid #e8cf92;
-  border-radius:8px;font-size:13.5px;color:#6b5417}
+ border-radius:8px;font-size:13.5px;color:#6b5417}
 body:not(.mjx-ready) #mjx-offline{display:block}
 nav{position:sticky;top:0;z-index:20;margin:26px 0 0;
-  background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+ background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 nav .inner{max-width:900px;margin:0 auto;padding:9px 22px;display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
 nav a{color:var(--muted);border:0}
 nav a:hover{color:var(--indigo)}
@@ -72,7 +70,7 @@ nav a:hover{color:var(--indigo)}
 .glance .c b{color:var(--indigo)}
 
 .lab{background:var(--sheet);border:1px solid var(--line);border-radius:14px;
-  padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
+ padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
 .lab-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .lab-head .t{font-size:12.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted)}
 canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px solid var(--line)}
@@ -83,22 +81,22 @@ canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px sol
 .ctrls{display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin:12px 2px 8px;font-size:13.5px}
 .ctrls .grp{display:flex;align-items:center;gap:9px}
 input[type=range]{-webkit-appearance:none;appearance:none;width:170px;height:3px;border-radius:3px;
-  background:var(--line-2);outline:none}
+ background:var(--line-2);outline:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
-  background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
+ background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
 input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--orange);
-  border:2px solid #fff;cursor:pointer}
+ border:2px solid #fff;cursor:pointer}
 .seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
 .seg button{font:inherit;font-size:13px;padding:5px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .seg button+button{border-left:1px solid var(--line-2)}
 .seg button[aria-pressed=true]{background:var(--indigo-soft);color:var(--indigo);font-weight:600}
 .btn{font:inherit;font-size:13px;padding:5px 14px;border:1px solid var(--line-2);border-radius:8px;
-  background:#fff;color:var(--ink);cursor:pointer}
+ background:#fff;color:var(--ink);cursor:pointer}
 .btn:hover{border-color:var(--indigo);color:var(--indigo)}
 .btn.primary{background:var(--indigo);border-color:var(--indigo);color:#fff}
 .btn.primary:hover{background:#2c3369;color:#fff}
 .reads{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
-  border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+ border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
 .reads div{background:#fffdf8;padding:10px 12px}
 .reads .k{font-size:11.5px;color:var(--muted)}
 .reads .v{font-family:var(--mono);font-size:16.5px;font-weight:600;margin-top:2px}
@@ -114,12 +112,12 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 .hint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
 
 .eq{font-size:17px;text-align:center;margin:18px 0;padding:12px 16px;background:var(--sheet);
-  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+ border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 mjx-container[jax="SVG"]{max-width:100%}
 mjx-assistive-mml{position:absolute!important;width:1px;height:1px;overflow:hidden!important;clip:rect(1px,1px,1px,1px)}
 mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
 .note{border-left:3px solid var(--orange);background:var(--orange-soft);padding:10px 16px;margin:16px 0;
-  border-radius:0 8px 8px 0;font-size:14.5px}
+ border-radius:0 8px 8px 0;font-size:14.5px}
 .note.teal{border-left-color:var(--teal);background:var(--teal-soft)}
 .note.indigo{border-left-color:var(--indigo);background:var(--indigo-soft)}
 .note p{margin:6px 0}
@@ -136,14 +134,14 @@ ul,ol{max-width:74ch}
 li{margin:5px 0}
 footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line-2);font-size:12.8px;color:var(--muted)}
 footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var(--line);
-  border-radius:4px;padding:0 5px;font-size:12px}
+ border-radius:4px;padding:0 5px;font-size:12px}
 @media (max-width:680px){
-  #cv-cob{height:280px} #cv-newton{height:300px} #cv-order{height:250px} #cv-frac{max-width:340px}
-  .glance{grid-template-columns:1fr}
-  .reads{grid-template-columns:repeat(2,1fr)}
-  h1{font-size:24px}
-  table{font-size:12.1px}
-  th,td{padding:6px 6px}
+ #cv-cob{height:280px} #cv-newton{height:300px} #cv-order{height:250px} #cv-frac{max-width:340px}
+ .glance{grid-template-columns:1fr}
+ .reads{grid-template-columns:repeat(2,1fr)}
+ h1{font-size:24px}
+ table{font-size:12.1px}
+ th,td{padding:6px 6px}
 }
 </style>
 </head>
@@ -152,7 +150,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <div class="wrap"><div id="mjx-offline">公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响，正文与交互不受影响。</div></div>
 
 <div class="hero"><div class="wrap">
-<p class="kicker">数值分析 · 第 4 章 §4.2 · 书页 111–122</p>
+<p class="kicker">数值分析 · 第 4 章 §4.2</p>
 <h1>迭代法：一次只看一个点，然后越来越快</h1>
 <p class="lead">
 非线性方程没有求根公式，数值上做的是「猜一个 \(x_0\)，按规则改进」。教材 §4.2 给了三种规则：不动点迭代 \(x_{k+1}=\varphi(x_k)\)、Newton 切线法、以及不导数只差商的割线法。它们的差别只在<strong>改进步长</strong>，但收敛速度差出量级：线性（每步误差乘 0.6）、二次（有效数字翻倍）、\(1.618\) 阶。
@@ -172,9 +170,9 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <div class="wrap">
 
 <div class="glance">
-  <div class="a"><b>0.563</b><span>Newton 解 \(x^3-2x-5=0\) 时实测 \(e_{k+1}/e_k^2\) 的极限，恰等于理论值 \(|f''/(2f')|\)</span></div>
-  <div class="b"><b>1.618</b><span>割线法解 \(\cos x-x=0\) 的实测收敛阶（5 点回归），正是黄金比</span></div>
-  <div class="c"><b>3 步 / 8 位</b><span>容差 \(10^{-8}\) 下 Newton 只需 3 步（\(x_0=2\)）</span></div>
+ <div class="a"><b>0.563</b><span>Newton 解 \(x^3-2x-5=0\) 时实测 \(e_{k+1}/e_k^2\) 的极限，恰等于理论值 \(|f''/(2f')|\)</span></div>
+ <div class="b"><b>1.618</b><span>割线法解 \(\cos x-x=0\) 的实测收敛阶（5 点回归），正是黄金比</span></div>
+ <div class="c"><b>3 步 / 8 位</b><span>容差 \(10^{-8}\) 下 Newton 只需 3 步（\(x_0=2\)）</span></div>
 </div>
 
 <!-- ========== ① 不动点 ========== -->
@@ -189,40 +187,40 @@ $$|x_n-x^*|\le \frac{L^n}{1-L}\,|x_1-x_0| .$$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">蛛网图 · 不动点迭代</span>
-    <span class="t" id="cob-state">φ = cos x</span>
-  </div>
-  <canvas id="cv-cob" aria-label="不动点迭代的蛛网图"></canvas>
-  <div class="legend">
-    <span><i class="indigo"></i>y = x（对角线）</span>
-    <span><i></i>y = φ(x)</span>
-    <span><i class="teal"></i>迭代折线（竖直↔水平）</span>
-  </div>
-  <div class="ctrls">
-    <div class="grp seg" role="group" aria-label="迭代函数">
-      <button id="cb-cos" aria-pressed="true">cos x</button>
-      <button id="cb-lin" aria-pressed="false">(x²+21)/10</button>
-      <button id="cb-sq" aria-pressed="false">√(10x−21)</button>
-    </div>
-    <div class="grp">
-      <label for="cb-x0">初值 x₀</label>
-      <input id="cb-x0" type="range" min="0" max="4" step="0.05" value="1">
-      <output id="cb-x0o" style="font-family:var(--mono);min-width:2.6em">1.00</output>
-    </div>
-    <div class="grp">
-      <button class="btn primary" id="cb-play">播放</button>
-      <button class="btn" id="cb-step">单步</button>
-      <button class="btn" id="cb-reset">重置</button>
-    </div>
-  </div>
-  <div class="reads">
-    <div><div class="k">当前 k</div><div class="v" id="cb-k">0</div></div>
-    <div><div class="k">x_k</div><div class="v" id="cb-x">—</div></div>
-    <div><div class="k">|φ′(x*)|（预期收敛率）</div><div class="v" id="cb-rate">—</div></div>
-    <div><div class="k">实测 e_k / e_{k−1}</div><div class="v teal" id="cb-ratio">—</div></div>
-  </div>
-  <p class="hint">教材例 4.2.2 的两个改写：\(\varphi_1=(x^2+21)/10\) 的导数是 \(\varphi_1'(x)=x/5\)，在根 \(x^*=3\) 处等于 0.6，收敛；\(\varphi_2=\sqrt{10x-21}\) 的导数在 3.5 处已到 1.336，第一步就跳远——同一道题，改写方式决定生死。</p>
+ <div class="lab-head">
+ <span class="t">蛛网图 · 不动点迭代</span>
+ <span class="t" id="cob-state">φ = cos x</span>
+ </div>
+ <canvas id="cv-cob" aria-label="不动点迭代的蛛网图"></canvas>
+ <div class="legend">
+ <span><i class="indigo"></i>y = x（对角线）</span>
+ <span><i></i>y = φ(x)</span>
+ <span><i class="teal"></i>迭代折线（竖直↔水平）</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp seg" role="group" aria-label="迭代函数">
+ <button id="cb-cos" aria-pressed="true">cos x</button>
+ <button id="cb-lin" aria-pressed="false">(x²+21)/10</button>
+ <button id="cb-sq" aria-pressed="false">√(10x−21)</button>
+ </div>
+ <div class="grp">
+ <label for="cb-x0">初值 x₀</label>
+ <input id="cb-x0" type="range" min="0" max="4" step="0.05" value="1">
+ <output id="cb-x0o" style="font-family:var(--mono);min-width:2.6em">1.00</output>
+ </div>
+ <div class="grp">
+ <button class="btn primary" id="cb-play">播放</button>
+ <button class="btn" id="cb-step">单步</button>
+ <button class="btn" id="cb-reset">重置</button>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">当前 k</div><div class="v" id="cb-k">0</div></div>
+ <div><div class="k">x_k</div><div class="v" id="cb-x">—</div></div>
+ <div><div class="k">|φ′(x*)|（预期收敛率）</div><div class="v" id="cb-rate">—</div></div>
+ <div><div class="k">实测 e_k / e_{k−1}</div><div class="v teal" id="cb-ratio">—</div></div>
+ </div>
+ <p class="hint">教材例 4.2.2 的两个改写：\(\varphi_1=(x^2+21)/10\) 的导数是 \(\varphi_1'(x)=x/5\)，在根 \(x^*=3\) 处等于 0.6，收敛；\(\varphi_2=\sqrt{10x-21}\) 的导数在 3.5 处已到 1.336，第一步就跳远——同一道题，改写方式决定生死。</p>
 </div>
 
 <div class="note">
@@ -243,41 +241,41 @@ $$e_{k+1}\approx \frac{f''(x^*)}{2f'(x^*)}\,e_k^{2}.$$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">切线步进 · Newton 迭代</span>
-    <span class="t" id="nt-state">f = x³−2x−5</span>
-  </div>
-  <canvas id="cv-newton" aria-label="Newton 迭代的切线示意"></canvas>
-  <div class="legend">
-    <span><i class="gray"></i>y = f(x)</span>
-    <span><i></i>切线（本次迭代）</span>
-    <span><i class="teal"></i>已走过的迭代点</span>
-  </div>
-  <div class="ctrls">
-    <div class="grp seg" role="group" aria-label="方程">
-      <button id="nt-cubic" aria-pressed="true">x³−2x−5</button>
-      <button id="nt-sqrt" aria-pressed="false">x²−2</button>
-      <button id="nt-dbl" aria-pressed="false">(x−1)²(x+2)</button>
-      <button id="nt-loop" aria-pressed="false">x³−2x+2</button>
-    </div>
-    <div class="grp">
-      <label for="nt-x0">初值 x₀</label>
-      <input id="nt-x0" type="range" min="-3" max="3" step="0.05" value="2">
-      <output id="nt-x0o" style="font-family:var(--mono);min-width:2.6em">2.00</output>
-    </div>
-    <div class="grp">
-      <button class="btn primary" id="nt-play">播放</button>
-      <button class="btn" id="nt-step">单步</button>
-      <button class="btn" id="nt-reset">重置</button>
-    </div>
-  </div>
-  <div class="reads">
-    <div><div class="k">当前 k</div><div class="v" id="nt-k">0</div></div>
-    <div><div class="k">x_k</div><div class="v" id="nt-x">—</div></div>
-    <div><div class="k">e_k = |x_k − x*|</div><div class="v orange" id="nt-e">—</div></div>
-    <div><div class="k">e_{k+1}/e_k² · e_{k+1}/e_k</div><div class="v teal" id="nt-q" style="font-size:14px">—</div></div>
-  </div>
-  <p class="hint">切线始终打在曲线外→内的一侧；点列会单调或交替逼近根。切到“(x−1)²(x+2)”时把初值拖到 2 附近，能看到第二个因子把收敛拖成线性；切到“x³−2x+2”并把初值设成 0，会卡在 0↔1 的二循环里。</p>
+ <div class="lab-head">
+ <span class="t">切线步进 · Newton 迭代</span>
+ <span class="t" id="nt-state">f = x³−2x−5</span>
+ </div>
+ <canvas id="cv-newton" aria-label="Newton 迭代的切线示意"></canvas>
+ <div class="legend">
+ <span><i class="gray"></i>y = f(x)</span>
+ <span><i></i>切线（本次迭代）</span>
+ <span><i class="teal"></i>已走过的迭代点</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp seg" role="group" aria-label="方程">
+ <button id="nt-cubic" aria-pressed="true">x³−2x−5</button>
+ <button id="nt-sqrt" aria-pressed="false">x²−2</button>
+ <button id="nt-dbl" aria-pressed="false">(x−1)²(x+2)</button>
+ <button id="nt-loop" aria-pressed="false">x³−2x+2</button>
+ </div>
+ <div class="grp">
+ <label for="nt-x0">初值 x₀</label>
+ <input id="nt-x0" type="range" min="-3" max="3" step="0.05" value="2">
+ <output id="nt-x0o" style="font-family:var(--mono);min-width:2.6em">2.00</output>
+ </div>
+ <div class="grp">
+ <button class="btn primary" id="nt-play">播放</button>
+ <button class="btn" id="nt-step">单步</button>
+ <button class="btn" id="nt-reset">重置</button>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">当前 k</div><div class="v" id="nt-k">0</div></div>
+ <div><div class="k">x_k</div><div class="v" id="nt-x">—</div></div>
+ <div><div class="k">e_k = |x_k − x*|</div><div class="v orange" id="nt-e">—</div></div>
+ <div><div class="k">e_{k+1}/e_k² · e_{k+1}/e_k</div><div class="v teal" id="nt-q" style="font-size:14px">—</div></div>
+ </div>
+ <p class="hint">切线始终打在曲线外→内的一侧；点列会单调或交替逼近根。切到“(x−1)²(x+2)”时把初值拖到 2 附近，能看到第二个因子把收敛拖成线性；切到“x³−2x+2”并把初值设成 0，会卡在 0↔1 的二循环里。</p>
 </div>
 
 <p>实测（\(x^3-2x-5\)，\(x_0=2\)）点列与误差：</p>
@@ -309,23 +307,23 @@ $$\lim_{k\to\infty}\frac{|e_{k+1}|}{|e_k|^{p}}=C\quad(0&lt;C&lt;\infty),$$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">误差递推 · 同一问题 x²−2=0</span>
-    <span class="t" id="ord-state">三种方法的斜率</span>
-  </div>
-  <canvas id="cv-order" aria-label="三种迭代法的收敛阶拟合"></canvas>
-  <div class="legend">
-    <span><i></i>Newton（x₀=1）</span>
-    <span><i class="teal"></i>割线法（x₀=1, x₁=2）</span>
-    <span><i class="indigo"></i>二分法（[1,2]）</span>
-    <span style="color:var(--muted)">横轴 e_k，纵轴 e_{k+1}</span>
-  </div>
-  <div class="reads" style="grid-template-columns:repeat(3,1fr)">
-    <div><div class="k">Newton 拟合斜率</div><div class="v orange" id="ord-n">—</div></div>
-    <div><div class="k">割线法拟合斜率</div><div class="v teal" id="ord-s">—</div></div>
-    <div><div class="k">二分法拟合斜率</div><div class="v indigo" id="ord-b">—</div></div>
-  </div>
-  <p class="hint">拟合只用误差在 \(10^{-15}\) 到 \(10^{1}\) 之间的点：再小的误差已被双精度的舍入噪声接管（\(e\approx0\) 时取对数没有意义），这些点会让斜率失真——所以 Newton 的直线很短，割线和二分的长。</p>
+ <div class="lab-head">
+ <span class="t">误差递推 · 同一问题 x²−2=0</span>
+ <span class="t" id="ord-state">三种方法的斜率</span>
+ </div>
+ <canvas id="cv-order" aria-label="三种迭代法的收敛阶拟合"></canvas>
+ <div class="legend">
+ <span><i></i>Newton（x₀=1）</span>
+ <span><i class="teal"></i>割线法（x₀=1, x₁=2）</span>
+ <span><i class="indigo"></i>二分法（[1,2]）</span>
+ <span style="color:var(--muted)">横轴 e_k，纵轴 e_{k+1}</span>
+ </div>
+ <div class="reads" style="grid-template-columns:repeat(3,1fr)">
+ <div><div class="k">Newton 拟合斜率</div><div class="v orange" id="ord-n">—</div></div>
+ <div><div class="k">割线法拟合斜率</div><div class="v teal" id="ord-s">—</div></div>
+ <div><div class="k">二分法拟合斜率</div><div class="v indigo" id="ord-b">—</div></div>
+ </div>
+ <p class="hint">拟合只用误差在 \(10^{-15}\) 到 \(10^{1}\) 之间的点：再小的误差已被双精度的舍入噪声接管（\(e\approx0\) 时取对数没有意义），这些点会让斜率失真——所以 Newton 的直线很短，割线和二分的长。</p>
 </div>
 
 <p>
@@ -344,31 +342,31 @@ $$\lim_{k\to\infty}\frac{|e_{k+1}|}{|e_k|^{p}}=C\quad(0&lt;C&lt;\infty),$$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">Newton 吸引域 · z³ − 1 = 0，Re z ∈ [−1.7, 1.7]</span>
-    <span class="t" id="fr-state">按根着色</span>
-  </div>
-  <canvas id="cv-frac" aria-label="复平面上 z³-1 的牛顿吸引域"></canvas>
-  <div class="legend">
-    <span><i></i>收敛到 1</span>
-    <span><i class="teal"></i>收敛到 e^{2πi/3}</span>
-    <span><i class="indigo"></i>收敛到 e^{−2πi/3}</span>
-    <span><i class="gray"></i>40 步内不收敛（边界）</span>
-  </div>
-  <div class="ctrls">
-    <div class="grp seg" role="group" aria-label="着色方式">
-      <button id="fr-root" aria-pressed="true">按根着色</button>
-      <button id="fr-iter" aria-pressed="false">按迭代步数</button>
-    </div>
-    <div class="grp" style="color:var(--muted);font-size:12.5px">点画布任意位置可查看该初值的轨道</div>
-  </div>
-  <div class="reads">
-    <div><div class="k">点击的 z₀</div><div class="v" id="fr-z0" style="font-size:14px">—</div></div>
-    <div><div class="k">收敛到</div><div class="v" id="fr-to" style="font-size:14px">—</div></div>
-    <div><div class="k">所需步数</div><div class="v" id="fr-steps">—</div></div>
-    <div><div class="k">三域面积占比（实测）</div><div class="v" id="fr-area" style="font-size:13.5px">计算中…</div></div>
-  </div>
-  <p class="hint">实测（页面 360×360 网格）：三个吸引域面积比 <strong>38.16% / 30.92% / 30.92%</strong>——不是 1/3 均分，实轴那一支更大；边界像素占 0.002%。脚本用 600×600 网格复核得 38.13 / 30.91 / 30.91、边界 0.039%：网格越细，落在缝隙里的点越多，边界占比随分辨率增长。切到“按迭代步数”会看到边界处步数向无穷增长——那是 Julia 集。</p>
+ <div class="lab-head">
+ <span class="t">Newton 吸引域 · z³ − 1 = 0，Re z ∈ [−1.7, 1.7]</span>
+ <span class="t" id="fr-state">按根着色</span>
+ </div>
+ <canvas id="cv-frac" aria-label="复平面上 z³-1 的牛顿吸引域"></canvas>
+ <div class="legend">
+ <span><i></i>收敛到 1</span>
+ <span><i class="teal"></i>收敛到 e^{2πi/3}</span>
+ <span><i class="indigo"></i>收敛到 e^{−2πi/3}</span>
+ <span><i class="gray"></i>40 步内不收敛（边界）</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp seg" role="group" aria-label="着色方式">
+ <button id="fr-root" aria-pressed="true">按根着色</button>
+ <button id="fr-iter" aria-pressed="false">按迭代步数</button>
+ </div>
+ <div class="grp" style="color:var(--muted);font-size:12.5px">点画布任意位置可查看该初值的轨道</div>
+ </div>
+ <div class="reads">
+ <div><div class="k">点击的 z₀</div><div class="v" id="fr-z0" style="font-size:14px">—</div></div>
+ <div><div class="k">收敛到</div><div class="v" id="fr-to" style="font-size:14px">—</div></div>
+ <div><div class="k">所需步数</div><div class="v" id="fr-steps">—</div></div>
+ <div><div class="k">三域面积占比（实测）</div><div class="v" id="fr-area" style="font-size:13.5px">计算中…</div></div>
+ </div>
+ <p class="hint">实测（页面 360×360 网格）：三个吸引域面积比 <strong>38.16% / 30.92% / 30.92%</strong>——不是 1/3 均分，实轴那一支更大；边界像素占 0.002%。脚本用 600×600 网格复核得 38.13 / 30.91 / 30.91、边界 0.039%：网格越细，落在缝隙里的点越多，边界占比随分辨率增长。切到“按迭代步数”会看到边界处步数向无穷增长——那是 Julia 集。</p>
 </div>
 
 <p>
@@ -420,7 +418,7 @@ $$e_k{:}\,7.4\times10^{-1}\to2.6\times10^{-1}\to5.4\times10^{-2}\to2.8\times10^{
 </p>
 
 <footer>
-<p><strong>口径与核对</strong>——数值：<code>node verify_newton.js</code>（工作区根目录，双精度，含复平面 600×600 独立核对；页面分形画布为 360×360）；公式位置：《数值分析》张平文、李铁军（北大出版社 2007）§4.2 定理 4.2.1–4.2.4、式 (4.2.4)(4.2.6)(4.2.7)、例 4.2.2；书页 = PDF 页 − 16。</p>
+<p><strong>口径与核对</strong>——数值：<code>node verify_newton.js</code>（工作区根目录，双精度，含复平面 600×600 独立核对；页面分形画布为 360×360）；公式位置：教材§4.2 定理 4.2.1–4.2.4、式 (4.2.4)(4.2.6)(4.2.7)、例 4.2.2。</p>
 <p>公式编译：<code>node verify_formulas.js 非线性方程-迭代法与收敛阶.html</code>，要求 0 failed。页面零依赖、可离线打开（仅公式需联网）。</p>
 </footer>
 
@@ -430,518 +428,518 @@ $$e_k{:}\,7.4\times10^{-1}\to2.6\times10^{-1}\to5.4\times10^{-2}\to2.8\times10^{
 "use strict";
 /* ================= 画布工具 ================= */
 function fit(cv){
-  const r = cv.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  cv.width = Math.max(1, Math.round(r.width * dpr));
-  cv.height = Math.max(1, Math.round(r.height * dpr));
-  const ctx = cv.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, r.width, r.height);
-  return { ctx, w: r.width, h: r.height };
+ const r = cv.getBoundingClientRect();
+ const dpr = Math.min(window.devicePixelRatio || 1, 2);
+ cv.width = Math.max(1, Math.round(r.width * dpr));
+ cv.height = Math.max(1, Math.round(r.height * dpr));
+ const ctx = cv.getContext("2d");
+ ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+ ctx.clearRect(0, 0, r.width, r.height);
+ return { ctx, w: r.width, h: r.height };
 }
 const COL = { ink:"#23201a", muted:"#8a8272", grid:"#e6dfd1",
-  orange:"#c2531f", teal:"#0d6b5d", indigo:"#39417e" };
+ orange:"#c2531f", teal:"#0d6b5d", indigo:"#39417e" };
 function fmt(v, d){
-  if (!isFinite(v)) return "—";
-  const a = Math.abs(v);
-  if (v === 0) return "0";
-  if (a >= 1e4 || a < 1e-3){
-    const e = Math.floor(Math.log10(a)), m = v / Math.pow(10, e);
-    return m.toFixed(2) + "×10" + sup(e);
-  }
-  return v.toFixed(d === undefined ? (a >= 100 ? 1 : 4) : d);
+ if (!isFinite(v)) return "—";
+ const a = Math.abs(v);
+ if (v === 0) return "0";
+ if (a >= 1e4 || a < 1e-3){
+ const e = Math.floor(Math.log10(a)), m = v / Math.pow(10, e);
+ return m.toFixed(2) + "×10" + sup(e);
+ }
+ return v.toFixed(d === undefined ? (a >= 100 ? 1 : 4) : d);
 }
 function sup(e){
-  const M = {"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
-  return String(e).split("").map(c => M[c] || c).join("");
+ const M = {"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+ return String(e).split("").map(c => M[c] || c).join("");
 }
 function tickStep(span, n){
-  const raw = span / n, p = Math.pow(10, Math.floor(Math.log10(raw)));
-  for (const f of [1, 2, 5, 10]) if (raw <= f * p) return f * p;
-  return 10 * p;
+ const raw = span / n, p = Math.pow(10, Math.floor(Math.log10(raw)));
+ for (const f of [1, 2, 5, 10]) if (raw <= f * p) return f * p;
+ return 10 * p;
 }
 
 /* ================= 实验 01：蛛网图 ================= */
 const COB = {
-  presets: {
-    cos: { phi: x => Math.cos(x), dphi: x => -Math.sin(x), root: 0.7390851332151607,
-           x0: 1, xr: [-0.25, 1.45], label: "φ = cos x", rateNote: "|φ′(x*)| = sin x* = 0.674" },
-    lin: { phi: x => (x * x + 21) / 10, dphi: x => x / 5, root: 3,
-           x0: 0.4, xr: [-0.3, 4.2], label: "φ = (x²+21)/10", rateNote: "|φ′(3)| = 0.6" },
-    sq:  { phi: x => Math.sqrt(Math.max(0, 10 * x - 21)), dphi: x => 5 / Math.sqrt(Math.max(1e-9, 10 * x - 21)), root: 3,
-           x0: 3.5, xr: [-0.3, 6.2], label: "φ = √(10x−21)", rateNote: "|φ′(3.5)| = 1.336 > 1" }
-  },
-  key: "cos", x0: 1, k: 3, timer: null
+ presets: {
+ cos: { phi: x => Math.cos(x), dphi: x => -Math.sin(x), root: 0.7390851332151607,
+ x0: 1, xr: [-0.25, 1.45], label: "φ = cos x", rateNote: "|φ′(x*)| = sin x* = 0.674" },
+ lin: { phi: x => (x * x + 21) / 10, dphi: x => x / 5, root: 3,
+ x0: 0.4, xr: [-0.3, 4.2], label: "φ = (x²+21)/10", rateNote: "|φ′(3)| = 0.6" },
+ sq: { phi: x => Math.sqrt(Math.max(0, 10 * x - 21)), dphi: x => 5 / Math.sqrt(Math.max(1e-9, 10 * x - 21)), root: 3,
+ x0: 3.5, xr: [-0.3, 6.2], label: "φ = √(10x−21)", rateNote: "|φ′(3.5)| = 1.336 > 1" }
+ },
+ key: "cos", x0: 1, k: 3, timer: null
 };
 function cobSeq(){
-  const p = COB.presets[COB.key], out = [COB.x0];
-  let x = COB.x0;
-  for (let i = 0; i < 40; i++){
-    if (!isFinite(x) || Math.abs(x) > 1e3) break;
-    const y = p.phi(x);
-    out.push(y);
-    if (Math.abs(y - x) < 1e-13) break;
-    x = y;
-  }
-  return out;
+ const p = COB.presets[COB.key], out = [COB.x0];
+ let x = COB.x0;
+ for (let i = 0; i < 40; i++){
+ if (!isFinite(x) || Math.abs(x) > 1e3) break;
+ const y = p.phi(x);
+ out.push(y);
+ if (Math.abs(y - x) < 1e-13) break;
+ x = y;
+ }
+ return out;
 }
 function drawCobweb(){
-  const cv = document.getElementById("cv-cob");
-  const { ctx, w, h } = fit(cv);
-  const p = COB.presets[COB.key];
-  const PL = 48, PR = 16, PT = 16, PB = 30;
-  const seq = cobSeq();
-  const shown = Math.min(COB.k + 1, seq.length);
-  let lo = p.xr[0], hi = p.xr[1];
-  const X = x => PL + (x - lo) / (hi - lo) * (w - PL - PR);
-  const Y = y => h - PB - (y - lo) / (hi - lo) * (h - PT - PB);
+ const cv = document.getElementById("cv-cob");
+ const { ctx, w, h } = fit(cv);
+ const p = COB.presets[COB.key];
+ const PL = 48, PR = 16, PT = 16, PB = 30;
+ const seq = cobSeq();
+ const shown = Math.min(COB.k + 1, seq.length);
+ let lo = p.xr[0], hi = p.xr[1];
+ const X = x => PL + (x - lo) / (hi - lo) * (w - PL - PR);
+ const Y = y => h - PB - (y - lo) / (hi - lo) * (h - PT - PB);
 
-  // 网格
-  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
-  ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
-  const st = tickStep(hi - lo, 6);
-  for (let v = Math.ceil(lo / st) * st; v <= hi + 1e-9; v += st){
-    const gx = Math.round(X(v)) + .5, gy = Math.round(Y(v)) + .5;
-    ctx.beginPath(); ctx.moveTo(gx, PT); ctx.lineTo(gx, h - PB); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(PL, gy); ctx.lineTo(w - PR, gy); ctx.stroke();
-    ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText(v.toFixed(2).replace(/\.?0+$/, ""), gx, h - PB + 6);
-    ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText(v.toFixed(2).replace(/\.?0+$/, ""), PL - 7, gy);
-  }
-  // y=x
-  ctx.strokeStyle = "rgba(57,65,126,.55)"; ctx.lineWidth = 1.4; ctx.setLineDash([6, 4]);
-  ctx.beginPath(); ctx.moveTo(X(lo), Y(lo)); ctx.lineTo(X(hi), Y(hi)); ctx.stroke(); ctx.setLineDash([]);
-  // φ
-  ctx.strokeStyle = COL.orange; ctx.lineWidth = 2.2; ctx.beginPath();
-  let started = false;
-  for (let i = 0; i <= 400; i++){
-    const x = lo + (hi - lo) * i / 400;
-    const y = p.phi(x);
-    if (!isFinite(y) || y < lo - 3 || y > hi + 3){ started = false; continue; }
-    const px = X(x), py = Y(Math.max(lo, Math.min(hi, y)));
-    if (!started){ ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
-  }
-  ctx.stroke();
+ // 网格
+ ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+ ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
+ const st = tickStep(hi - lo, 6);
+ for (let v = Math.ceil(lo / st) * st; v <= hi + 1e-9; v += st){
+ const gx = Math.round(X(v)) + .5, gy = Math.round(Y(v)) + .5;
+ ctx.beginPath(); ctx.moveTo(gx, PT); ctx.lineTo(gx, h - PB); ctx.stroke();
+ ctx.beginPath(); ctx.moveTo(PL, gy); ctx.lineTo(w - PR, gy); ctx.stroke();
+ ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText(v.toFixed(2).replace(/\.?0+$/, ""), gx, h - PB + 6);
+ ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText(v.toFixed(2).replace(/\.?0+$/, ""), PL - 7, gy);
+ }
+ // y=x
+ ctx.strokeStyle = "rgba(57,65,126,.55)"; ctx.lineWidth = 1.4; ctx.setLineDash([6, 4]);
+ ctx.beginPath(); ctx.moveTo(X(lo), Y(lo)); ctx.lineTo(X(hi), Y(hi)); ctx.stroke(); ctx.setLineDash([]);
+ // φ
+ ctx.strokeStyle = COL.orange; ctx.lineWidth = 2.2; ctx.beginPath();
+ let started = false;
+ for (let i = 0; i <= 400; i++){
+ const x = lo + (hi - lo) * i / 400;
+ const y = p.phi(x);
+ if (!isFinite(y) || y < lo - 3 || y > hi + 3){ started = false; continue; }
+ const px = X(x), py = Y(Math.max(lo, Math.min(hi, y)));
+ if (!started){ ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+ }
+ ctx.stroke();
 
-  // 折线
-  ctx.strokeStyle = COL.teal; ctx.lineWidth = 1.6; ctx.beginPath();
-  let px0 = X(seq[0]), py0 = Y(seq[0]);
-  ctx.moveTo(px0, py0);
-  for (let i = 0; i < shown - 1; i++){
-    const a = seq[i], b = seq[i + 1];
-    const yb = Math.max(lo, Math.min(hi, b));
-    ctx.lineTo(X(a), Y(yb));   // 竖直：到曲线
-    ctx.lineTo(X(b), Y(yb));   // 水平：到对角线
-    ctx.arc(X(b), Y(yb), 2.2, 0, 6.2832);
-  }
-  ctx.stroke();
+ // 折线
+ ctx.strokeStyle = COL.teal; ctx.lineWidth = 1.6; ctx.beginPath();
+ let px0 = X(seq[0]), py0 = Y(seq[0]);
+ ctx.moveTo(px0, py0);
+ for (let i = 0; i < shown - 1; i++){
+ const a = seq[i], b = seq[i + 1];
+ const yb = Math.max(lo, Math.min(hi, b));
+ ctx.lineTo(X(a), Y(yb)); // 竖直：到曲线
+ ctx.lineTo(X(b), Y(yb)); // 水平：到对角线
+ ctx.arc(X(b), Y(yb), 2.2, 0, 6.2832);
+ }
+ ctx.stroke();
 
-  // 点
-  ctx.fillStyle = COL.ink;
-  for (let i = 0; i < shown; i++){
-    const y = Math.max(lo, Math.min(hi, seq[i]));
-    ctx.beginPath(); ctx.arc(X(seq[i]), Y(y), 3, 0, 6.2832); ctx.fill();
-  }
-  // 不动点竖线
-  if (p.root > lo && p.root < hi){
-    ctx.strokeStyle = "rgba(35,32,26,.25)"; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
-    ctx.beginPath(); ctx.moveTo(X(p.root), PT); ctx.lineTo(X(p.root), h - PB); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = COL.muted; ctx.font = "11px system-ui,sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "top";
-    ctx.fillText("x* = " + p.root.toFixed(6), X(p.root) + 5, PT + 2);
-  }
+ // 点
+ ctx.fillStyle = COL.ink;
+ for (let i = 0; i < shown; i++){
+ const y = Math.max(lo, Math.min(hi, seq[i]));
+ ctx.beginPath(); ctx.arc(X(seq[i]), Y(y), 3, 0, 6.2832); ctx.fill();
+ }
+ // 不动点竖线
+ if (p.root > lo && p.root < hi){
+ ctx.strokeStyle = "rgba(35,32,26,.25)"; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+ ctx.beginPath(); ctx.moveTo(X(p.root), PT); ctx.lineTo(X(p.root), h - PB); ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = COL.muted; ctx.font = "11px system-ui,sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "top";
+ ctx.fillText("x* = " + p.root.toFixed(6), X(p.root) + 5, PT + 2);
+ }
 
-  // 读数
-  const k = COB.k, xk = seq[Math.min(k, seq.length - 1)];
-  document.getElementById("cb-k").textContent = String(k);
-  document.getElementById("cb-x").textContent = xk.toFixed(10);
-  document.getElementById("cb-rate").textContent = fmt(Math.abs(p.dphi(p.root)), 4);
-  const rEl = document.getElementById("cb-ratio");
-  if (k >= 1 && seq.length > k){
-    const e0 = Math.abs(seq[k - 1] - p.root), e1 = Math.abs(seq[Math.min(k, seq.length - 1)] - p.root);
-    rEl.textContent = e0 > 0 ? (e1 / e0).toFixed(4) : "—";
-  } else rEl.textContent = "—";
-  document.getElementById("cob-state").textContent = "φ = " + p.label.replace("φ = ", "");
+ // 读数
+ const k = COB.k, xk = seq[Math.min(k, seq.length - 1)];
+ document.getElementById("cb-k").textContent = String(k);
+ document.getElementById("cb-x").textContent = xk.toFixed(10);
+ document.getElementById("cb-rate").textContent = fmt(Math.abs(p.dphi(p.root)), 4);
+ const rEl = document.getElementById("cb-ratio");
+ if (k >= 1 && seq.length > k){
+ const e0 = Math.abs(seq[k - 1] - p.root), e1 = Math.abs(seq[Math.min(k, seq.length - 1)] - p.root);
+ rEl.textContent = e0 > 0 ? (e1 / e0).toFixed(4) : "—";
+ } else rEl.textContent = "—";
+ document.getElementById("cob-state").textContent = "φ = " + p.label.replace("φ = ", "");
 }
 
 /* ================= 实验 02：Newton 切线 ================= */
 const NT = {
-  presets: {
-    cubic: { f: x => x*x*x - 2*x - 5, fp: x => 3*x*x - 2, root: 2.0945514815423265,
-             xr: [1.2, 3.2], yr: [-6, 8], x0: 2, label: "f = x³−2x−5" },
-    sqrt:  { f: x => x*x - 2, fp: x => 2*x, root: Math.SQRT2,
-             xr: [0.9, 2.1], yr: [-1.5, 2.6], x0: 1, label: "f = x²−2" },
-    dbl:   { f: x => (x-1)*(x-1)*(x+2), fp: x => 3*(x*x - 1), root: 1,
-             xr: [0.5, 2.8], yr: [-1, 3.2], x0: 2.4, label: "f = (x−1)²(x+2)" },
-    loop:  { f: x => x*x*x - 2*x + 2, fp: x => 3*x*x - 2, root: -1.7692923542386314,
-             xr: [-2.4, 1.4], yr: [-2.5, 5], x0: 0, label: "f = x³−2x+2" }
-  },
-  key: "cubic", x0: 2, k: 0, timer: null
+ presets: {
+ cubic: { f: x => x*x*x - 2*x - 5, fp: x => 3*x*x - 2, root: 2.0945514815423265,
+ xr: [1.2, 3.2], yr: [-6, 8], x0: 2, label: "f = x³−2x−5" },
+ sqrt: { f: x => x*x - 2, fp: x => 2*x, root: Math.SQRT2,
+ xr: [0.9, 2.1], yr: [-1.5, 2.6], x0: 1, label: "f = x²−2" },
+ dbl: { f: x => (x-1)*(x-1)*(x+2), fp: x => 3*(x*x - 1), root: 1,
+ xr: [0.5, 2.8], yr: [-1, 3.2], x0: 2.4, label: "f = (x−1)²(x+2)" },
+ loop: { f: x => x*x*x - 2*x + 2, fp: x => 3*x*x - 2, root: -1.7692923542386314,
+ xr: [-2.4, 1.4], yr: [-2.5, 5], x0: 0, label: "f = x³−2x+2" }
+ },
+ key: "cubic", x0: 2, k: 0, timer: null
 };
 function ntSeq(){
-  const p = NT.presets[NT.key], out = [NT.x0];
-  let x = NT.x0;
-  for (let i = 0; i < 30; i++){
-    const d = p.fp(x);
-    if (!isFinite(x) || Math.abs(d) < 1e-14 || Math.abs(x) > 1e6) break;
-    const y = x - p.f(x) / d;
-    out.push(y);
-    if (Math.abs(y - x) < 1e-14) break;
-    x = y;
-  }
-  return out;
+ const p = NT.presets[NT.key], out = [NT.x0];
+ let x = NT.x0;
+ for (let i = 0; i < 30; i++){
+ const d = p.fp(x);
+ if (!isFinite(x) || Math.abs(d) < 1e-14 || Math.abs(x) > 1e6) break;
+ const y = x - p.f(x) / d;
+ out.push(y);
+ if (Math.abs(y - x) < 1e-14) break;
+ x = y;
+ }
+ return out;
 }
 function drawNewton(){
-  const cv = document.getElementById("cv-newton");
-  const { ctx, w, h } = fit(cv);
-  const p = NT.presets[NT.key];
-  const PL = 48, PR = 18, PT = 18, PB = 30;
-  const seq = ntSeq(), shown = Math.min(NT.k + 1, seq.length);
-  const lo = p.xr[0], hi = p.xr[1];
-  let yLo = 1e9, yHi = -1e9;
-  for (let i = 0; i <= 300; i++){
-    const x = lo + (hi - lo) * i / 300, y = p.f(x);
-    if (isFinite(y)){ yLo = Math.min(yLo, y); yHi = Math.max(yHi, y); }
-  }
-  yLo = Math.max(yLo, p.yr[0]); yHi = Math.min(yHi, p.yr[1]);
-  const X = x => PL + (x - lo) / (hi - lo) * (w - PL - PR);
-  const Y = y => h - PB - (y - yLo) / (yHi - yLo) * (h - PT - PB);
+ const cv = document.getElementById("cv-newton");
+ const { ctx, w, h } = fit(cv);
+ const p = NT.presets[NT.key];
+ const PL = 48, PR = 18, PT = 18, PB = 30;
+ const seq = ntSeq(), shown = Math.min(NT.k + 1, seq.length);
+ const lo = p.xr[0], hi = p.xr[1];
+ let yLo = 1e9, yHi = -1e9;
+ for (let i = 0; i <= 300; i++){
+ const x = lo + (hi - lo) * i / 300, y = p.f(x);
+ if (isFinite(y)){ yLo = Math.min(yLo, y); yHi = Math.max(yHi, y); }
+ }
+ yLo = Math.max(yLo, p.yr[0]); yHi = Math.min(yHi, p.yr[1]);
+ const X = x => PL + (x - lo) / (hi - lo) * (w - PL - PR);
+ const Y = y => h - PB - (y - yLo) / (yHi - yLo) * (h - PT - PB);
 
-  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
-  ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
-  for (let v = Math.ceil(lo); v <= hi; v++){
-    const gx = Math.round(X(v)) + .5;
-    ctx.beginPath(); ctx.moveTo(gx, PT); ctx.lineTo(gx, h - PB); ctx.stroke();
-    ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText(String(v), gx, h - PB + 6);
-  }
-  const ys = tickStep(yHi - yLo, 6);
-  for (let v = Math.ceil(yLo / ys) * ys; v <= yHi; v += ys){
-    const gy = Math.round(Y(v)) + .5;
-    ctx.beginPath(); ctx.moveTo(PL, gy); ctx.lineTo(w - PR, gy); ctx.stroke();
-    ctx.textAlign = "right"; ctx.textBaseline = "middle";
-    ctx.fillText(Number(v.toFixed(4)).toString(), PL - 7, gy);
-  }
-  // 轴
-  if (yLo < 0 && yHi > 0){
-    ctx.strokeStyle = "#b9b0a0"; ctx.lineWidth = 1.2;
-    ctx.beginPath(); ctx.moveTo(PL, Y(0) + .5); ctx.lineTo(w - PR, Y(0) + .5); ctx.stroke();
-  }
-  // 裁剪区（曲线与切线可以超出画面，靠 clip 截断，不能靠坐标夹逼——夹逼会改斜率）
-  ctx.save();
-  ctx.beginPath(); ctx.rect(PL, PT, w - PL - PR, h - PT - PB); ctx.clip();
+ ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+ ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
+ for (let v = Math.ceil(lo); v <= hi; v++){
+ const gx = Math.round(X(v)) + .5;
+ ctx.beginPath(); ctx.moveTo(gx, PT); ctx.lineTo(gx, h - PB); ctx.stroke();
+ ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText(String(v), gx, h - PB + 6);
+ }
+ const ys = tickStep(yHi - yLo, 6);
+ for (let v = Math.ceil(yLo / ys) * ys; v <= yHi; v += ys){
+ const gy = Math.round(Y(v)) + .5;
+ ctx.beginPath(); ctx.moveTo(PL, gy); ctx.lineTo(w - PR, gy); ctx.stroke();
+ ctx.textAlign = "right"; ctx.textBaseline = "middle";
+ ctx.fillText(Number(v.toFixed(4)).toString(), PL - 7, gy);
+ }
+ // 轴
+ if (yLo < 0 && yHi > 0){
+ ctx.strokeStyle = "#b9b0a0"; ctx.lineWidth = 1.2;
+ ctx.beginPath(); ctx.moveTo(PL, Y(0) + .5); ctx.lineTo(w - PR, Y(0) + .5); ctx.stroke();
+ }
+ // 裁剪区（曲线与切线可以超出画面，靠 clip 截断，不能靠坐标夹逼——夹逼会改斜率）
+ ctx.save();
+ ctx.beginPath(); ctx.rect(PL, PT, w - PL - PR, h - PT - PB); ctx.clip();
 
-  // 曲线
-  ctx.strokeStyle = "rgba(35,32,26,.62)"; ctx.lineWidth = 1.7; ctx.beginPath();
-  let st = false;
-  for (let i = 0; i <= 600; i++){
-    const x = lo - 0.2 + (hi - lo + 0.4) * i / 600, y = p.f(x);
-    if (!isFinite(y)){ st = false; continue; }
-    const px = X(x), py = Y(y);
-    if (!st){ ctx.moveTo(px, py); st = true; } else ctx.lineTo(px, py);
-  }
-  ctx.stroke();
+ // 曲线
+ ctx.strokeStyle = "rgba(35,32,26,.62)"; ctx.lineWidth = 1.7; ctx.beginPath();
+ let st = false;
+ for (let i = 0; i <= 600; i++){
+ const x = lo - 0.2 + (hi - lo + 0.4) * i / 600, y = p.f(x);
+ if (!isFinite(y)){ st = false; continue; }
+ const px = X(x), py = Y(y);
+ if (!st){ ctx.moveTo(px, py); st = true; } else ctx.lineTo(px, py);
+ }
+ ctx.stroke();
 
-  // 切线（当前一步），真实斜率，靠 clip 截断
-  const kNow = Math.min(NT.k, seq.length - 1);
-  const xc = seq[kNow], fc = p.f(xc), dc = p.fp(xc);
-  if (isFinite(fc) && isFinite(dc) && Math.abs(dc) > 1e-12){
-    ctx.strokeStyle = COL.orange; ctx.lineWidth = 1.8; ctx.beginPath();
-    ctx.moveTo(X(lo - 0.2), Y(fc + dc * ((lo - 0.2) - xc)));
-    ctx.lineTo(X(hi + 0.2), Y(fc + dc * ((hi + 0.2) - xc)));
-    ctx.stroke();
-    ctx.fillStyle = COL.orange;
-    ctx.beginPath(); ctx.arc(X(xc), Y(fc), 4, 0, 6.2832); ctx.fill();
-    // 切线与 x 轴的交点 = x_{k+1}
-    if (kNow + 1 < seq.length){
-      const xn = seq[kNow + 1];
-      if (xn > lo - 0.2 && xn < hi + 0.2){
-        ctx.strokeStyle = COL.orange; ctx.lineWidth = 1.4;
-        ctx.beginPath(); ctx.arc(X(xn), Y(0), 4.4, 0, 6.2832); ctx.stroke();
-      }
-    }
-  }
-  ctx.restore();
+ // 切线（当前一步），真实斜率，靠 clip 截断
+ const kNow = Math.min(NT.k, seq.length - 1);
+ const xc = seq[kNow], fc = p.f(xc), dc = p.fp(xc);
+ if (isFinite(fc) && isFinite(dc) && Math.abs(dc) > 1e-12){
+ ctx.strokeStyle = COL.orange; ctx.lineWidth = 1.8; ctx.beginPath();
+ ctx.moveTo(X(lo - 0.2), Y(fc + dc * ((lo - 0.2) - xc)));
+ ctx.lineTo(X(hi + 0.2), Y(fc + dc * ((hi + 0.2) - xc)));
+ ctx.stroke();
+ ctx.fillStyle = COL.orange;
+ ctx.beginPath(); ctx.arc(X(xc), Y(fc), 4, 0, 6.2832); ctx.fill();
+ // 切线与 x 轴的交点 = x_{k+1}
+ if (kNow + 1 < seq.length){
+ const xn = seq[kNow + 1];
+ if (xn > lo - 0.2 && xn < hi + 0.2){
+ ctx.strokeStyle = COL.orange; ctx.lineWidth = 1.4;
+ ctx.beginPath(); ctx.arc(X(xn), Y(0), 4.4, 0, 6.2832); ctx.stroke();
+ }
+ }
+ }
+ ctx.restore();
 
-  // 已走过的竖线
-  ctx.strokeStyle = "rgba(13,107,93,.45)"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
-  for (let i = 0; i < shown; i++){
-    const x = seq[i];
-    if (x < lo - 1 || x > hi + 1) continue;
-    const y = p.f(x);
-    if (!isFinite(y)) continue;
-    ctx.beginPath(); ctx.moveTo(X(x), Y(0)); ctx.lineTo(X(x), Y(y)); ctx.stroke();
-  }
-  ctx.setLineDash([]);
+ // 已走过的竖线
+ ctx.strokeStyle = "rgba(13,107,93,.45)"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+ for (let i = 0; i < shown; i++){
+ const x = seq[i];
+ if (x < lo - 1 || x > hi + 1) continue;
+ const y = p.f(x);
+ if (!isFinite(y)) continue;
+ ctx.beginPath(); ctx.moveTo(X(x), Y(0)); ctx.lineTo(X(x), Y(y)); ctx.stroke();
+ }
+ ctx.setLineDash([]);
 
-  // 点列
-  const k = Math.min(NT.k, seq.length - 1), xk = seq[k];
-  ctx.fillStyle = COL.teal;
-  for (let i = 0; i < shown; i++){
-    const x = seq[i];
-    if (x < lo - 1 || x > hi + 1) continue;
-    ctx.beginPath(); ctx.arc(X(x), Y(0), 3.4, 0, 6.2832); ctx.fill();
-  }
-  // 根
-  if (p.root > lo && p.root < hi){
-    ctx.strokeStyle = "rgba(35,32,26,.3)"; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
-    ctx.beginPath(); ctx.moveTo(X(p.root), PT); ctx.lineTo(X(p.root), h - PB); ctx.stroke(); ctx.setLineDash([]);
-  }
+ // 点列
+ const k = Math.min(NT.k, seq.length - 1), xk = seq[k];
+ ctx.fillStyle = COL.teal;
+ for (let i = 0; i < shown; i++){
+ const x = seq[i];
+ if (x < lo - 1 || x > hi + 1) continue;
+ ctx.beginPath(); ctx.arc(X(x), Y(0), 3.4, 0, 6.2832); ctx.fill();
+ }
+ // 根
+ if (p.root > lo && p.root < hi){
+ ctx.strokeStyle = "rgba(35,32,26,.3)"; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+ ctx.beginPath(); ctx.moveTo(X(p.root), PT); ctx.lineTo(X(p.root), h - PB); ctx.stroke(); ctx.setLineDash([]);
+ }
 
-  // 读数
-  const ek = Math.abs(xk - p.root);
-  document.getElementById("nt-k").textContent = String(k);
-  document.getElementById("nt-x").textContent = xk.toFixed(12);
-  document.getElementById("nt-e").textContent = ek === 0 ? "0" : fmt(ek);
-  const eNext = (k + 1 < seq.length) ? Math.abs(seq[k + 1] - p.root) : NaN;
-  const q2 = eNext / (ek * ek), q1 = eNext / ek;
-  const qEl = document.getElementById("nt-q");
-  if (ek === 0) qEl.textContent = "已收敛";
-  else if (ek < 1e-9) qEl.textContent = "—（e_k 已到舍入噪声）";
-  else qEl.textContent = fmt(q2, 4) + " · " + fmt(q1, 4);
-  document.getElementById("nt-state").textContent = p.label;
+ // 读数
+ const ek = Math.abs(xk - p.root);
+ document.getElementById("nt-k").textContent = String(k);
+ document.getElementById("nt-x").textContent = xk.toFixed(12);
+ document.getElementById("nt-e").textContent = ek === 0 ? "0" : fmt(ek);
+ const eNext = (k + 1 < seq.length) ? Math.abs(seq[k + 1] - p.root) : NaN;
+ const q2 = eNext / (ek * ek), q1 = eNext / ek;
+ const qEl = document.getElementById("nt-q");
+ if (ek === 0) qEl.textContent = "已收敛";
+ else if (ek < 1e-9) qEl.textContent = "—（e_k 已到舍入噪声）";
+ else qEl.textContent = fmt(q2, 4) + " · " + fmt(q1, 4);
+ document.getElementById("nt-state").textContent = p.label;
 }
 
 /* ================= 实验 03：收敛阶 ================= */
 const ORD = {};
 (function buildOrd(){
-  const f = x => x * x - 2, fp = x => 2 * x, R = Math.SQRT2;
-  // Newton
-  let ns = [1], x = 1;
-  for (let k = 0; k < 8; k++){ const d = fp(x); if (!d) break; x = x - f(x) / d; ns.push(x); }
-  // 割线
-  let ss = [1, 2];
-  for (let k = 2; k < 10; k++){
-    const f0 = f(ss[k - 2]), f1 = f(ss[k - 1]);
-    if (f1 === f0) break;
-    ss.push(ss[k - 1] - f1 * (ss[k - 1] - ss[k - 2]) / (f1 - f0));
-  }
-  // 二分
-  let bs = [], lo = 1, hi = 2;
-  for (let k = 0; k < 48; k++){
-    const m = (lo + hi) / 2; bs.push(m);
-    if (f(lo) * f(m) <= 0) hi = m; else lo = m;
-  }
-  const errs = arr => arr.map(v => Math.abs(v - R));
-  ORD.n = errs(ns); ORD.s = errs(ss); ORD.b = errs(bs);
+ const f = x => x * x - 2, fp = x => 2 * x, R = Math.SQRT2;
+ // Newton
+ let ns = [1], x = 1;
+ for (let k = 0; k < 8; k++){ const d = fp(x); if (!d) break; x = x - f(x) / d; ns.push(x); }
+ // 割线
+ let ss = [1, 2];
+ for (let k = 2; k < 10; k++){
+ const f0 = f(ss[k - 2]), f1 = f(ss[k - 1]);
+ if (f1 === f0) break;
+ ss.push(ss[k - 1] - f1 * (ss[k - 1] - ss[k - 2]) / (f1 - f0));
+ }
+ // 二分
+ let bs = [], lo = 1, hi = 2;
+ for (let k = 0; k < 48; k++){
+ const m = (lo + hi) / 2; bs.push(m);
+ if (f(lo) * f(m) <= 0) hi = m; else lo = m;
+ }
+ const errs = arr => arr.map(v => Math.abs(v - R));
+ ORD.n = errs(ns); ORD.s = errs(ss); ORD.b = errs(bs);
 })();
 // 最小二乘：ln e_{k+1} = p·ln e_k + a
 function regress(e){
-  const xs = [], ys = [];
-  for (let k = 0; k + 1 < e.length; k++){
-    if (e[k] > 1e-15 && e[k + 1] > 1e-16 && e[k] < 1e1){
-      xs.push(Math.log(e[k])); ys.push(Math.log(e[k + 1]));
-    }
-  }
-  const n = xs.length;
-  if (n < 2) return { p: NaN, a: NaN, n: 0, x0: 0, x1: 0 };
-  let sx = 0, sy = 0, sxx = 0, sxy = 0;
-  for (let i = 0; i < n; i++){ sx += xs[i]; sy += ys[i]; sxx += xs[i]*xs[i]; sxy += xs[i]*ys[i]; }
-  const p = (n * sxy - sx * sy) / (n * sxx - sx * sx);
-  const a = (sy - p * sx) / n;
-  return { p, a, n, x0: Math.min.apply(null, xs), x1: Math.max.apply(null, xs) };
+ const xs = [], ys = [];
+ for (let k = 0; k + 1 < e.length; k++){
+ if (e[k] > 1e-15 && e[k + 1] > 1e-16 && e[k] < 1e1){
+ xs.push(Math.log(e[k])); ys.push(Math.log(e[k + 1]));
+ }
+ }
+ const n = xs.length;
+ if (n < 2) return { p: NaN, a: NaN, n: 0, x0: 0, x1: 0 };
+ let sx = 0, sy = 0, sxx = 0, sxy = 0;
+ for (let i = 0; i < n; i++){ sx += xs[i]; sy += ys[i]; sxx += xs[i]*xs[i]; sxy += xs[i]*ys[i]; }
+ const p = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+ const a = (sy - p * sx) / n;
+ return { p, a, n, x0: Math.min.apply(null, xs), x1: Math.max.apply(null, xs) };
 }
 function drawOrder(){
-  const cv = document.getElementById("cv-order");
-  const { ctx, w, h } = fit(cv);
-  const PL = 56, PR = 18, PT = 18, PB = 32;
-  const series = [{ e: ORD.n, c: COL.orange, lab: "Newton" },
-                  { e: ORD.s, c: COL.teal, lab: "割线" },
-                  { e: ORD.b, c: COL.indigo, lab: "二分" }];
-  let lo = 0, hi = 0;
-  for (const s of series) for (const v of s.e){
-    if (v > 1e-16 && v < 1e1){ const L = Math.log10(v); lo = Math.min(lo, L); hi = Math.max(hi, L); }
-  }
-  lo = Math.floor(lo) - .3; hi = Math.ceil(hi) + .3;
-  const X = v => PL + (Math.log10(v) - lo) / (hi - lo) * (w - PL - PR);
-  const Y = v => h - PB - (Math.log10(v) - lo) / (hi - lo) * (h - PT - PB);
+ const cv = document.getElementById("cv-order");
+ const { ctx, w, h } = fit(cv);
+ const PL = 56, PR = 18, PT = 18, PB = 32;
+ const series = [{ e: ORD.n, c: COL.orange, lab: "Newton" },
+ { e: ORD.s, c: COL.teal, lab: "割线" },
+ { e: ORD.b, c: COL.indigo, lab: "二分" }];
+ let lo = 0, hi = 0;
+ for (const s of series) for (const v of s.e){
+ if (v > 1e-16 && v < 1e1){ const L = Math.log10(v); lo = Math.min(lo, L); hi = Math.max(hi, L); }
+ }
+ lo = Math.floor(lo) - .3; hi = Math.ceil(hi) + .3;
+ const X = v => PL + (Math.log10(v) - lo) / (hi - lo) * (w - PL - PR);
+ const Y = v => h - PB - (Math.log10(v) - lo) / (hi - lo) * (h - PT - PB);
 
-  // 网格（每 2 个量级一档，避免标签挤在一起）
-  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
-  ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
-  for (let d = Math.ceil(lo / 2) * 2; d <= hi; d += 2){
-    const gx = Math.round(X(Math.pow(10, d))) + .5, gy = Math.round(Y(Math.pow(10, d))) + .5;
-    ctx.beginPath(); ctx.moveTo(gx, PT); ctx.lineTo(gx, h - PB); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(PL, gy); ctx.lineTo(w - PR, gy); ctx.stroke();
-    ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText("10" + sup(d), gx, h - PB + 6);
-    ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText("10" + sup(d), PL - 7, gy);
-  }
-  ctx.save();
-  ctx.beginPath(); ctx.rect(PL, PT, w - PL - PR, h - PT - PB); ctx.clip();
-  for (const s of series){
-    const r = regress(s.e);
-    // 散点
-    ctx.fillStyle = s.c;
-    for (let k = 0; k + 1 < s.e.length; k++){
-      const a = s.e[k], b = s.e[k + 1];
-      if (!(a > 1e-16) || !(b > 1e-16) || a > 1e1) continue;
-      ctx.beginPath(); ctx.arc(X(a), Y(b), 2.6, 0, 6.2832); ctx.fill();
-    }
-    // 拟合线 y = p x + a（在对数坐标里）
-    if (isFinite(r.p)){
-      const u0 = r.x0 - .1, u1 = r.x1 + .1;
-      ctx.strokeStyle = s.c; ctx.lineWidth = 1.5; ctx.globalAlpha = .55; ctx.setLineDash([5, 4]);
-      ctx.beginPath();
-      ctx.moveTo(X(Math.exp(u0)), Y(Math.exp(r.p * u0 + r.a)));
-      ctx.lineTo(X(Math.exp(u1)), Y(Math.exp(r.p * u1 + r.a)));
-      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      // 斜率标注放在线段左端上方（三条线左端高低不同，不会互相压）
-      ctx.fillStyle = s.c; ctx.font = "600 11.5px ui-monospace,monospace";
-      ctx.textAlign = "left"; ctx.textBaseline = "bottom";
-      ctx.fillText("p=" + r.p.toFixed(2), X(Math.exp(u0)) + 2, Y(Math.exp(r.p * u0 + r.a)) - 3);
-    }
-  }
-  ctx.restore();
-  document.getElementById("ord-n").textContent = regress(ORD.n).p.toFixed(2);
-  document.getElementById("ord-s").textContent = regress(ORD.s).p.toFixed(3);
-  document.getElementById("ord-b").textContent = regress(ORD.b).p.toFixed(3);
+ // 网格（每 2 个量级一档，避免标签挤在一起）
+ ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+ ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
+ for (let d = Math.ceil(lo / 2) * 2; d <= hi; d += 2){
+ const gx = Math.round(X(Math.pow(10, d))) + .5, gy = Math.round(Y(Math.pow(10, d))) + .5;
+ ctx.beginPath(); ctx.moveTo(gx, PT); ctx.lineTo(gx, h - PB); ctx.stroke();
+ ctx.beginPath(); ctx.moveTo(PL, gy); ctx.lineTo(w - PR, gy); ctx.stroke();
+ ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText("10" + sup(d), gx, h - PB + 6);
+ ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText("10" + sup(d), PL - 7, gy);
+ }
+ ctx.save();
+ ctx.beginPath(); ctx.rect(PL, PT, w - PL - PR, h - PT - PB); ctx.clip();
+ for (const s of series){
+ const r = regress(s.e);
+ // 散点
+ ctx.fillStyle = s.c;
+ for (let k = 0; k + 1 < s.e.length; k++){
+ const a = s.e[k], b = s.e[k + 1];
+ if (!(a > 1e-16) || !(b > 1e-16) || a > 1e1) continue;
+ ctx.beginPath(); ctx.arc(X(a), Y(b), 2.6, 0, 6.2832); ctx.fill();
+ }
+ // 拟合线 y = p x + a（在对数坐标里）
+ if (isFinite(r.p)){
+ const u0 = r.x0 - .1, u1 = r.x1 + .1;
+ ctx.strokeStyle = s.c; ctx.lineWidth = 1.5; ctx.globalAlpha = .55; ctx.setLineDash([5, 4]);
+ ctx.beginPath();
+ ctx.moveTo(X(Math.exp(u0)), Y(Math.exp(r.p * u0 + r.a)));
+ ctx.lineTo(X(Math.exp(u1)), Y(Math.exp(r.p * u1 + r.a)));
+ ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+ // 斜率标注放在线段左端上方（三条线左端高低不同，不会互相压）
+ ctx.fillStyle = s.c; ctx.font = "600 11.5px ui-monospace,monospace";
+ ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+ ctx.fillText("p=" + r.p.toFixed(2), X(Math.exp(u0)) + 2, Y(Math.exp(r.p * u0 + r.a)) - 3);
+ }
+ }
+ ctx.restore();
+ document.getElementById("ord-n").textContent = regress(ORD.n).p.toFixed(2);
+ document.getElementById("ord-s").textContent = regress(ORD.s).p.toFixed(3);
+ document.getElementById("ord-b").textContent = regress(ORD.b).p.toFixed(3);
 }
 
 /* ================= 实验 04：复平面吸引域 ================= */
 const FR = { mode: "root", img: null, N: 360, busy: false,
-  xr: [-1.7, 1.7], yr: [-1.4, 1.4] };
+ xr: [-1.7, 1.7], yr: [-1.4, 1.4] };
 const ROOTS = [[1, 0], [-0.5, Math.sqrt(3) / 2], [-0.5, -Math.sqrt(3) / 2]];
 function orbit(zr0, zi0, maxIt){
-  let zr = zr0, zi = zi0;
-  for (let k = 1; k <= maxIt; k++){
-    const r2 = zr * zr, i2 = zi * zi;
-    if (r2 + i2 > 1e8) return { k, idx: -1 };
-    const z3r = zr * (r2 - 3 * i2), z3i = zi * (3 * r2 - i2);
-    const dr = 3 * (r2 - i2), di = 6 * zr * zi;
-    const den = dr * dr + di * di;
-    if (den < 1e-300) return { k, idx: -2 };
-    const ar = z3r - 1, ai = z3i;
-    const qr = (ar * dr + ai * di) / den, qi = (ai * dr - ar * di) / den;
-    zr -= qr; zi -= qi;
-    for (let j = 0; j < 3; j++){
-      if (Math.hypot(zr - ROOTS[j][0], zi - ROOTS[j][1]) < 1e-6) return { k, idx: j };
-    }
-  }
-  return { k: maxIt, idx: -1 };
+ let zr = zr0, zi = zi0;
+ for (let k = 1; k <= maxIt; k++){
+ const r2 = zr * zr, i2 = zi * zi;
+ if (r2 + i2 > 1e8) return { k, idx: -1 };
+ const z3r = zr * (r2 - 3 * i2), z3i = zi * (3 * r2 - i2);
+ const dr = 3 * (r2 - i2), di = 6 * zr * zi;
+ const den = dr * dr + di * di;
+ if (den < 1e-300) return { k, idx: -2 };
+ const ar = z3r - 1, ai = z3i;
+ const qr = (ar * dr + ai * di) / den, qi = (ai * dr - ar * di) / den;
+ zr -= qr; zi -= qi;
+ for (let j = 0; j < 3; j++){
+ if (Math.hypot(zr - ROOTS[j][0], zi - ROOTS[j][1]) < 1e-6) return { k, idx: j };
+ }
+ }
+ return { k: maxIt, idx: -1 };
 }
 function buildFractal(){
-  if (FR.img || FR.busy) return;
-  FR.busy = true;
-  const cnt = [0, 0, 0]; let miss = 0;
-  const N = FR.N, cv = document.createElement("canvas");
-  cv.width = N; cv.height = N;
-  const ctx = cv.getContext("2d");
-  const img = ctx.createImageData(N, N);
-  const tint = [[194,83,31],[13,107,93],[57,65,126]];
-  for (let iy = 0; iy < N; iy++){
-    const y = FR.yr[1] + (FR.yr[0] - FR.yr[1]) * iy / (N - 1);
-    for (let ix = 0; ix < N; ix++){
-      const x = FR.xr[0] + (FR.xr[1] - FR.xr[0]) * ix / (N - 1);
-      const r = orbit(x, y, 40);
-      const o = (iy * N + ix) * 4;
-      let c;
-      if (r.idx < 0){ miss++; c = [110, 104, 92]; }
-      else if (FR.mode === "root"){
-        cnt[r.idx]++;
-        const base = tint[r.idx], t = Math.min(1, (r.k - 1) / 18);
-        c = [255 - (255 - base[0]) * (0.42 + 0.58 * t),
-             255 - (255 - base[1]) * (0.42 + 0.58 * t),
-             255 - (255 - base[2]) * (0.42 + 0.58 * t)];
-      } else {
-        cnt[r.idx]++;
-        const t = Math.min(1, (r.k - 1) / 24);
-        c = [250 - 170 * t, 246 - 160 * t, 238 - 150 * t];
-      }
-      img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
-    }
-  }
-  ctx.putImageData(img, 0, 0);
-  FR.img = cv;
-  FR.busy = false;
-  const tot = N * N;
-  const pct = cnt.map(v => (100 * v / tot).toFixed(2));
-  document.getElementById("fr-area").textContent =
-    pct[0] + " / " + pct[1] + " / " + pct[2] + " %（边界 " + (100 * miss / tot).toFixed(3) + "%）";
+ if (FR.img || FR.busy) return;
+ FR.busy = true;
+ const cnt = [0, 0, 0]; let miss = 0;
+ const N = FR.N, cv = document.createElement("canvas");
+ cv.width = N; cv.height = N;
+ const ctx = cv.getContext("2d");
+ const img = ctx.createImageData(N, N);
+ const tint = [[194,83,31],[13,107,93],[57,65,126]];
+ for (let iy = 0; iy < N; iy++){
+ const y = FR.yr[1] + (FR.yr[0] - FR.yr[1]) * iy / (N - 1);
+ for (let ix = 0; ix < N; ix++){
+ const x = FR.xr[0] + (FR.xr[1] - FR.xr[0]) * ix / (N - 1);
+ const r = orbit(x, y, 40);
+ const o = (iy * N + ix) * 4;
+ let c;
+ if (r.idx < 0){ miss++; c = [110, 104, 92]; }
+ else if (FR.mode === "root"){
+ cnt[r.idx]++;
+ const base = tint[r.idx], t = Math.min(1, (r.k - 1) / 18);
+ c = [255 - (255 - base[0]) * (0.42 + 0.58 * t),
+ 255 - (255 - base[1]) * (0.42 + 0.58 * t),
+ 255 - (255 - base[2]) * (0.42 + 0.58 * t)];
+ } else {
+ cnt[r.idx]++;
+ const t = Math.min(1, (r.k - 1) / 24);
+ c = [250 - 170 * t, 246 - 160 * t, 238 - 150 * t];
+ }
+ img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+ }
+ }
+ ctx.putImageData(img, 0, 0);
+ FR.img = cv;
+ FR.busy = false;
+ const tot = N * N;
+ const pct = cnt.map(v => (100 * v / tot).toFixed(2));
+ document.getElementById("fr-area").textContent =
+ pct[0] + " / " + pct[1] + " / " + pct[2] + " %（边界 " + (100 * miss / tot).toFixed(3) + "%）";
 }
 function drawFractal(){
-  const cv = document.getElementById("cv-frac");
-  const { ctx, w, h } = fit(cv);
-  if (!FR.img){ buildFractal(); }
-  // 等比缩放居中
-  const s = Math.min(w, h), dx = (w - s) / 2, dy = (h - s) / 2;
-  if (FR.img) ctx.drawImage(FR.img, dx, dy, s, s);
-  // 边框 + 提示
-  ctx.strokeStyle = "rgba(35,32,26,.12)"; ctx.strokeRect(dx + .5, dy + .5, s - 1, s - 1);
-  ctx.fillStyle = "rgba(35,32,26,.42)"; ctx.font = "11px ui-monospace,monospace";
-  ctx.textAlign = "right"; ctx.textBaseline = "bottom";
-  ctx.fillText("Re →", dx + s - 6, dy + s - 6);
-  ctx.textAlign = "left"; ctx.textBaseline = "top";
-  ctx.fillText("↑ Im", dx + 6, dy + 6);
+ const cv = document.getElementById("cv-frac");
+ const { ctx, w, h } = fit(cv);
+ if (!FR.img){ buildFractal(); }
+ // 等比缩放居中
+ const s = Math.min(w, h), dx = (w - s) / 2, dy = (h - s) / 2;
+ if (FR.img) ctx.drawImage(FR.img, dx, dy, s, s);
+ // 边框 + 提示
+ ctx.strokeStyle = "rgba(35,32,26,.12)"; ctx.strokeRect(dx + .5, dy + .5, s - 1, s - 1);
+ ctx.fillStyle = "rgba(35,32,26,.42)"; ctx.font = "11px ui-monospace,monospace";
+ ctx.textAlign = "right"; ctx.textBaseline = "bottom";
+ ctx.fillText("Re →", dx + s - 6, dy + s - 6);
+ ctx.textAlign = "left"; ctx.textBaseline = "top";
+ ctx.fillText("↑ Im", dx + 6, dy + 6);
 }
 document.getElementById("cv-frac").addEventListener("click", function (ev){
-  const r = this.getBoundingClientRect();
-  const s = Math.min(r.width, r.height), dx = (r.width - s) / 2, dy = (r.height - s) / 2;
-  const fx = (ev.clientX - (r.left || 0) - dx) / s, fy = (ev.clientY - (r.top || 0) - dy) / s;
-  if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return;
-  const zr = FR.xr[0] + (FR.xr[1] - FR.xr[0]) * fx;
-  const zi = FR.yr[1] + (FR.yr[0] - FR.yr[1]) * fy;
-  const res = orbit(zr, zi, 200);
-  const names = ["1", "e^{2πi/3}", "e^{−2πi/3}"];
-  document.getElementById("fr-z0").textContent = zr.toFixed(4) + (zi >= 0 ? " + " : " − ") + Math.abs(zi).toFixed(4) + "i";
-  const toEl = document.getElementById("fr-to"), stEl = document.getElementById("fr-steps");
-  if (res.idx >= 0){ toEl.textContent = names[res.idx]; stEl.textContent = String(res.k); }
-  else if (res.idx === -2){ toEl.textContent = "f′(z)=0，迭代中断"; stEl.textContent = "—"; }
-  else { toEl.textContent = "200 步内未收敛"; stEl.textContent = ">200"; }
+ const r = this.getBoundingClientRect();
+ const s = Math.min(r.width, r.height), dx = (r.width - s) / 2, dy = (r.height - s) / 2;
+ const fx = (ev.clientX - (r.left || 0) - dx) / s, fy = (ev.clientY - (r.top || 0) - dy) / s;
+ if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return;
+ const zr = FR.xr[0] + (FR.xr[1] - FR.xr[0]) * fx;
+ const zi = FR.yr[1] + (FR.yr[0] - FR.yr[1]) * fy;
+ const res = orbit(zr, zi, 200);
+ const names = ["1", "e^{2πi/3}", "e^{−2πi/3}"];
+ document.getElementById("fr-z0").textContent = zr.toFixed(4) + (zi >= 0 ? " + " : " − ") + Math.abs(zi).toFixed(4) + "i";
+ const toEl = document.getElementById("fr-to"), stEl = document.getElementById("fr-steps");
+ if (res.idx >= 0){ toEl.textContent = names[res.idx]; stEl.textContent = String(res.k); }
+ else if (res.idx === -2){ toEl.textContent = "f′(z)=0，迭代中断"; stEl.textContent = "—"; }
+ else { toEl.textContent = "200 步内未收敛"; stEl.textContent = ">200"; }
 });
 
 /* ================= 联动与事件 ================= */
 function stopTimer(name){
-  const s = name === "cob" ? COB : NT;
-  if (s.timer){ clearInterval(s.timer); s.timer = null; }
-  const b = document.getElementById(name === "cob" ? "cb-play" : "nt-play");
-  b.textContent = "播放";
+ const s = name === "cob" ? COB : NT;
+ if (s.timer){ clearInterval(s.timer); s.timer = null; }
+ const b = document.getElementById(name === "cob" ? "cb-play" : "nt-play");
+ b.textContent = "播放";
 }
 function playCob(){
-  stopTimer("cob");
-  COB.timer = setInterval(() => {
-    COB.k += 1;
-    if (COB.k > 18){ stopTimer("cob"); }
-    drawCobweb();
-  }, 420);
-  document.getElementById("cb-play").textContent = "暂停";
+ stopTimer("cob");
+ COB.timer = setInterval(() => {
+ COB.k += 1;
+ if (COB.k > 18){ stopTimer("cob"); }
+ drawCobweb();
+ }, 420);
+ document.getElementById("cb-play").textContent = "暂停";
 }
 function playNt(){
-  stopTimer("nt");
-  NT.timer = setInterval(() => {
-    NT.k += 1;
-    if (NT.k > 12){ stopTimer("nt"); }
-    drawNewton();
-  }, 620);
-  document.getElementById("nt-play").textContent = "暂停";
+ stopTimer("nt");
+ NT.timer = setInterval(() => {
+ NT.k += 1;
+ if (NT.k > 12){ stopTimer("nt"); }
+ drawNewton();
+ }, 620);
+ document.getElementById("nt-play").textContent = "暂停";
 }
 function setCob(key){
-  stopTimer("cob");
-  COB.key = key; COB.k = 0;
-  const p = COB.presets[key];
-  COB.x0 = Math.min(p.xr[1] - 0.1, Math.max(p.xr[0] + 0.1, p.x0));
-  document.getElementById("cb-x0").value = String(COB.x0);
-  document.getElementById("cb-x0o").textContent = COB.x0.toFixed(2);
-  ["cos", "lin", "sq"].forEach(k => document.getElementById("cb-" + k).setAttribute("aria-pressed", k === key ? "true" : "false"));
-  drawCobweb();
+ stopTimer("cob");
+ COB.key = key; COB.k = 0;
+ const p = COB.presets[key];
+ COB.x0 = Math.min(p.xr[1] - 0.1, Math.max(p.xr[0] + 0.1, p.x0));
+ document.getElementById("cb-x0").value = String(COB.x0);
+ document.getElementById("cb-x0o").textContent = COB.x0.toFixed(2);
+ ["cos", "lin", "sq"].forEach(k => document.getElementById("cb-" + k).setAttribute("aria-pressed", k === key ? "true" : "false"));
+ drawCobweb();
 }
 function setNt(key){
-  stopTimer("nt");
-  NT.key = key; NT.k = 0;
-  const p = NT.presets[key];
-  NT.x0 = p.x0;
-  document.getElementById("nt-x0").value = String(NT.x0);
-  document.getElementById("nt-x0o").textContent = NT.x0.toFixed(2);
-  ["cubic", "sqrt", "dbl", "loop"].forEach(k => document.getElementById("nt-" + k).setAttribute("aria-pressed", k === key ? "true" : "false"));
-  drawNewton();
+ stopTimer("nt");
+ NT.key = key; NT.k = 0;
+ const p = NT.presets[key];
+ NT.x0 = p.x0;
+ document.getElementById("nt-x0").value = String(NT.x0);
+ document.getElementById("nt-x0o").textContent = NT.x0.toFixed(2);
+ ["cubic", "sqrt", "dbl", "loop"].forEach(k => document.getElementById("nt-" + k).setAttribute("aria-pressed", k === key ? "true" : "false"));
+ drawNewton();
 }
 document.getElementById("cb-cos").addEventListener("click", () => setCob("cos"));
 document.getElementById("cb-lin").addEventListener("click", () => setCob("lin"));
 document.getElementById("cb-sq").addEventListener("click", () => setCob("sq"));
 document.getElementById("cb-x0").addEventListener("input", e => {
-  COB.x0 = +e.target.value; COB.k = 0; stopTimer("cob");
-  document.getElementById("cb-x0o").textContent = COB.x0.toFixed(2);
-  drawCobweb();
+ COB.x0 = +e.target.value; COB.k = 0; stopTimer("cob");
+ document.getElementById("cb-x0o").textContent = COB.x0.toFixed(2);
+ drawCobweb();
 });
 document.getElementById("cb-play").addEventListener("click", () => {
-  if (COB.timer) { stopTimer("cob"); return; }
-  playCob();
+ if (COB.timer) { stopTimer("cob"); return; }
+ playCob();
 });
 document.getElementById("cb-step").addEventListener("click", () => { stopTimer("cob"); COB.k = Math.min(COB.k + 1, 18); drawCobweb(); });
 document.getElementById("cb-reset").addEventListener("click", () => { stopTimer("cob"); COB.k = 0; drawCobweb(); });
@@ -951,45 +949,45 @@ document.getElementById("nt-sqrt").addEventListener("click", () => setNt("sqrt")
 document.getElementById("nt-dbl").addEventListener("click", () => setNt("dbl"));
 document.getElementById("nt-loop").addEventListener("click", () => setNt("loop"));
 document.getElementById("nt-x0").addEventListener("input", e => {
-  NT.x0 = +e.target.value; NT.k = 0; stopTimer("nt");
-  document.getElementById("nt-x0o").textContent = NT.x0.toFixed(2);
-  drawNewton();
+ NT.x0 = +e.target.value; NT.k = 0; stopTimer("nt");
+ document.getElementById("nt-x0o").textContent = NT.x0.toFixed(2);
+ drawNewton();
 });
 document.getElementById("nt-play").addEventListener("click", () => {
-  if (NT.timer){ stopTimer("nt"); return; }
-  playNt();
+ if (NT.timer){ stopTimer("nt"); return; }
+ playNt();
 });
 document.getElementById("nt-step").addEventListener("click", () => { stopTimer("nt"); NT.k = Math.min(NT.k + 1, 12); drawNewton(); });
 document.getElementById("nt-reset").addEventListener("click", () => { stopTimer("nt"); NT.k = 0; drawNewton(); });
 
 document.getElementById("fr-root").addEventListener("click", () => {
-  FR.mode = "root"; FR.img = null; buildFractal(); drawFractal();
-  document.getElementById("fr-root").setAttribute("aria-pressed", "true");
-  document.getElementById("fr-iter").setAttribute("aria-pressed", "false");
-  document.getElementById("fr-state").textContent = "按根着色";
+ FR.mode = "root"; FR.img = null; buildFractal(); drawFractal();
+ document.getElementById("fr-root").setAttribute("aria-pressed", "true");
+ document.getElementById("fr-iter").setAttribute("aria-pressed", "false");
+ document.getElementById("fr-state").textContent = "按根着色";
 });
 document.getElementById("fr-iter").addEventListener("click", () => {
-  FR.mode = "iter"; FR.img = null; buildFractal(); drawFractal();
-  document.getElementById("fr-root").setAttribute("aria-pressed", "false");
-  document.getElementById("fr-iter").setAttribute("aria-pressed", "true");
-  document.getElementById("fr-state").textContent = "按迭代步数";
+ FR.mode = "iter"; FR.img = null; buildFractal(); drawFractal();
+ document.getElementById("fr-root").setAttribute("aria-pressed", "false");
+ document.getElementById("fr-iter").setAttribute("aria-pressed", "true");
+ document.getElementById("fr-state").textContent = "按迭代步数";
 });
 
 let rt = 0;
 window.addEventListener("resize", () => {
-  clearTimeout(rt);
-  rt = setTimeout(() => { drawCobweb(); drawNewton(); drawOrder(); drawFractal(); }, 140);
+ clearTimeout(rt);
+ rt = setTimeout(() => { drawCobweb(); drawNewton(); drawOrder(); drawFractal(); }, 140);
 });
 
 /* 首屏：先画三张轻的；分形用 IntersectionObserver 延迟算 */
 drawCobweb(); drawNewton(); drawOrder();
 (function lazyFractal(){
-  const cv = document.getElementById("cv-frac");
-  if (!("IntersectionObserver" in window)){ drawFractal(); return; }
-  const io = new IntersectionObserver(es => {
-    es.forEach(e => { if (e.isIntersecting){ drawFractal(); io.disconnect(); } });
-  }, { rootMargin: "200px" });
-  io.observe(cv);
+ const cv = document.getElementById("cv-frac");
+ if (!("IntersectionObserver" in window)){ drawFractal(); return; }
+ const io = new IntersectionObserver(es => {
+ es.forEach(e => { if (e.isIntersecting){ drawFractal(); io.disconnect(); } });
+ }, { rootMargin: "200px" });
+ io.observe(cv);
 })();
 </script>
 </body>

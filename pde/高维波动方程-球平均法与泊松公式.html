@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>球平均法与泊松公式 — 谷超豪《数学物理方程》§4 可视化</title>
+<title>球平均法与泊松公式 — §4 可视化</title>
 <script>
 window.MathJax = {
-  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
-  svg: { fontCache: "global" },
-  options: { enableMenu: false },
-  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "global" },
+ options: { enableMenu: false },
+ startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
-  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
-  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
-  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
-  --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+ --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+ --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+ --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);
-  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
@@ -35,19 +35,19 @@ p{margin:12px 0}
 .hero{padding:56px 0 8px}
 .hero p.lead{font-size:17px;color:var(--muted);max-width:760px;margin:0}
 nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
-  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+ border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
 nav .wrap{padding:10px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px}
 nav a{color:var(--muted)}
 nav a:hover{color:var(--accent);text-decoration:none}
 .eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
-  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+ margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
 .note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
-  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
-  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
-  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
 th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
 th{background:var(--card);font-weight:600}
@@ -55,7 +55,7 @@ tr:nth-child(even) td{background:#fafbfc}
 .ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
 .ctl input[type=range]{flex:1;min-width:180px;accent-color:var(--accent)}
 button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
-  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+ border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
 button:hover{border-color:var(--accent);color:var(--accent)}
 button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
 .val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
@@ -82,7 +82,7 @@ ul.tight li{margin:6px 0}
 
 <div class="hero"><div class="wrap">
 <h1>高维波动方程：球平均法与泊松公式</h1>
-<p class="lead">谷超豪 等《数学物理方程（第四版）》第 1 章 §4 的交互可视化。一维的达朗贝尔公式为什么不能平移到高维？泊松的办法是「先对球面取平均，把角度积分掉」：球平均函数满足一个一维形式的方程，于是整台求解机器退化回 §2。本页把这条流水线、三维泊松公式、降维法得到的二维公式、以及非齐次的推迟势全部做成可动手的求解器，每个读数都与一条独立路线对账。</p>
+<p class="lead">教材第 1 章 §4 的交互可视化。一维的达朗贝尔公式为什么不能平移到高维？泊松的办法是「先对球面取平均，把角度积分掉」：球平均函数满足一个一维形式的方程，于是整台求解机器退化回 §2。本页把这条流水线、三维泊松公式、降维法得到的二维公式、以及非齐次的推迟势全部做成可动手的求解器，每个读数都与一条独立路线对账。</p>
 </div></div>
 
 <nav><div class="wrap">
@@ -210,7 +210,7 @@ $$\frac{\partial^2 Mh}{\partial r^2}+\frac{2}{r}\frac{\partial Mh}{\partial r}=\
 <div class="note"><b>实测备注（verify_readout_w4.js）：</b>三种 \(h\)、多个球心位置下引理两边之差：二次型 preset <b>6.0e-10</b>（理论值两边都精确等于 \(\Delta(x_1^2+x_2^2)=4\)）、线性 preset <b>1.3e-9</b>、高斯 preset 最差 <b>1.6e-7</b>。右边的 \(\Delta Mh\) 由球心三个方向的有限差分算出，左边的径向二阶导由 \(r\pm10^{-3}\) 的球平均差分算出——两条路只共享「球面积分」这一个工具，不共享任何化简。高斯 preset 的球平均另有解析闭式 \(e^{-(|\mathbf x|^2+r^2)/2}\dfrac{\sinh(r|\mathbf x|)}{r|\mathbf x|}\)，页面读数（0.6351）与闭式（0.63509）一致。</div>
 
 <h3>2.3　从 \(Mu\) 到达朗贝尔</h3>
-<p>设 \(u\) 是柯西问题 (4.14) 的解，对它关于 \(\mathbf x\) 取球平均 \(Mu(\mathbf x,r,t)\) (4.24)。由方程本身，</p>
+<p>设 \(u\) 是柯西问题 (4.14) 的解，对它关于 \(\mathbf x\) 取球平均 \(Mu(\mathbf x,r,t)\) (4.24)。由方程本身。</p>
 $$\frac{\partial^2 Mu}{\partial t^2}=a^2\left(\frac{\partial^2 Mu}{\partial r^2}+\frac{2}{r}\frac{\partial Mu}{\partial r}\right),\qquad Mu\big|_{t=0}=M\varphi,\quad \frac{\partial Mu}{\partial t}\Big|_{t=0}=M\psi \tag{4.25--4.27}$$
 <p>引理 4.1 还说 \(Mh\) 可以往 \(r&lt;0\) 作偶延拓且保持 \(C^2\)。把 \(Mu\)（连同 \(M\varphi,M\psi\)）偶延拓后视 \(\mathbf x\) 为参数、令 \(v=rMu\)，则</p>
 $$\frac{\partial^2 v}{\partial t^2}=a^2\frac{\partial^2 v}{\partial r^2},\qquad v\big|_{t=0}=rM\varphi(\mathbf x,r),\quad \frac{\partial v}{\partial t}\Big|_{t=0}=rM\psi(\mathbf x,r) \tag{4.28, 4.29}$$
@@ -230,9 +230,6 @@ $$u(\mathbf x,t)=\frac{\partial}{\partial t}\left(\frac{1}{4\pi a^2t}\iint_{S_{a
 <p>对第一项内的球面积分求导（半径增长率是 \(a\)，被积函数沿 \(\mathbf M'- \mathbf x\) 方向的变化率是 \(\nabla\varphi\)），可改写成不含 \(t\)-导数的 <b>Kirchhoff 形式</b>：</p>
 $$u(\mathbf x,t)=\frac{1}{4\pi a^2t^2}\iint_{S_{at}^M}\Big[t\psi(\mathbf M')+\varphi(\mathbf M')+\nabla\varphi(\mathbf M')\cdot(\mathbf M'-\mathbf x)\Big]\,\mathrm dS \tag{5.7}$$
 <p>注意分母是 \(4\pi a^2t^2\)（球面积 \(4\pi a^2t^2\)）而不是 \(4\pi a^2t\)：两种写法差一个对 \(t\) 的导数， numerically 是两条独立的计算路线。下面的求解器同时走两条路线并互相对账，代数上已知精确解的 preset（常数、线性、习题 1）则给出第三方参考值。</p>
-
-<h3>交互：三维泊松公式求解器</h3>
-<p>左图是 \(z=0\) 切片：圆点是可拖动的场点 \(\mathbf x\)，蓝圆是积分球面 \(S_{at}^M\) 在该切片上的痕迹，橙圆是初值资料的支集（紧支光滑鼓包，半径 \(\rho=1.2\)）。径向 preset 下同时画出整个切片的解（固定色标，不自动归一化——否则整体差一个常数看不出来）。</p>
 <div class="ctl">
 <span style="margin-right:6px">初始资料：</span>
 <button class="p3p on" data-p="bump">紧支鼓包 \(\varphi\)（径向）</button>
@@ -253,7 +250,7 @@ $$u(\mathbf x,t)=\frac{1}{4\pi a^2t^2}\iint_{S_{at}^M}\Big[t\psi(\mathbf M')+\va
 <div class="cell"><div class="k">积分球半径 \(at\)</div><div class="v" id="p3-R">—</div></div>
 <div class="cell"><div class="k">球面是否扫过支集</div><div class="v" id="p3-hit">—</div></div>
 </div>
-<div class="note"><b>实测备注（verify_readout_w4.js，a=1）：</b>① 两条公式路线（Kirchhoff (5.7) 与泊松 (4.33) 的解析导数形式）在全部 preset 与测试场点上一致到 <b>1.3e-15</b>（机器精度）——球面积分用 \(\mu=\cos\theta\) 的 Simpson × φ-中点，96×96 节点。② 代数参考：\(\varphi\equiv1\Rightarrow u\equiv1\)、\(\varphi=x_1\Rightarrow u=x_1\)、习题 1 preset 的精确解 \(u=t\big(x_1^2+\tfrac{a^2t^2}{3}+x_2x_3\big)\)（\(z=0\) 切片上 \(x_2x_3\) 项为 0），页面读数与闭式的误差为 <b>0～2e-16</b>。③ 径向鼓包在原点有独立一维闭式 \(u(0,t)=c_8(t)+t\,c_8'(t)\)（\(c_8\) 为紧支光滑鼓包），页面值 −0.3108 与闭式 −0.310762 一致。④ 支集判定：球面与支集球相交当且仅当 \(\big||\mathbf x|-at\big|\le\rho\)——这正是 §5 依赖区域的种子；波前外页面给出精确的 0。</div>
+<div class="note"><b>实测备注（verify_readout_w4.js，a=1）：</b>① 两条公式路线（Kirchhoff (5.7) 与泊松 (4.33) 的解析导数形式）在全部 preset 与测试场点上一致到 <b>1.3e-15</b>（机器精度）——球面积分用 \(\mu=\cos\theta\) 的 Simpson × φ-中点，96×96 节点。③ 径向鼓包在原点有独立一维闭式 \(u(0,t)=c_8(t)+t\,c_8'(t)\)（\(c_8\) 为紧支光滑鼓包），页面值 −0.3108 与闭式 −0.310762 一致。④ 支集判定：球面与支集球相交当且仅当 \(\big||\mathbf x|-at\big|\le\rho\)——这正是 §5 依赖区域的种子；波前外页面给出精确的 0。</div>
 
 <h3>3.1　存在性与唯一性</h3>
 <p>定理的证明是「形式推导 + 末尾验证」的标准样式（与热传导 §3 同一哲学）。唯一性已含在推导里：任何解都逼出 (4.33)。存在性只需验证 (4.30) 确实是解：令 \(u_2=tM\psi(\mathbf x,at)\)，由引理 4.1 的 (4.17) 直接算得 \(a^2\Delta u_2=(u_2)_{tt}\)（教材 (4.34)），且 \(u_2|_{t=0}=0\)、\((u_2)_t|_{t=0}=\psi\)；再令 \(u_1=tM\varphi(\mathbf x,at)\)，同理 \(a^2\Delta u_1=(u_1)_{tt}\)、\(u_1|_{t=0}=\varphi\)，而 \((u_1)_t|_{t=0}=(a^2\Delta u_1)|_{t=0}=0\)。两者相加即 (4.14) 的解。光滑性假设 \(\varphi\in C^3,\psi\in C^2\) 正是球面积分号下求导两次所需要的。</p>
@@ -309,7 +306,7 @@ $$u=\frac{1}{2\pi}\frac{\partial}{\partial t}\left[t\int_0^{2\pi}\!\!\int_0^{\pi
 
 <!-- ============ 5 推迟势 ============ -->
 <h2 id="retarded"><span class="no">05</span>非齐次方程与推迟势</h2>
-<p>非齐次柯西问题 (4.41)–(4.42) 按线性分解成两题：齐次方程 + 非齐次初值（泊松公式已解）+ 非齐次方程 + 齐次初值。后者走<b>齐次化原理</b>：先解以 \(\tau\) 为初始时刻、初速为 \(f(\cdot,\tau)\) 的齐次问题 \(w(\mathbf x,t;\tau)\) (4.44)(4.45)，再对 \(\tau\) 积分，</p>
+<p>非齐次柯西问题 (4.41)–(4.42) 按线性分解成两题：齐次方程 + 非齐次初值（泊松公式已解）+ 非齐次方程 + 齐次初值。后者走<b>齐次化原理</b>：先解以 \(\tau\) 为初始时刻、初速为 \(f(\cdot,\tau)\) 的齐次问题 \(w(\mathbf x,t;\tau)\) (4.44)(4.45)，再对 \(\tau\) 积分。</p>
 $$u(\mathbf x,t)=\int_0^t w(\mathbf x,t;\tau)\,\mathrm d\tau \tag{4.46}$$
 <p>把三维泊松公式代进去并作变量代换 \(\tau=t-r/a\)，得到只在过去光锥内积分的<b>推迟势</b>：</p>
 $$u(\mathbf x,t)=\frac{1}{4\pi a^2}\iiint_{B_{at}^M}\frac{f\left(\boldsymbol\xi,\ t-\frac{|\boldsymbol\xi-\mathbf x|}{a}\right)}{|\boldsymbol\xi-\mathbf x|}\,\mathrm dV \tag{4.47}$$
@@ -365,7 +362,7 @@ $$u=\frac{1}{2a}\frac{\partial}{\partial t}\int_{x-at}^{x+at}\varphi(\xi)\,\math
 <div class="note"><b>接下来：</b>本页所有公式的积分区域（球面 / 圆盘 / 球体）看起来只是几何细节，实则决定了波的传播方式——三维波的「无后效」与二维波的「弥散」都从这几个区域的形状长出来。见配套页<a href="./高维波动方程-传播衰减与惠更斯原理.html">《高维波动方程：传播、衰减与惠更斯原理》</a>（§5）。</div>
 
 <footer>
-<p>内容取自谷超豪 等《数学物理方程（第四版）》第 1 章 §4（教材页 32–46）；公式编号与教材一致（如 (4.30)、(5.7)）。页面全部取 \(a=1\)，交互中的数值结论由工作区脚本 verify_readout_w4.js 实测。</p>
+<p>内容取自教材第 1 章 §4（教材页 32–46）；公式编号与教材一致（如 (4.30)、(5.7)）。页面全部取 \(a=1\)，交互中的数值结论由工作区脚本 verify_readout_w4.js 实测。</p>
 <p>目录：math_visualization/site/pde/ · 生成于 2026-10-19 · 交互为零依赖原生 JS，公式渲染需联网（MathJax）。</p>
 </footer>
 </div>
@@ -376,578 +373,578 @@ function $(id){ return document.getElementById(id); }
 
 /* ================= 通用工具 ================= */
 function simpson(f, a, b, n){
-  var h = (b - a) / n, s = f(a) + f(b), i;
-  for (i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * f(a + i * h);
-  return s * h / 3;
+ var h = (b - a) / n, s = f(a) + f(b), i;
+ for (i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * f(a + i * h);
+ return s * h / 3;
 }
 /* 单位球面积分：μ=cosθ 的 Simpson（面积元 dω=dφdμ，吸收 sinθ，常数被积也精确）× φ-中点 */
 function sphInt(g, nT, nP){
-  nT = nT || 96; nP = nP || 96;
-  var acc = 0;
-  for (var j = 0; j < nP; j++){
-    var ph = (j + 0.5) * 2 * Math.PI / nP, cp = Math.cos(ph), sp = Math.sin(ph);
-    acc += simpson(function(mu){ var st = Math.sqrt(1 - mu * mu); return g(st * cp, st * sp, mu); }, -1, 1, nT);
-  }
-  return acc * 2 * Math.PI / nP;
+ nT = nT || 96; nP = nP || 96;
+ var acc = 0;
+ for (var j = 0; j < nP; j++){
+ var ph = (j + 0.5) * 2 * Math.PI / nP, cp = Math.cos(ph), sp = Math.sin(ph);
+ acc += simpson(function(mu){ var st = Math.sqrt(1 - mu * mu); return g(st * cp, st * sp, mu); }, -1, 1, nT);
+ }
+ return acc * 2 * Math.PI / nP;
 }
 function sphMean(f, M, R, nT, nP){
-  return sphInt(function(a1, a2, a3){ return f([M[0] + R * a1, M[1] + R * a2, M[2] + R * a3]); }, nT, nP) / (4 * Math.PI);
+ return sphInt(function(a1, a2, a3){ return f([M[0] + R * a1, M[1] + R * a2, M[2] + R * a3]); }, nT, nP) / (4 * Math.PI);
 }
 /* 二维换元后的角向积分 G = ∫∫ f(x+at sinα cosθ, …) sinα dα dθ */
 function gauss2d(f, M, t, a, nA, nT){
-  nA = nA || 48; nT = nT || 64;
-  var acc = 0;
-  for (var j = 0; j < nT; j++){
-    var th = (j + 0.5) * 2 * Math.PI / nT, ct = Math.cos(th), st = Math.sin(th);
-    acc += simpson(function(al){ var s = Math.sin(al); return f([M[0] + a * t * s * ct, M[1] + a * t * s * st]) * s; }, 0, Math.PI / 2, nA);
-  }
-  return acc * 2 * Math.PI / nT;
+ nA = nA || 48; nT = nT || 64;
+ var acc = 0;
+ for (var j = 0; j < nT; j++){
+ var th = (j + 0.5) * 2 * Math.PI / nT, ct = Math.cos(th), st = Math.sin(th);
+ acc += simpson(function(al){ var s = Math.sin(al); return f([M[0] + a * t * s * ct, M[1] + a * t * s * st]) * s; }, 0, Math.PI / 2, nA);
+ }
+ return acc * 2 * Math.PI / nT;
 }
 /* 通用绘图 */
 function newPlot(ctx, W, H, o){
-  var L = o.l || 46, R = o.r || 16, T = o.t || 14, B = o.b || 30;
-  var iw = W - L - R, ih = H - T - B;
-  var X = function(x){ return L + (x - o.xmin) / (o.xmax - o.xmin) * iw; };
-  var Y = function(y){ return T + ih - (y - o.ymin) / (o.ymax - o.ymin) * ih; };
-  ctx.clearRect(0, 0, W, H);
-  ctx.font = "11px ui-monospace,monospace";
-  ctx.strokeStyle = "#d0d7de"; ctx.fillStyle = "#57606a"; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, T + ih); ctx.lineTo(L + iw, T + ih); ctx.stroke();
-  if (o.ymin < 0 && o.ymax > 0){ ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(L + iw, Y(0)); ctx.stroke(); }
-  (o.xt || []).forEach(function(v){
-    ctx.beginPath(); ctx.moveTo(X(v), T + ih); ctx.lineTo(X(v), T + ih + 4); ctx.stroke();
-    ctx.textAlign = "center"; ctx.fillText(o.xf ? o.xf(v) : v, X(v), T + ih + 16);
-  });
-  (o.yt || []).forEach(function(v){
-    ctx.beginPath(); ctx.moveTo(L - 4, Y(v)); ctx.lineTo(L, Y(v)); ctx.stroke();
-    ctx.textAlign = "right"; ctx.fillText(o.yf ? o.yf(v) : v, L - 7, Y(v) + 3);
-  });
-  if (o.xlab){ ctx.textAlign = "center"; ctx.fillText(o.xlab, L + iw / 2, H - 4); }
-  if (o.ylab){ ctx.save(); ctx.translate(11, T + ih / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylab, 0, 0); ctx.restore(); }
-  return { X: X, Y: Y, L: L, T: T, iw: iw, ih: ih };
+ var L = o.l || 46, R = o.r || 16, T = o.t || 14, B = o.b || 30;
+ var iw = W - L - R, ih = H - T - B;
+ var X = function(x){ return L + (x - o.xmin) / (o.xmax - o.xmin) * iw; };
+ var Y = function(y){ return T + ih - (y - o.ymin) / (o.ymax - o.ymin) * ih; };
+ ctx.clearRect(0, 0, W, H);
+ ctx.font = "11px ui-monospace,monospace";
+ ctx.strokeStyle = "#d0d7de"; ctx.fillStyle = "#57606a"; ctx.lineWidth = 1;
+ ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, T + ih); ctx.lineTo(L + iw, T + ih); ctx.stroke();
+ if (o.ymin < 0 && o.ymax > 0){ ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(L + iw, Y(0)); ctx.stroke(); }
+ (o.xt || []).forEach(function(v){
+ ctx.beginPath(); ctx.moveTo(X(v), T + ih); ctx.lineTo(X(v), T + ih + 4); ctx.stroke();
+ ctx.textAlign = "center"; ctx.fillText(o.xf ? o.xf(v) : v, X(v), T + ih + 16);
+ });
+ (o.yt || []).forEach(function(v){
+ ctx.beginPath(); ctx.moveTo(L - 4, Y(v)); ctx.lineTo(L, Y(v)); ctx.stroke();
+ ctx.textAlign = "right"; ctx.fillText(o.yf ? o.yf(v) : v, L - 7, Y(v) + 3);
+ });
+ if (o.xlab){ ctx.textAlign = "center"; ctx.fillText(o.xlab, L + iw / 2, H - 4); }
+ if (o.ylab){ ctx.save(); ctx.translate(11, T + ih / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylab, 0, 0); ctx.restore(); }
+ return { X: X, Y: Y, L: L, T: T, iw: iw, ih: ih };
 }
 function fmtE(x){
-  if (!isFinite(x)) return "—";
-  if (x === 0) return "0.00e+0";
-  var e = Math.floor(Math.log10(Math.abs(x))), m = x / Math.pow(10, e);
-  if (e >= -2 && e <= 3) return x.toFixed(Math.max(0, 3 - e));
-  return m.toFixed(2) + "e" + (e >= 0 ? "+" : "") + e;
+ if (!isFinite(x)) return "—";
+ if (x === 0) return "0.00e+0";
+ var e = Math.floor(Math.log10(Math.abs(x))), m = x / Math.pow(10, e);
+ if (e >= -2 && e <= 3) return x.toFixed(Math.max(0, 3 - e));
+ return m.toFixed(2) + "e" + (e >= 0 ? "+" : "") + e;
 }
 /* 紧支光滑鼓包（C∞，r<ρ 时非零，r≥ρ 恒零） */
 var RHO = 1.2;
 function c8(r){
-  if (r >= RHO) return 0;
-  var q = 1 - (r / RHO) * (r / RHO);
-  return Math.exp(-1 / q);
+ if (r >= RHO) return 0;
+ var q = 1 - (r / RHO) * (r / RHO);
+ return Math.exp(-1 / q);
 }
 function c8p(r){
-  if (r >= RHO || r <= 0) return 0;
-  var q = 1 - (r / RHO) * (r / RHO);
-  return Math.exp(-1 / q) * (-2 * r / (RHO * RHO)) / (q * q);
+ if (r >= RHO || r <= 0) return 0;
+ var q = 1 - (r / RHO) * (r / RHO);
+ return Math.exp(-1 / q) * (-2 * r / (RHO * RHO)) / (q * q);
 }
 function drag(canvas, toWorld, onMove){
-  var down = false;
-  function pos(ev){
-    var r = canvas.getBoundingClientRect();
-    var cx = (ev.clientX - r.left) / r.width * canvas.width;
-    var cy = (ev.clientY - r.top) / r.height * canvas.height;
-    return toWorld(cx, cy);
-  }
-  canvas.addEventListener("pointerdown", function(ev){ down = true; if (canvas.setPointerCapture) canvas.setPointerCapture(ev.pointerId); onMove(pos(ev)); });
-  canvas.addEventListener("pointermove", function(ev){ if (down) onMove(pos(ev)); });
-  canvas.addEventListener("pointerup", function(){ down = false; });
-  canvas.addEventListener("pointercancel", function(){ down = false; });
+ var down = false;
+ function pos(ev){
+ var r = canvas.getBoundingClientRect();
+ var cx = (ev.clientX - r.left) / r.width * canvas.width;
+ var cy = (ev.clientY - r.top) / r.height * canvas.height;
+ return toWorld(cx, cy);
+ }
+ canvas.addEventListener("pointerdown", function(ev){ down = true; if (canvas.setPointerCapture) canvas.setPointerCapture(ev.pointerId); onMove(pos(ev)); });
+ canvas.addEventListener("pointermove", function(ev){ if (down) onMove(pos(ev)); });
+ canvas.addEventListener("pointerup", function(){ down = false; });
+ canvas.addEventListener("pointercancel", function(){ down = false; });
 }
 /* 固定色标的发散配色（不自动归一化）：正=红，负=蓝 */
 function dcolor(v, scale){
-  var t = Math.max(-1, Math.min(1, v / scale));
-  if (t >= 0){ return [255, 255 - 140 * t, 255 - 165 * t]; }
-  var u = -t;
-  return [255 - 150 * u, 255 - 55 * u, 255];
+ var t = Math.max(-1, Math.min(1, v / scale));
+ if (t >= 0){ return [255, 255 - 140 * t, 255 - 165 * t]; }
+ var u = -t;
+ return [255 - 150 * u, 255 - 55 * u, 255];
 }
 
 /* ================= 01 球平均机 + 引理 4.1 ================= */
 (function(){
-  var cv = $("sa-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-  var x = [0.6, 0.4, 0], r = 1.2, kind = "quad";
-  var hs = {
-    quad:  { f: function(p){ return p[0] * p[0] + p[1] * p[1]; }, exact: 2, label: "Δh ≡ 2" },
-    gauss: { f: function(p){ var s = p[0] * p[0] + p[1] * p[1] + p[2] * p[2]; return Math.exp(-s / 2); }, exact: null, label: "Δh = (|x|²−3)e^{−|x|²/2}" },
-    lin:   { f: function(p){ return p[0] + p[1]; }, exact: 0, label: "Δh ≡ 0" }
-  };
-  function Mh(rr, n){ n = n || 64; return sphMean(hs[kind].f, [x[0], x[1], 0], rr, n, n); }
-  function draw(){
-    /* 右：Mh(r) 曲线（newPlot 会清整张画布，必须先画它） */
-    var p = newPlot(ctx, W, H, { l: 400, r: 20, t: 20, b: 34, xmin: 0, xmax: 3, ymin: -0.5, ymax: 3.5,
-      xt: [0, 1, 2, 3], yt: [-0.5, 0.5, 1.5, 2.5, 3.5], xlab: "球半径 r", ylab: "Mh(x, r)" });
-    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2; ctx.beginPath();
-    for (i = 0; i <= 120; i++){
-      var rr = 0.05 + i / 120 * 2.95, vv = Mh(rr), qx = p.X(rr), qy = p.Y(vv);
-      if (i) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
-    }
-    ctx.stroke();
-    ctx.strokeStyle = "#D85A30"; ctx.beginPath(); ctx.moveTo(p.X(r), p.T); ctx.lineTo(p.X(r), p.T + p.ih); ctx.stroke();
-    ctx.fillStyle = "#D85A30"; ctx.textAlign = "left"; ctx.fillText("当前 r", p.X(r) + 4, p.T + 14);
-    ctx.fillStyle = "#185FA5"; ctx.fillText("Mh 曲线", p.L + 8, p.T + 14);
-    /* 左：球面示意 */
-    var cx = 170, cy = 150, S = 46, R = r * S;
-    ctx.strokeStyle = "#d0d7de"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(cx, cy - R - 14); ctx.lineTo(cx, cy + R + 14); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.stroke();
-    /* 球面上采样点按 h 值着色 */
-    var vals = [], i, j, th, ph, px, py, pt, v, vmax = 1e-9;
-    for (j = 0; j < 18; j++) for (i = 0; i < 24; i++){
-      th = (i + 0.5) * Math.PI / 24; ph = (j + 0.5) * 2 * Math.PI / 18;
-      var a1 = Math.sin(th) * Math.cos(ph), a2 = Math.sin(th) * Math.sin(ph), a3 = Math.cos(th);
-      pt = [x[0] + r * a1, x[1] + r * a2, r * a3];
-      v = hs[kind].f(pt); vals.push([cx + (a1 - a2 * 0.35) * R, cy + (a2 * 0.22 - a3) * R, v]);
-      if (Math.abs(v) > vmax) vmax = Math.abs(v);
-    }
-    vals.forEach(function(q){ var c = dcolor(q[2], vmax); ctx.fillStyle = "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")"; ctx.beginPath(); ctx.arc(q[0], q[1], 2.6, 0, 2 * Math.PI); ctx.fill(); });
-    ctx.fillStyle = "#1f2328"; ctx.font = "12px system-ui"; ctx.textAlign = "center";
-    ctx.fillText("球心 x", cx, cy - R - 20); ctx.fillText("x₁₂ 平面内的球面（斜二测）", cx, cy + R + 26);
-    /* 读数：引理两边各自独立算（径向 FD vs 三维空间 FD；球面积分用 128 节点压制噪声） */
-    var dr = 1e-3, dx = 1e-3;
-    var m0 = Mh(r, 128), mp = Mh(r + dr, 128), mm = Mh(r - dr, 128);
-    var mrr = (mp - 2 * m0 + mm) / (dr * dr), mr = (mp - mm) / (2 * dr);
-    var lhs = mrr + 2 / r * mr;
-    var lap = 0;
-    [0, 1, 2].forEach(function(k){
-      var xp = x.slice(), xm = x.slice(); xp[k] += dx; xm[k] -= dx;
-      lap += (sphMean(hs[kind].f, xp, r, 128, 128) - 2 * m0 + sphMean(hs[kind].f, xm, r, 128, 128)) / (dx * dx);
-    });
-    $("sa-h0").textContent = fmtE(hs[kind].f([x[0], x[1], 0]));
-    $("sa-mh").textContent = fmtE(m0);
-    $("sa-lhs").textContent = fmtE(lhs);
-    $("sa-rhs").textContent = fmtE(lap);
-    $("sa-err").textContent = fmtE(Math.abs(lhs - lap));
-    $("sa-rv").textContent = "r = " + r.toFixed(2);
-  }
-  $("sa-r").addEventListener("input", function(){ r = parseFloat(this.value) / 100; draw(); });
-  Array.prototype.forEach.call(document.querySelectorAll(".hp"), function(b){
-    b.onclick = function(){
-      document.querySelectorAll(".hp").forEach(function(y){ y.classList.remove("on"); });
-      b.classList.add("on"); kind = b.getAttribute("data-h"); draw();
-    };
-  });
-  drag(cv, function(cx, cy){
-    var X0 = 170, Y0 = 150, S = 46;
-    var a1 = (cx - X0) / S, a2 = -(cy - Y0) / S;
-    return [a1, a2];
-  }, function(w){
-    if (Math.abs(w[0]) > 3.4 || Math.abs(w[1]) > 2.8) return;
-    x = [w[0], w[1], 0]; draw();
-  });
-  draw();
-  window.W4 = window.W4 || {};
-  window.W4.sa = {
-    set: function(o){ if (o.r !== undefined) { r = o.r; $("sa-r").value = r * 100; } if (o.x) { x = [o.x[0], o.x[1], 0]; } if (o.kind) { kind = o.kind; Array.prototype.forEach.call(document.querySelectorAll(".hp"), function(y){ y.classList.toggle("on", y.getAttribute("data-h") === kind); }); } draw(); },
-    state: function(){ return { r: r, x: x.slice(), kind: kind }; }
-  };
+ var cv = $("sa-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+ var x = [0.6, 0.4, 0], r = 1.2, kind = "quad";
+ var hs = {
+ quad: { f: function(p){ return p[0] * p[0] + p[1] * p[1]; }, exact: 2, label: "Δh ≡ 2" },
+ gauss: { f: function(p){ var s = p[0] * p[0] + p[1] * p[1] + p[2] * p[2]; return Math.exp(-s / 2); }, exact: null, label: "Δh = (|x|²−3)e^{−|x|²/2}" },
+ lin: { f: function(p){ return p[0] + p[1]; }, exact: 0, label: "Δh ≡ 0" }
+ };
+ function Mh(rr, n){ n = n || 64; return sphMean(hs[kind].f, [x[0], x[1], 0], rr, n, n); }
+ function draw(){
+ /* 右：Mh(r) 曲线（newPlot 会清整张画布，必须先画它） */
+ var p = newPlot(ctx, W, H, { l: 400, r: 20, t: 20, b: 34, xmin: 0, xmax: 3, ymin: -0.5, ymax: 3.5,
+ xt: [0, 1, 2, 3], yt: [-0.5, 0.5, 1.5, 2.5, 3.5], xlab: "球半径 r", ylab: "Mh(x, r)" });
+ ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2; ctx.beginPath();
+ for (i = 0; i <= 120; i++){
+ var rr = 0.05 + i / 120 * 2.95, vv = Mh(rr), qx = p.X(rr), qy = p.Y(vv);
+ if (i) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
+ }
+ ctx.stroke();
+ ctx.strokeStyle = "#D85A30"; ctx.beginPath(); ctx.moveTo(p.X(r), p.T); ctx.lineTo(p.X(r), p.T + p.ih); ctx.stroke();
+ ctx.fillStyle = "#D85A30"; ctx.textAlign = "left"; ctx.fillText("当前 r", p.X(r) + 4, p.T + 14);
+ ctx.fillStyle = "#185FA5"; ctx.fillText("Mh 曲线", p.L + 8, p.T + 14);
+ /* 左：球面示意 */
+ var cx = 170, cy = 150, S = 46, R = r * S;
+ ctx.strokeStyle = "#d0d7de"; ctx.lineWidth = 1;
+ ctx.beginPath(); ctx.moveTo(cx, cy - R - 14); ctx.lineTo(cx, cy + R + 14); ctx.stroke();
+ ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.stroke();
+ /* 球面上采样点按 h 值着色 */
+ var vals = [], i, j, th, ph, px, py, pt, v, vmax = 1e-9;
+ for (j = 0; j < 18; j++) for (i = 0; i < 24; i++){
+ th = (i + 0.5) * Math.PI / 24; ph = (j + 0.5) * 2 * Math.PI / 18;
+ var a1 = Math.sin(th) * Math.cos(ph), a2 = Math.sin(th) * Math.sin(ph), a3 = Math.cos(th);
+ pt = [x[0] + r * a1, x[1] + r * a2, r * a3];
+ v = hs[kind].f(pt); vals.push([cx + (a1 - a2 * 0.35) * R, cy + (a2 * 0.22 - a3) * R, v]);
+ if (Math.abs(v) > vmax) vmax = Math.abs(v);
+ }
+ vals.forEach(function(q){ var c = dcolor(q[2], vmax); ctx.fillStyle = "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")"; ctx.beginPath(); ctx.arc(q[0], q[1], 2.6, 0, 2 * Math.PI); ctx.fill(); });
+ ctx.fillStyle = "#1f2328"; ctx.font = "12px system-ui"; ctx.textAlign = "center";
+ ctx.fillText("球心 x", cx, cy - R - 20); ctx.fillText("x₁₂ 平面内的球面（斜二测）", cx, cy + R + 26);
+ /* 读数：引理两边各自独立算（径向 FD vs 三维空间 FD；球面积分用 128 节点压制噪声） */
+ var dr = 1e-3, dx = 1e-3;
+ var m0 = Mh(r, 128), mp = Mh(r + dr, 128), mm = Mh(r - dr, 128);
+ var mrr = (mp - 2 * m0 + mm) / (dr * dr), mr = (mp - mm) / (2 * dr);
+ var lhs = mrr + 2 / r * mr;
+ var lap = 0;
+ [0, 1, 2].forEach(function(k){
+ var xp = x.slice(), xm = x.slice(); xp[k] += dx; xm[k] -= dx;
+ lap += (sphMean(hs[kind].f, xp, r, 128, 128) - 2 * m0 + sphMean(hs[kind].f, xm, r, 128, 128)) / (dx * dx);
+ });
+ $("sa-h0").textContent = fmtE(hs[kind].f([x[0], x[1], 0]));
+ $("sa-mh").textContent = fmtE(m0);
+ $("sa-lhs").textContent = fmtE(lhs);
+ $("sa-rhs").textContent = fmtE(lap);
+ $("sa-err").textContent = fmtE(Math.abs(lhs - lap));
+ $("sa-rv").textContent = "r = " + r.toFixed(2);
+ }
+ $("sa-r").addEventListener("input", function(){ r = parseFloat(this.value) / 100; draw(); });
+ Array.prototype.forEach.call(document.querySelectorAll(".hp"), function(b){
+ b.onclick = function(){
+ document.querySelectorAll(".hp").forEach(function(y){ y.classList.remove("on"); });
+ b.classList.add("on"); kind = b.getAttribute("data-h"); draw();
+ };
+ });
+ drag(cv, function(cx, cy){
+ var X0 = 170, Y0 = 150, S = 46;
+ var a1 = (cx - X0) / S, a2 = -(cy - Y0) / S;
+ return [a1, a2];
+ }, function(w){
+ if (Math.abs(w[0]) > 3.4 || Math.abs(w[1]) > 2.8) return;
+ x = [w[0], w[1], 0]; draw();
+ });
+ draw();
+ window.W4 = window.W4 || {};
+ window.W4.sa = {
+ set: function(o){ if (o.r !== undefined) { r = o.r; $("sa-r").value = r * 100; } if (o.x) { x = [o.x[0], o.x[1], 0]; } if (o.kind) { kind = o.kind; Array.prototype.forEach.call(document.querySelectorAll(".hp"), function(y){ y.classList.toggle("on", y.getAttribute("data-h") === kind); }); } draw(); },
+ state: function(){ return { r: r, x: x.slice(), kind: kind }; }
+ };
 })();
 
 /* ================= 02 三维泊松公式求解器 ================= */
 (function(){
-  var cv = $("p3-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-  var A = 1, t = 1.0, M = [1.2, 0.6], pre = "bump";
-  var presets = {
-    bump: { phi: function(p){ return c8(Math.hypot(p[0], p[1], p[2])); },
-            gphi: function(p){ var r = Math.hypot(p[0], p[1], p[2]); if (r < 1e-12 || r >= RHO) return [0, 0, 0]; var d = c8p(r) / r; return [d * p[0], d * p[1], d * p[2]]; },
-            psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0, 0]; }, radial: true, ref: null },
-    const: { phi: function(p){ return 1; }, gphi: function(p){ return [0, 0, 0]; },
-             psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0, 0]; }, radial: false,
-             ref: function(Mx, tt){ return 1; } },
-    linx: { phi: function(p){ return p[0]; }, gphi: function(p){ return [1, 0, 0]; },
-            psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0, 0]; }, radial: false,
-            ref: function(Mx, tt){ return Mx[0]; } },
-    quiz1: { phi: function(p){ return 0; }, gphi: function(p){ return [0, 0, 0]; },
-             psi: function(p){ return p[0] * p[0] + p[1] * p[2]; },
-             gpsi: function(p){ return [2 * p[0], p[2], p[1]]; }, radial: false,
-             ref: function(Mx, tt){ return tt * (Mx[0] * Mx[0] + A * A * tt * tt / 3 + Mx[1] * Mx[2]); } }
-  };
-  /* 路线①：Kirchhoff (5.7) */
-  function u1(P, tt, n){
-    n = n || 96;
-    var P0 = presets[pre], R = A * tt;
-    return sphInt(function(a1, a2, a3){
-      var q = [P[0] + R * a1, P[1] + R * a2, P[2] + R * a3], g = P0.gphi(q);
-      return tt * P0.psi(q) + P0.phi(q) + g[0] * (q[0] - P[0]) + g[1] * (q[1] - P[1]) + g[2] * (q[2] - P[2]);
-    }, n, n) / (4 * Math.PI);
-  }
-  /* 路线②：泊松形式 (4.33)，t-导数解析求出（∂_t[tM̄φ(at)] = M̄φ + at·∂_R M̄φ） */
-  function u2(P, tt){
-    var P0 = presets[pre], R = A * tt;
-    var mphi = sphMean(P0.phi, [P[0], P[1], 0], R, 96, 96);
-    var dr = sphInt(function(a1, a2, a3){
-      var q = [P[0] + R * a1, P[1] + R * a2, R * a3], g = P0.gphi(q);
-      return g[0] * a1 + g[1] * a2 + g[2] * a3;
-    }, 96, 96) / (4 * Math.PI);
-    return mphi + tt * A * dr + tt * sphMean(P0.psi, [P[0], P[1], 0], R, 96, 96);
-  }
-  /* 径向剖面（径向 preset 的热图用；低分辨率求积，仅示形） */
-  function profile(){
-    var out = [], i, N = 121;
-    for (i = 0; i <= N; i++){ var s = i / N * 6; out.push(u1([s, 0, 0], t, 48)); }
-    return out;
-  }
-  function draw(){
-    var P0 = presets[pre], R = A * t;
-    /* 视图映射：世界 [−6,6]² → 画布 */
-    var mx = 46, my = 16, iw = W - mx - 16, ih = H - my - 16;
-    function X(x){ return mx + (x + 6) / 12 * iw; }
-    function Y(y){ return my + (6 - y) / 12 * ih; }
-    ctx.clearRect(0, 0, W, H);
-    var scale = 1;
-    if (P0.radial){
-      var prof = profile(), umax = 1e-3;
-      prof.forEach(function(v){ if (Math.abs(v) > umax) umax = Math.abs(v); });
-      scale = umax;
-      var img = ctx.createImageData(iw, ih), d = img.data, i, j;
-      for (j = 0; j < ih; j++) for (i = 0; i < iw; i++){
-        var wx = -6 + i / iw * 12, wy = 6 - j / ih * 12, rr = Math.hypot(wx, wy);
-        var idx = Math.min(prof.length - 1, Math.round(rr / 6 * (prof.length - 1)));
-        var c = dcolor(prof[idx], scale), o = (j * iw + i) * 4;
-        d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 235;
-      }
-      ctx.putImageData(img, mx, my);
-      ctx.fillStyle = "#57606a"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "left";
-      ctx.fillText("色标固定 ±" + fmtE(scale) + "（当前剖面最大 |u|）", mx + 6, my + 14);
-    }
-    ctx.strokeStyle = "#d0d7de"; ctx.lineWidth = 1;
-    ctx.strokeRect(mx, my, iw, ih);
-    /* 支集球与积分球面痕迹 */
-    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 1.6; ctx.setLineDash([5, 4]);
-    ctx.beginPath(); ctx.arc(X(0), Y(0), RHO / 12 * iw, 0, 2 * Math.PI); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(X(M[0]), Y(M[1]), R / 12 * iw, 0, 2 * Math.PI); ctx.stroke();
-    ctx.fillStyle = "#185FA5"; ctx.beginPath(); ctx.arc(X(M[0]), Y(M[1]), 4.5, 0, 2 * Math.PI); ctx.fill();
-    ctx.font = "12px system-ui"; ctx.textAlign = "left";
-    ctx.fillText("场点 x（可拖）", X(M[0]) + 8, Y(M[1]) - 6);
-    ctx.fillStyle = "#D85A30"; ctx.fillText("初值支集 B_ρ(0)，ρ = 1.2", X(0) + RHO / 12 * iw + 6, Y(0) + 4);
-    /* 读数 */
-    var a1 = u1([M[0], M[1], 0], t), a2 = u2([M[0], M[1], 0], t);
-    $("p3-u1").textContent = fmtE(a1);
-    $("p3-u2").textContent = fmtE(a2);
-    $("p3-diff").textContent = fmtE(Math.abs(a1 - a2));
-    if (P0.ref){
-      var rf = P0.ref([M[0], M[1], 0], t);
-      $("p3-ref").textContent = fmtE(rf);
-      $("p3-referr").textContent = fmtE(Math.abs(a1 - rf));
-    } else {
-      $("p3-ref").textContent = "—";
-      $("p3-referr").textContent = "—";
-    }
-    $("p3-R").textContent = fmtE(R);
-    var hit = Math.abs(Math.hypot(M[0], M[1]) - R) <= RHO;
-    $("p3-hit").textContent = hit ? "是" : "否（u = 0）";
-    $("p3-tv").textContent = "t = " + t.toFixed(2);
-  }
-  $("p3-t").addEventListener("input", function(){ t = parseFloat(this.value) / 100; draw(); });
-  Array.prototype.forEach.call(document.querySelectorAll(".p3p"), function(b){
-    b.onclick = function(){
-      document.querySelectorAll(".p3p").forEach(function(y){ y.classList.remove("on"); });
-      b.classList.add("on"); pre = b.getAttribute("data-p"); draw();
-    };
-  });
-  drag(cv, function(cx, cy){
-    var mx = 46, my = 16, iw = W - mx - 16, ih = H - my - 16;
-    return [-6 + (cx - mx) / iw * 12, 6 - (cy - my) / ih * 12];
-  }, function(w){ if (Math.abs(w[0]) <= 6 && Math.abs(w[1]) <= 6){ M = w; draw(); } });
-  draw();
-  window.W4.p3 = {
-    set: function(o){ if (o.t !== undefined){ t = o.t; $("p3-t").value = t * 100; } if (o.M){ M = o.M; } if (o.pre){ pre = o.pre; Array.prototype.forEach.call(document.querySelectorAll(".p3p"), function(y){ y.classList.toggle("on", y.getAttribute("data-p") === pre); }); } draw(); },
-    state: function(){ return { t: t, M: M.slice(), pre: pre }; }
-  };
+ var cv = $("p3-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+ var A = 1, t = 1.0, M = [1.2, 0.6], pre = "bump";
+ var presets = {
+ bump: { phi: function(p){ return c8(Math.hypot(p[0], p[1], p[2])); },
+ gphi: function(p){ var r = Math.hypot(p[0], p[1], p[2]); if (r < 1e-12 || r >= RHO) return [0, 0, 0]; var d = c8p(r) / r; return [d * p[0], d * p[1], d * p[2]]; },
+ psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0, 0]; }, radial: true, ref: null },
+ const: { phi: function(p){ return 1; }, gphi: function(p){ return [0, 0, 0]; },
+ psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0, 0]; }, radial: false,
+ ref: function(Mx, tt){ return 1; } },
+ linx: { phi: function(p){ return p[0]; }, gphi: function(p){ return [1, 0, 0]; },
+ psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0, 0]; }, radial: false,
+ ref: function(Mx, tt){ return Mx[0]; } },
+ quiz1: { phi: function(p){ return 0; }, gphi: function(p){ return [0, 0, 0]; },
+ psi: function(p){ return p[0] * p[0] + p[1] * p[2]; },
+ gpsi: function(p){ return [2 * p[0], p[2], p[1]]; }, radial: false,
+ ref: function(Mx, tt){ return tt * (Mx[0] * Mx[0] + A * A * tt * tt / 3 + Mx[1] * Mx[2]); } }
+ };
+ /* 路线①：Kirchhoff (5.7) */
+ function u1(P, tt, n){
+ n = n || 96;
+ var P0 = presets[pre], R = A * tt;
+ return sphInt(function(a1, a2, a3){
+ var q = [P[0] + R * a1, P[1] + R * a2, P[2] + R * a3], g = P0.gphi(q);
+ return tt * P0.psi(q) + P0.phi(q) + g[0] * (q[0] - P[0]) + g[1] * (q[1] - P[1]) + g[2] * (q[2] - P[2]);
+ }, n, n) / (4 * Math.PI);
+ }
+ /* 路线②：泊松形式 (4.33)，t-导数解析求出（∂_t[tM̄φ(at)] = M̄φ + at·∂_R M̄φ） */
+ function u2(P, tt){
+ var P0 = presets[pre], R = A * tt;
+ var mphi = sphMean(P0.phi, [P[0], P[1], 0], R, 96, 96);
+ var dr = sphInt(function(a1, a2, a3){
+ var q = [P[0] + R * a1, P[1] + R * a2, R * a3], g = P0.gphi(q);
+ return g[0] * a1 + g[1] * a2 + g[2] * a3;
+ }, 96, 96) / (4 * Math.PI);
+ return mphi + tt * A * dr + tt * sphMean(P0.psi, [P[0], P[1], 0], R, 96, 96);
+ }
+ /* 径向剖面（径向 preset 的热图用；低分辨率求积，仅示形） */
+ function profile(){
+ var out = [], i, N = 121;
+ for (i = 0; i <= N; i++){ var s = i / N * 6; out.push(u1([s, 0, 0], t, 48)); }
+ return out;
+ }
+ function draw(){
+ var P0 = presets[pre], R = A * t;
+ /* 视图映射：世界 [−6,6]² → 画布 */
+ var mx = 46, my = 16, iw = W - mx - 16, ih = H - my - 16;
+ function X(x){ return mx + (x + 6) / 12 * iw; }
+ function Y(y){ return my + (6 - y) / 12 * ih; }
+ ctx.clearRect(0, 0, W, H);
+ var scale = 1;
+ if (P0.radial){
+ var prof = profile(), umax = 1e-3;
+ prof.forEach(function(v){ if (Math.abs(v) > umax) umax = Math.abs(v); });
+ scale = umax;
+ var img = ctx.createImageData(iw, ih), d = img.data, i, j;
+ for (j = 0; j < ih; j++) for (i = 0; i < iw; i++){
+ var wx = -6 + i / iw * 12, wy = 6 - j / ih * 12, rr = Math.hypot(wx, wy);
+ var idx = Math.min(prof.length - 1, Math.round(rr / 6 * (prof.length - 1)));
+ var c = dcolor(prof[idx], scale), o = (j * iw + i) * 4;
+ d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 235;
+ }
+ ctx.putImageData(img, mx, my);
+ ctx.fillStyle = "#57606a"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "left";
+ ctx.fillText("色标固定 ±" + fmtE(scale) + "（当前剖面最大 |u|）", mx + 6, my + 14);
+ }
+ ctx.strokeStyle = "#d0d7de"; ctx.lineWidth = 1;
+ ctx.strokeRect(mx, my, iw, ih);
+ /* 支集球与积分球面痕迹 */
+ ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 1.6; ctx.setLineDash([5, 4]);
+ ctx.beginPath(); ctx.arc(X(0), Y(0), RHO / 12 * iw, 0, 2 * Math.PI); ctx.stroke();
+ ctx.setLineDash([]);
+ ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2;
+ ctx.beginPath(); ctx.arc(X(M[0]), Y(M[1]), R / 12 * iw, 0, 2 * Math.PI); ctx.stroke();
+ ctx.fillStyle = "#185FA5"; ctx.beginPath(); ctx.arc(X(M[0]), Y(M[1]), 4.5, 0, 2 * Math.PI); ctx.fill();
+ ctx.font = "12px system-ui"; ctx.textAlign = "left";
+ ctx.fillText("场点 x（可拖）", X(M[0]) + 8, Y(M[1]) - 6);
+ ctx.fillStyle = "#D85A30"; ctx.fillText("初值支集 B_ρ(0)，ρ = 1.2", X(0) + RHO / 12 * iw + 6, Y(0) + 4);
+ /* 读数 */
+ var a1 = u1([M[0], M[1], 0], t), a2 = u2([M[0], M[1], 0], t);
+ $("p3-u1").textContent = fmtE(a1);
+ $("p3-u2").textContent = fmtE(a2);
+ $("p3-diff").textContent = fmtE(Math.abs(a1 - a2));
+ if (P0.ref){
+ var rf = P0.ref([M[0], M[1], 0], t);
+ $("p3-ref").textContent = fmtE(rf);
+ $("p3-referr").textContent = fmtE(Math.abs(a1 - rf));
+ } else {
+ $("p3-ref").textContent = "—";
+ $("p3-referr").textContent = "—";
+ }
+ $("p3-R").textContent = fmtE(R);
+ var hit = Math.abs(Math.hypot(M[0], M[1]) - R) <= RHO;
+ $("p3-hit").textContent = hit ? "是" : "否（u = 0）";
+ $("p3-tv").textContent = "t = " + t.toFixed(2);
+ }
+ $("p3-t").addEventListener("input", function(){ t = parseFloat(this.value) / 100; draw(); });
+ Array.prototype.forEach.call(document.querySelectorAll(".p3p"), function(b){
+ b.onclick = function(){
+ document.querySelectorAll(".p3p").forEach(function(y){ y.classList.remove("on"); });
+ b.classList.add("on"); pre = b.getAttribute("data-p"); draw();
+ };
+ });
+ drag(cv, function(cx, cy){
+ var mx = 46, my = 16, iw = W - mx - 16, ih = H - my - 16;
+ return [-6 + (cx - mx) / iw * 12, 6 - (cy - my) / ih * 12];
+ }, function(w){ if (Math.abs(w[0]) <= 6 && Math.abs(w[1]) <= 6){ M = w; draw(); } });
+ draw();
+ window.W4.p3 = {
+ set: function(o){ if (o.t !== undefined){ t = o.t; $("p3-t").value = t * 100; } if (o.M){ M = o.M; } if (o.pre){ pre = o.pre; Array.prototype.forEach.call(document.querySelectorAll(".p3p"), function(y){ y.classList.toggle("on", y.getAttribute("data-p") === pre); }); } draw(); },
+ state: function(){ return { t: t, M: M.slice(), pre: pre }; }
+ };
 })();
 
 /* ================= 03 降维法几何 ================= */
 (function(){
-  var cv = $("dm-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-  var mx = 0.9, t = 1.0, P = [0.35, 0.25];
-  /* 斜二测投影：(x,y,z) → 屏幕 */
-  var S = 62, X0 = 250, Y0 = 205;
-  function proj(p){ return [X0 + (p[0] + 0.34 * p[1]) * S, Y0 + (-p[2] + 0.21 * p[1]) * S]; }
-  /* 球面轮廓：视线方向 n 垂直的大圆 */
-  var nrm = [-0.3157, 0.9286, 0.1950];
-  var e1 = [0.9467, 0.3219, 0];
-  var e2 = [-0.0628, 0.1846, -0.9808];
-  function outline(R){
-    var pts = [], i;
-    for (i = 0; i <= 48; i++){
-      var th = i / 48 * 2 * Math.PI;
-      pts.push(proj([mx + R * (Math.cos(th) * e1[0] + Math.sin(th) * e2[0]),
-                      R * (Math.cos(th) * e1[1] + Math.sin(th) * e2[1]),
-                      R * (Math.cos(th) * e1[2] + Math.sin(th) * e2[2])]));
-    }
-    return pts;
-  }
-  function curve(R, fx, fy, fz){
-    var pts = [], i;
-    for (i = 0; i <= 48; i++){
-      var th = i / 48 * 2 * Math.PI;
-      pts.push(proj([mx + R * fx(th), R * fy(th), R * fz(th)]));
-    }
-    return pts;
-  }
-  function draw(){
-    var R = t, A = 1;
-    ctx.clearRect(0, 0, W, H);
-    /* z=0 平面（平行四边形） */
-    var c1 = proj([-3.2, -3.2, 0]), c2 = proj([3.2, -3.2, 0]), c3 = proj([3.2, 3.2, 0]), c4 = proj([-3.2, 3.2, 0]);
-    ctx.strokeStyle = "#d0d7de"; ctx.lineWidth = 1; ctx.beginPath();
-    ctx.moveTo(c1[0], c1[1]); ctx.lineTo(c2[0], c2[1]); ctx.lineTo(c3[0], c3[1]); ctx.lineTo(c4[0], c4[1]); ctx.closePath(); ctx.stroke();
-    ctx.fillStyle = "#9aa4ad"; ctx.font = "12px system-ui"; ctx.textAlign = "left";
-    ctx.fillText("z = 0 平面（投影靶）", c2[0] + 6, c2[1] + 16);
-    /* 投影圆盘 */
-    var pc = proj([mx, 0, 0]);
-    ctx.strokeStyle = "#0F6E56"; ctx.lineWidth = 1.8; ctx.setLineDash([4, 3]);
-    ctx.beginPath(); ctx.arc(pc[0], pc[1], R * S, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#0F6E56"; ctx.fillText("圆盘 Σ_at(M)（二维公式的积分区）", pc[0] - R * S + 4, pc[1] + R * S + 18);
-    /* 球：轮廓 + 赤道 + 一条经线 */
-    var ol = outline(R);
-    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 1.8; ctx.beginPath();
-    ol.forEach(function(q, i){ if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }); ctx.stroke();
-    var eq = curve(R, function(th){ return Math.cos(th); }, function(th){ return Math.sin(th); }, function(){ return 0; });
-    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 0.9; ctx.setLineDash([3, 3]); ctx.beginPath();
-    eq.forEach(function(q, i){ if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }); ctx.stroke(); ctx.setLineDash([]);
-    var md = curve(R, function(th){ return Math.sin(th); }, function(){ return 0; }, function(th){ return Math.cos(th); });
-    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 0.9; ctx.beginPath();
-    md.forEach(function(q, i){ if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }); ctx.stroke();
-    ctx.fillStyle = "#185FA5"; ctx.fillText("球面 S_at(M)（三维公式的积分区）", pc[0] - R * S, pc[1] - R * S - 10);
-    /* 球心 */
-    var mc = proj([mx, 0, 0]);
-    ctx.fillStyle = "#185FA5"; ctx.beginPath(); ctx.arc(mc[0], mc[1], 3.5, 0, 2 * Math.PI); ctx.fill();
-    /* 拖动点 P 与上下原像 */
-    var rho = Math.hypot(P[0], P[1]);
-    if (rho > R) { var s = R / Math.max(rho, 1e-9); P = [P[0] * s, P[1] * s]; rho = R; }
-    var Pp = [mx + P[0], P[1], 0], h = Math.sqrt(Math.max(0, R * R - rho * rho));
-    var Pu = [mx + P[0], P[1], h], Pl = [mx + P[0], P[1], -h];
-    var sp = proj(Pp), su = proj(Pu), sl = proj(Pl);
-    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 1.4; ctx.setLineDash([3, 2]);
-    ctx.beginPath(); ctx.moveTo(su[0], su[1]); ctx.lineTo(sl[0], sl[1]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#D85A30";
-    ctx.beginPath(); ctx.arc(su[0], su[1], 4.5, 0, 2 * Math.PI); ctx.fill();
-    ctx.beginPath(); ctx.arc(sp[0], sp[1], 4.5, 0, 2 * Math.PI); ctx.fill();
-    ctx.font = "12px system-ui"; ctx.textAlign = "left";
-    ctx.fillText("P（投影点，可拖）", sp[0] + 8, sp[1] + 14);
-    ctx.fillText("P₊（上原像）", su[0] + 8, su[1] - 4);
-    /* 高度标注 */
-    ctx.strokeStyle = "#57606a"; ctx.lineWidth = 0.8; ctx.setLineDash([2, 2]);
-    ctx.beginPath(); ctx.moveTo(su[0] - 10, su[1]); ctx.lineTo(sp[0] - 10, sp[1]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#57606a"; ctx.fillText("h = √(R²−ρ²)", su[0] - 96, (su[1] + sp[1]) / 2);
-    /* 读数 */
-    $("dm-rho").textContent = fmtE(rho);
-    $("dm-h").textContent = fmtE(h);
-    $("dm-cos").textContent = fmtE(h / R);
-    $("dm-mxv").textContent = "x_M = " + mx.toFixed(2);
-    $("dm-tv").textContent = "t = " + t.toFixed(2);
-  }
-  $("dm-mx").addEventListener("input", function(){ mx = parseFloat(this.value) / 100; draw(); });
-  $("dm-t").addEventListener("input", function(){ t = parseFloat(this.value) / 100; draw(); });
-  drag(cv, function(cx, cy){
-    /* 屏幕 → z=0 平面：cy = Y0 + 0.21·y·S，cx = X0 + (x + 0.34y)·S */
-    var y = (cy - Y0) / (0.21 * S);
-    return [(cx - X0) / S - 0.34 * y, y];
-  }, function(w){
-    var dx = w[0] - mx;
-    if (Math.abs(dx) < 3.2 && Math.abs(w[1]) < 3.2){ P = [dx, w[1]]; draw(); }
-  });
-  draw();
-  window.W4.dm = {
-    set: function(o){ if (o.mx !== undefined){ mx = o.mx; $("dm-mx").value = mx * 100; } if (o.t !== undefined){ t = o.t; $("dm-t").value = t * 100; } if (o.P){ P = o.P; } draw(); },
-    state: function(){ return { mx: mx, t: t, P: P.slice() }; }
-  };
+ var cv = $("dm-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+ var mx = 0.9, t = 1.0, P = [0.35, 0.25];
+ /* 斜二测投影：(x,y,z) → 屏幕 */
+ var S = 62, X0 = 250, Y0 = 205;
+ function proj(p){ return [X0 + (p[0] + 0.34 * p[1]) * S, Y0 + (-p[2] + 0.21 * p[1]) * S]; }
+ /* 球面轮廓：视线方向 n 垂直的大圆 */
+ var nrm = [-0.3157, 0.9286, 0.1950];
+ var e1 = [0.9467, 0.3219, 0];
+ var e2 = [-0.0628, 0.1846, -0.9808];
+ function outline(R){
+ var pts = [], i;
+ for (i = 0; i <= 48; i++){
+ var th = i / 48 * 2 * Math.PI;
+ pts.push(proj([mx + R * (Math.cos(th) * e1[0] + Math.sin(th) * e2[0]),
+ R * (Math.cos(th) * e1[1] + Math.sin(th) * e2[1]),
+ R * (Math.cos(th) * e1[2] + Math.sin(th) * e2[2])]));
+ }
+ return pts;
+ }
+ function curve(R, fx, fy, fz){
+ var pts = [], i;
+ for (i = 0; i <= 48; i++){
+ var th = i / 48 * 2 * Math.PI;
+ pts.push(proj([mx + R * fx(th), R * fy(th), R * fz(th)]));
+ }
+ return pts;
+ }
+ function draw(){
+ var R = t, A = 1;
+ ctx.clearRect(0, 0, W, H);
+ /* z=0 平面（平行四边形） */
+ var c1 = proj([-3.2, -3.2, 0]), c2 = proj([3.2, -3.2, 0]), c3 = proj([3.2, 3.2, 0]), c4 = proj([-3.2, 3.2, 0]);
+ ctx.strokeStyle = "#d0d7de"; ctx.lineWidth = 1; ctx.beginPath();
+ ctx.moveTo(c1[0], c1[1]); ctx.lineTo(c2[0], c2[1]); ctx.lineTo(c3[0], c3[1]); ctx.lineTo(c4[0], c4[1]); ctx.closePath(); ctx.stroke();
+ ctx.fillStyle = "#9aa4ad"; ctx.font = "12px system-ui"; ctx.textAlign = "left";
+ ctx.fillText("z = 0 平面（投影靶）", c2[0] + 6, c2[1] + 16);
+ /* 投影圆盘 */
+ var pc = proj([mx, 0, 0]);
+ ctx.strokeStyle = "#0F6E56"; ctx.lineWidth = 1.8; ctx.setLineDash([4, 3]);
+ ctx.beginPath(); ctx.arc(pc[0], pc[1], R * S, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = "#0F6E56"; ctx.fillText("圆盘 Σ_at(M)（二维公式的积分区）", pc[0] - R * S + 4, pc[1] + R * S + 18);
+ /* 球：轮廓 + 赤道 + 一条经线 */
+ var ol = outline(R);
+ ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 1.8; ctx.beginPath();
+ ol.forEach(function(q, i){ if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }); ctx.stroke();
+ var eq = curve(R, function(th){ return Math.cos(th); }, function(th){ return Math.sin(th); }, function(){ return 0; });
+ ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 0.9; ctx.setLineDash([3, 3]); ctx.beginPath();
+ eq.forEach(function(q, i){ if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }); ctx.stroke(); ctx.setLineDash([]);
+ var md = curve(R, function(th){ return Math.sin(th); }, function(){ return 0; }, function(th){ return Math.cos(th); });
+ ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 0.9; ctx.beginPath();
+ md.forEach(function(q, i){ if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }); ctx.stroke();
+ ctx.fillStyle = "#185FA5"; ctx.fillText("球面 S_at(M)（三维公式的积分区）", pc[0] - R * S, pc[1] - R * S - 10);
+ /* 球心 */
+ var mc = proj([mx, 0, 0]);
+ ctx.fillStyle = "#185FA5"; ctx.beginPath(); ctx.arc(mc[0], mc[1], 3.5, 0, 2 * Math.PI); ctx.fill();
+ /* 拖动点 P 与上下原像 */
+ var rho = Math.hypot(P[0], P[1]);
+ if (rho > R) { var s = R / Math.max(rho, 1e-9); P = [P[0] * s, P[1] * s]; rho = R; }
+ var Pp = [mx + P[0], P[1], 0], h = Math.sqrt(Math.max(0, R * R - rho * rho));
+ var Pu = [mx + P[0], P[1], h], Pl = [mx + P[0], P[1], -h];
+ var sp = proj(Pp), su = proj(Pu), sl = proj(Pl);
+ ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 1.4; ctx.setLineDash([3, 2]);
+ ctx.beginPath(); ctx.moveTo(su[0], su[1]); ctx.lineTo(sl[0], sl[1]); ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = "#D85A30";
+ ctx.beginPath(); ctx.arc(su[0], su[1], 4.5, 0, 2 * Math.PI); ctx.fill();
+ ctx.beginPath(); ctx.arc(sp[0], sp[1], 4.5, 0, 2 * Math.PI); ctx.fill();
+ ctx.font = "12px system-ui"; ctx.textAlign = "left";
+ ctx.fillText("P（投影点，可拖）", sp[0] + 8, sp[1] + 14);
+ ctx.fillText("P₊（上原像）", su[0] + 8, su[1] - 4);
+ /* 高度标注 */
+ ctx.strokeStyle = "#57606a"; ctx.lineWidth = 0.8; ctx.setLineDash([2, 2]);
+ ctx.beginPath(); ctx.moveTo(su[0] - 10, su[1]); ctx.lineTo(sp[0] - 10, sp[1]); ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = "#57606a"; ctx.fillText("h = √(R²−ρ²)", su[0] - 96, (su[1] + sp[1]) / 2);
+ /* 读数 */
+ $("dm-rho").textContent = fmtE(rho);
+ $("dm-h").textContent = fmtE(h);
+ $("dm-cos").textContent = fmtE(h / R);
+ $("dm-mxv").textContent = "x_M = " + mx.toFixed(2);
+ $("dm-tv").textContent = "t = " + t.toFixed(2);
+ }
+ $("dm-mx").addEventListener("input", function(){ mx = parseFloat(this.value) / 100; draw(); });
+ $("dm-t").addEventListener("input", function(){ t = parseFloat(this.value) / 100; draw(); });
+ drag(cv, function(cx, cy){
+ /* 屏幕 → z=0 平面：cy = Y0 + 0.21·y·S，cx = X0 + (x + 0.34y)·S */
+ var y = (cy - Y0) / (0.21 * S);
+ return [(cx - X0) / S - 0.34 * y, y];
+ }, function(w){
+ var dx = w[0] - mx;
+ if (Math.abs(dx) < 3.2 && Math.abs(w[1]) < 3.2){ P = [dx, w[1]]; draw(); }
+ });
+ draw();
+ window.W4.dm = {
+ set: function(o){ if (o.mx !== undefined){ mx = o.mx; $("dm-mx").value = mx * 100; } if (o.t !== undefined){ t = o.t; $("dm-t").value = t * 100; } if (o.P){ P = o.P; } draw(); },
+ state: function(){ return { mx: mx, t: t, P: P.slice() }; }
+ };
 })();
 
 /* ================= 04 二维泊松公式求解器 ================= */
 (function(){
-  var cv = $("d2-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-  var A = 1, t = 1.0, Mx = 0.9, pre = "bump";
-  var presets = {
-    bump: { phi: function(p){ return c8(Math.hypot(p[0], p[1])); },
-            gphi: function(p){ var r = Math.hypot(p[0], p[1]); if (r < 1e-12 || r >= RHO) return [0, 0]; var d = c8p(r) / r; return [d * p[0], d * p[1]]; },
-            psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: null },
-    const: { phi: function(p){ return 1; }, gphi: function(p){ return [0, 0]; },
-             psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: function(x, tt){ return 1; } },
-    linx: { phi: function(p){ return p[0]; }, gphi: function(p){ return [1, 0]; },
-            psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: function(x, tt){ return x; } },
-    gauss: { phi: function(p){ return Math.exp(-((p[0] - 1.5) * (p[0] - 1.5) + p[1] * p[1]) / 0.5); },
-             gphi: function(p){ var e = Math.exp(-((p[0] - 1.5) * (p[0] - 1.5) + p[1] * p[1]) / 0.5); return [-2 * (p[0] - 1.5) / 0.5 * e, -2 * p[1] / 0.5 * e]; },
-             psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: null }
-  };
-  /* 路线①：二维泊松公式（换元后，t-导数解析求出） */
-  function u2(P, tt, nA, nT){
-    nA = nA || 64; nT = nT || 96;
-    var P0 = presets[pre];
-    var G = gauss2d(P0.phi, P, tt, A, nA, nT);
-    var dG = 0;
-    for (var j = 0; j < nT; j++){
-      var th = (j + 0.5) * 2 * Math.PI / nT, ct = Math.cos(th), st = Math.sin(th);
-      dG += simpson(function(al){
-        var s = Math.sin(al);
-        var q = [P[0] + A * tt * s * ct, P[1] + A * tt * s * st];
-        var g = P0.gphi(q);
-        return (g[0] * ct + g[1] * st) * s * s;
-      }, 0, Math.PI / 2, nA);
-    }
-    dG = dG * 2 * Math.PI / nT;
-    return (G + tt * dG) / (2 * Math.PI) + tt * gauss2d(P0.psi, P, tt, A, nA, nT) / (2 * Math.PI);
-  }
-  /* 路线②：三维 Kirchhoff 公式用于与 z 无关的同一份初值（降维恒等式） */
-  function u3(P, tt){
-    var P0 = presets[pre], R = A * tt;
-    var phi3 = function(p){ return P0.phi([p[0], p[1]]); };
-    var psi3 = function(p){ return P0.psi([p[0], p[1]]); };
-    var gphi3 = function(p){ var g = P0.gphi([p[0], p[1]]); return [g[0], g[1], 0]; };
-    return sphInt(function(a1, a2, a3){
-      var q = [P[0] + R * a1, R * a2, R * a3], g = gphi3(q);
-      return tt * psi3(q) + phi3(q) + g[0] * (q[0] - P[0]) + g[1] * (q[1] - P[1]);
-    }, 96, 96) / (4 * Math.PI);
-  }
-  function draw(){
-    var P0 = presets[pre];
-    var p = newPlot(ctx, W, H, { l: 46, r: 16, t: 16, b: 32, xmin: -6, xmax: 6, ymin: -0.4, ymax: 1.6,
-      xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 0.5, 1], xlab: "x（y = 0 剖面）", ylab: "u(x, 0, t)" });
-    /* 支集与积分盘示意 */
-    ctx.strokeStyle = "#D85A30"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2;
-    ctx.beginPath(); ctx.moveTo(p.X(-RHO), p.T); ctx.lineTo(p.X(-RHO), p.T + p.ih);
-    ctx.moveTo(p.X(RHO), p.T); ctx.lineTo(p.X(RHO), p.T + p.ih); ctx.stroke(); ctx.setLineDash([]);
-    ctx.strokeStyle = "#0F6E56"; ctx.setLineDash([2, 2]);
-    ctx.beginPath(); ctx.moveTo(p.X(Mx - A * t), p.T); ctx.lineTo(p.X(Mx - A * t), p.T + p.ih);
-    ctx.moveTo(p.X(Mx + A * t), p.T); ctx.lineTo(p.X(Mx + A * t), p.T + p.ih); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#0F6E56"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "left";
-    ctx.fillText("积分盘 Σ 边缘", p.X(Mx + A * t) - 66, p.T + 12);
-    /* 解曲线（径向 preset 用解析剖面；其余逐点算，低分辨率仅示形） */
-    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2; ctx.beginPath();
-    var i, vmax = 1e-3;
-    var vals = [];
-    for (i = 0; i <= 180; i++){
-      var xx = -6 + i / 180 * 12;
-      var v = u2([xx, 0], t, 32, 48);
-      vals.push(v); if (Math.abs(v) > vmax) vmax = Math.abs(v);
-    }
-    vals.forEach(function(v, k){ var xx = -6 + k / 240 * 12, px = p.X(xx), py = p.Y(Math.max(-0.4, Math.min(1.6, v))); if (k) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
-    ctx.stroke();
-    /* 场点标记 */
-    var uM = u2([Mx, 0], t);
-    ctx.fillStyle = "#D85A30"; ctx.beginPath(); ctx.arc(p.X(Mx), p.Y(Math.max(-0.4, Math.min(1.6, uM))), 4.5, 0, 2 * Math.PI); ctx.fill();
-    ctx.font = "12px system-ui"; ctx.textAlign = "left";
-    ctx.fillText("M（沿 x 轴拖）", p.X(Mx) + 8, p.T + 26);
-    /* 读数 */
-    var r1 = u2([Mx, 0], t), r2 = u3([Mx, 0], t);
-    $("d2-u2").textContent = fmtE(r1);
-    $("d2-u3").textContent = fmtE(r2);
-    $("d2-diff").textContent = fmtE(Math.abs(r1 - r2));
-    if (P0.ref){
-      var rf = P0.ref(Mx, t);
-      $("d2-ref").textContent = fmtE(rf);
-      $("d2-referr").textContent = fmtE(Math.abs(r1 - rf));
-    } else { $("d2-ref").textContent = "—"; $("d2-referr").textContent = "—"; }
-  }
-  drag(cv, function(cx, cy){
-    var p = { l: 46, r: 16, iw: W - 62 };
-    return -6 + (cx - 46) / (W - 62) * 12;
-  }, function(w){ if (w >= -6 && w <= 6){ Mx = w; draw(); } });
-  draw();
-  window.W4.d2 = {
-    set: function(o){ if (o.t !== undefined){ t = o.t; } if (o.Mx !== undefined){ Mx = o.Mx; } if (o.pre){ pre = o.pre; Array.prototype.forEach.call(document.querySelectorAll(".d2p"), function(y){ y.classList.toggle("on", y.getAttribute("data-p") === pre); }); } draw(); },
-    state: function(){ return { t: t, Mx: Mx, pre: pre }; }
-  };
+ var cv = $("d2-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+ var A = 1, t = 1.0, Mx = 0.9, pre = "bump";
+ var presets = {
+ bump: { phi: function(p){ return c8(Math.hypot(p[0], p[1])); },
+ gphi: function(p){ var r = Math.hypot(p[0], p[1]); if (r < 1e-12 || r >= RHO) return [0, 0]; var d = c8p(r) / r; return [d * p[0], d * p[1]]; },
+ psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: null },
+ const: { phi: function(p){ return 1; }, gphi: function(p){ return [0, 0]; },
+ psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: function(x, tt){ return 1; } },
+ linx: { phi: function(p){ return p[0]; }, gphi: function(p){ return [1, 0]; },
+ psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: function(x, tt){ return x; } },
+ gauss: { phi: function(p){ return Math.exp(-((p[0] - 1.5) * (p[0] - 1.5) + p[1] * p[1]) / 0.5); },
+ gphi: function(p){ var e = Math.exp(-((p[0] - 1.5) * (p[0] - 1.5) + p[1] * p[1]) / 0.5); return [-2 * (p[0] - 1.5) / 0.5 * e, -2 * p[1] / 0.5 * e]; },
+ psi: function(p){ return 0; }, gpsi: function(p){ return [0, 0]; }, ref: null }
+ };
+ /* 路线①：二维泊松公式（换元后，t-导数解析求出） */
+ function u2(P, tt, nA, nT){
+ nA = nA || 64; nT = nT || 96;
+ var P0 = presets[pre];
+ var G = gauss2d(P0.phi, P, tt, A, nA, nT);
+ var dG = 0;
+ for (var j = 0; j < nT; j++){
+ var th = (j + 0.5) * 2 * Math.PI / nT, ct = Math.cos(th), st = Math.sin(th);
+ dG += simpson(function(al){
+ var s = Math.sin(al);
+ var q = [P[0] + A * tt * s * ct, P[1] + A * tt * s * st];
+ var g = P0.gphi(q);
+ return (g[0] * ct + g[1] * st) * s * s;
+ }, 0, Math.PI / 2, nA);
+ }
+ dG = dG * 2 * Math.PI / nT;
+ return (G + tt * dG) / (2 * Math.PI) + tt * gauss2d(P0.psi, P, tt, A, nA, nT) / (2 * Math.PI);
+ }
+ /* 路线②：三维 Kirchhoff 公式用于与 z 无关的同一份初值（降维恒等式） */
+ function u3(P, tt){
+ var P0 = presets[pre], R = A * tt;
+ var phi3 = function(p){ return P0.phi([p[0], p[1]]); };
+ var psi3 = function(p){ return P0.psi([p[0], p[1]]); };
+ var gphi3 = function(p){ var g = P0.gphi([p[0], p[1]]); return [g[0], g[1], 0]; };
+ return sphInt(function(a1, a2, a3){
+ var q = [P[0] + R * a1, R * a2, R * a3], g = gphi3(q);
+ return tt * psi3(q) + phi3(q) + g[0] * (q[0] - P[0]) + g[1] * (q[1] - P[1]);
+ }, 96, 96) / (4 * Math.PI);
+ }
+ function draw(){
+ var P0 = presets[pre];
+ var p = newPlot(ctx, W, H, { l: 46, r: 16, t: 16, b: 32, xmin: -6, xmax: 6, ymin: -0.4, ymax: 1.6,
+ xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 0.5, 1], xlab: "x（y = 0 剖面）", ylab: "u(x, 0, t)" });
+ /* 支集与积分盘示意 */
+ ctx.strokeStyle = "#D85A30"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2;
+ ctx.beginPath(); ctx.moveTo(p.X(-RHO), p.T); ctx.lineTo(p.X(-RHO), p.T + p.ih);
+ ctx.moveTo(p.X(RHO), p.T); ctx.lineTo(p.X(RHO), p.T + p.ih); ctx.stroke(); ctx.setLineDash([]);
+ ctx.strokeStyle = "#0F6E56"; ctx.setLineDash([2, 2]);
+ ctx.beginPath(); ctx.moveTo(p.X(Mx - A * t), p.T); ctx.lineTo(p.X(Mx - A * t), p.T + p.ih);
+ ctx.moveTo(p.X(Mx + A * t), p.T); ctx.lineTo(p.X(Mx + A * t), p.T + p.ih); ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = "#0F6E56"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "left";
+ ctx.fillText("积分盘 Σ 边缘", p.X(Mx + A * t) - 66, p.T + 12);
+ /* 解曲线（径向 preset 用解析剖面；其余逐点算，低分辨率仅示形） */
+ ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2; ctx.beginPath();
+ var i, vmax = 1e-3;
+ var vals = [];
+ for (i = 0; i <= 180; i++){
+ var xx = -6 + i / 180 * 12;
+ var v = u2([xx, 0], t, 32, 48);
+ vals.push(v); if (Math.abs(v) > vmax) vmax = Math.abs(v);
+ }
+ vals.forEach(function(v, k){ var xx = -6 + k / 240 * 12, px = p.X(xx), py = p.Y(Math.max(-0.4, Math.min(1.6, v))); if (k) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
+ ctx.stroke();
+ /* 场点标记 */
+ var uM = u2([Mx, 0], t);
+ ctx.fillStyle = "#D85A30"; ctx.beginPath(); ctx.arc(p.X(Mx), p.Y(Math.max(-0.4, Math.min(1.6, uM))), 4.5, 0, 2 * Math.PI); ctx.fill();
+ ctx.font = "12px system-ui"; ctx.textAlign = "left";
+ ctx.fillText("M（沿 x 轴拖）", p.X(Mx) + 8, p.T + 26);
+ /* 读数 */
+ var r1 = u2([Mx, 0], t), r2 = u3([Mx, 0], t);
+ $("d2-u2").textContent = fmtE(r1);
+ $("d2-u3").textContent = fmtE(r2);
+ $("d2-diff").textContent = fmtE(Math.abs(r1 - r2));
+ if (P0.ref){
+ var rf = P0.ref(Mx, t);
+ $("d2-ref").textContent = fmtE(rf);
+ $("d2-referr").textContent = fmtE(Math.abs(r1 - rf));
+ } else { $("d2-ref").textContent = "—"; $("d2-referr").textContent = "—"; }
+ }
+ drag(cv, function(cx, cy){
+ var p = { l: 46, r: 16, iw: W - 62 };
+ return -6 + (cx - 46) / (W - 62) * 12;
+ }, function(w){ if (w >= -6 && w <= 6){ Mx = w; draw(); } });
+ draw();
+ window.W4.d2 = {
+ set: function(o){ if (o.t !== undefined){ t = o.t; } if (o.Mx !== undefined){ Mx = o.Mx; } if (o.pre){ pre = o.pre; Array.prototype.forEach.call(document.querySelectorAll(".d2p"), function(y){ y.classList.toggle("on", y.getAttribute("data-p") === pre); }); } draw(); },
+ state: function(){ return { t: t, Mx: Mx, pre: pre }; }
+ };
 })();
 
 /* ================= 05 推迟势 ================= */
 (function(){
-  var cv = $("rp-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-  var A = 1, t = 1.2, M = [1.5, 0], pre = "one";
-  var X0 = [1.5, 0, 0], RHO2 = 0.6, TSIG = 0.5, curveCache = null, curvePre = null;
-  var presets = {
-    one:   { f: function(p, s){ return 1; }, ref: function(tt){ return tt * tt / 2; }, compact: false },
-    time:  { f: function(p, s){ return s; }, ref: function(tt){ return tt * tt * tt / 6; }, compact: false },
-    gauss: { f: function(p, s){
-               var dx = p[0] - X0[0], dy = p[1] - X0[1], dz = p[2] - X0[2];
-               var rr = Math.sqrt(dx * dx + dy * dy + dz * dz);
-               return c8r(rr) * Math.exp(-s * s / (2 * TSIG * TSIG));
-             }, ref: null, compact: true }
-  };
-  /* 空间紧支光滑鼓包（半径 RHO2，用于因果性精确判定） */
-  function c8r(r){
-    if (r >= RHO2) return 0;
-    var q = 1 - (r / RHO2) * (r / RHO2);
-    return Math.exp(-1 / q);
-  }
-  function uRet(P, tt, n){
-    n = n || 48;
-    var R = A * tt, P0 = presets[pre], acc = 0;
-    for (var j = 0; j < n; j++){
-      var ph = (j + 0.5) * 2 * Math.PI / n, cp = Math.cos(ph), sp = Math.sin(ph);
-      acc += simpson(function(mu){
-        var st = Math.sqrt(1 - mu * mu);
-        return simpson(function(rr){
-          var q = [P[0] + rr * st * cp, P[1] + rr * st * sp, P[2] + rr * mu];
-          return P0.f(q, tt - rr / A) * rr;
-        }, 0, R, n);
-      }, -1, 1, n);
-    }
-    return acc * 2 * Math.PI / n / (4 * Math.PI * A * A);
-  }
-  function draw(){
-    var R = A * t, P0 = presets[pre];
-    ctx.clearRect(0, 0, W, H);
-    var p = newPlot(ctx, W, H, { l: 46, r: 16, t: 16, b: 32, xmin: -1, xmax: 4, ymin: -0.2, ymax: 2.2,
-      xt: [-1, 0, 1, 2, 3, 4], yt: [0, 0.5, 1, 1.5, 2], xlab: "t", ylab: "u(x, t)" });
-    /* u(t) 曲线：闭式 preset 用参考曲线，高斯 preset 用低分辨率求积（按 preset 缓存） */
-    var tmax = 3;
-    if (curveCache === null || curvePre !== pre){
-      curveCache = [];
-      for (var ci = 0; ci <= 120; ci++){
-        var tt0 = ci / 120 * tmax;
-        curveCache.push(P0.ref ? P0.ref(tt0) : uRet([M[0], M[1], 0], tt0, 24));
-      }
-      curvePre = pre;
-    }
-    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2; ctx.beginPath();
-    for (var cj = 0; cj <= 120; cj++){
-      var px2 = p.X(cj / 120 * tmax), py2 = p.Y(curveCache[cj]);
-      if (cj) ctx.lineTo(px2, py2); else ctx.moveTo(px2, py2);
-    }
-    ctx.stroke();
-    if (!P0.ref){
-      ctx.fillStyle = "#57606a"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "left";
-      ctx.fillText("（高斯 preset 曲线为 24³ 低分辨率求积，仅示形）", p.L + 8, p.T + 14);
-    }
-    /* 当前时刻 */
-    var u = uRet([M[0], M[1], 0], t);
-    ctx.strokeStyle = "#D85A30"; ctx.beginPath(); ctx.moveTo(p.X(t), p.T); ctx.lineTo(p.X(t), p.T + p.ih); ctx.stroke();
-    ctx.fillStyle = "#D85A30"; ctx.beginPath(); ctx.arc(p.X(t), p.Y(u), 4.5, 0, 2 * Math.PI); ctx.fill();
-    /* 读数 */
-    $("rp-u").textContent = fmtE(u);
-    if (P0.ref){
-      var rf = P0.ref(t);
-      $("rp-ref").textContent = fmtE(rf);
-      $("rp-err").textContent = fmtE(Math.abs(u - rf));
-    } else { $("rp-ref").textContent = "—"; $("rp-err").textContent = "—"; }
-    var front = (Math.hypot(M[0] - X0[0], M[1] - X0[1]) - RHO2) / A;
-    $("rp-causal").textContent = (P0.compact && t < front) ? "未到（u ≡ 0）" : "已到";
-    $("rp-R").textContent = fmtE(R);
-    $("rp-tv").textContent = "t = " + t.toFixed(2);
-  }
-  $("rp-t").addEventListener("input", function(){ t = parseFloat(this.value) / 100; draw(); });
-  Array.prototype.forEach.call(document.querySelectorAll(".rpp"), function(b){
-    b.onclick = function(){
-      document.querySelectorAll(".rpp").forEach(function(y){ y.classList.remove("on"); });
-      b.classList.add("on"); pre = b.getAttribute("data-p"); draw();
-    };
-  });
-  drag(cv, function(cx, cy){
-    var L = 46, iw = W - 62;
-    return [-1 + (cx - L) / iw * 5, 0];
-  }, function(w){ M[0] = Math.max(-1, Math.min(4, w[0])); draw(); });
-  draw();
-  window.W4.rp = {
-    set: function(o){ if (o.t !== undefined){ t = o.t; $("rp-t").value = t * 100; } if (o.M){ M = [o.M[0], o.M[1] !== undefined ? o.M[1] : M[1]]; } if (o.pre){ pre = o.pre; Array.prototype.forEach.call(document.querySelectorAll(".rpp"), function(y){ y.classList.toggle("on", y.getAttribute("data-p") === pre); }); } draw(); },
-    state: function(){ return { t: t, M: M.slice(), pre: pre }; }
-  };
+ var cv = $("rp-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+ var A = 1, t = 1.2, M = [1.5, 0], pre = "one";
+ var X0 = [1.5, 0, 0], RHO2 = 0.6, TSIG = 0.5, curveCache = null, curvePre = null;
+ var presets = {
+ one: { f: function(p, s){ return 1; }, ref: function(tt){ return tt * tt / 2; }, compact: false },
+ time: { f: function(p, s){ return s; }, ref: function(tt){ return tt * tt * tt / 6; }, compact: false },
+ gauss: { f: function(p, s){
+ var dx = p[0] - X0[0], dy = p[1] - X0[1], dz = p[2] - X0[2];
+ var rr = Math.sqrt(dx * dx + dy * dy + dz * dz);
+ return c8r(rr) * Math.exp(-s * s / (2 * TSIG * TSIG));
+ }, ref: null, compact: true }
+ };
+ /* 空间紧支光滑鼓包（半径 RHO2，用于因果性精确判定） */
+ function c8r(r){
+ if (r >= RHO2) return 0;
+ var q = 1 - (r / RHO2) * (r / RHO2);
+ return Math.exp(-1 / q);
+ }
+ function uRet(P, tt, n){
+ n = n || 48;
+ var R = A * tt, P0 = presets[pre], acc = 0;
+ for (var j = 0; j < n; j++){
+ var ph = (j + 0.5) * 2 * Math.PI / n, cp = Math.cos(ph), sp = Math.sin(ph);
+ acc += simpson(function(mu){
+ var st = Math.sqrt(1 - mu * mu);
+ return simpson(function(rr){
+ var q = [P[0] + rr * st * cp, P[1] + rr * st * sp, P[2] + rr * mu];
+ return P0.f(q, tt - rr / A) * rr;
+ }, 0, R, n);
+ }, -1, 1, n);
+ }
+ return acc * 2 * Math.PI / n / (4 * Math.PI * A * A);
+ }
+ function draw(){
+ var R = A * t, P0 = presets[pre];
+ ctx.clearRect(0, 0, W, H);
+ var p = newPlot(ctx, W, H, { l: 46, r: 16, t: 16, b: 32, xmin: -1, xmax: 4, ymin: -0.2, ymax: 2.2,
+ xt: [-1, 0, 1, 2, 3, 4], yt: [0, 0.5, 1, 1.5, 2], xlab: "t", ylab: "u(x, t)" });
+ /* u(t) 曲线：闭式 preset 用参考曲线，高斯 preset 用低分辨率求积（按 preset 缓存） */
+ var tmax = 3;
+ if (curveCache === null || curvePre !== pre){
+ curveCache = [];
+ for (var ci = 0; ci <= 120; ci++){
+ var tt0 = ci / 120 * tmax;
+ curveCache.push(P0.ref ? P0.ref(tt0) : uRet([M[0], M[1], 0], tt0, 24));
+ }
+ curvePre = pre;
+ }
+ ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2; ctx.beginPath();
+ for (var cj = 0; cj <= 120; cj++){
+ var px2 = p.X(cj / 120 * tmax), py2 = p.Y(curveCache[cj]);
+ if (cj) ctx.lineTo(px2, py2); else ctx.moveTo(px2, py2);
+ }
+ ctx.stroke();
+ if (!P0.ref){
+ ctx.fillStyle = "#57606a"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "left";
+ ctx.fillText("（高斯 preset 曲线为 24³ 低分辨率求积，仅示形）", p.L + 8, p.T + 14);
+ }
+ /* 当前时刻 */
+ var u = uRet([M[0], M[1], 0], t);
+ ctx.strokeStyle = "#D85A30"; ctx.beginPath(); ctx.moveTo(p.X(t), p.T); ctx.lineTo(p.X(t), p.T + p.ih); ctx.stroke();
+ ctx.fillStyle = "#D85A30"; ctx.beginPath(); ctx.arc(p.X(t), p.Y(u), 4.5, 0, 2 * Math.PI); ctx.fill();
+ /* 读数 */
+ $("rp-u").textContent = fmtE(u);
+ if (P0.ref){
+ var rf = P0.ref(t);
+ $("rp-ref").textContent = fmtE(rf);
+ $("rp-err").textContent = fmtE(Math.abs(u - rf));
+ } else { $("rp-ref").textContent = "—"; $("rp-err").textContent = "—"; }
+ var front = (Math.hypot(M[0] - X0[0], M[1] - X0[1]) - RHO2) / A;
+ $("rp-causal").textContent = (P0.compact && t < front) ? "未到（u ≡ 0）" : "已到";
+ $("rp-R").textContent = fmtE(R);
+ $("rp-tv").textContent = "t = " + t.toFixed(2);
+ }
+ $("rp-t").addEventListener("input", function(){ t = parseFloat(this.value) / 100; draw(); });
+ Array.prototype.forEach.call(document.querySelectorAll(".rpp"), function(b){
+ b.onclick = function(){
+ document.querySelectorAll(".rpp").forEach(function(y){ y.classList.remove("on"); });
+ b.classList.add("on"); pre = b.getAttribute("data-p"); draw();
+ };
+ });
+ drag(cv, function(cx, cy){
+ var L = 46, iw = W - 62;
+ return [-1 + (cx - L) / iw * 5, 0];
+ }, function(w){ M[0] = Math.max(-1, Math.min(4, w[0])); draw(); });
+ draw();
+ window.W4.rp = {
+ set: function(o){ if (o.t !== undefined){ t = o.t; $("rp-t").value = t * 100; } if (o.M){ M = [o.M[0], o.M[1] !== undefined ? o.M[1] : M[1]]; } if (o.pre){ pre = o.pre; Array.prototype.forEach.call(document.querySelectorAll(".rpp"), function(y){ y.classList.toggle("on", y.getAttribute("data-p") === pre); }); } draw(); },
+ state: function(){ return { t: t, M: M.slice(), pre: pre }; }
+ };
 })();
 </script>
 </body>

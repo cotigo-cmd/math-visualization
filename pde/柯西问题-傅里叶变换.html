@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>柯西问题与傅里叶变换 — 谷超豪《数学物理方程》§3 可视化</title>
+<title>柯西问题与傅里叶变换 — §3 可视化</title>
 <script>
 window.MathJax = {
-  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
-  svg: { fontCache: "global" },
-  options: { enableMenu: false },
-  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "global" },
+ options: { enableMenu: false },
+ startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
-  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
-  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
-  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
-  --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+ --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+ --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+ --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);
-  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
@@ -35,19 +35,19 @@ p{margin:12px 0}
 .hero{padding:56px 0 8px}
 .hero p.lead{font-size:17px;color:var(--muted);max-width:760px;margin:0}
 nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
-  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+ border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
 nav .wrap{padding:10px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px}
 nav a{color:var(--muted)}
 nav a:hover{color:var(--accent);text-decoration:none}
 .eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
-  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+ margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
 .note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
-  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
-  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
-  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
 th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
 th{background:var(--card);font-weight:600}
@@ -55,7 +55,7 @@ tr:nth-child(even) td{background:#fafbfc}
 .ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
 .ctl input[type=range]{flex:1;min-width:180px;accent-color:var(--accent)}
 button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
-  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+ border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
 button:hover{border-color:var(--accent);color:var(--accent)}
 button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
 .val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
@@ -81,7 +81,7 @@ ul.tight li{margin:6px 0}
 
 <div class="hero"><div class="wrap">
 <h1>柯西问题与傅里叶变换</h1>
-<p class="lead">谷超豪 等《数学物理方程（第四版）》第 2 章 §3 的交互可视化。把 §2 里「有限区间上的离散频谱」推向连续极限，就得到傅里叶变换；用它解无界直线上的热传导方程，泊松公式、杜哈梅原理和存在性验证都顺着同一条流水线掉出来。页面里的每个数值结论都由工作区脚本实测（见各节 note）。</p>
+<p class="lead">教材第 2 章 §3 的交互可视化。把 §2 里「有限区间上的离散频谱」推向连续极限，就得到傅里叶变换；用它解无界直线上的热传导方程，泊松公式、杜哈梅原理和存在性验证都顺着同一条流水线掉出来。页面里的每个数值结论都由工作区脚本实测（见各节 note）。</p>
 </div></div>
 
 <nav><div class="wrap">
@@ -353,7 +353,7 @@ $$u(x,t)=\big(K(\cdot,t)*\varphi\big)(x),\qquad K(x,t)=\mathcal{F}^{-1}\!\left[e
 <li><b>三维柯西问题（习题 3）：</b>用多变量变换 (3.13)(3.14)，\(\hat u=\hat\varphi e^{-a^2(\lambda_1^2+\lambda_2^2+\lambda_3^2)t}\)，逆变换是三个一维核的乘积：
 $$K_3(\mathbf{x},t)=\frac{1}{8(\pi a^2t)^{3/2}}\exp\!\left(-\frac{|\mathbf{x}|^2}{4a^2t}\right)$$
 仍满足 \(\int K_3=1\)——总热量守恒在三维同样成立。</li>
-<li><b>二维基本解（习题 6）：</b>\(v(x,y,t;\xi,\eta,\tau)=\dfrac{1}{4\pi a^2(t-\tau)}\exp\!\left(-\dfrac{(x-\xi)^2+(y-\eta)^2}{4a^2(t-\tau)}\right)\) 对 \((x,y,t)\) 满足热方程，对源变量 \((\xi,\eta,\tau)\) 满足<b>伴随（ backward ）方程</b> \(\partial_\tau v+a^2(v_{\xi\xi}+v_{\eta\eta})=0\)。它是第 3 章格林函数的预演。</li>
+<li><b>二维基本解（习题 6）：</b>\(v(x,y,t;\xi,\eta,\tau)=\dfrac{1}{4\pi a^2(t-\tau)}\exp\!\left(-\dfrac{(x-\xi)^2+(y-\eta)^2}{4a^2(t-\tau)}\right)\) 对 \((x,y,t)\) 满足热方程，对源变量 \((\xi,\eta,\tau)\) 满足<b>伴随（backward）方程</b> \(\partial_\tau v+a^2(v_{\xi\xi}+v_{\eta\eta})=0\)。它是第 3 章格林函数的预演。</li>
 <li><b>半有界直线（习题 5(2)）：</b>\(x>0\) 上带 \(u(0,t)=0\) 的问题，把 \(\varphi\) <b>奇延拓</b>到整条直线（Neumann 边界则偶延拓），即可套用泊松公式——延拓法把边界条件「折」进初值里。</li>
 </ul>
 <div class="note"><b>实测备注（verify_cauchy.js，a=1）：</b>① 三维核：\(\iiint K_3\,\mathrm{d}x\mathrm{d}y\mathrm{d}z=\) <b>1.000000</b>（\(t=1\)，截断到 \(|x|\le30\)），且 \(K_3(\mathbf 0,1)=\) <b>0.022448</b>，与公式 \(1/(8\pi^{3/2})\) 一致。② 二维基本解（习题 6）：中心差分（\(h=10^{-4}\)）验证热方程残差 <b>7.0e-10</b>、伴随方程残差 <b>−7.0e-10</b>，\(\iint v\,\mathrm{d}x\mathrm{d}y=\) <b>1.000000</b>（源在 \((\xi,\eta)=(0,0)\)、\(\tau=0.3\)、\(t=1.2\)）。</div>
@@ -381,7 +381,7 @@ $$K_3(\mathbf{x},t)=\frac{1}{8(\pi a^2t)^{3/2}}\exp\!\left(-\frac{|\mathbf{x}|^2
 <p>继续往下：<a href="./卷积与热传导方程.html">《卷积与热传导方程》</a>（热核的直觉与半群）、<a href="./分离变量法-热传导方程.html">《分离变量法》</a>（离散谱对照）、第 3 章调和方程（格林函数，习题 6 的二维基本解将在那里成为主角）、第 6 章广义函数（放宽初值条件）。</p>
 
 <footer>
-<p>素材：谷超豪 等《数学物理方程（第四版）》第 2 章 §3（教材 PDF p.88–95，书页 p.76–83）。公式按教材编号 (3.1)–(3.30)；OCR 片段已按推导重组。</p>
+<p>素材：教材第 2 章 §3（教材）。公式按教材编号 (3.1)–(3.30)；</p>
 <p>数值结论均由上级目录脚本 <code>verify_cauchy.js</code> 实测（node 直接运行，无第三方数值库）；公式经 <code>verify_formulas.js</code> 本地 mathjax-full 编译验证。本页零依赖、可离线打开（公式渲染需联网）。生成于 2026-10-16。</p>
 </footer>
 
@@ -393,416 +393,416 @@ function $(id){ return document.getElementById(id); }
 
 /* 通用绘图框架：返回坐标映射与坐标轴；o.ylog=true 时 y 轴取对数 */
 function newPlot(ctx, W, H, o){
-  var L = o.l || 46, R = o.r || 16, T = o.t || 14, B = o.b || 30;
-  var iw = W - L - R, ih = H - T - B;
-  var X = function(x){ return L + (x - o.xmin) / (o.xmax - o.xmin) * iw; };
-  var Y = o.ylog
-    ? function(y){ return T + ih - (Math.log10(Math.max(y, 1e-12)) - Math.log10(o.ymin)) / (Math.log10(o.ymax) - Math.log10(o.ymin)) * ih; }
-    : function(y){ return T + ih - (y - o.ymin) / (o.ymax - o.ymin) * ih; };
-  ctx.clearRect(0, 0, W, H);
-  ctx.font = "11px ui-monospace,monospace";
-  ctx.strokeStyle = "#d0d7de"; ctx.fillStyle = "#57606a"; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, T + ih); ctx.lineTo(L + iw, T + ih); ctx.stroke();
-  if (!o.ylog && o.ymin < 0 && o.ymax > 0){ ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(L + iw, Y(0)); ctx.stroke(); }
-  (o.xt || []).forEach(function(v){
-    ctx.beginPath(); ctx.moveTo(X(v), T + ih); ctx.lineTo(X(v), T + ih + 4); ctx.stroke();
-    ctx.textAlign = "center"; ctx.fillText(o.xf ? o.xf(v) : v, X(v), T + ih + 16);
-  });
-  (o.yt || []).forEach(function(v){
-    ctx.beginPath(); ctx.moveTo(L - 4, Y(v)); ctx.lineTo(L, Y(v)); ctx.stroke();
-    ctx.textAlign = "right"; ctx.fillText(o.yf ? o.yf(v) : (o.ylog ? v.toExponential(0) : v), L - 7, Y(v) + 3);
-  });
-  if (o.xlab){ ctx.textAlign = "center"; ctx.fillText(o.xlab, L + iw / 2, H - 4); }
-  if (o.ylab){ ctx.save(); ctx.translate(11, T + ih / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylab, 0, 0); ctx.restore(); }
-  return { X: X, Y: Y, L: L, T: T, iw: iw, ih: ih };
+ var L = o.l || 46, R = o.r || 16, T = o.t || 14, B = o.b || 30;
+ var iw = W - L - R, ih = H - T - B;
+ var X = function(x){ return L + (x - o.xmin) / (o.xmax - o.xmin) * iw; };
+ var Y = o.ylog
+ ? function(y){ return T + ih - (Math.log10(Math.max(y, 1e-12)) - Math.log10(o.ymin)) / (Math.log10(o.ymax) - Math.log10(o.ymin)) * ih; }
+ : function(y){ return T + ih - (y - o.ymin) / (o.ymax - o.ymin) * ih; };
+ ctx.clearRect(0, 0, W, H);
+ ctx.font = "11px ui-monospace,monospace";
+ ctx.strokeStyle = "#d0d7de"; ctx.fillStyle = "#57606a"; ctx.lineWidth = 1;
+ ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, T + ih); ctx.lineTo(L + iw, T + ih); ctx.stroke();
+ if (!o.ylog && o.ymin < 0 && o.ymax > 0){ ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(L + iw, Y(0)); ctx.stroke(); }
+ (o.xt || []).forEach(function(v){
+ ctx.beginPath(); ctx.moveTo(X(v), T + ih); ctx.lineTo(X(v), T + ih + 4); ctx.stroke();
+ ctx.textAlign = "center"; ctx.fillText(o.xf ? o.xf(v) : v, X(v), T + ih + 16);
+ });
+ (o.yt || []).forEach(function(v){
+ ctx.beginPath(); ctx.moveTo(L - 4, Y(v)); ctx.lineTo(L, Y(v)); ctx.stroke();
+ ctx.textAlign = "right"; ctx.fillText(o.yf ? o.yf(v) : (o.ylog ? v.toExponential(0) : v), L - 7, Y(v) + 3);
+ });
+ if (o.xlab){ ctx.textAlign = "center"; ctx.fillText(o.xlab, L + iw / 2, H - 4); }
+ if (o.ylab){ ctx.save(); ctx.translate(11, T + ih / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylab, 0, 0); ctx.restore(); }
+ return { X: X, Y: Y, L: L, T: T, iw: iw, ih: ih };
 }
 /* 泊松积分：ζ 换元 + 中点法则，可在 φ 间断点处剖分（中点节点不碰间断点，无双计问题） */
 function poissonU(phi, jumps, x, t, Z){
-  Z = Z || 8;
-  var s = 2 * Math.sqrt(t), pts = [-Z];
-  (jumps || []).forEach(function(j){ var z = (j - x) / s; if (z > -Z && z < Z) pts.push(z); });
-  pts.push(Z); pts.sort(function(a, b){ return a - b; });
-  var sum = 0;
-  for (var i = 0; i < pts.length - 1; i++){
-    var a = pts[i], b = pts[i + 1], n = 600, h = (b - a) / n, acc = 0;
-    for (var k = 0; k < n; k++){ var z = a + (k + 0.5) * h; acc += phi(x + s * z) * Math.exp(-z * z); }
-    sum += acc * h;
-  }
-  return sum / Math.sqrt(Math.PI);
+ Z = Z || 8;
+ var s = 2 * Math.sqrt(t), pts = [-Z];
+ (jumps || []).forEach(function(j){ var z = (j - x) / s; if (z > -Z && z < Z) pts.push(z); });
+ pts.push(Z); pts.sort(function(a, b){ return a - b; });
+ var sum = 0;
+ for (var i = 0; i < pts.length - 1; i++){
+ var a = pts[i], b = pts[i + 1], n = 600, h = (b - a) / n, acc = 0;
+ for (var k = 0; k < n; k++){ var z = a + (k + 0.5) * h; acc += phi(x + s * z) * Math.exp(-z * z); }
+ sum += acc * h;
+ }
+ return sum / Math.sqrt(Math.PI);
 }
 
 /* ========== 01 频谱致密化 ========== */
 (function(){
-  var cv = $("dn-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-  var LMAX = 12, kind = "box", l = 8, timer = null;
-  function ph(lam){
-    if (kind === "gauss") return Math.sqrt(2 * Math.PI) * Math.exp(-lam * lam / 2);
-    return lam === 0 ? 2 : 2 * Math.sin(lam) / lam;
-  }
-  function draw(){
-    var p = newPlot(ctx, W, H, { xmin: 0, xmax: LMAX, ymin: 0, ymax: 2.8,
-      xt: [0, 2, 4, 6, 8, 10, 12], yt: [0, 1, 2], xlab: "λ", ylab: "|φ̂(λ)|" });
-    var dlam = Math.PI / l;
-    /* 连续谱曲线 */
-    ctx.strokeStyle = "#D85A30"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2; ctx.beginPath();
-    for (var i = 0; i <= 360; i++){
-      var lam = i / 360 * LMAX, v = Math.abs(ph(lam));
-      var px = p.X(lam), py = p.Y(v);
-      if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-    }
-    ctx.stroke(); ctx.setLineDash([]);
-    /* 离散谱线 */
-    var nmax = Math.floor(LMAX / dlam);
-    ctx.strokeStyle = "#534AB7"; ctx.lineWidth = 1.6;
-    for (var n = 1; n <= nmax; n++){
-      var lam2 = n * dlam, hgt = Math.abs(ph(lam2));
-      ctx.beginPath(); ctx.moveTo(p.X(lam2), p.Y(0)); ctx.lineTo(p.X(lam2), p.Y(hgt)); ctx.stroke();
-    }
-    /* λ=1 参考线 */
-    ctx.strokeStyle = "#57606a"; ctx.setLineDash([2, 2]); ctx.beginPath();
-    ctx.moveTo(p.X(1), p.Y(0)); ctx.lineTo(p.X(1), p.Y(2.8)); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#57606a"; ctx.textAlign = "left"; ctx.fillText("λ=1", p.X(1) + 4, p.T + 12);
-    $("dn-lv").textContent = "l = " + l.toFixed(1);
-    $("dn-dlam").textContent = dlam.toFixed(3);
-    $("dn-count").textContent = nmax;
-  }
-  $("dn-l").addEventListener("input", function(){ l = parseFloat(this.value) / 10; draw(); });
-  $("dn-play").onclick = function(){
-    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放致密化"; return; }
-    this.textContent = "暂停";
-    timer = setInterval(function(){
-      l *= 1.03; if (l > 64) l = 1;
-      $("dn-l").value = l * 10;
-      draw();
-    }, 60);
-  };
-  Array.prototype.forEach.call(document.querySelectorAll(".pre"), function(b){
-    b.onclick = function(){
-      document.querySelectorAll(".pre").forEach(function(x){ x.classList.remove("on"); });
-      b.classList.add("on"); kind = b.getAttribute("data-kind"); draw();
-    };
-  });
-  draw();
+ var cv = $("dn-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+ var LMAX = 12, kind = "box", l = 8, timer = null;
+ function ph(lam){
+ if (kind === "gauss") return Math.sqrt(2 * Math.PI) * Math.exp(-lam * lam / 2);
+ return lam === 0 ? 2 : 2 * Math.sin(lam) / lam;
+ }
+ function draw(){
+ var p = newPlot(ctx, W, H, { xmin: 0, xmax: LMAX, ymin: 0, ymax: 2.8,
+ xt: [0, 2, 4, 6, 8, 10, 12], yt: [0, 1, 2], xlab: "λ", ylab: "|φ̂(λ)|" });
+ var dlam = Math.PI / l;
+ /* 连续谱曲线 */
+ ctx.strokeStyle = "#D85A30"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2; ctx.beginPath();
+ for (var i = 0; i <= 360; i++){
+ var lam = i / 360 * LMAX, v = Math.abs(ph(lam));
+ var px = p.X(lam), py = p.Y(v);
+ if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+ }
+ ctx.stroke(); ctx.setLineDash([]);
+ /* 离散谱线 */
+ var nmax = Math.floor(LMAX / dlam);
+ ctx.strokeStyle = "#534AB7"; ctx.lineWidth = 1.6;
+ for (var n = 1; n <= nmax; n++){
+ var lam2 = n * dlam, hgt = Math.abs(ph(lam2));
+ ctx.beginPath(); ctx.moveTo(p.X(lam2), p.Y(0)); ctx.lineTo(p.X(lam2), p.Y(hgt)); ctx.stroke();
+ }
+ /* λ=1 参考线 */
+ ctx.strokeStyle = "#57606a"; ctx.setLineDash([2, 2]); ctx.beginPath();
+ ctx.moveTo(p.X(1), p.Y(0)); ctx.lineTo(p.X(1), p.Y(2.8)); ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = "#57606a"; ctx.textAlign = "left"; ctx.fillText("λ=1", p.X(1) + 4, p.T + 12);
+ $("dn-lv").textContent = "l = " + l.toFixed(1);
+ $("dn-dlam").textContent = dlam.toFixed(3);
+ $("dn-count").textContent = nmax;
+ }
+ $("dn-l").addEventListener("input", function(){ l = parseFloat(this.value) / 10; draw(); });
+ $("dn-play").onclick = function(){
+ if (timer){ clearInterval(timer); timer = null; this.textContent = "播放致密化"; return; }
+ this.textContent = "暂停";
+ timer = setInterval(function(){
+ l *= 1.03; if (l > 64) l = 1;
+ $("dn-l").value = l * 10;
+ draw();
+ }, 60);
+ };
+ Array.prototype.forEach.call(document.querySelectorAll(".pre"), function(b){
+ b.onclick = function(){
+ document.querySelectorAll(".pre").forEach(function(x){ x.classList.remove("on"); });
+ b.classList.add("on"); kind = b.getAttribute("data-kind"); draw();
+ };
+ });
+ draw();
 })();
 
 /* ========== 03 变换机器 ========== */
 (function(){
-  var presets = {
-    gauss: { phi: function(x){ return Math.exp(-x * x / 2); },
-             hat: function(l){ return Math.sqrt(2 * Math.PI) * Math.exp(-l * l / 2); }, jumps: null },
-    box:   { phi: function(x){ return (x >= -1 && x <= 1) ? 1 : 0; },
-             hat: function(l){ return l === 0 ? 2 : 2 * Math.sin(l) / l; }, jumps: [-1, 1] },
-    bump:  { phi: function(x){ return Math.exp(-(x - 1.5) * (x - 1.5) / 0.3) + Math.exp(-(x + 1.5) * (x + 1.5) / 0.3); },
-             hat: function(l){ return 2 * Math.sqrt(0.15) * Math.sqrt(2 * Math.PI) * Math.exp(-0.15 * l * l / 2) * Math.cos(1.5 * l); }, jumps: null }
-  };
-  var cur = "gauss", t = 0.3, timer = null;
-  function tOf(v){ return 0.02 * Math.pow(150, v / 100); }
-  function draw(){
-    var P = presets[cur];
-    /* panel 1: φ(x) */
-    var c1 = $("fm-phi").getContext("2d");
-    var p1 = newPlot(c1, 840, 180, { xmin: -6, xmax: 6, ymin: -0.3, ymax: 1.6,
-      xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 1], xlab: "x", ylab: "φ(x)" });
-    c1.strokeStyle = "#185FA5"; c1.lineWidth = 2; c1.beginPath();
-    for (var i = 0; i <= 400; i++){
-      var x = -6 + i / 400 * 12, v = P.phi(x), px = p1.X(x), py = p1.Y(v);
-      if (i) c1.lineTo(px, py); else c1.moveTo(px, py);
-    }
-    c1.stroke();
-    c1.fillStyle = "#185FA5"; c1.font = "12px system-ui"; c1.textAlign = "left";
-    c1.fillText("初值 φ(x)", p1.L + 8, p1.T + 14);
-    /* panel 2: 频谱 */
-    var c2 = $("fm-hat").getContext("2d");
-    var p2 = newPlot(c2, 840, 220, { xmin: 0, xmax: 8, ymin: 0, ymax: 2.8,
-      xt: [0, 2, 4, 6, 8], yt: [0, 1, 2], xlab: "λ", ylab: "振幅" });
-    c2.strokeStyle = "#185FA5"; c2.lineWidth = 1.6; c2.beginPath();
-    for (var j = 0; j <= 400; j++){
-      var lam = j / 400 * 8, a1 = Math.abs(P.hat(lam)), qx = p2.X(lam), qy = p2.Y(a1);
-      if (j) c2.lineTo(qx, qy); else c2.moveTo(qx, qy);
-    }
-    c2.stroke();
-    c2.strokeStyle = "#D85A30"; c2.lineWidth = 2.4; c2.beginPath();
-    for (var k = 0; k <= 400; k++){
-      var lam2 = k / 400 * 8, a2 = Math.abs(P.hat(lam2)) * Math.exp(-lam2 * lam2 * t), rx = p2.X(lam2), ry = p2.Y(a2);
-      if (k) c2.lineTo(rx, ry); else c2.moveTo(rx, ry);
-    }
-    c2.stroke();
-    c2.strokeStyle = "#57606a"; c2.setLineDash([2, 2]); c2.beginPath();
-    c2.moveTo(p2.X(1), p2.Y(0)); c2.lineTo(p2.X(1), p2.Y(2.8)); c2.stroke(); c2.setLineDash([]);
-    c2.font = "12px system-ui"; c2.textAlign = "left";
-    c2.fillStyle = "#185FA5"; c2.fillText("初始频谱 |φ̂(λ)|", p2.L + 8, p2.T + 14);
-    c2.fillStyle = "#D85A30"; c2.fillText("当前频谱 |φ̂(λ)|·e^(−a²λ²t)", p2.L + 8, p2.T + 30);
-    c2.fillStyle = "#57606a"; c2.fillText("λ=1", p2.X(1) + 4, p2.T + 46);
-    /* panel 3: u(x,t) */
-    var c3 = $("fm-u").getContext("2d");
-    var p3 = newPlot(c3, 840, 220, { xmin: -6, xmax: 6, ymin: -0.3, ymax: 1.6,
-      xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 1], xlab: "x", ylab: "u(x,t)" });
-    c3.strokeStyle = "#9ea7b0"; c3.setLineDash([4, 3]); c3.lineWidth = 1.4; c3.beginPath();
-    for (var m = 0; m <= 400; m++){
-      var x2 = -6 + m / 400 * 12, v2 = P.phi(x2), sx = p3.X(x2), sy = p3.Y(v2);
-      if (m) c3.lineTo(sx, sy); else c3.moveTo(sx, sy);
-    }
-    c3.stroke(); c3.setLineDash([]);
-    c3.strokeStyle = "#D85A30"; c3.lineWidth = 2.2; c3.beginPath();
-    for (var q = 0; q <= 400; q++){
-      var x3 = -6 + q / 400 * 12, u = poissonU(P.phi, P.jumps, x3, t), ux = p3.X(x3), uy = p3.Y(u);
-      if (q) c3.lineTo(ux, uy); else c3.moveTo(ux, uy);
-    }
-    c3.stroke();
-    c3.font = "12px system-ui"; c3.textAlign = "left";
-    c3.fillStyle = "#D85A30"; c3.fillText("解 u(x,t)（泊松积分）", p3.L + 8, p3.T + 14);
-    c3.fillStyle = "#9ea7b0"; c3.fillText("初值 φ(x)（虚线）", p3.L + 8, p3.T + 30);
-    /* readouts */
-    $("fm-tv").textContent = t.toFixed(2);
-    $("fm-keep").textContent = (Math.exp(-t) * 100).toFixed(1) + "%";
-    $("fm-fwhm").textContent = (2 * Math.sqrt(t * Math.LN2)).toFixed(2);
-  }
-  $("fm-t").addEventListener("input", function(){ t = tOf(parseFloat(this.value)); draw(); });
-  $("fm-play").onclick = function(){
-    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放"; return; }
-    this.textContent = "暂停";
-    timer = setInterval(function(){
-      var v = parseFloat($("fm-t").value) + 1; if (v > 100) v = 0;
-      $("fm-t").value = v; t = tOf(v); draw();
-    }, 60);
-  };
-  Array.prototype.forEach.call(document.querySelectorAll(".fp"), function(b){
-    b.onclick = function(){
-      document.querySelectorAll(".fp").forEach(function(x){ x.classList.remove("on"); });
-      b.classList.add("on"); cur = b.getAttribute("data-p"); draw();
-    };
-  });
-  t = tOf(42); draw();
+ var presets = {
+ gauss: { phi: function(x){ return Math.exp(-x * x / 2); },
+ hat: function(l){ return Math.sqrt(2 * Math.PI) * Math.exp(-l * l / 2); }, jumps: null },
+ box: { phi: function(x){ return (x >= -1 && x <= 1) ? 1 : 0; },
+ hat: function(l){ return l === 0 ? 2 : 2 * Math.sin(l) / l; }, jumps: [-1, 1] },
+ bump: { phi: function(x){ return Math.exp(-(x - 1.5) * (x - 1.5) / 0.3) + Math.exp(-(x + 1.5) * (x + 1.5) / 0.3); },
+ hat: function(l){ return 2 * Math.sqrt(0.15) * Math.sqrt(2 * Math.PI) * Math.exp(-0.15 * l * l / 2) * Math.cos(1.5 * l); }, jumps: null }
+ };
+ var cur = "gauss", t = 0.3, timer = null;
+ function tOf(v){ return 0.02 * Math.pow(150, v / 100); }
+ function draw(){
+ var P = presets[cur];
+ /* panel 1: φ(x) */
+ var c1 = $("fm-phi").getContext("2d");
+ var p1 = newPlot(c1, 840, 180, { xmin: -6, xmax: 6, ymin: -0.3, ymax: 1.6,
+ xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 1], xlab: "x", ylab: "φ(x)" });
+ c1.strokeStyle = "#185FA5"; c1.lineWidth = 2; c1.beginPath();
+ for (var i = 0; i <= 400; i++){
+ var x = -6 + i / 400 * 12, v = P.phi(x), px = p1.X(x), py = p1.Y(v);
+ if (i) c1.lineTo(px, py); else c1.moveTo(px, py);
+ }
+ c1.stroke();
+ c1.fillStyle = "#185FA5"; c1.font = "12px system-ui"; c1.textAlign = "left";
+ c1.fillText("初值 φ(x)", p1.L + 8, p1.T + 14);
+ /* panel 2: 频谱 */
+ var c2 = $("fm-hat").getContext("2d");
+ var p2 = newPlot(c2, 840, 220, { xmin: 0, xmax: 8, ymin: 0, ymax: 2.8,
+ xt: [0, 2, 4, 6, 8], yt: [0, 1, 2], xlab: "λ", ylab: "振幅" });
+ c2.strokeStyle = "#185FA5"; c2.lineWidth = 1.6; c2.beginPath();
+ for (var j = 0; j <= 400; j++){
+ var lam = j / 400 * 8, a1 = Math.abs(P.hat(lam)), qx = p2.X(lam), qy = p2.Y(a1);
+ if (j) c2.lineTo(qx, qy); else c2.moveTo(qx, qy);
+ }
+ c2.stroke();
+ c2.strokeStyle = "#D85A30"; c2.lineWidth = 2.4; c2.beginPath();
+ for (var k = 0; k <= 400; k++){
+ var lam2 = k / 400 * 8, a2 = Math.abs(P.hat(lam2)) * Math.exp(-lam2 * lam2 * t), rx = p2.X(lam2), ry = p2.Y(a2);
+ if (k) c2.lineTo(rx, ry); else c2.moveTo(rx, ry);
+ }
+ c2.stroke();
+ c2.strokeStyle = "#57606a"; c2.setLineDash([2, 2]); c2.beginPath();
+ c2.moveTo(p2.X(1), p2.Y(0)); c2.lineTo(p2.X(1), p2.Y(2.8)); c2.stroke(); c2.setLineDash([]);
+ c2.font = "12px system-ui"; c2.textAlign = "left";
+ c2.fillStyle = "#185FA5"; c2.fillText("初始频谱 |φ̂(λ)|", p2.L + 8, p2.T + 14);
+ c2.fillStyle = "#D85A30"; c2.fillText("当前频谱 |φ̂(λ)|·e^(−a²λ²t)", p2.L + 8, p2.T + 30);
+ c2.fillStyle = "#57606a"; c2.fillText("λ=1", p2.X(1) + 4, p2.T + 46);
+ /* panel 3: u(x,t) */
+ var c3 = $("fm-u").getContext("2d");
+ var p3 = newPlot(c3, 840, 220, { xmin: -6, xmax: 6, ymin: -0.3, ymax: 1.6,
+ xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 1], xlab: "x", ylab: "u(x,t)" });
+ c3.strokeStyle = "#9ea7b0"; c3.setLineDash([4, 3]); c3.lineWidth = 1.4; c3.beginPath();
+ for (var m = 0; m <= 400; m++){
+ var x2 = -6 + m / 400 * 12, v2 = P.phi(x2), sx = p3.X(x2), sy = p3.Y(v2);
+ if (m) c3.lineTo(sx, sy); else c3.moveTo(sx, sy);
+ }
+ c3.stroke(); c3.setLineDash([]);
+ c3.strokeStyle = "#D85A30"; c3.lineWidth = 2.2; c3.beginPath();
+ for (var q = 0; q <= 400; q++){
+ var x3 = -6 + q / 400 * 12, u = poissonU(P.phi, P.jumps, x3, t), ux = p3.X(x3), uy = p3.Y(u);
+ if (q) c3.lineTo(ux, uy); else c3.moveTo(ux, uy);
+ }
+ c3.stroke();
+ c3.font = "12px system-ui"; c3.textAlign = "left";
+ c3.fillStyle = "#D85A30"; c3.fillText("解 u(x,t)（泊松积分）", p3.L + 8, p3.T + 14);
+ c3.fillStyle = "#9ea7b0"; c3.fillText("初值 φ(x)（虚线）", p3.L + 8, p3.T + 30);
+ /* readouts */
+ $("fm-tv").textContent = t.toFixed(2);
+ $("fm-keep").textContent = (Math.exp(-t) * 100).toFixed(1) + "%";
+ $("fm-fwhm").textContent = (2 * Math.sqrt(t * Math.LN2)).toFixed(2);
+ }
+ $("fm-t").addEventListener("input", function(){ t = tOf(parseFloat(this.value)); draw(); });
+ $("fm-play").onclick = function(){
+ if (timer){ clearInterval(timer); timer = null; this.textContent = "播放"; return; }
+ this.textContent = "暂停";
+ timer = setInterval(function(){
+ var v = parseFloat($("fm-t").value) + 1; if (v > 100) v = 0;
+ $("fm-t").value = v; t = tOf(v); draw();
+ }, 60);
+ };
+ Array.prototype.forEach.call(document.querySelectorAll(".fp"), function(b){
+ b.onclick = function(){
+ document.querySelectorAll(".fp").forEach(function(x){ x.classList.remove("on"); });
+ b.classList.add("on"); cur = b.getAttribute("data-p"); draw();
+ };
+ });
+ t = tOf(42); draw();
 })();
 
 /* ========== 04 热核展宽 ========== */
 (function(){
-  var cv = $("kw-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-  var t = 1, timer = null;
-  function K(x, t){ return Math.exp(-x * x / (4 * t)) / (2 * Math.sqrt(Math.PI * t)); }
-  function draw(){
-    var p = newPlot(ctx, W, H, { xmin: -8, xmax: 8, ymin: 0, ymax: 1.1,
-      xt: [-8, -4, 0, 4, 8], yt: [0, 0.5, 1], xlab: "x", ylab: "K(x,t)" });
-    [0.1, 0.3, 1, 2].forEach(function(tg){
-      ctx.strokeStyle = "#c7cdd4"; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.beginPath();
-      for (var i = 0; i <= 300; i++){
-        var x = -8 + i / 300 * 16, y = K(x, tg), px = p.X(x), py = p.Y(y);
-        if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-      }
-      ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = "#9ea7b0"; ctx.font = "10.5px ui-monospace,monospace"; ctx.textAlign = "center";
-      ctx.fillText("t=" + tg, p.X(-3.2), p.Y(K(-3.2, tg)) - 4);
-    });
-    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.4; ctx.beginPath();
-    for (var j = 0; j <= 400; j++){
-      var x2 = -8 + j / 400 * 16, y2 = K(x2, t), qx = p.X(x2), qy = p.Y(y2);
-      if (j) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
-    }
-    ctx.stroke();
-    /* ±2√t 标记（核的 e^{-1} 点） */
-    var w = 2 * Math.sqrt(t);
-    ctx.strokeStyle = "#185FA5"; ctx.setLineDash([2, 2]); ctx.beginPath();
-    ctx.moveTo(p.X(-w), p.Y(0)); ctx.lineTo(p.X(-w), p.Y(K(-w, t) + 0.06));
-    ctx.moveTo(p.X(w), p.Y(0)); ctx.lineTo(p.X(w), p.Y(K(w, t) + 0.06));
-    ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#185FA5"; ctx.font = "11.5px ui-monospace,monospace"; ctx.textAlign = "center";
-    ctx.fillText("±2a√t = ±" + w.toFixed(2), p.X(w), p.Y(K(w, t) + 0.10));
-    $("kw-peak").textContent = K(0, t).toFixed(3);
-    $("kw-sd").textContent = Math.sqrt(2 * t).toFixed(3);
-    $("kw-mass").textContent = "1.000000";
-  }
-  $("kw-t").addEventListener("input", function(){ t = 0.05 * Math.pow(60, parseFloat(this.value) / 100); draw(); });
-  $("kw-play").onclick = function(){
-    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放展宽"; return; }
-    this.textContent = "暂停";
-    timer = setInterval(function(){
-      var v = parseFloat($("kw-t").value) + 1; if (v > 100) v = 0;
-      $("kw-t").value = v; t = 0.05 * Math.pow(60, v / 100); draw();
-    }, 60);
-  };
-  t = 0.05 * Math.pow(60, 46 / 100); draw();
+ var cv = $("kw-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+ var t = 1, timer = null;
+ function K(x, t){ return Math.exp(-x * x / (4 * t)) / (2 * Math.sqrt(Math.PI * t)); }
+ function draw(){
+ var p = newPlot(ctx, W, H, { xmin: -8, xmax: 8, ymin: 0, ymax: 1.1,
+ xt: [-8, -4, 0, 4, 8], yt: [0, 0.5, 1], xlab: "x", ylab: "K(x,t)" });
+ [0.1, 0.3, 1, 2].forEach(function(tg){
+ ctx.strokeStyle = "#c7cdd4"; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.beginPath();
+ for (var i = 0; i <= 300; i++){
+ var x = -8 + i / 300 * 16, y = K(x, tg), px = p.X(x), py = p.Y(y);
+ if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+ }
+ ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = "#9ea7b0"; ctx.font = "10.5px ui-monospace,monospace"; ctx.textAlign = "center";
+ ctx.fillText("t=" + tg, p.X(-3.2), p.Y(K(-3.2, tg)) - 4);
+ });
+ ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.4; ctx.beginPath();
+ for (var j = 0; j <= 400; j++){
+ var x2 = -8 + j / 400 * 16, y2 = K(x2, t), qx = p.X(x2), qy = p.Y(y2);
+ if (j) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
+ }
+ ctx.stroke();
+ /* ±2√t 标记（核的 e^{-1} 点） */
+ var w = 2 * Math.sqrt(t);
+ ctx.strokeStyle = "#185FA5"; ctx.setLineDash([2, 2]); ctx.beginPath();
+ ctx.moveTo(p.X(-w), p.Y(0)); ctx.lineTo(p.X(-w), p.Y(K(-w, t) + 0.06));
+ ctx.moveTo(p.X(w), p.Y(0)); ctx.lineTo(p.X(w), p.Y(K(w, t) + 0.06));
+ ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = "#185FA5"; ctx.font = "11.5px ui-monospace,monospace"; ctx.textAlign = "center";
+ ctx.fillText("±2a√t = ±" + w.toFixed(2), p.X(w), p.Y(K(w, t) + 0.10));
+ $("kw-peak").textContent = K(0, t).toFixed(3);
+ $("kw-sd").textContent = Math.sqrt(2 * t).toFixed(3);
+ $("kw-mass").textContent = "1.000000";
+ }
+ $("kw-t").addEventListener("input", function(){ t = 0.05 * Math.pow(60, parseFloat(this.value) / 100); draw(); });
+ $("kw-play").onclick = function(){
+ if (timer){ clearInterval(timer); timer = null; this.textContent = "播放展宽"; return; }
+ this.textContent = "暂停";
+ timer = setInterval(function(){
+ var v = parseFloat($("kw-t").value) + 1; if (v > 100) v = 0;
+ $("kw-t").value = v; t = 0.05 * Math.pow(60, v / 100); draw();
+ }, 60);
+ };
+ t = 0.05 * Math.pow(60, 46 / 100); draw();
 })();
 
 /* ========== 05 杜哈梅 ========== */
 (function(){
-  var presets = {
-    "const": { f: function(x, tau){ return 1; }, exact: function(x, t){ return t; }, win: null },
-    "blob":  { f: function(x, tau){ return (tau >= 0.4 && tau <= 1.6) ? Math.exp(-x * x / 0.4) : 0; }, exact: null, win: [0.4, 1.6] },
-    "osc":   { f: function(x, tau){ return Math.cos(x) * Math.exp(-tau); },
-               exact: function(x, t){ return t * Math.exp(-t) * Math.cos(x); }, win: null }
-  };
-  var cur = "const", t = 0.3, timer = null;
-  /* 局部 Simpson（源函数光滑，无间断点问题） */
-  function simpson(f, a, b, n){
-    if (n % 2) n++;
-    var h = (b - a) / n, s = f(a) + f(b);
-    for (var i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * f(a + i * h);
-    return s * h / 3;
-  }
-  /* ∫K(x-ξ,s)f(ξ,τ)dξ：ζ 换元 + Simpson */
-  function innerK(P, x, s, tau){
-    if (s <= 0) return P.f(x, tau);
-    return simpson(function(z){ return P.f(x + 2 * Math.sqrt(s) * z, tau) * Math.exp(-z * z); }, -8, 8, 160) / Math.sqrt(Math.PI);
-  }
-  /* (3.28)：对 τ 积分；时段源在窗口边界处剖分，保证每段光滑 */
-  function uOf(P, x, t){
-    var pts = [0];
-    (P.win || []).forEach(function(e){ if (e > 0 && e < t) pts.push(e); });
-    pts.push(t); pts.sort(function(a, b){ return a - b; });
-    var sum = 0;
-    for (var i = 0; i < pts.length - 1; i++)
-      sum += simpson(function(tau){ return innerK(P, x, t - tau, tau); }, pts[i], pts[i + 1], 48);
-    return sum;
-  }
-  function draw(){
-    var P = presets[cur];
-    /* 上 panel：当前源 */
-    var c1 = $("dm-src").getContext("2d");
-    var p1 = newPlot(c1, 840, 170, { xmin: -6, xmax: 6, ymin: -0.25, ymax: 1.25,
-      xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 1], xlab: "x", ylab: "f(x,t)" });
-    c1.strokeStyle = "#0F6E56"; c1.lineWidth = 2.2; c1.beginPath();
-    for (var i = 0; i <= 180; i++){
-      var x = -6 + i / 180 * 12, v = P.f(x, t), px = p1.X(x), py = p1.Y(v);
-      if (i) c1.lineTo(px, py); else c1.moveTo(px, py);
-    }
-    c1.stroke();
-    c1.fillStyle = "#0F6E56"; c1.font = "12px system-ui"; c1.textAlign = "left";
-    c1.fillText("当前热源 f(x,t)", p1.L + 8, p1.T + 14);
-    /* 下 panel：解 */
-    var c2 = $("dm-u").getContext("2d");
-    var p2 = newPlot(c2, 840, 230, { xmin: -6, xmax: 6, ymin: -1.2, ymax: 1.2,
-      xt: [-6, -4, -2, 0, 2, 4, 6], yt: [-1, 0, 1], xlab: "x", ylab: "u(x,t)" });
-    if (P.exact){
-      c2.strokeStyle = "#9ea7b0"; c2.setLineDash([4, 3]); c2.lineWidth = 1.4; c2.beginPath();
-      for (var m = 0; m <= 180; m++){
-        var x2 = -6 + m / 180 * 12, ve = P.exact(x2, t), ex = p2.X(x2), ey = p2.Y(ve);
-        if (m) c2.lineTo(ex, ey); else c2.moveTo(ex, ey);
-      }
-      c2.stroke(); c2.setLineDash([]);
-    }
-    c2.strokeStyle = "#D85A30"; c2.lineWidth = 2.2; c2.beginPath();
-    for (var q = 0; q <= 180; q++){
-      var x3 = -6 + q / 180 * 12, u = uOf(P, x3, t), ux = p2.X(x3), uy = p2.Y(u);
-      if (q) c2.lineTo(ux, uy); else c2.moveTo(ux, uy);
-    }
-    c2.stroke();
-    c2.font = "12px system-ui"; c2.textAlign = "left";
-    c2.fillStyle = "#D85A30"; c2.fillText("杜哈梅积分 (3.28)", p2.L + 8, p2.T + 14);
-    if (P.exact){ c2.fillStyle = "#9ea7b0"; c2.fillText("解析解（虚线）", p2.L + 8, p2.T + 30); }
-    /* readouts */
-    $("dm-tv").textContent = t.toFixed(2);
-    var u0 = uOf(P, 0, t);
-    $("dm-u0").textContent = u0.toFixed(4);
-    if (P.exact){
-      var err = Math.abs(u0 - P.exact(0, t));
-      $("dm-err").textContent = err.toExponential(1);
-    } else {
-      $("dm-err").textContent = "—（无初等解）";
-    }
-  }
-  $("dm-t").addEventListener("input", function(){ t = 0.05 * Math.pow(60, parseFloat(this.value) / 100); draw(); });
-  $("dm-play").onclick = function(){
-    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放"; return; }
-    this.textContent = "暂停";
-    timer = setInterval(function(){
-      var v = parseFloat($("dm-t").value) + 1; if (v > 100) v = 0;
-      $("dm-t").value = v; t = 0.05 * Math.pow(60, v / 100); draw();
-    }, 80);
-  };
-  Array.prototype.forEach.call(document.querySelectorAll(".dp"), function(b){
-    b.onclick = function(){
-      document.querySelectorAll(".dp").forEach(function(x){ x.classList.remove("on"); });
-      b.classList.add("on"); cur = b.getAttribute("data-p"); draw();
-    };
-  });
-  t = 0.05 * Math.pow(60, 40 / 100); draw();
+ var presets = {
+ "const": { f: function(x, tau){ return 1; }, exact: function(x, t){ return t; }, win: null },
+ "blob": { f: function(x, tau){ return (tau >= 0.4 && tau <= 1.6) ? Math.exp(-x * x / 0.4) : 0; }, exact: null, win: [0.4, 1.6] },
+ "osc": { f: function(x, tau){ return Math.cos(x) * Math.exp(-tau); },
+ exact: function(x, t){ return t * Math.exp(-t) * Math.cos(x); }, win: null }
+ };
+ var cur = "const", t = 0.3, timer = null;
+ /* 局部 Simpson（源函数光滑，无间断点问题） */
+ function simpson(f, a, b, n){
+ if (n % 2) n++;
+ var h = (b - a) / n, s = f(a) + f(b);
+ for (var i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * f(a + i * h);
+ return s * h / 3;
+ }
+ /* ∫K(x-ξ,s)f(ξ,τ)dξ：ζ 换元 + Simpson */
+ function innerK(P, x, s, tau){
+ if (s <= 0) return P.f(x, tau);
+ return simpson(function(z){ return P.f(x + 2 * Math.sqrt(s) * z, tau) * Math.exp(-z * z); }, -8, 8, 160) / Math.sqrt(Math.PI);
+ }
+ /* (3.28)：对 τ 积分；时段源在窗口边界处剖分，保证每段光滑 */
+ function uOf(P, x, t){
+ var pts = [0];
+ (P.win || []).forEach(function(e){ if (e > 0 && e < t) pts.push(e); });
+ pts.push(t); pts.sort(function(a, b){ return a - b; });
+ var sum = 0;
+ for (var i = 0; i < pts.length - 1; i++)
+ sum += simpson(function(tau){ return innerK(P, x, t - tau, tau); }, pts[i], pts[i + 1], 48);
+ return sum;
+ }
+ function draw(){
+ var P = presets[cur];
+ /* 上 panel：当前源 */
+ var c1 = $("dm-src").getContext("2d");
+ var p1 = newPlot(c1, 840, 170, { xmin: -6, xmax: 6, ymin: -0.25, ymax: 1.25,
+ xt: [-6, -4, -2, 0, 2, 4, 6], yt: [0, 1], xlab: "x", ylab: "f(x,t)" });
+ c1.strokeStyle = "#0F6E56"; c1.lineWidth = 2.2; c1.beginPath();
+ for (var i = 0; i <= 180; i++){
+ var x = -6 + i / 180 * 12, v = P.f(x, t), px = p1.X(x), py = p1.Y(v);
+ if (i) c1.lineTo(px, py); else c1.moveTo(px, py);
+ }
+ c1.stroke();
+ c1.fillStyle = "#0F6E56"; c1.font = "12px system-ui"; c1.textAlign = "left";
+ c1.fillText("当前热源 f(x,t)", p1.L + 8, p1.T + 14);
+ /* 下 panel：解 */
+ var c2 = $("dm-u").getContext("2d");
+ var p2 = newPlot(c2, 840, 230, { xmin: -6, xmax: 6, ymin: -1.2, ymax: 1.2,
+ xt: [-6, -4, -2, 0, 2, 4, 6], yt: [-1, 0, 1], xlab: "x", ylab: "u(x,t)" });
+ if (P.exact){
+ c2.strokeStyle = "#9ea7b0"; c2.setLineDash([4, 3]); c2.lineWidth = 1.4; c2.beginPath();
+ for (var m = 0; m <= 180; m++){
+ var x2 = -6 + m / 180 * 12, ve = P.exact(x2, t), ex = p2.X(x2), ey = p2.Y(ve);
+ if (m) c2.lineTo(ex, ey); else c2.moveTo(ex, ey);
+ }
+ c2.stroke(); c2.setLineDash([]);
+ }
+ c2.strokeStyle = "#D85A30"; c2.lineWidth = 2.2; c2.beginPath();
+ for (var q = 0; q <= 180; q++){
+ var x3 = -6 + q / 180 * 12, u = uOf(P, x3, t), ux = p2.X(x3), uy = p2.Y(u);
+ if (q) c2.lineTo(ux, uy); else c2.moveTo(ux, uy);
+ }
+ c2.stroke();
+ c2.font = "12px system-ui"; c2.textAlign = "left";
+ c2.fillStyle = "#D85A30"; c2.fillText("杜哈梅积分 (3.28)", p2.L + 8, p2.T + 14);
+ if (P.exact){ c2.fillStyle = "#9ea7b0"; c2.fillText("解析解（虚线）", p2.L + 8, p2.T + 30); }
+ /* readouts */
+ $("dm-tv").textContent = t.toFixed(2);
+ var u0 = uOf(P, 0, t);
+ $("dm-u0").textContent = u0.toFixed(4);
+ if (P.exact){
+ var err = Math.abs(u0 - P.exact(0, t));
+ $("dm-err").textContent = err.toExponential(1);
+ } else {
+ $("dm-err").textContent = "—（无初等解）";
+ }
+ }
+ $("dm-t").addEventListener("input", function(){ t = 0.05 * Math.pow(60, parseFloat(this.value) / 100); draw(); });
+ $("dm-play").onclick = function(){
+ if (timer){ clearInterval(timer); timer = null; this.textContent = "播放"; return; }
+ this.textContent = "暂停";
+ timer = setInterval(function(){
+ var v = parseFloat($("dm-t").value) + 1; if (v > 100) v = 0;
+ $("dm-t").value = v; t = 0.05 * Math.pow(60, v / 100); draw();
+ }, 80);
+ };
+ Array.prototype.forEach.call(document.querySelectorAll(".dp"), function(b){
+ b.onclick = function(){
+ document.querySelectorAll(".dp").forEach(function(x){ x.classList.remove("on"); });
+ b.classList.add("on"); cur = b.getAttribute("data-p"); draw();
+ };
+ });
+ t = 0.05 * Math.pow(60, 40 / 100); draw();
 })();
 
 /* ========== 06 存在性：t→0 收敛 ========== */
 (function(){
-  var cv = $("cv-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-  var cvt = $("cv-tail"), ctxx = cvt.getContext("2d"), TW = cvt.width, TH = cvt.height;
-  var t = 0.01, timer = null;
-  function box(x){ return (x >= -1 && x <= 1) ? 1 : 0; }
-  function draw(){
-    var p = newPlot(ctx, W, H, { xmin: -3, xmax: 3, ymin: -0.25, ymax: 1.3,
-      xt: [-3, -2, -1, 0, 1, 2, 3], yt: [0, 0.5, 1], xlab: "x", ylab: "u / φ" });
-    /* 初值（阶梯） */
-    ctx.strokeStyle = "#185FA5"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.8; ctx.beginPath();
-    for (var i = 0; i <= 300; i++){
-      var x = -3 + i / 300 * 6, v = box(x), px = p.X(x), py = p.Y(v);
-      if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-    }
-    ctx.stroke(); ctx.setLineDash([]);
-    /* 解 */
-    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.2; ctx.beginPath();
-    for (var j = 0; j <= 400; j++){
-      var x2 = -3 + j / 400 * 6, u = poissonU(box, [-1, 1], x2, t), qx = p.X(x2), qy = p.Y(u);
-      if (j) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
-    }
-    ctx.stroke();
-    /* 间断点标记 */
-    ctx.fillStyle = "#57606a"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "center";
-    ctx.fillText("x=1 处 u→0.5（左右平均）", p.X(1), p.T + 12);
-    ctx.textAlign = "left";
-    ctx.fillStyle = "#185FA5"; ctx.fillText("初值 φ（方波，虚线）", p.L + 8, p.T + 26);
-    ctx.fillStyle = "#D85A30"; ctx.fillText("解 u(x,t)", p.L + 8, p.T + 42);
-    /* 误差读数 */
-    var worst = 0;
-    for (var g = 0; g <= 600; g++){
-      var xg = -3 + g / 600 * 6;
-      if (Math.abs(xg - 1) < 0.3 || Math.abs(xg + 1) < 0.3) continue;
-      var e = Math.abs(poissonU(box, [-1, 1], xg, t) - box(xg));
-      if (e > worst) worst = e;
-    }
-    $("cv-tv").textContent = t < 0.01 ? t.toExponential(1) : t.toFixed(3);
-    $("cv-err").textContent = worst < 1e-3 ? worst.toExponential(1) : worst.toFixed(4);
-    $("cv-jump").textContent = poissonU(box, [-1, 1], 1, t).toFixed(4);
-    /* 尾部账本（对数纵轴） */
-    var M = 1, eps = 0.01, YMAX = 0.5;
-    var pt = newPlot(ctxx, TW, TH, { xmin: 0, xmax: 4, ymin: 1e-6, ymax: YMAX, ylog: true,
-      xt: [0, 1, 2, 3, 4], yt: [1e-6, 1e-4, 1e-2], xlab: "N", ylab: "尾部质量" });
-    function tail(N){
-      var n = 4000, h = (10 - N) / n, acc = 0;
-      for (var k = 0; k < n; k++){ var z = N + (k + 0.5) * h; acc += Math.exp(-z * z); }
-      return 2 * M / Math.sqrt(Math.PI) * acc * h;
-    }
-    ctxx.strokeStyle = "#534AB7"; ctxx.lineWidth = 2; ctxx.beginPath();
-    for (var s = 0; s <= 200; s++){
-      var N = s / 200 * 4, tv = tail(N), tx = pt.X(N), ty = pt.Y(tv);
-      if (s) ctxx.lineTo(tx, ty); else ctxx.moveTo(tx, ty);
-    }
-    ctxx.stroke();
-    /* ε/3 水平线 */
-    ctxx.strokeStyle = "#D85A30"; ctxx.setLineDash([5, 3]); ctxx.beginPath();
-    ctxx.moveTo(pt.L, pt.Y(eps / 3)); ctxx.lineTo(pt.L + pt.iw, pt.Y(eps / 3)); ctxx.stroke(); ctxx.setLineDash([]);
-    ctxx.fillStyle = "#D85A30"; ctxx.font = "11.5px ui-monospace,monospace"; ctxx.textAlign = "left";
-    ctxx.fillText("ε/3 = 0.00333（ε=0.01）", pt.L + 6, pt.Y(eps / 3) - 5);
-    /* N=2.08 竖线 */
-    ctxx.strokeStyle = "#0F6E56"; ctxx.setLineDash([2, 2]); ctxx.beginPath();
-    ctxx.moveTo(pt.X(2.08), pt.T); ctxx.lineTo(pt.X(2.08), pt.T + pt.ih); ctxx.stroke(); ctxx.setLineDash([]);
-    ctxx.fillStyle = "#0F6E56"; ctxx.textAlign = "center";
-    ctxx.fillText("N=2.08", pt.X(2.08), pt.T + 12);
-    ctxx.fillStyle = "#534AB7"; ctxx.textAlign = "left";
-    ctxx.fillText("尾部质量 (2M/√π)∫_N^∞ e^(−ζ²)dζ", pt.L + 8, pt.T + pt.ih - 8);
-  }
-  $("cv-t").addEventListener("input", function(){ t = 0.001 * Math.pow(500, parseFloat(this.value) / 100); draw(); });
-  $("cv-play").onclick = function(){
-    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放收敛"; return; }
-    this.textContent = "暂停";
-    timer = setInterval(function(){
-      var v = parseFloat($("cv-t").value) - 1.2; if (v < 0) v = 100;
-      $("cv-t").value = v; t = 0.001 * Math.pow(500, v / 100); draw();
-    }, 80);
-  };
-  t = 0.001 * Math.pow(500, 60 / 100); draw();
+ var cv = $("cv-canvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+ var cvt = $("cv-tail"), ctxx = cvt.getContext("2d"), TW = cvt.width, TH = cvt.height;
+ var t = 0.01, timer = null;
+ function box(x){ return (x >= -1 && x <= 1) ? 1 : 0; }
+ function draw(){
+ var p = newPlot(ctx, W, H, { xmin: -3, xmax: 3, ymin: -0.25, ymax: 1.3,
+ xt: [-3, -2, -1, 0, 1, 2, 3], yt: [0, 0.5, 1], xlab: "x", ylab: "u / φ" });
+ /* 初值（阶梯） */
+ ctx.strokeStyle = "#185FA5"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.8; ctx.beginPath();
+ for (var i = 0; i <= 300; i++){
+ var x = -3 + i / 300 * 6, v = box(x), px = p.X(x), py = p.Y(v);
+ if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+ }
+ ctx.stroke(); ctx.setLineDash([]);
+ /* 解 */
+ ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.2; ctx.beginPath();
+ for (var j = 0; j <= 400; j++){
+ var x2 = -3 + j / 400 * 6, u = poissonU(box, [-1, 1], x2, t), qx = p.X(x2), qy = p.Y(u);
+ if (j) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
+ }
+ ctx.stroke();
+ /* 间断点标记 */
+ ctx.fillStyle = "#57606a"; ctx.font = "11px ui-monospace,monospace"; ctx.textAlign = "center";
+ ctx.fillText("x=1 处 u→0.5（左右平均）", p.X(1), p.T + 12);
+ ctx.textAlign = "left";
+ ctx.fillStyle = "#185FA5"; ctx.fillText("初值 φ（方波，虚线）", p.L + 8, p.T + 26);
+ ctx.fillStyle = "#D85A30"; ctx.fillText("解 u(x,t)", p.L + 8, p.T + 42);
+ /* 误差读数 */
+ var worst = 0;
+ for (var g = 0; g <= 600; g++){
+ var xg = -3 + g / 600 * 6;
+ if (Math.abs(xg - 1) < 0.3 || Math.abs(xg + 1) < 0.3) continue;
+ var e = Math.abs(poissonU(box, [-1, 1], xg, t) - box(xg));
+ if (e > worst) worst = e;
+ }
+ $("cv-tv").textContent = t < 0.01 ? t.toExponential(1) : t.toFixed(3);
+ $("cv-err").textContent = worst < 1e-3 ? worst.toExponential(1) : worst.toFixed(4);
+ $("cv-jump").textContent = poissonU(box, [-1, 1], 1, t).toFixed(4);
+ /* 尾部账本（对数纵轴） */
+ var M = 1, eps = 0.01, YMAX = 0.5;
+ var pt = newPlot(ctxx, TW, TH, { xmin: 0, xmax: 4, ymin: 1e-6, ymax: YMAX, ylog: true,
+ xt: [0, 1, 2, 3, 4], yt: [1e-6, 1e-4, 1e-2], xlab: "N", ylab: "尾部质量" });
+ function tail(N){
+ var n = 4000, h = (10 - N) / n, acc = 0;
+ for (var k = 0; k < n; k++){ var z = N + (k + 0.5) * h; acc += Math.exp(-z * z); }
+ return 2 * M / Math.sqrt(Math.PI) * acc * h;
+ }
+ ctxx.strokeStyle = "#534AB7"; ctxx.lineWidth = 2; ctxx.beginPath();
+ for (var s = 0; s <= 200; s++){
+ var N = s / 200 * 4, tv = tail(N), tx = pt.X(N), ty = pt.Y(tv);
+ if (s) ctxx.lineTo(tx, ty); else ctxx.moveTo(tx, ty);
+ }
+ ctxx.stroke();
+ /* ε/3 水平线 */
+ ctxx.strokeStyle = "#D85A30"; ctxx.setLineDash([5, 3]); ctxx.beginPath();
+ ctxx.moveTo(pt.L, pt.Y(eps / 3)); ctxx.lineTo(pt.L + pt.iw, pt.Y(eps / 3)); ctxx.stroke(); ctxx.setLineDash([]);
+ ctxx.fillStyle = "#D85A30"; ctxx.font = "11.5px ui-monospace,monospace"; ctxx.textAlign = "left";
+ ctxx.fillText("ε/3 = 0.00333（ε=0.01）", pt.L + 6, pt.Y(eps / 3) - 5);
+ /* N=2.08 竖线 */
+ ctxx.strokeStyle = "#0F6E56"; ctxx.setLineDash([2, 2]); ctxx.beginPath();
+ ctxx.moveTo(pt.X(2.08), pt.T); ctxx.lineTo(pt.X(2.08), pt.T + pt.ih); ctxx.stroke(); ctxx.setLineDash([]);
+ ctxx.fillStyle = "#0F6E56"; ctxx.textAlign = "center";
+ ctxx.fillText("N=2.08", pt.X(2.08), pt.T + 12);
+ ctxx.fillStyle = "#534AB7"; ctxx.textAlign = "left";
+ ctxx.fillText("尾部质量 (2M/√π)∫_N^∞ e^(−ζ²)dζ", pt.L + 8, pt.T + pt.ih - 8);
+ }
+ $("cv-t").addEventListener("input", function(){ t = 0.001 * Math.pow(500, parseFloat(this.value) / 100); draw(); });
+ $("cv-play").onclick = function(){
+ if (timer){ clearInterval(timer); timer = null; this.textContent = "播放收敛"; return; }
+ this.textContent = "暂停";
+ timer = setInterval(function(){
+ var v = parseFloat($("cv-t").value) - 1.2; if (v < 0) v = 100;
+ $("cv-t").value = v; t = 0.001 * Math.pow(500, v / 100); draw();
+ }, 80);
+ };
+ t = 0.001 * Math.pow(500, 60 / 100); draw();
 })();
 
 setTimeout(function(){
-  if (!document.querySelector("mjx-container")) {
-    var b = document.getElementById("mjx-offline");
-    if (b) b.hidden = false;
-  }
+ if (!document.querySelector("mjx-container")) {
+ var b = document.getElementById("mjx-offline");
+ if (b) b.hidden = false;
+ }
 }, 2500);
 </script>
 </body>

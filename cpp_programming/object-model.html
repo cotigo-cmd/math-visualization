@@ -5,33 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>对象内存模型 · 构造、析构与 this — CPP-02</title>
 <!--
-  CPP-02 · C++ 程序设计 §8 / §9 / §11 / §12（谭浩强《C++ 程序设计》第 3 版）
-  维护说明：
-  - 本页无数学公式，故意不引 MathJax，完全离线可用。
-  - 所有渲染走 innerHTML 字符串（DOM 桩没有 appendChild，读数闸门要能跑）。
-  - 页面脚本暴露 window.OBJ，供 verify_readout_obj.js 直接调用纯函数核对。
-  - 版式身份与 CPP-01 一致：冷灰纸 + 墨 + 青(指针/虚函数) / 琥珀(地址) + 等宽读数。
-  - 依据章节：8.3.4 成员函数存储方式 · 9.5.3 this 指针 · 9.1 构造函数 ·
-    11.5 派生类构造/析构顺序 · 11.6 赋值兼容（对象切片）· 12.3.3 虚函数与 vtable ·
-    12.3.4 虚析构函数 · 12.4 纯虚函数与抽象类。
+ CPP-02 · C++ 程序设计 §8 / §9 / §11 / §12（教材第 3 版）
+ 维护说明：
+ - 本页无数学公式，故意不引 MathJax，完全离线可用。
+ - 所有渲染走 innerHTML 字符串（DOM 桩没有 appendChild，读数闸门要能跑）。
+ - 页面脚本暴露 window.OBJ，供 verify_readout_obj.js 直接调用纯函数核对。
+ - 版式身份与 CPP-01 一致：冷灰纸 + 墨 + 青(指针/虚函数) / 琥珀(地址) + 等宽读数。
+ - 依据章节：8.3.4 成员函数存储方式 · 9.5.3 this 指针 · 9.1 构造函数 ·
+ 12.3.4 虚析构函数 · 12.4 纯虚函数与抽象类。
 -->
 <style>
 :root{
-  --paper:#F2F4F6; --card:#FFFFFF; --ink:#101820; --muted:#5A6672;
-  --line:#D3DAE1; --line2:#B7C0C9;
-  --teal:#1F7A8C; --teal-soft:#E7F2F4;
-  --amber:#B45F06; --amber-soft:#FBF0E2;
-  --red:#B4232C; --red-soft:#FBEAEA;
-  --green:#2F7A4F; --green-soft:#E9F3ED;
-  --violet:#5B4FA3; --violet-soft:#EEECF7;
-  --mono:ui-monospace,"JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
-  --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+ --paper:#F2F4F6; --card:#FFFFFF; --ink:#101820; --muted:#5A6672;
+ --line:#D3DAE1; --line2:#B7C0C9;
+ --teal:#1F7A8C; --teal-soft:#E7F2F4;
+ --amber:#B45F06; --amber-soft:#FBF0E2;
+ --red:#B4232C; --red-soft:#FBEAEA;
+ --green:#2F7A4F; --green-soft:#E9F3ED;
+ --violet:#5B4FA3; --violet-soft:#EEECF7;
+ --mono:ui-monospace,"JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
+ --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font:15.5px/1.78 var(--sans);
-  background-image:linear-gradient(rgba(31,122,140,.045) 1px,transparent 1px);
-  background-size:100% 28px}
+ background-image:linear-gradient(rgba(31,122,140,.045) 1px,transparent 1px);
+ background-size:100% 28px}
 .wrap{max-width:940px;margin:0 auto;padding:44px 22px 72px}
 
 .crumb{font-size:12.5px;font-family:var(--mono);color:var(--muted);margin:0 0 22px}
@@ -39,7 +38,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font:15.5px/1.78 var(--sa
 .crumb a:hover{text-decoration:underline}
 .titlebar{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:12px}
 .fig{font-family:var(--mono);font-size:12px;letter-spacing:.08em;background:var(--ink);color:#fff;
-  padding:3px 9px;border-radius:3px;white-space:nowrap}
+ padding:3px 9px;border-radius:3px;white-space:nowrap}
 h1{font-size:25px;line-height:1.35;margin:0;font-weight:650;letter-spacing:-.01em}
 .sub{font-family:var(--mono);font-size:12px;color:var(--muted);margin:10px 0 0}
 .lead{font-size:15.5px;margin:16px 0 0;max-width:70ch}
@@ -47,30 +46,30 @@ h1{font-size:25px;line-height:1.35;margin:0;font-weight:650;letter-spacing:-.01e
 
 .toc{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}
 .toc a{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--muted);
-  border:1px solid var(--line);background:var(--card);border-radius:20px;padding:4px 12px}
+ border:1px solid var(--line);background:var(--card);border-radius:20px;padding:4px 12px}
 .toc a:hover{border-color:var(--teal);color:var(--teal)}
 
 section{margin:44px 0 0}
 h2{font-size:19px;font-weight:650;margin:0 0 4px;padding-left:44px;position:relative;letter-spacing:-.01em}
 h2 .num{position:absolute;left:0;top:2px;font-family:var(--mono);font-size:12px;color:var(--amber);
-  border-bottom:2px solid var(--amber);padding-bottom:2px}
+ border-bottom:2px solid var(--amber);padding-bottom:2px}
 h2 + .dek{font-size:13px;color:var(--muted);margin:0 0 18px;padding-left:44px}
 @media(max-width:640px){h2{padding-left:0}h2 .num{position:static;display:block;margin-bottom:6px;border:0;padding:0}
-  h2+.dek{padding-left:0}}
+ h2+.dek{padding-left:0}}
 
 p{margin:0 0 14px}
 code{font-family:var(--mono);font-size:.9em;background:#EDF0F3;border:1px solid var(--line);
-  border-radius:4px;padding:1px 5px;white-space:nowrap}
+ border-radius:4px;padding:1px 5px;white-space:nowrap}
 @media(max-width:660px){code{white-space:normal;word-break:break-word}}
 pre{font-family:var(--mono);font-size:12.5px;line-height:1.65;background:#111820;color:#D8E1E8;
-  border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+ border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
 pre b{color:#7FD1DE;font-weight:400}
 pre i{color:#E0A45C;font-style:normal}
 
 .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;
-  box-shadow:0 1px 2px rgba(16,24,32,.04);margin:0 0 16px;overflow:hidden}
+ box-shadow:0 1px 2px rgba(16,24,32,.04);margin:0 0 16px;overflow:hidden}
 .panel .ph{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
-  padding:9px 14px;border-bottom:1px solid var(--line);background:#FAFBFC}
+ padding:9px 14px;border-bottom:1px solid var(--line);background:#FAFBFC}
 .panel .ph .t{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--muted)}
 input[type=range]{accent-color:#1F7A8C}
 .panel .pb{padding:14px}
@@ -80,7 +79,7 @@ canvas{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
 
 .ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 14px 14px}
 .btn{font-family:var(--mono);font-size:12.5px;background:#fff;color:var(--ink);
-  border:1px solid var(--line2);border-radius:6px;padding:6px 12px;cursor:pointer;line-height:1.4}
+ border:1px solid var(--line2);border-radius:6px;padding:6px 12px;cursor:pointer;line-height:1.4}
 .btn:hover{border-color:var(--teal);color:var(--teal)}
 .btn.on{background:var(--teal);border-color:var(--teal);color:#fff}
 .btn.vt{accent-color:var(--violet)}
@@ -108,19 +107,19 @@ td.mono,th.mono{font-family:var(--mono);font-size:12.5px}
 tr.sel td{background:var(--teal-soft)}
 
 .note{border-left:3px solid var(--teal);background:var(--teal-soft);padding:11px 14px;
-  border-radius:0 6px 6px 0;font-size:14px;margin:0 0 16px}
+ border-radius:0 6px 6px 0;font-size:14px;margin:0 0 16px}
 .note.warn{border-color:var(--red);background:var(--red-soft)}
 .note.tip{border-color:var(--amber);background:var(--amber-soft)}
 .note.vt{border-color:var(--violet);background:var(--violet-soft)}
 .note p:last-child{margin:0}
 .note b{font-weight:650}
 .tagx{font-family:var(--mono);font-size:10.5px;border-radius:3px;padding:1px 6px;
-  background:var(--ink);color:#fff;margin-right:6px}
+ background:var(--ink);color:#fff;margin-right:6px}
 
 /* 时序日志 */
 .log{font-family:var(--mono);font-size:12.5px;line-height:1.9;background:#FBFCFD;
-  border:1px dashed var(--line2);border-radius:8px;padding:10px 14px;margin:0 0 12px;
-  min-height:44px}
+ border:1px dashed var(--line2);border-radius:8px;padding:10px 14px;margin:0 0 12px;
+ min-height:44px}
 .log .ln{color:var(--muted)}
 .log .ln.done{color:var(--ink)}
 .log .ln.done::before{content:"✓ ";color:var(--green)}
@@ -131,7 +130,7 @@ tr.sel td{background:var(--teal-soft)}
 /* 内存布局小格 */
 .cells{display:flex;gap:4px;margin:6px 0 0;flex-wrap:wrap}
 .cell{border:1px solid var(--line2);border-radius:5px;background:#fff;padding:5px 7px;
-  font-family:var(--mono);font-size:11px;min-width:52px;text-align:center}
+ font-family:var(--mono);font-size:11px;min-width:52px;text-align:center}
 .cell .o{display:block;font-size:9.5px;color:var(--muted)}
 .cell .n{display:block;font-size:11.5px;font-weight:600;color:var(--ink)}
 .cell .t{display:block;font-size:9.5px;color:var(--teal)}
@@ -144,7 +143,7 @@ tr.sel td{background:var(--teal-soft)}
 .cell.vt .t{color:var(--violet)}
 
 footer{margin-top:52px;padding-top:16px;border-top:1px solid var(--line);
-  font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+ font-size:12.5px;color:var(--muted);font-family:var(--mono)}
 footer a{color:var(--teal)}
 </style>
 </head>
@@ -154,51 +153,37 @@ footer a{color:var(--teal)}
 <p class="crumb"><a href="../index.html">数学可视化 · 全部学科</a> ／ <a href="./index.html">C++ 程序设计</a></p>
 
 <div class="titlebar">
-  <span class="fig">CPP-02</span>
-  <h1>对象内存模型：构造、析构与 this</h1>
+ <span class="fig">CPP-02</span>
+ <h1>对象内存模型：构造、析构与 this</h1>
 </div>
-<p class="sub">谭浩强《C++ 程序设计》§8.3.4 · §9.1 · §9.5.3 · §11.5 · §11.6 · §12.3 · §12.4 · 图 CPP-02 · 五个交互实验</p>
+<p class="sub">教材§8.3.4 · §9.1 · §9.5.3 · §11.5 · §11.6 · §12.3 · §12.4 · 图 CPP-02 · 五个交互实验</p>
 
 <p class="lead">定义一个类，编译器就在内存里给对象排了一张「字节座位表」；调用成员函数时，又悄悄多传了一个参数 <code>this</code>；继承与虚函数再在这张表前面加了一个看不见的指针。<em>这一页画的，就是对象在内存里的真实样子</em>——为什么 <code>sizeof(Time)</code> 是 12、为什么同一个函数能服务十个对象、为什么基类析构函数最好加 <code>virtual</code>。</p>
-
-<nav class="toc">
-  <a href="#s1">01 字节布局</a>
-  <a href="#s2">02 this 指针</a>
-  <a href="#s3">03 构造/析构时序</a>
-  <a href="#s4">04 赋值兼容与切片</a>
-  <a href="#s5">05 虚函数表与虚析构</a>
-  <a href="#s6">06 速查</a>
-</nav>
-
-<!-- ============ 1 ============ -->
-<section id="s1">
-<h2><span class="num">S 01</span>对象的字节布局：函数不住在对象里</h2>
-<p class="dek">教材 §8.3.4 的核心结论：对象占的空间 = 数据成员（含对齐填充），成员函数的目标代码在对象之外，全类共用一段。</p>
 
 <p>用类定义对象时，系统只为<b>数据成员</b>分配空间。教材原话：<code>sizeof(Time)</code> 在 Visual C++ 下输出 12，证明「一个对象所占的空间大小只取决于该对象中数据成员所占的空间，而与成员函数无关」。所以一个类定义 10 个对象，不会存 10 份相同的函数代码，而是共用一段目标代码。</p>
 
 <div class="panel">
-  <div class="ph"><span class="t">图 CPP-02a · 一块对象内存的实况（每格 4 字节）</span><span class="t" id="m1hint">切换成员组合，看偏移与总字节</span></div>
-  <div class="cvwrap"><canvas id="cv1" width="760" height="252"></canvas></div>
-  <div class="ctl">
-    <button class="btn on" id="b1a">Time · int×3（§8.3.4 原例）</button>
-    <button class="btn" id="b1b">加 char sex</button>
-    <button class="btn" id="b1c">加 double avg</button>
-    <button class="btn" id="b1d">加 char name[8]</button>
-  </div>
-  <div class="ro" id="ro1"></div>
+ <div class="ph"><span class="t">图 CPP-02a · 一块对象内存的实况（每格 4 字节）</span><span class="t" id="m1hint">切换成员组合，看偏移与总字节</span></div>
+ <div class="cvwrap"><canvas id="cv1" width="760" height="252"></canvas></div>
+ <div class="ctl">
+ <button class="btn on" id="b1a">Time · int×3（§8.3.4 原例）</button>
+ <button class="btn" id="b1b">加 char sex</button>
+ <button class="btn" id="b1c">加 double avg</button>
+ <button class="btn" id="b1d">加 char name[8]</button>
+ </div>
+ <div class="ro" id="ro1"></div>
 </div>
 
 <p>布局规则（以本页模型为准，64 位典型值）：每个成员放在「自身对齐的整数倍」偏移上，中间不足的部分是<b>填充</b>；整个对象的总大小还要补齐到最大成员对齐的倍数（否则对象数组里第二个元素会错位）。<code>char</code> 对齐 1、<code>int</code> 对齐 4、<code>double</code> 对齐 8。</p>
 
-<pre>class Time {                    <i>// §8.3.4 的例类</i>
+<pre>class Time { <i>// §8.3.4 的例类</i>
 public:
-  int hour;                     <i>// 偏移 0 · 4 字节</i>
-  int minute;                   <i>// 偏移 4 · 4 字节</i>
-  int sec;                      <i>// 偏移 8 · 4 字节</i>
-  void set();                   <i>// 目标代码在对象外：sizeof(Time) == 12</i>
+ int hour; <i>// · 4 字节</i>
+ int minute; <i>// · 4 字节</i>
+ int sec; <i>// · 4 字节</i>
+ void set(); <i>// 目标代码在对象外：sizeof(Time) == 12</i>
 };
-Time t1, t2;                    <i>// 两个对象，两段数据，一段函数代码</i></pre>
+Time t1, t2; <i>// 两个对象，两段数据，一段函数代码</i></pre>
 
 <div class="note tip">
 <p><span class="tagx">推论</span><b>「类里加了函数，对象会变大吗？」——不会。</b>inline 也一样：inline 决定调用点是「插入代码拷贝」还是「跳转到入口地址」，与成员函数是否占用对象空间不属于同一范畴（§8.3.4 说明 2，教材特别提醒别把两者搞混）。</p>
@@ -213,16 +198,16 @@ Time t1, t2;                    <i>// 两个对象，两段数据，一段函数
 <p>十个对象共用一段 <code>volume</code> 代码，怎么知道该算谁的数据？教材的解释：C++ 设立了一个名为 <code>this</code> 的指针，调用 <code>a.volume</code> 时指向 <code>a</code>，调用 <code>b.volume</code> 时指向 <code>b</code>。函数体里的 <code>height</code> 其实是 <code>this-&gt;height</code>——<b>成员访问默认经过 this</b>。下面点一个对象，看这段公共代码的 this 滑向谁。</p>
 
 <div class="panel">
-  <div class="ph"><span class="t">图 CPP-02b · 同一段 volume 代码，三个候选对象</span><span class="t" id="m2hint">点对象切换 this 的指向</span></div>
-  <div class="cvwrap"><canvas id="cv2" width="760" height="238"></canvas></div>
-  <div class="ctl">
-    <button class="btn on" id="b2a">a.volume()</button>
-    <button class="btn" id="b2b">b.volume()</button>
-    <button class="btn" id="b2c">c.volume()</button>
-    <button class="btn" id="b2t">显式 this-&gt;height</button>
-    <button class="btn vt" id="b2s">static count()（无 this）</button>
-  </div>
-  <div class="ro" id="ro2"></div>
+ <div class="ph"><span class="t">图 CPP-02b · 同一段 volume 代码，三个候选对象</span><span class="t" id="m2hint">点对象切换 this 的指向</span></div>
+ <div class="cvwrap"><canvas id="cv2" width="760" height="238"></canvas></div>
+ <div class="ctl">
+ <button class="btn on" id="b2a">a.volume()</button>
+ <button class="btn" id="b2b">b.volume()</button>
+ <button class="btn" id="b2c">c.volume()</button>
+ <button class="btn" id="b2t">显式 this-&gt;height</button>
+ <button class="btn vt" id="b2s">static count()（无 this）</button>
+ </div>
+ <div class="ro" id="ro2"></div>
 </div>
 
 <p>教材把编译后的实际形式写了出来：<code>int Box::volume(Box *this)</code>，调用写成 <code>a.volume(&amp;a)</code>。「这些都是编译系统自动实现的，编程序者不必人为地在形参中增加 this 指针」。需要时也可以显式写：<code>this-&gt;height</code>，或用 <code>*this</code> 表示「本对象」——注意 <code>*this</code> 两侧括号不能省，<code>*this.height</code> 会被解析成 <code>*(this.height)</code>。</p>
@@ -240,72 +225,57 @@ Time t1, t2;                    <i>// 两个对象，两段数据，一段函数
 <p>派生类对象建立时执行构造的顺序是：①派生类构造函数先调用基类构造函数；②再执行派生类构造函数本身。教材用 <code>Student1 : Student(n, nam, s)</code> 的初始化表实现第一步——<b>基类成员的初始化必须借道初始化表</b>，构造函数体里只能给派生类自己的成员赋值（那时基类部分已经建好了）。析构则完全相反：先执行派生类析构函数 <code>~Student1()</code>，再执行基类析构函数 <code>~Student()</code>。</p>
 
 <div class="panel">
-  <div class="ph"><span class="t">图 CPP-02c · 一次「构造 → 析构」的完整时序</span><span class="t" id="m3hint">先构造，再析构</span></div>
-  <div class="pb">
-    <div class="log" id="log3"></div>
-    <div class="ctl" style="padding:10px 0 0">
-      <button class="btn" id="b3ctor">下一步：构造</button>
-      <button class="btn" id="b3dtor">下一步：析构</button>
-      <button class="btn" id="b3auto">连续播放</button>
-      <button class="btn danger" id="b3r">重来</button>
-    </div>
-  </div>
-  <div class="ro" id="ro3"></div>
+ <div class="ph"><span class="t">图 CPP-02c · 一次「构造 → 析构」的完整时序</span><span class="t" id="m3hint">先构造，再析构</span></div>
+ <div class="pb">
+ <div class="log" id="log3"></div>
+ <div class="ctl" style="padding:10px 0 0">
+ <button class="btn" id="b3ctor">下一步：构造</button>
+ <button class="btn" id="b3dtor">下一步：析构</button>
+ <button class="btn" id="b3auto">连续播放</button>
+ <button class="btn danger" id="b3r">重来</button>
+ </div>
+ </div>
+ <div class="ro" id="ro3"></div>
 </div>
 
-<pre>class Student {                          <i>// 基类</i>
+<pre>class Student { <i>// 基类</i>
 public:
-  Student(int n, string nam, char s)      <i>// 基类构造函数</i>
-    : num(n), name(nam), sex(s) {}
-  ~Student() { /* ... */ }
+ Student(int n, string nam, char s) <i>// 基类构造函数</i>
+ : num(n), name(nam), sex(s) {}
+ ~Student() { /* ... */ }
 private:
-  int num;  string name;  char sex;
+ int num; string name; char sex;
 };
-class Student1 : public Student {          <i>// 公用派生类</i>
+class Student1 : public Student { <i>// 公用派生类</i>
 public:
-  Student1(int n, string nam, char s, int a, string ad)
-    : <b>Student(n, nam, s)</b>, age(a), addr(ad) {}   <i>// ① 先造基类部分</i>
-  ~Student1() { /* ... */ }                 <i>// 析构按 ~Student1 → ~Student 倒序</i>
+ Student1(int n, string nam, char s, int a, string ad)
+ : <b>Student(n, nam, s)</b>, age(a), addr(ad) {} <i>// ① 先造基类部分</i>
+ ~Student1() { /* ... */ } <i>// 析构按 ~Student1 → ~Student 倒序</i>
 private:
-  int age;  string addr;                    <i>// ② 再造派生类新增部分</i>
+ int age; string addr; <i>// ② 再造派生类新增部分</i>
 };</pre>
 
 <div class="note warn">
 <p><span class="tagx">顺序反了会怎样</span><b>析构顺序倒过来是有道理的：</b>派生类的析构函数体可能还在访问基类成员（比如基类提供的 <code>ofstream</code>），如果基类先被拆了，派生类清理时读到的就是已析构对象。构造同理——基类部分没建好之前，派生类构造函数体碰它也是未定义行为。</p>
-</div>
-</section>
-
-<!-- ============ 4 ============ -->
-<section id="s4">
-<h2><span class="num">S 04</span>赋值兼容与对象切片：大材小用</h2>
-<p class="dek">§11.6：派生类对象可以向基类对象赋值——赋值时舍弃派生类自己的成员，教材称之为「大材小用」。</p>
 
 <p>基类与派生类对象之间有<b>赋值兼容</b>关系：派生类包含基类的成员，所以 <code>al = bl;</code>（<code>A al; B bl;</code>，B 公用派生自 A）合法。但教材图 11.26 说得很直白：赋值时「派生类新增的部分舍弃不用」。所谓赋值只是对数据成员赋值，<b>对成员函数不存在赋值问题</b>；赋值后也不能通过 <code>al</code> 去访问 <code>bl</code> 的派生成员（<code>al.age</code> 直接编译错误）。子类型关系是单向、不可逆的。</p>
 
 <div class="panel">
-  <div class="ph"><span class="t">图 CPP-02d · al = bl 到底拷走了哪些字节</span><span class="t" id="m4hint">先看布局，再执行赋值</span></div>
-  <div class="pb">
-    <div class="cells" id="cells4"></div>
-    <div class="ctl" style="padding:12px 0 0">
-      <button class="btn" id="b4go">执行 al = bl</button>
-      <button class="btn" id="b4ref">改用 A&amp; r = bl</button>
-      <button class="btn danger" id="b4bad">试试 al.age</button>
-      <button class="btn" id="b4r">还原</button>
-    </div>
-    <div class="step" id="st4" style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:10px;min-height:20px"></div>
-  </div>
-  <div class="ro" id="ro4"></div>
+ <div class="ph"><span class="t">图 CPP-02d · al = bl 到底拷走了哪些字节</span><span class="t" id="m4hint">先看布局，再执行赋值</span></div>
+ <div class="pb">
+ <div class="cells" id="cells4"></div>
+ <div class="ctl" style="padding:12px 0 0">
+ <button class="btn" id="b4go">执行 al = bl</button>
+ <button class="btn" id="b4ref">改用 A&amp; r = bl</button>
+ <button class="btn danger" id="b4bad">试试 al.age</button>
+ <button class="btn" id="b4r">还原</button>
+ </div>
+ <div class="step" id="st4" style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:10px;min-height:20px"></div>
+ </div>
+ <div class="ro" id="ro4"></div>
 </div>
 
-<p>四种合法形态（§11.6）：派生类对象 → 基类对象赋值；派生类对象 → 基类引用赋值/初始化；函数形参是基类对象/引用，实参传派生类对象；派生类对象地址 → 基类指针。注意引用那一条：<code>A&amp; r = bl;</code> 之后 <b>r 不是 bl 的别名</b>，它只是 bl 中基类部分的别名，与 bl 有相同的起始地址。</p>
-
-<pre>void fun(A&amp; r) { cout &lt;&lt; r.num &lt;&lt; endl; }   <i>// 形参是基类引用</i>
-B b1;
-fun(b1);                                    <i>// 合法：自动类型转换，只见到基类部分</i>
-A *p = &amp;b1;                                <i>// 基类指针指向派生类对象，地址相同</i></pre>
-
-<div class="note warn">
-<p><span class="tagx">切片</span><b>切片（slicing）的代价是静默的：</b><code>al = bl</code> 只拷基类那段字节，派生类新增的 <code>age</code>、<code>wage</code> 原样留在 <code>bl</code> 里、不进 <code>al</code>——没有任何编译警告。若基类有虚函数，<code>al</code> 的 vptr 也会被改写成基类的版本（见下一节），多态行为随之丢失。</p>
+<p>四种合法形态（§11.6）：派生类对象 → 基类对象赋值；派生类对象 → 基类引用赋值/初始化；函数形参是基类对象/引用，实参传派生类对象；派生类对象地址 → 基类指针。注意引用那一条：<code>A&amp; r = bl;</code> 之后 <b>r 不是 bl 的别名</b>，它只是 bl 中基类部分的别名，与 bl 有相同的起始地址。若基类有虚函数，<code>al</code> 的 vptr 也会被改写成基类的版本（见下一节），多态行为随之丢失。</p>
 </div>
 </section>
 
@@ -317,35 +287,35 @@ A *p = &amp;b1;                                <i>// 基类指针指向派生类
 <p>通过基类指针调用虚函数时，编译期无法确定调用哪个类的函数（<code>pt-&gt;display()</code> 里 pt 指向谁要到运行期才知道），于是关联被推迟到运行阶段——<b>动态关联（滞后关联）</b>。实现的抓手就是 vtable：每个带虚函数的类有一张指针数组，对象里则藏着一个指向它的指针（vptr）。<code>pt-&gt;display()</code> 实际是「按 pt 找到对象的 vptr → 找到该类的 vtable → 取 display 槽位的入口地址 → 调用」。</p>
 
 <div class="panel">
-  <div class="ph"><span class="t">图 CPP-02e · 基类指针 p 依次指向三个对象</span><span class="t" id="m5hint">切换指向，再切 virtual 开关对比</span></div>
-  <div class="cvwrap"><canvas id="cv5" width="760" height="262"></canvas></div>
-  <div class="ctl">
-    <button class="btn on" id="b5pt">p = &amp;point</button>
-    <button class="btn" id="b5ci">p = &amp;circle</button>
-    <button class="btn" id="b5cy">p = &amp;cylinder</button>
-    <button class="btn" id="b5call">p-&gt;display()</button>
-    <button class="btn vt onv" id="b5virt">virtual：开</button>
-    <button class="btn danger" id="b5del">delete p</button>
-  </div>
-  <div class="ro" id="ro5"></div>
+ <div class="ph"><span class="t">图 CPP-02e · 基类指针 p 依次指向三个对象</span><span class="t" id="m5hint">切换指向，再切 virtual 开关对比</span></div>
+ <div class="cvwrap"><canvas id="cv5" width="760" height="262"></canvas></div>
+ <div class="ctl">
+ <button class="btn on" id="b5pt">p = &amp;point</button>
+ <button class="btn" id="b5ci">p = &amp;circle</button>
+ <button class="btn" id="b5cy">p = &amp;cylinder</button>
+ <button class="btn" id="b5call">p-&gt;display()</button>
+ <button class="btn vt onv" id="b5virt">virtual：开</button>
+ <button class="btn danger" id="b5del">delete p</button>
+ </div>
+ <div class="ro" id="ro5"></div>
 </div>
 
 <p>把 virtual 开关关掉再点 <code>p-&gt;display()</code>：<b>静态关联</b>下编译期就按指针的静态类型（<code>Point*</code>）确定调用 <code>Point::display</code>——三次调用输出同一份内容。打开后，同一句代码对三个对象给出三种行为，这就是多态。</p>
 
 <pre>class Point {
 public:
-  virtual void display() const;      <i>// 虚函数：进 vtable</i>
-  virtual float area() const { return 0; }
-  virtual ~Point() {}                 <i>// 虚析构：基类析构最好都加</i>
+ virtual void display() const; <i>// 虚函数：进 vtable</i>
+ virtual float area() const { return 0; }
+ virtual ~Point() {} <i>// 虚析构：基类析构最好都加</i>
 };
-class Circle : public Point {         <i>// 派生类自动重写 display / area</i>
-  void display() const;               <i>// 不写 virtual 也自动是虚函数</i>
-  float area() const { return 3.14f * r * r; }
-  int r;
+class Circle : public Point { <i>// 派生类自动重写 display / area</i>
+ void display() const; <i>// 不写 virtual 也自动是虚函数</i>
+ float area() const { return 3.14f * r * r; }
+ int r;
 };
 Point* p = new Circle;
-p-&gt;display();                        <i>// 动态关联 → Circle::display</i>
-delete p;                            <i>// ~Point 为虚 → ~Circle 先执行，再 ~Point</i></pre>
+p-&gt;display(); <i>// 动态关联 → Circle::display</i>
+delete p; <i>// ~Point 为虚 → ~Circle 先执行，再 ~Point</i></pre>
 
 <div class="note vt">
 <p><span class="tagx">虚析构</span><b>教材例 12.3 的执行对照：</b><code>Point* p = new Circle; delete p;</code>——基类析构<b>非虚</b>时只输出 <code>executing Point destructor</code>，派生类的 <code>~Circle()</code> 根本不执行（泄漏派生部分）；把 <code>~Point</code> 改成 <code>virtual</code> 后输出两句，先 <code>~Circle</code> 再 <code>~Point</code>。基类析构一旦为虚，所有派生类析构自动成虚。反之，<b>构造函数不能声明为虚函数</b>——对象还没建好，谈不上绑定。</p>
@@ -360,31 +330,17 @@ delete p;                            <i>// ~Point 为虚 → ~Circle 先执行�
 <p class="dek">考前十分钟看这一节。</p>
 
 <table>
-  <tr><th class="mono">写法 / 结论</th><th>含义</th></tr>
-  <tr><td class="mono">sizeof(Time) == 12</td><td>对象大小 = 数据成员（含对齐），不含成员函数代码（§8.3.4）</td></tr>
-  <tr><td class="mono">a.volume()</td><td>编译后等价 <code>Box::volume(&amp;a)</code>，this 是隐式形参（§9.5.3）</td></tr>
-  <tr><td class="mono">*this</td><td>成员函数所在对象本身；括号不能省：<code>(*this).h</code> ≠ <code>*this.h</code></td></tr>
-  <tr><td class="mono">static 成员函数</td><td>没有 this 指针，不能访问非静态成员（§9.6）</td></tr>
-  <tr><td class="mono">: Student(n, nam, s)</td><td>派生类构造函数先借初始化表造基类部分，再造自己的（§11.5）</td></tr>
-  <tr><td class="mono">al = bl</td><td>赋值兼容：只拷基类部分，派生新增成员被舍弃（切片，§11.6）</td></tr>
-  <tr><td class="mono">A&amp; r = bl;</td><td>r 只是 bl 中基类部分的别名，起始地址相同（§11.6）</td></tr>
-  <tr><td class="mono">virtual 成员函数</td><td>进 vtable；通过基类指针/引用调用时走动态关联（§12.3.3）</td></tr>
-  <tr><td class="mono">virtual ~Point()</td><td>delete 基类指针时正确析构派生部分；派生类析构自动成虚（§12.3.4）</td></tr>
-  <tr><td class="mono">virtual f() = 0</td><td>纯虚函数：只留名字，派生类定义后才能调用；所在类为抽象类（§12.4）</td></tr>
-</table>
-
-<div class="note warn">
-<p><span class="tagx">八个高频错误</span></p>
-<p>1. 以为在类声明中给数据成员赋初值（<code>int hour = 0;</code> 在旧标准里非法，类不占存储）　2. 以为类内定义的成员函数占对象空间　3. 以为 inline 会改变对象大小　4. 在构造函数体里初始化基类成员（晚了，该写初始化表）　5. 指望 <code>al.age</code> 访问派生成员（切片后不存在）　6. 用基类对象给派生类对象赋值（单向、不可逆）　7. 基类析构忘记 virtual，<code>delete</code> 基类指针时派生部分不清理　8. 想把构造函数声明成 virtual（对象未建成，编译直接拒绝）</p>
-</div>
-
-<div class="note">
-<p><span class="tagx">调试</span>怀疑布局不对时：<code>cout &lt;&lt; sizeof(T)</code> 看总大小，<code>offsetof</code>（或看编译器文档的对齐规则）看每个成员的偏移；怀疑 vtable 行为时，把同一调用分别用对象、指针、引用各写一遍对比输出——静态关联与动态关联的差异会立刻显形。</p>
+ <tr><th class="mono">写法 / 结论</th><th>含义</th></tr>
+ <tr><td class="mono">sizeof(Time) == 12</td><td>对象大小 = 数据成员（含对齐），不含成员函数代码（§8.3.4）</td></tr>
+ <tr><td class="mono">a.volume()</td><td>编译后等价 <code>Box::volume(&amp;a)</code>，this 是隐式形参（§9.5.3）</td></tr>
+ <tr><td class="mono">*this</td><td>成员函数所在对象本身；通过基类指针/引用调用时走动态关联（§12.3.3）</td></tr>
+ <tr><td class="mono">virtual ~Point()</td><td>delete 基类指针时正确析构派生部分；派生类析构自动成虚（§12.3.4）</td></tr>
+ <tr><td class="mono">virtual f() = 0</td><td>纯虚函数：只留名字，派生类定义后才能调用；怀疑 vtable 行为时，把同一调用分别用对象、指针、引用各写一遍对比输出——静态关联与动态关联的差异会立刻显形。</p>
 </div>
 </section>
 
 <footer>
-<p>CPP-02 · 依据谭浩强《C++ 程序设计（第 3 版）》8.3.4、9.1、9.5.3、9.6、11.5、11.6、12.3.3、12.3.4、12.4 重组；图中的地址为示意（典型 64 位栈地址），布局以教材所述「数据成员决定对象大小、vtable 在对象外」为模型，具体偏移随编译器与平台而定。与 <a href="./pointers.html">CPP-01 指针页</a> 互为参照（对象里那个隐形的 vptr 就是个指针）。</p>
+<p>CPP-02 · 依据教材8.3.4、9.1、9.5.3、9.6、11.5、11.6、12.3.3、12.3.4、12.4 重组；图中的地址为示意（典型 64 位栈地址），布局以教材所述「数据成员决定对象大小、vtable 在对象外」为模型，具体偏移随编译器与平台而定。与 <a href="./pointers.html">CPP-01 指针页</a> 互为参照（对象里那个隐形的 vptr 就是个指针）。</p>
 <p>返回 <a href="./index.html">C++ 程序设计</a> · <a href="../index.html">全部学科</a></p>
 </footer>
 
@@ -396,602 +352,266 @@ delete p;                            <i>// ~Point 为虚 → ~Circle 先执行�
 /* ================= 工具 ================= */
 function $(id){ return document.getElementById(id); }
 function hex8(n){
-  var s = (n >>> 0).toString(16);
-  return '0x' + ('00000000' + s).slice(-8);
+ var s = (n >>> 0).toString(16);
+ return '0x' + ('00000000' + s).slice(-8);
 }
 function setHTML(id, html){ var e = $(id); if(e) e.innerHTML = html; }
 function setText(id, t){ var e = $(id); if(e) e.textContent = t; }
 function on(id, fn){ var e = $(id); if(e && e.addEventListener) e.addEventListener('click', fn); }
 function setOn(group, active){
-  group.forEach(function(id){
-    var e = $(id); if(!e) return;
-    if(e.className !== undefined) e.className = 'btn' + (id === active ? ' on' : '');
-  });
+ group.forEach(function(id){
+ var e = $(id); if(!e) return;
+ if(e.className !== undefined) e.className = 'btn' + (id === active ? ' on' : '');
+ });
 }
 
 /* ================= 通用：字节布局模型 =================
  * members: [{name, type}]，按声明顺序排列。
  * 规则：成员放在自身对齐整数倍的偏移上；总大小补齐到最大对齐的倍数。
- * 这些就是 64 位平台的典型值（VC++/GCC 一致）。 */
-var TYPES = {
-  int:      { size:4, align:4 },
-  float:    { size:4, align:4 },
-  char:     { size:1, align:1 },
-  double:   { size:8, align:8 },
-  'char[8]':{ size:8, align:1 }
-};
-function layout(members){
-  var off = 0, out = [], align = 1;
-  members.forEach(function(m){
-    var t = TYPES[m.type];
-    if(!t) return;
-    if(t.align > align) align = t.align;
-    var pad = (t.align - (off % t.align)) % t.align;
-    out.push({ name:m.name, type:m.type, size:t.size, align:t.align,
-               offset: off + pad, pad: pad });
-    off += pad + t.size;
-  });
-  var tail = (align - (off % align)) % align;
-  return { members: out, total: off + tail, tail: tail, align: align,
-           padding: out.reduce(function(s, m){ return s + m.pad; }, 0) + tail };
-}
-function findMember(lay, name){
-  for(var i = 0; i < lay.members.length; i++) if(lay.members[i].name === name) return lay.members[i];
-  return null;
-}
-
-/* ================= 图 CPP-02a：对象字节布局 ================= */
-var PRESET1 = [
-  { key:'a', btn:'b1a', label:'Time · int×3',
-    members:[{name:'hour',type:'int'},{name:'minute',type:'int'},{name:'sec',type:'int'}] },
-  { key:'b', btn:'b1b', label:'加 char sex',
-    members:[{name:'hour',type:'int'},{name:'minute',type:'int'},{name:'sec',type:'int'},{name:'sex',type:'char'}] },
-  { key:'c', btn:'b1c', label:'加 double avg',
-    members:[{name:'hour',type:'int'},{name:'minute',type:'int'},{name:'sec',type:'int'},{name:'avg',type:'double'}] },
-  { key:'d', btn:'b1d', label:'加 char name[8]',
-    members:[{name:'hour',type:'int'},{name:'minute',type:'int'},{name:'sec',type:'int'},{name:'name',type:'char[8]'}] }
-];
-var sel1 = 0;
-function preset1(){ return PRESET1[sel1]; }
-function lay1(){ return layout(preset1().members); }
-function member1(name){ return findMember(lay1(), name); }
-function sizeOfType1(type){ return TYPES[type] ? TYPES[type].size : 0; }
-function words1(){ return Math.ceil(lay1().total / 4); }
-
-function draw1(){
-  var cv = $('cv1'); if(!cv || !cv.getContext) return;
-  var ctx = cv.getContext('2d'); if(!ctx) return;
-  var W = 760, H = 252, dpr = Math.min(window.devicePixelRatio || 1, 2);
-  cv.width = W * dpr; cv.height = H * dpr;
-  if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  if(ctx.clearRect) ctx.clearRect(0, 0, W, H);
-  var mono = 'ui-monospace, Consolas, monospace';
-
-  var lay = lay1(), nw = words1();
-  var cw = 62, gap = 5, x0 = 40, y0 = 78, ch = 54;
-  function wx(k){ return x0 + k * (cw + gap); }
-
-  ctx.fillStyle = '#5A6672'; ctx.font = '11px ' + mono;
-  ctx.fillText('对象内存 · ' + preset1().label + ' · 每格 4 字节（地址向右递增）', x0, 24);
-  ctx.fillStyle = '#1F7A8C'; ctx.font = '12px ' + mono;
-  ctx.fillText('sizeof = ' + lay.total + ' 字节', x0, 44);
-
-  for(var k = 0; k < nw; k++){
-    var x = wx(k);
-    ctx.fillStyle = '#77838F'; ctx.font = '10px ' + mono;
-    ctx.fillText('+' + (k * 4), x + 2, y0 - 8);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(x, y0, cw, ch);
-    ctx.strokeStyle = '#B7C0C9'; ctx.lineWidth = 1;
-    if(ctx.strokeRect) ctx.strokeRect(x + 1, y0 + 1, cw - 2, ch - 2);
-  }
-  // 成员与填充按字节落在哪一格
-  lay.members.forEach(function(m){
-    var first = Math.floor(m.offset / 4), last = Math.floor((m.offset + m.size - 1) / 4);
-    for(var k = first; k <= last; k++){
-      var x = wx(k);
-      var localOff = m.offset - k * 4;                 // 成员在这一格内的起始字节
-      if(localOff === 0){
-        ctx.fillStyle = '#1F7A8C'; ctx.font = '12px ' + mono;
-        ctx.fillText(m.name, x + 6, y0 + ch / 2 + 4);
-        ctx.fillStyle = '#5A6672'; ctx.font = '9.5px ' + mono;
-        ctx.fillText(m.type, x + 6, y0 + ch / 2 + 19);
-      } else {
-        ctx.fillStyle = '#1F7A8C'; ctx.font = '9.5px ' + mono;
-        ctx.fillText(m.name + '…', x + 6, y0 + 16);
-      }
-    }
-  });
-  // 内部填充（成员之间）+ 尾部填充画斜纹
-  function hatch(k){
-    var x = wx(k);
-    ctx.save && ctx.save();
-    ctx.fillStyle = 'rgba(183,192,201,.35)';
-    for(var i = -ch; i < cw; i += 7){
-      ctx.beginPath();
-      ctx.moveTo(x + i, y0 + ch);
-      ctx.lineTo(x + i + ch, y0);
-      if(ctx.stroke) ctx.stroke();
-    }
-    ctx.restore && ctx.restore();
-    ctx.strokeStyle = '#B7C0C9'; ctx.lineWidth = 1;
-    if(ctx.strokeRect) ctx.strokeRect(x + 1, y0 + 1, cw - 2, ch - 2);
-  }
-  var usedBytes = [];
-  lay.members.forEach(function(m){
-    for(var b = m.offset; b < m.offset + m.size; b++) usedBytes[b] = true;
-  });
-  for(var b = 0; b < nw * 4; b += 4){
-    var wFree = true;
-    for(var j = 0; j < 4; j++) if(usedBytes[b + j]) { wFree = false; break; }
-    if(wFree && b < lay.total) hatch(b / 4);
-  }
-  if(lay.tail > 0){
-    var xt = wx(nw - 1);
-    ctx.fillStyle = '#9AA4AE'; ctx.font = '10px ' + mono;
-    ctx.fillText('尾部填充 ' + lay.tail + ' B', xt + 2, y0 + ch + 16);
-  }
-  // 函数代码段：对象之外
-  var fx = x0, fy = y0 + ch + 28, fw = 660, fh = 52;
-  if(ctx.setLineDash) ctx.setLineDash([5, 4]);
-  ctx.strokeStyle = '#B45F06'; ctx.lineWidth = 1.4;
-  if(ctx.strokeRect) ctx.strokeRect(fx, fy, fw, fh);
-  if(ctx.setLineDash) ctx.setLineDash([]);
-  ctx.fillStyle = '#B45F06'; ctx.font = '11.5px ' + mono;
-  ctx.fillText('成员函数目标代码（对象外 · 全类共用一段，不占 sizeof）', fx + 12, fy + 19);
-  ctx.fillStyle = '#5A6672'; ctx.font = '10.5px ' + mono;
-  ctx.fillText('void Time::set()   /   int Box::volume(Box* this)   /   virtual ~Point()', fx + 12, fy + 38);
-  ctx.fillStyle = '#5A6672'; ctx.font = '10px ' + mono;
-  ctx.fillText('▲ 这段代码不随对象数量增长：10 个对象也只有一份', fx + 2, fy + fh + 18);
-}
-
-function render1(){
-  if(!$('ro1')) return;
-  var lay = lay1(), rows = '';
-  rows += '<div class="l"><span class="k">sizeof(' + preset1().label.split(' · ')[0] + ')</span><span class="v ok">' + lay.total + ' 字节</span></div>';
-  lay.members.forEach(function(m){
-    rows += '<div class="l"><span class="k">' + m.name + '（' + m.type + ' · ' + m.size + ' B）</span>' +
-            '<span class="v addr">偏移 +' + m.offset + (m.pad ? '（前填 ' + m.pad + ' B）' : '') + '</span></div>';
-  });
-  rows += '<div class="l"><span class="k">成员间填充 + 尾部填充</span><span class="v">' + lay.padding + ' 字节</span></div>';
-  rows += '<div class="l"><span class="k">成员函数代码占用</span><span class="v ok">0 字节（在对象外）</span></div>';
-  rows += '<div class="l"><span class="k">4 字节格数</span><span class="v">' + words1() + ' 格</span></div>';
-  setHTML('ro1', rows);
-  draw1();
-}
-
-/* ================= 图 CPP-02b：this 指针 ================= */
-var BOXES = [
-  { name:'a', base:0x7ffd3000, h:12, w:10, l:8 },
-  { name:'b', base:0x7ffd3010, h:5,  w:5,  l:5 },
-  { name:'c', base:0x7ffd3020, h:2,  w:3,  l:4 }
-];
-var BOX_OFF = { h:0, w:4, l:8 };           // int 成员依次排列
-var sel2 = 0, staticN = 0, showThis2 = false;
-
-function thisPtr2(){ return BOXES[sel2].base; }
-function memberAddr2(m){ return BOXES[sel2].base + BOX_OFF[m]; }
-function memberVal2(m){ return BOXES[sel2][m]; }
-function volume2(){ var b = BOXES[sel2]; return b.h * b.w * b.l; }
-function callText2(){ return BOXES[sel2].name + '.volume()'; }
-function staticCount2(){ return staticN; }
-function incStatic2(){ staticN++; return staticN; }
-function resetStatic2(){ staticN = 0; }
-
-function draw2(){
-  var cv = $('cv2'); if(!cv || !cv.getContext) return;
-  var ctx = cv.getContext('2d'); if(!ctx) return;
-  var W = 760, H = 238, dpr = Math.min(window.devicePixelRatio || 1, 2);
-  cv.width = W * dpr; cv.height = H * dpr;
-  if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  if(ctx.clearRect) ctx.clearRect(0, 0, W, H);
-  var mono = 'ui-monospace, Consolas, monospace';
-
-  // 公共函数代码段（顶部虚线框）
-  var fx = 40, fy = 26, fw = 400, fh = 46;
-  if(ctx.setLineDash) ctx.setLineDash([5, 4]);
-  ctx.strokeStyle = '#1F7A8C'; ctx.lineWidth = 1.4;
-  if(ctx.strokeRect) ctx.strokeRect(fx, fy, fw, fh);
-  if(ctx.setLineDash) ctx.setLineDash([]);
-  ctx.fillStyle = '#1F7A8C'; ctx.font = '11px ' + mono;
-  ctx.fillText('int Box::volume(Box* this)  ← 全类共用一段代码', fx + 10, fy + 18);
-  ctx.fillStyle = '#101820'; ctx.font = '11px ' + mono;
-  ctx.fillText(showThis2 ? '  return this->height * this->width * this->length;'
-                         : '  return height * width * length;', fx + 10, fy + 36);
-
-  // 三个对象
-  var cw = 96, gap = 16, x0 = 60, y0 = 126, ch = 60;
-  BOXES.forEach(function(b, k){
-    var x = x0 + k * (cw + gap), isSel = (k === sel2);
-    ctx.fillStyle = '#77838F'; ctx.font = '10px ' + mono;
-    ctx.fillText(hex8(b.base), x + 2, y0 + ch + 16);
-    ctx.fillStyle = isSel ? '#E7F2F4' : '#FFFFFF';
-    ctx.fillRect(x, y0, cw, ch);
-    ctx.strokeStyle = isSel ? '#1F7A8C' : '#B7C0C9';
-    ctx.lineWidth = isSel ? 2 : 1;
-    if(ctx.strokeRect) ctx.strokeRect(x + 1, y0 + 1, cw - 2, ch - 2);
-    ctx.fillStyle = '#101820'; ctx.font = '12.5px ' + mono;
-    ctx.fillText('h=' + b.h, x + 8, y0 + 20);
-    ctx.fillText('w=' + b.w, x + 8, y0 + 38);
-    ctx.fillText('l=' + b.l, x + 8, y0 + 56);
-    ctx.fillStyle = '#1F7A8C'; ctx.font = '11px ' + mono;
-    ctx.fillText('Box ' + b.name, x + 4, y0 - 8);
-  });
-
-  // this 箭头：代码段 → 选中对象
-  var x2 = x0 + sel2 * (cw + gap) + cw / 2;
-  ctx.strokeStyle = '#B45F06'; ctx.lineWidth = 1.8;
-  ctx.beginPath();
-  ctx.moveTo(x2, fy + fh + 2);
-  if(ctx.bezierCurveTo) ctx.bezierCurveTo(x2, fy + fh + 34, x2, y0 - 44, x2, y0 - 14);
-  else ctx.lineTo(x2, y0 - 14);
-  if(ctx.stroke) ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x2, y0 - 4); ctx.lineTo(x2 - 5, y0 - 14); ctx.lineTo(x2 + 5, y0 - 14);
-  if(ctx.closePath) ctx.closePath();
-  ctx.fillStyle = '#B45F06';
-  if(ctx.fill) ctx.fill();
-  ctx.font = '11px ' + mono; ctx.fillStyle = '#B45F06';
-  ctx.fillText('this = ' + hex8(thisPtr2()), fx + fw + 14, fy + 18);
-  ctx.fillStyle = '#5A6672'; ctx.font = '10px ' + mono;
-  ctx.fillText('（隐式形参）', fx + fw + 14, fy + 34);
-}
-
-function render2(){
-  if(!$('ro2')) return;
-  var b = BOXES[sel2];
-  var rows = '';
-  rows += '<div class="l"><span class="k">调用形式</span><span class="v">' + callText2() + '</span></div>';
-  rows += '<div class="l"><span class="k">编译后等价</span><span class="v addr">Box::volume(&amp;' + b.name + ')</span></div>';
-  rows += '<div class="l"><span class="k">this 的值（隐式形参）</span><span class="v addr">' + hex8(thisPtr2()) + '</span></div>';
-  rows += '<div class="l"><span class="k">this-&gt;height / width / length</span><span class="v">' +
-          memberVal2('h') + ' / ' + memberVal2('w') + ' / ' + memberVal2('l') + '</span></div>';
-  rows += '<div class="l"><span class="k">成员地址（base + 偏移）</span><span class="v addr">' +
-          hex8(memberAddr2('h')) + ' / ' + hex8(memberAddr2('w')) + ' / ' + hex8(memberAddr2('l')) + '</span></div>';
-  rows += '<div class="l"><span class="k">返回值 ' + b.h + '×' + b.w + '×' + b.l + '</span><span class="v ok">' + volume2() + '</span></div>';
-  rows += '<div class="l"><span class="k">static 计数器（无 this 也能走）</span><span class="v vt">' + staticCount2() + '</span></div>';
-  setHTML('ro2', rows);
-  draw2();
-}
-
-/* ================= 图 CPP-02c：构造 / 析构时序 ================= */
-var SEQ3 = [
-  { t:'call', txt:'Student1 s1(10001, "Li", \'f\', 19, "Beijing") —— 定义对象' },
-  { t:'ctor', step:'①', txt:'基类构造函数 Student(10001,"Li",\'f\')：初始化 num, name, sex' },
-  { t:'ctor', step:'②', txt:'初始化表 age(a)：age = 19' },
-  { t:'ctor', step:'③', txt:'初始化表 addr(ad)：addr = "Beijing"' },
-  { t:'ctor', step:'④', txt:'Student1 构造函数体执行（此处为空）→ 构造完成' },
-  { t:'dtor', step:'①', txt:'作用域结束 / delete：先执行派生类析构函数体 ~Student1()' },
-  { t:'dtor', step:'②', txt:'再执行基类析构函数 ~Student()' },
-  { t:'dtor', step:'③', txt:'对象内存释放，字节布局整块归还' }
-];
-var ph3 = 0, autoTimer3 = null;
-function seqLen3(){ return SEQ3.length; }
-function cur3(){ return ph3 >= SEQ3.length ? null : SEQ3[ph3]; }
-function phase3(){ return ph3 >= SEQ3.length ? 'done' : SEQ3[ph3].t; }
-function constructed3(){ return ph3 >= 5; }
-function destroyed3(){ return ph3 >= SEQ3.length; }
-function step3(){
-  if(ph3 < SEQ3.length) ph3++;
-  render3();
-}
-function dtorStarted3(){ return ph3 >= 5; }
-function baseBeforeDerived3(){
-  // 构造序列里基类步骤必须出现在派生类新增成员步骤之前
-  var iBase = -1, iOwn = -1;
-  for(var i = 0; i < SEQ3.length; i++){
-    if(SEQ3[i].t === 'ctor' && SEQ3[i].txt.indexOf('基类构造函数') === 0 && iBase < 0) iBase = i;
-    if(SEQ3[i].t === 'ctor' && SEQ3[i].step === '②' && iOwn < 0) iOwn = i;
-  }
-  return iBase >= 0 && iOwn >= 0 && iBase < iOwn;
-}
-function derivedBeforeBase3(){
-  var iOwn = -1, iBase = -1;
-  for(var i = 0; i < SEQ3.length; i++){
-    if(SEQ3[i].t === 'dtor' && iOwn < 0) iOwn = i;
-    if(SEQ3[i].t === 'dtor' && SEQ3[i].txt.indexOf('基类析构函数') > 0 && iBase < 0) iBase = i;
-  }
-  return iOwn >= 0 && iBase >= 0 && iOwn < iBase;
-}
-
-function render3(){
-  if(!$('log3')) return;
-  var h = '';
-  for(var i = 0; i < ph3 && i < SEQ3.length; i++){
-    h += '<div class="ln done">' + SEQ3[i].step + ' ' + SEQ3[i].txt + '</div>';
-  }
-  var c = cur3();
-  if(c) h += '<div class="ln cur">' + (c.step ? c.step + ' ' : '') + c.txt + '</div>';
-  if(destroyed3()) h += '<div class="ln done">✓ 全流程结束：构造 5 步、析构 3 步，顺序互为镜像</div>';
-  setHTML('log3', h);
-  var c3 = cur3();
-  setText('st3', '');
-  var rows = '';
-  rows += '<div class="l"><span class="k">当前阶段</span><span class="v">' +
-    (phase3() === 'done' ? '已完成' : phase3() === 'ctor' ? '构造中' : phase3() === 'dtor' ? '析构中' : '待调用') + '</span></div>';
-  rows += '<div class="l"><span class="k">已执行步骤</span><span class="v">' + ph3 + ' / ' + SEQ3.length + '</span></div>';
-  rows += '<div class="l"><span class="k">构造顺序（§11.5）</span><span class="v ok">基类 → 派生类新增成员 → 构造函数体</span></div>';
-  rows += '<div class="l"><span class="k">析构顺序（§11.5）</span><span class="v ok">派生类析构函数体 → 基类析构函数</span></div>';
-  setHTML('ro3', rows);
-  var bc = $('b3ctor'), bd = $('b3dtor');
-  if(bc) bc.disabled = constructed3();
-  if(bd) bd.disabled = !constructed3() || destroyed3();
-  setText('m3hint', destroyed3() ? '已结束，可点「重来」' : (constructed3() ? '构造完成，进入析构阶段' : '构造进行中'));
-}
-
-/* ================= 图 CPP-02d：赋值兼容与对象切片 ================= */
-var BASE4 = layout([{name:'num',type:'int'},{name:'score',type:'float'}]);
-var DERIVED4 = layout([
-  {name:'num',type:'int'},{name:'score',type:'float'},
-  {name:'age',type:'int'},{name:'wage',type:'double'}
-]);
-var CUT4 = BASE4.total;                 // al = bl 只拷贝基类这段字节
-function dropped4(){ return DERIVED4.total - CUT4; }
-function copiedMembers4(){
-  return DERIVED4.members.filter(function(m){ return m.offset + m.size <= CUT4; });
-}
-function droppedMembers4(){
-  return DERIVED4.members.filter(function(m){ return m.offset >= CUT4; });
-}
-var mode4 = 'idle';                     // idle | assigned | ref | bad
-function cells4(){
-  return DERIVED4.members.map(function(m){
-    var keep = m.offset + m.size <= CUT4;
-    var cls = keep ? 'keep' : 'drop';
-    var note = keep ? '拷入 al' : '舍弃';
-    if(mode4 === 'ref' && keep) note = 'r 共享';
-    if(mode4 === 'ref' && !keep) note = 'r 看不见';
-    return { name:m.name, type:m.type, size:m.size, offset:m.offset, pad:m.pad, cls:cls, note:note };
-  });
-}
-function stepText4(){
-  if(mode4 === 'assigned') return 'al = bl 合法：只拷贝偏移 0–' + (CUT4 - 1) + '（' + CUT4 + ' 字节），' + dropped4() + ' 字节派生部分被舍弃';
-  if(mode4 === 'ref')      return 'A& r = bl 合法：r 是 bl 基类部分的别名，与 bl 起始地址相同，新增成员仍留在 bl 里';
-  if(mode4 === 'bad')      return "error: 'age' is not a member of 'A' —— 切片后 al 里根本没有这个成员（编译期报错）";
-  return '未赋值：al 与 bl 各自独立。点上面的按钮看三种用法的结局';
+ * 这些就是 64 位平台的典型值（VC++/GCC 一致）。点上面的按钮看三种用法的结局';
 }
 function render4(){
-  if(!$('ro4')) return;
-  var h = '';
-  cells4().forEach(function(c){
-    if(c.pad > 0){
-      h += '<div class="cell pad"><span class="o">+' + (c.offset - c.pad) + '</span>' +
-           '<span class="n">填充</span><span class="t">pad · ' + c.pad + 'B</span>' +
-           '<span class="o">对齐用</span></div>';
-    }
-    h += '<div class="cell ' + c.cls + '"><span class="o">+' + c.offset + '</span>' +
-         '<span class="n">' + c.name + '</span><span class="t">' + c.type + ' · ' + c.size + 'B</span>' +
-         '<span class="o">' + c.note + '</span></div>';
-  });
-  setHTML('cells4', h);
-  setText('st4', stepText4());
-  var rows = '';
-  rows += '<div class="l"><span class="k">基类 A 布局（num, score）</span><span class="v addr">' + BASE4.total + ' 字节</span></div>';
-  rows += '<div class="l"><span class="k">派生类 B 布局（+ age, wage）</span><span class="v addr">' + DERIVED4.total + ' 字节</span></div>';
-  rows += '<div class="l"><span class="k">al = bl 拷贝字节数</span><span class="v">' + (mode4 === 'assigned' ? CUT4 : 0) + '</span></div>';
-  rows += '<div class="l"><span class="k">被舍弃的派生部分</span><span class="v ' + (mode4 === 'assigned' ? 'bad' : '') + '">' + dropped4() + ' 字节（age, wage + 4 B 填充）</span></div>';
-  rows += '<div class="l"><span class="k">赋值兼容方向</span><span class="v ok">派生 → 基类（单向不可逆）</span></div>';
-  setHTML('ro4', rows);
+ if(!$('ro4')) return;
+ var h = '';
+ cells4().forEach(function(c){
+ if(c.pad > 0){
+ h += '<div class="cell pad"><span class="o">+' + (c.offset - c.pad) + '</span>' +
+ '<span class="n">填充</span><span class="t">pad · ' + c.pad + 'B</span>' +
+ '<span class="o">对齐用</span></div>';
+ }
+ h += '<div class="cell ' + c.cls + '"><span class="o">+' + c.offset + '</span>' +
+ '<span class="n">' + c.name + '</span><span class="t">' + c.type + ' · ' + c.size + 'B</span>' +
+ '<span class="o">' + c.note + '</span></div>';
+ });
+ setHTML('cells4', h);
+ setText('st4', stepText4());
+ var rows = '';
+ rows += '<div class="l"><span class="k">基类 A 布局（num, score）</span><span class="v addr">' + BASE4.total + ' 字节</span></div>';
+ rows += '<div class="l"><span class="k">派生类 B 布局（+ age, wage）</span><span class="v addr">' + DERIVED4.total + ' 字节</span></div>';
+ rows += '<div class="l"><span class="k">al = bl 拷贝字节数</span><span class="v">' + (mode4 === 'assigned' ? CUT4 : 0) + '</span></div>';
+ rows += '<div class="l"><span class="k">被舍弃的派生部分</span><span class="v ' + (mode4 === 'assigned' ? 'bad' : '') + '">' + dropped4() + ' 字节（age, wage + 4 B 填充）</span></div>';
+ rows += '<div class="l"><span class="k">赋值兼容方向</span><span class="v ok">派生 → 基类（单向不可逆）</span></div>';
+ setHTML('ro4', rows);
 }
 
 /* ================= 图 CPP-02e：虚函数表与虚析构 ================= */
 var VTABLE5 = {
-  Point:    ['~Point()',     'Point::display()',    'Point::area()'],
-  Circle:   ['~Circle()',    'Circle::display()',   'Circle::area()'],
-  Cylinder: ['~Cylinder()',  'Cylinder::display()', 'Cylinder::area()']
+ Point: ['~Point()', 'Point::display()', 'Point::area()'],
+ Circle: ['~Circle()', 'Circle::display()', 'Circle::area()'],
+ Cylinder: ['~Cylinder()', 'Cylinder::display()', 'Cylinder::area()']
 };
 var SLOT5 = { dtor:0, display:1, area:2 };
 var CHAIN5 = ['Point', 'Circle', 'Cylinder'];
-var p5 = 'Point';          // 基类指针当前指向
-var virt5 = true;          // virtual 开关
-var lastCall5 = null;      // 最近一次 p->display() 的结果
-var delChain5 = [];        // delete p 的析构序列
+var p5 = 'Point'; // 基类指针当前指向
+var virt5 = true; // virtual 开关
+var lastCall5 = null; // 最近一次 p->display() 的结果
+var delChain5 = []; // delete p 的析构序列
 
 function vtableFor5(cls){ return VTABLE5[cls].slice(); }
 function callVirtual5(cls, slot){
-  // virtual 关 → 静态关联：按指针静态类型 Point* 确定，永远调 Point 版本
-  if(virt5) return VTABLE5[cls][SLOT5[slot]];
-  return VTABLE5.Point[SLOT5[slot]];
+ // virtual 关 → 静态关联：按指针静态类型 Point* 确定，永远调 Point 版本
+ if(virt5) return VTABLE5[cls][SLOT5[slot]];
+ return VTABLE5.Point[SLOT5[slot]];
 }
 function displayOut5(cls){
-  if(virt5){
-    return { Point:'Point: (0, 0)', Circle:'Circle: r = 2', Cylinder:'Cylinder: r = 2, h = 5' }[cls];
-  }
-  return 'Point: (0, 0)';   // 静态关联：三次输出同一份
+ if(virt5){
+ return { Point:'Point: (0, 0)', Circle:'Circle: r = 2', Cylinder:'Cylinder: r = 2, h = 5' }[cls];
+ }
+ return 'Point: (0, 0)'; // 静态关联：三次输出同一份
 }
 function callDisplay5(){
-  lastCall5 = callVirtual5(p5, 'display');
-  return lastCall5;
+ lastCall5 = callVirtual5(p5, 'display');
+ return lastCall5;
 }
 function dtorChain5(cls){
-  var i = CHAIN5.indexOf(cls), out = [];
-  if(virt5){ for(var k = i; k >= 0; k--) out.push('~' + CHAIN5[k] + '()'); }
-  else out.push('~Point()');
-  return out;
+ var i = CHAIN5.indexOf(cls), out = [];
+ if(virt5){ for(var k = i; k >= 0; k--) out.push('~' + CHAIN5[k] + '()'); }
+ else out.push('~Point()');
+ return out;
 }
 function doDelete5(){
-  delChain5 = dtorChain5(p5);
-  return delChain5;
+ delChain5 = dtorChain5(p5);
+ return delChain5;
 }
 function vptrAddr5(cls){ return 0x556000 + 0x100 * (CHAIN5.indexOf(cls) + 1); }
 
 function draw5(){
-  var cv = $('cv5'); if(!cv || !cv.getContext) return;
-  var ctx = cv.getContext('2d'); if(!ctx) return;
-  var W = 760, H = 262, dpr = Math.min(window.devicePixelRatio || 1, 2);
-  cv.width = W * dpr; cv.height = H * dpr;
-  if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  if(ctx.clearRect) ctx.clearRect(0, 0, W, H);
-  var mono = 'ui-monospace, Consolas, monospace';
+ var cv = $('cv5'); if(!cv || !cv.getContext) return;
+ var ctx = cv.getContext('2d'); if(!ctx) return;
+ var W = 760, H = 262, dpr = Math.min(window.devicePixelRatio || 1, 2);
+ cv.width = W * dpr; cv.height = H * dpr;
+ if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+ if(ctx.clearRect) ctx.clearRect(0, 0, W, H);
+ var mono = 'ui-monospace, Consolas, monospace';
 
-  ctx.fillStyle = '#5A6672'; ctx.font = '11px ' + mono;
-  ctx.fillText('Point* p = &' + p5.toLowerCase() + ';   p->display();   delete p;', 40, 24);
+ ctx.fillStyle = '#5A6672'; ctx.font = '11px ' + mono;
+ ctx.fillText('Point* p = &' + p5.toLowerCase() + '; p->display(); delete p;', 40, 24);
 
-  // 基类指针 p
-  var px = 40, py = 40, pw = 108, phh = 40;
-  ctx.fillStyle = '#EEECF7'; ctx.fillRect(px, py, pw, phh);
-  ctx.strokeStyle = '#5B4FA3'; ctx.lineWidth = 2;
-  if(ctx.strokeRect) ctx.strokeRect(px + 1, py + 1, pw - 2, phh - 2);
-  ctx.fillStyle = '#5B4FA3'; ctx.font = '11px ' + mono;
-  ctx.fillText('Point* p', px + 8, py + 16);
-  ctx.fillStyle = '#101820'; ctx.font = '10.5px ' + mono;
-  ctx.fillText('→ ' + p5, px + 8, py + 32);
+ // 基类指针 p
+ var px = 40, py = 40, pw = 108, phh = 40;
+ ctx.fillStyle = '#EEECF7'; ctx.fillRect(px, py, pw, phh);
+ ctx.strokeStyle = '#5B4FA3'; ctx.lineWidth = 2;
+ if(ctx.strokeRect) ctx.strokeRect(px + 1, py + 1, pw - 2, phh - 2);
+ ctx.fillStyle = '#5B4FA3'; ctx.font = '11px ' + mono;
+ ctx.fillText('Point* p', px + 8, py + 16);
+ ctx.fillStyle = '#101820'; ctx.font = '10.5px ' + mono;
+ ctx.fillText('→ ' + p5, px + 8, py + 32);
 
-  // 三个对象
-  var ox = 200, oy = 40, ow = 150, oh = 62;
-  CHAIN5.forEach(function(cls, k){
-    var y = oy + k * (oh + 14), isSel = (cls === p5);
-    ctx.fillStyle = isSel ? '#E7F2F4' : '#FFFFFF';
-    ctx.fillRect(ox, y, ow, oh);
-    ctx.strokeStyle = isSel ? '#1F7A8C' : '#B7C0C9';
-    ctx.lineWidth = isSel ? 2 : 1;
-    if(ctx.strokeRect) ctx.strokeRect(ox + 1, y + 1, ow - 2, oh - 2);
-    ctx.fillStyle = '#101820'; ctx.font = '11.5px ' + mono;
-    ctx.fillText(cls + ' 对象', ox + 8, y + 17);
-    // vptr 格
-    ctx.fillStyle = '#EEECF7'; ctx.fillRect(ox + 8, y + 26, 52, 18);
-    ctx.strokeStyle = '#5B4FA3'; ctx.lineWidth = 1;
-    if(ctx.strokeRect) ctx.strokeRect(ox + 8.5, y + 26.5, 51, 17);
-    ctx.fillStyle = '#5B4FA3'; ctx.font = '10px ' + mono;
-    ctx.fillText('vptr', ox + 12, y + 39);
-    ctx.fillStyle = '#5A6672'; ctx.font = '9.5px ' + mono;
-    ctx.fillText('→ ' + hex8(vptrAddr5(cls)), ox + 66, y + 39);
-    // p 的箭头
-    if(isSel){
-      ctx.strokeStyle = '#5B4FA3'; ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.moveTo(px + pw + 2, py + phh / 2);
-      ctx.lineTo(ox - 8, y + oh / 2);
-      ctx.lineTo(ox - 2, y + oh / 2);
-      if(ctx.stroke) ctx.stroke();
-    }
-  });
+ // 三个对象
+ var ox = 200, oy = 40, ow = 150, oh = 62;
+ CHAIN5.forEach(function(cls, k){
+ var y = oy + k * (oh + 14), isSel = (cls === p5);
+ ctx.fillStyle = isSel ? '#E7F2F4' : '#FFFFFF';
+ ctx.fillRect(ox, y, ow, oh);
+ ctx.strokeStyle = isSel ? '#1F7A8C' : '#B7C0C9';
+ ctx.lineWidth = isSel ? 2 : 1;
+ if(ctx.strokeRect) ctx.strokeRect(ox + 1, y + 1, ow - 2, oh - 2);
+ ctx.fillStyle = '#101820'; ctx.font = '11.5px ' + mono;
+ ctx.fillText(cls + ' 对象', ox + 8, y + 17);
+ // vptr 格
+ ctx.fillStyle = '#EEECF7'; ctx.fillRect(ox + 8, y + 26, 52, 18);
+ ctx.strokeStyle = '#5B4FA3'; ctx.lineWidth = 1;
+ if(ctx.strokeRect) ctx.strokeRect(ox + 8.5, y + 26.5, 51, 17);
+ ctx.fillStyle = '#5B4FA3'; ctx.font = '10px ' + mono;
+ ctx.fillText('vptr', ox + 12, y + 39);
+ ctx.fillStyle = '#5A6672'; ctx.font = '9.5px ' + mono;
+ ctx.fillText('→ ' + hex8(vptrAddr5(cls)), ox + 66, y + 39);
+ // p 的箭头
+ if(isSel){
+ ctx.strokeStyle = '#5B4FA3'; ctx.lineWidth = 1.6;
+ ctx.beginPath();
+ ctx.moveTo(px + pw + 2, py + phh / 2);
+ ctx.lineTo(ox - 8, y + oh / 2);
+ ctx.lineTo(ox - 2, y + oh / 2);
+ if(ctx.stroke) ctx.stroke();
+ }
+ });
 
-  // vtable 列（右侧）：当前指向类的表
-  var vt = vtableFor5(p5), vx = 430, vy = 40, vw = 300, vh = 26;
-  ctx.fillStyle = '#5A6672'; ctx.font = '10.5px ' + mono;
-  ctx.fillText('vtable_for_' + p5 + ' @ ' + hex8(vptrAddr5(p5)), vx, vy - 6);
-  vt.forEach(function(fn, i){
-    var y = vy + i * (vh + 6);
-    ctx.fillStyle = i === SLOT5.display ? '#EEECF7' : '#FFFFFF';
-    ctx.fillRect(vx, y, vw, vh);
-    ctx.strokeStyle = i === SLOT5.display ? '#5B4FA3' : '#D3DAE1';
-    ctx.lineWidth = i === SLOT5.display ? 2 : 1;
-    if(ctx.strokeRect) ctx.strokeRect(vx + 1, y + 1, vw - 2, vh - 2);
-    ctx.fillStyle = '#5A6672'; ctx.font = '9.5px ' + mono;
-    ctx.fillText('slot ' + i, vx + 8, y + vh / 2 + 3);
-    ctx.fillStyle = '#101820'; ctx.font = '11px ' + mono;
-    ctx.fillText(fn, vx + 56, y + vh / 2 + 3);
-  });
-  ctx.fillStyle = '#B45F06'; ctx.font = '10px ' + mono;
-  ctx.fillText('p->display() 按 p 的 vptr 找到这张表，取 slot 1 调用', vx, vy + 3 * (vh + 6) + 16);
+ // vtable 列（右侧）：当前指向类的表
+ var vt = vtableFor5(p5), vx = 430, vy = 40, vw = 300, vh = 26;
+ ctx.fillStyle = '#5A6672'; ctx.font = '10.5px ' + mono;
+ ctx.fillText('vtable_for_' + p5 + ' @ ' + hex8(vptrAddr5(p5)), vx, vy - 6);
+ vt.forEach(function(fn, i){
+ var y = vy + i * (vh + 6);
+ ctx.fillStyle = i === SLOT5.display ? '#EEECF7' : '#FFFFFF';
+ ctx.fillRect(vx, y, vw, vh);
+ ctx.strokeStyle = i === SLOT5.display ? '#5B4FA3' : '#D3DAE1';
+ ctx.lineWidth = i === SLOT5.display ? 2 : 1;
+ if(ctx.strokeRect) ctx.strokeRect(vx + 1, y + 1, vw - 2, vh - 2);
+ ctx.fillStyle = '#5A6672'; ctx.font = '9.5px ' + mono;
+ ctx.fillText('slot ' + i, vx + 8, y + vh / 2 + 3);
+ ctx.fillStyle = '#101820'; ctx.font = '11px ' + mono;
+ ctx.fillText(fn, vx + 56, y + vh / 2 + 3);
+ });
+ ctx.fillStyle = '#B45F06'; ctx.font = '10px ' + mono;
+ ctx.fillText('p->display() 按 p 的 vptr 找到这张表，取 slot 1 调用', vx, vy + 3 * (vh + 6) + 16);
 }
 
 function render5(){
-  draw5();
-  if(!$('ro5')) return;
-  var rows = '';
-  rows += '<div class="l"><span class="k">p 当前指向</span><span class="v addr">&amp;' + p5.toLowerCase() + '（' + p5 + ' 对象）</span></div>';
-  rows += '<div class="l"><span class="k">virtual 开关</span><span class="v vt">' + (virt5 ? '开（动态关联）' : '关（静态关联）') + '</span></div>';
-  rows += '<div class="l"><span class="k">p-&gt;display() 实际调用</span><span class="v vt">' + (lastCall5 || '（未调用）') + '</span></div>';
-  rows += '<div class="l"><span class="k">display 输出</span><span class="v">' + (lastCall5 ? displayOut5(p5) : '—') + '</span></div>';
-  rows += '<div class="l"><span class="k">vtable_for_' + p5 + '</span><span class="v vt">' + VTABLE5[p5].join(' · ') + '</span></div>';
-  rows += '<div class="l"><span class="k">delete p 的析构序列</span><span class="v ' + (delChain5.length > 1 ? 'ok' : (delChain5.length ? 'bad' : '')) + '">' +
-    (delChain5.length ? delChain5.join(' → ') : '（未执行）') + '</span></div>';
-  setHTML('ro5', rows);
+ draw5();
+ if(!$('ro5')) return;
+ var rows = '';
+ rows += '<div class="l"><span class="k">p 当前指向</span><span class="v addr">&amp;' + p5.toLowerCase() + '（' + p5 + ' 对象）</span></div>';
+ rows += '<div class="l"><span class="k">virtual 开关</span><span class="v vt">' + (virt5 ? '开（动态关联）' : '关（静态关联）') + '</span></div>';
+ rows += '<div class="l"><span class="k">p-&gt;display() 实际调用</span><span class="v vt">' + (lastCall5 || '（未调用）') + '</span></div>';
+ rows += '<div class="l"><span class="k">display 输出</span><span class="v">' + (lastCall5 ? displayOut5(p5) : '—') + '</span></div>';
+ rows += '<div class="l"><span class="k">vtable_for_' + p5 + '</span><span class="v vt">' + VTABLE5[p5].join(' · ') + '</span></div>';
+ rows += '<div class="l"><span class="k">delete p 的析构序列</span><span class="v ' + (delChain5.length > 1 ? 'ok' : (delChain5.length ? 'bad' : '')) + '">' +
+ (delChain5.length ? delChain5.join(' → ') : '（未执行）') + '</span></div>';
+ setHTML('ro5', rows);
 }
 
 /* ================= 事件绑定与首次渲染 ================= */
 function bind1(){
-  PRESET1.forEach(function(p, i){
-    on(p.btn, function(){
-      sel1 = i;
-      setOn(PRESET1.map(function(q){ return q.btn; }), p.btn);
-      render1();
-    });
-  });
-  render1();
+ PRESET1.forEach(function(p, i){
+ on(p.btn, function(){
+ sel1 = i;
+ setOn(PRESET1.map(function(q){ return q.btn; }), p.btn);
+ render1();
+ });
+ });
+ render1();
 }
 function bind2(){
-  on('b2a', function(){ sel2 = 0; setOn(['b2a','b2b','b2c'], 'b2a'); render2(); });
-  on('b2b', function(){ sel2 = 1; setOn(['b2a','b2b','b2c'], 'b2b'); render2(); });
-  on('b2c', function(){ sel2 = 2; setOn(['b2a','b2b','b2c'], 'b2c'); render2(); });
-  on('b2t', function(){ showThis2 = !showThis2; setOn(['b2t'], showThis2 ? 'b2t' : null); render2(); });
-  on('b2s', function(){ incStatic2(); render2(); });
-  render2();
+ on('b2a', function(){ sel2 = 0; setOn(['b2a','b2b','b2c'], 'b2a'); render2(); });
+ on('b2b', function(){ sel2 = 1; setOn(['b2a','b2b','b2c'], 'b2b'); render2(); });
+ on('b2c', function(){ sel2 = 2; setOn(['b2a','b2b','b2c'], 'b2c'); render2(); });
+ on('b2t', function(){ showThis2 = !showThis2; setOn(['b2t'], showThis2 ? 'b2t' : null); render2(); });
+ on('b2s', function(){ incStatic2(); render2(); });
+ render2();
 }
 function bind3(){
-  on('b3ctor', function(){ step3(); });
-  on('b3dtor', function(){ step3(); });
-  on('b3auto', function(){
-    if(autoTimer3) return;
-    autoTimer3 = setInterval(function(){
-      if(ph3 >= SEQ3.length){ clearInterval(autoTimer3); autoTimer3 = null; return; }
-      step3();
-    }, 700);
-  });
-  on('b3r', function(){
-    if(autoTimer3){ clearInterval(autoTimer3); autoTimer3 = null; }
-    ph3 = 0; render3();
-  });
-  render3();
+ on('b3ctor', function(){ step3(); });
+ on('b3dtor', function(){ step3(); });
+ on('b3auto', function(){
+ if(autoTimer3) return;
+ autoTimer3 = setInterval(function(){
+ if(ph3 >= SEQ3.length){ clearInterval(autoTimer3); autoTimer3 = null; return; }
+ step3();
+ }, 700);
+ });
+ on('b3r', function(){
+ if(autoTimer3){ clearInterval(autoTimer3); autoTimer3 = null; }
+ ph3 = 0; render3();
+ });
+ render3();
 }
 function bind4(){
-  on('b4go',  function(){ mode4 = 'assigned'; render4(); });
-  on('b4ref', function(){ mode4 = 'ref'; render4(); });
-  on('b4bad', function(){ mode4 = 'bad'; render4(); });
-  on('b4r',   function(){ mode4 = 'idle'; render4(); });
-  render4();
+ on('b4go', function(){ mode4 = 'assigned'; render4(); });
+ on('b4ref', function(){ mode4 = 'ref'; render4(); });
+ on('b4bad', function(){ mode4 = 'bad'; render4(); });
+ on('b4r', function(){ mode4 = 'idle'; render4(); });
+ render4();
 }
 function bind5(){
-  on('b5pt',  function(){ p5 = 'Point';    setOn(['b5pt','b5ci','b5cy'], 'b5pt');  lastCall5 = null; delChain5 = []; render5(); });
-  on('b5ci',  function(){ p5 = 'Circle';   setOn(['b5pt','b5ci','b5cy'], 'b5ci');  lastCall5 = null; delChain5 = []; render5(); });
-  on('b5cy',  function(){ p5 = 'Cylinder'; setOn(['b5pt','b5ci','b5cy'], 'b5cy');  lastCall5 = null; delChain5 = []; render5(); });
-  on('b5call',function(){ callDisplay5(); render5(); });
-  on('b5virt',function(){
-    virt5 = !virt5;
-    var e = $('b5virt');
-    if(e){ e.className = 'btn vt' + (virt5 ? ' onv' : ''); e.textContent = 'virtual：' + (virt5 ? '开' : '关'); }
-    lastCall5 = null; delChain5 = [];
-    render5();
-  });
-  on('b5del', function(){ doDelete5(); render5(); });
-  render5();
+ on('b5pt', function(){ p5 = 'Point'; setOn(['b5pt','b5ci','b5cy'], 'b5pt'); lastCall5 = null; delChain5 = []; render5(); });
+ on('b5ci', function(){ p5 = 'Circle'; setOn(['b5pt','b5ci','b5cy'], 'b5ci'); lastCall5 = null; delChain5 = []; render5(); });
+ on('b5cy', function(){ p5 = 'Cylinder'; setOn(['b5pt','b5ci','b5cy'], 'b5cy'); lastCall5 = null; delChain5 = []; render5(); });
+ on('b5call',function(){ callDisplay5(); render5(); });
+ on('b5virt',function(){
+ virt5 = !virt5;
+ var e = $('b5virt');
+ if(e){ e.className = 'btn vt' + (virt5 ? ' onv' : ''); e.textContent = 'virtual：' + (virt5 ? '开' : '关'); }
+ lastCall5 = null; delChain5 = [];
+ render5();
+ });
+ on('b5del', function(){ doDelete5(); render5(); });
+ render5();
 }
 
 bind1(); bind2(); bind3(); bind4(); bind5();
 
 /* ================= 暴露给读数闸门 ================= */
 window.OBJ = {
-  // 通用
-  TYPES: TYPES, layout: layout, findMember: findMember,
-  // S01
-  PRESET1: PRESET1, preset1: preset1, lay1: lay1, member1: member1, words1: words1,
-  setSel1: function(i){ sel1 = i; }, sizeOfType1: sizeOfType1,
-  // S02
-  BOXES: BOXES, BOX_OFF: BOX_OFF,
-  thisPtr2: thisPtr2, memberAddr2: memberAddr2, memberVal2: memberVal2,
-  volume2: volume2, callText2: callText2, staticCount2: staticCount2,
-  incStatic2: incStatic2, resetStatic2: resetStatic2,
-  setSel2: function(i){ sel2 = i; },
-  // S03
-  SEQ3: SEQ3, cur3: cur3, phase3: phase3, constructed3: constructed3,
-  destroyed3: destroyed3, step3: step3, seqLen3: seqLen3,
-  baseBeforeDerived3: baseBeforeDerived3, derivedBeforeBase3: derivedBeforeBase3,
-  reset3: function(){ ph3 = 0; },
-  // S04
-  BASE4: BASE4, DERIVED4: DERIVED4, CUT4: CUT4,
-  copiedMembers4: copiedMembers4, droppedMembers4: droppedMembers4,
-  cells4: cells4, stepText4: stepText4, dropped4: dropped4,
-  setMode4: function(m){ mode4 = m; },
-  // S05
-  VTABLE5: VTABLE5, SLOT5: SLOT5, CHAIN5: CHAIN5,
-  vtableFor5: vtableFor5, callVirtual5: callVirtual5, displayOut5: displayOut5,
-  callDisplay5: callDisplay5, dtorChain5: dtorChain5, doDelete5: doDelete5,
-  vptrAddr5: vptrAddr5,
-  setP5: function(c){ p5 = c; }, setVirt5: function(v){ virt5 = v; },
-  clearCalls5: function(){ lastCall5 = null; delChain5 = []; },
-  render5: render5
+ // 通用
+ TYPES: TYPES, layout: layout, findMember: findMember,
+ // S01
+ PRESET1: PRESET1, preset1: preset1, lay1: lay1, member1: member1, words1: words1,
+ setSel1: function(i){ sel1 = i; }, sizeOfType1: sizeOfType1,
+ // S02
+ BOXES: BOXES, BOX_OFF: BOX_OFF,
+ thisPtr2: thisPtr2, memberAddr2: memberAddr2, memberVal2: memberVal2,
+ volume2: volume2, callText2: callText2, staticCount2: staticCount2,
+ incStatic2: incStatic2, resetStatic2: resetStatic2,
+ setSel2: function(i){ sel2 = i; },
+ // S03
+ SEQ3: SEQ3, cur3: cur3, phase3: phase3, constructed3: constructed3,
+ destroyed3: destroyed3, step3: step3, seqLen3: seqLen3,
+ baseBeforeDerived3: baseBeforeDerived3, derivedBeforeBase3: derivedBeforeBase3,
+ reset3: function(){ ph3 = 0; },
+ // S04
+ BASE4: BASE4, DERIVED4: DERIVED4, CUT4: CUT4,
+ copiedMembers4: copiedMembers4, droppedMembers4: droppedMembers4,
+ cells4: cells4, stepText4: stepText4, dropped4: dropped4,
+ setMode4: function(m){ mode4 = m; },
+ // S05
+ VTABLE5: VTABLE5, SLOT5: SLOT5, CHAIN5: CHAIN5,
+ vtableFor5: vtableFor5, callVirtual5: callVirtual5, displayOut5: displayOut5,
+ callDisplay5: callDisplay5, dtorChain5: dtorChain5, doDelete5: doDelete5,
+ vptrAddr5: vptrAddr5,
+ setP5: function(c){ p5 = c; }, setVirt5: function(v){ virt5 = v; },
+ clearCalls5: function(){ lastCall5 = null; delChain5 = []; },
+ render5: render5
 };
 
 

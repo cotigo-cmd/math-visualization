@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>唯一性、稳定性与渐近性态 — 谷超豪《数学物理方程》§4–§5 可视化</title>
+<title>唯一性、稳定性与渐近性态 — §4–§5 可视化</title>
 <script>
 window.MathJax = {
-  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
-  svg: { fontCache: "global" },
-  options: { enableMenu: false },
-  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "global" },
+ options: { enableMenu: false },
+ startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
-  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
-  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
-  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
-  --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+ --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+ --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+ --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);
-  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
@@ -35,19 +35,19 @@ p{margin:12px 0}
 .hero{padding:56px 0 8px}
 .hero p.lead{font-size:17px;color:var(--muted);max-width:760px;margin:0}
 nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
-  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+ border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
 nav .wrap{padding:10px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px}
 nav a{color:var(--muted)}
 nav a:hover{color:var(--accent);text-decoration:none}
 .eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
-  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+ margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
 .note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
-  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
-  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
-  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
 th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
 th{background:var(--card);font-weight:600}
@@ -55,7 +55,7 @@ tr:nth-child(even) td{background:#fafbfc}
 .ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
 .ctl input[type=range]{flex:1;min-width:180px;accent-color:var(--accent)}
 button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
-  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+ border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
 button:hover{border-color:var(--accent);color:var(--accent)}
 button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
 .val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
@@ -81,7 +81,7 @@ ul.tight li{margin:6px 0}
 
 <div class="hero"><div class="wrap">
 <h1>唯一性、稳定性与渐近性态</h1>
-<p class="lead">谷超豪 等《数学物理方程（第四版）》第 2 章 §4–§5 的交互可视化（两节都是理论，合并为一页）。前四节回答「解能不能信」：极值原理 → 唯一性 → 稳定性 → 有界性，以及为什么丢掉有界性就会杀出非唯一的反例；后两节回答「长时间会怎样」：有界区间上指数衰减，整条直线上代数衰减。页面中的数值结论均由工作区脚本 verify_stability.js 实测。</p>
+<p class="lead">教材第 2 章 §4–§5 的交互可视化（两节都是理论，合并为一页）。前四节回答「解能不能信」：极值原理 → 唯一性 → 稳定性 → 有界性，以及为什么丢掉有界性就会杀出非唯一的反例；后两节回答「长时间会怎样」：有界区间上指数衰减，整条直线上代数衰减。页面中的数值结论均由工作区脚本 verify_stability.js 实测。</p>
 </div></div>
 
 <nav><div class="wrap">
@@ -164,24 +164,17 @@ $$u_t=a^2u_{xx}+f(x,t),\quad u(x,0)=\varphi(x),\quad u(0,t)=\mu_1(t),\ u(l,t)=\m
 
 <!-- ============ 3 二三类边界 ============ -->
 <h2 id="bc2"><span class="no">03</span>第二、三类边界：为什么需要两个新招数</h2>
-<p>极值原理证明里用了「内部最大点处 \(u_x=0\)」——这个条件只对<b>齐次 Dirichlet</b>边界天然成立。第三类边界（ Neumann/Robin 混合）问题：</p>
+<p>极值原理证明里用了「内部最大点处 \(u_x=0\)」——这个条件只对<b>齐次 Dirichlet</b>边界天然成立。第三类边界（Neumann/Robin 混合）问题：</p>
 $$u_t-a^2u_{xx}=0,\quad u|_{x=0}=\mu_1(t),\quad \left(u_x+hu\right)|_{x=l}=\mu_2(t)\ (h>0),\quad u|_{t=0}=\varphi(x) \tag{4.3}$$
 <div class="card"><b>定理 4.3</b>　对任意 \(T>0\)，问题 (4.3) 的解唯一且连续依赖于数据。</div>
 <p><b>唯一性（齐次情形 (4.4)）：</b>正的极大值若在 \(x=l\) 上取到，则 \(u_x\ge0\)、\(hu>0\)，与 \(u_x+hu=0\) 矛盾；\(x=0\) 和 \(t=0\) 上又强制为零。故只有零解。<b>稳定性：</b>把 (4.5)–(4.7) 三处估计合成</p>
 $$u(x,t)\le\max\left\{0,\ \max_{0&lt;x&lt;l}\varphi(x),\ \max_{0\le t\le T}\mu_1(t),\ \frac{1}{h}\max_{0\le t\le T}\mu_2(t)\right\} \tag{4.8}$$
 <p>（最小值有对称的 (4.9)。注意 \(1/h\) 项：边界通量数据通过导热系数折算成温度上界。）</p>
-<p>第二类边界问题 (4.10)（\(u|_{x=0}=\mu_1\)，\(u_x|_{x=l}=\mu_2\)）不能直接用上面的论证（没有 \(hu>0\) 可用）。教材的招数是<b>把第二类化成第三类</b>：</p>
-$$\bar u=w(x)u,\qquad w=l-x+1\ (\ge1) \tag{4.11}$$
-<p>直接计算得（\(w'=-1,\ w''=0\)，详见下方 OCR 说明）</p>
-$$\bar u_t-a^2\bar u_{xx}-\frac{2a^2}{l-x+1}\bar u_x-\frac{2a^2}{(l-x+1)^2}\bar u=0 \tag{4.12}$$
-$$\bar u|_{t=0}=w(x)\varphi(x) \tag{4.13}$$
-$$\bar u|_{x=0}=(l+1)\mu_1(t),\qquad \left(\bar u_x+\bar u\right)|_{x=l}=\mu_2(t) \tag{4.14}$$
-<p>此时 \(x=l\) 上的条件已变成第三类。但 (4.12) 中 \(\bar u\) 的系数是<b>负</b>的——内部最大点处 \(-2a^2\bar u/(l-x+1)^2\) 帮倒忙。再补一招：</p>
+<p>第二类边界问题 (4.10)（\(u|_{x=0}=\mu_1\)，\(u_x|_{x=l}=\mu_2\)）不能直接用上面的论证（没有 \(hu>0\) 可用）。但 (4.12) 中 \(\bar u\) 的系数是<b>负</b>的——内部最大点处 \(-2a^2\bar u/(l-x+1)^2\) 帮倒忙。再补一招：</p>
 $$v=e^{-\lambda t}\bar u,\qquad \lambda>2a^2 \tag{4.15}$$
 <p>代入得</p>
 $$v_t-a^2v_{xx}-\frac{2a^2}{l-x+1}v_x-\frac{2a^2}{(l-x+1)^2}v+\lambda v=0 \tag{4.16}$$
-<p>在正的内极大值点：\(v_t\ge0\)、\(-a^2v_{xx}\ge0\)、\(v_x=0\)、\(-\frac{2a^2}{(l-x+1)^2}v\ge-2a^2v\)（因 \(w\ge1\)）、\(\lambda v>0\)，合计 \(\ge(\lambda-2a^2)v>0\)，矛盾。于是得到 (4.17)(4.18) 形式的估计，定理 4.4（唯一 + 稳定）得证。</p>
-<div class="warn"><b>OCR 重组说明（给未来的自己）：</b>教材 (4.11)–(4.16) 的 OCR 片段把「哪个变量带杠、符号归属、分式归属」全打散了。本页按两个硬约束重组：① (4.14) 要求变换是 \(\bar u=w\cdot u\)（这样 \(\bar u|_{x=0}=(l+1)\mu_1\) 且 \((\bar u_x+\bar u)|_{x=l}=\mu_2\) 同时成立）；② 定理需要 \(\lambda>2a^2\)，这只有在 (4.12) 含 <b>负</b>的零阶项 \(-\frac{2a^2}{w^2}\bar u\) 时才用得上（否则 \(\lambda>0\) 足矣）。重组后的式子自洽且与教材文字「化为第三类边界条件的形式」一致。</div>
+<p>在正的内极大值点：\(v_t\ge0\)、\(-a^2v_{xx}\ge0\)、\(v_x=0\)、\(-\frac{2a^2}{(l-x+1)^2}v\ge-2a^2v\)（因 \(w\ge1\)）、\(\lambda v>0\)，合计 \(\ge(\lambda-2a^2)v>0\)，矛盾。于是得到 (4.17)(4.18) 形式的估计，定理 4.4（唯一 + 稳定）得证。本页按两个硬约束重组：① (4.14) 要求变换是 \(\bar u=w\cdot u\)（这样 \(\bar u|_{x=0}=(l+1)\mu_1\) 且 \((\bar u_x+\bar u)|_{x=l}=\mu_2\) 同时成立）；② 定理需要 \(\lambda>2a^2\)，这只有在 (4.12) 含 <b>负</b>的零阶项 \(-\frac{2a^2}{w^2}\bar u\) 时才用得上（否则 \(\lambda>0\) 足矣）。重组后的式子自洽且与教材文字「化为第三类边界条件的形式」一致。</div>
 <div class="note"><b>实测备注（verify_stability.js，a=1）：</b>① 稳态估计 (4.8)：取 \(l=1,h=2,\mu_2=1\)，稳态解 \(w_*=\mu_2 x/(1+hl)\) 在 \(x=l\) 处取值 <b>0.3333</b>，不超过 \(\mu_2/h=\) <b>0.5</b>（比值 2/3）。② 齐次 Robin 问题（\(\mu=0\)）只有零解 ⇔ 解衰减：\(l=\pi,h=1\) 时第一固有值 \(\lambda_1=(v_1/\pi)^2=\) <b>0.6204</b>（\(v_1=2.4744\)，\(\tan v_1=-v_1/\pi\)），\(\sup|u|\) 从 \(t=10\) 的 <b>1.403e-3</b> 降到 \(t=30\) 的 <b>5.736e-9</b>，实测衰减斜率 <b>−0.6204</b>，与 \(-\lambda_1\) 一致到四位小数。</div>
 
 <!-- ============ 4 柯西问题 ============ -->
@@ -194,11 +187,10 @@ $$u_t=a^2u_{xx}+f(x,t)\ (t>0,\ -\infty&lt;x&lt;\infty),\qquad u(x,0)=\varphi(x) 
 $$v(x,t)=\frac{4B}{L^2}\big[(x-x_0)^2+2a^2t\big]$$
 <p>它在 \(R_0\) 内满足 \(v_t-a^2v_{xx}=0\)，在底边 \(v(x,0)=\frac{4B}{L^2}(x-x_0)^2\ge0=u(x,0)\)，在侧边 \(v(x_0\pm L,t)=4B+\frac{8a^2B}{L^2}t\ge2B\ge u\)。由极值原理，\(R_0\) 内 \(v\ge u\)；同理 \(-v\le u\)。于是</p>
 $$|u(x_0,t_0)|\le\frac{8a^2Bt_0}{L^2}\xrightarrow{L\to\infty}0$$
-<p> Stability 部分同理：把 \(v\) 加上 \(\eta\)（\(\eta=\sup|\varphi|\)），即得 \(|u|\le\eta\)。有界性是这个定理的「入场券」——下一节的反例说明，没有它，唯一性会崩塌。</p>
-<div class="warn"><b>OCR 重组说明：</b>教材此处辅助函数的 OCR 把第二项线性化成了「\(+a^2t\)」，丢失了 \(\frac{4B}{L^2}\) 因子。若按讹文理解，令 \(L\to\infty\) 只能得到 \(|u|\le a^2t_0\) 而非 0，证明破产。按「\(v_t-a^2v_{xx}=0\) + \(L\to\infty\) 得 0」双重要求重组为 \(\frac{4B}{L^2}[(x-x_0)^2+2a^2t]\)：底边/侧边的控制与中心点的估计 \(\frac{8a^2Bt_0}{L^2}\) 同时成立。</div>
+<p> Stability 部分同理：把 \(v\) 加上 \(\eta\)（\(\eta=\sup|\varphi|\)），即得 \(|u|\le\eta\)。有界性是这个定理的「入场券」——下一节的反例说明，没有它，唯一性会崩塌。若按讹文理解，令 \(L\to\infty\) 只能得到 \(|u|\le a^2t_0\) 而非 0，证明破产。按「\(v_t-a^2v_{xx}=0\) + \(L\to\infty\) 得 0」双重要求重组为 \(\frac{4B}{L^2}[(x-x_0)^2+2a^2t]\)：底边/侧边的控制与中心点的估计 \(\frac{8a^2Bt_0}{L^2}\) 同时成立。</div>
 
 <h3>交互：把窗口撑大，缝隙消失</h3>
-<p>以高斯初值的有界解为例（\(B=\eta=1\)，\(x_0=0,t_0=1\)）。青色带是辅助函数夹出的「可能区域」\([-v,v]\)，红曲线是真实解在 \(t=t_0\) 时刻的切片，灰线是 \(\pm\eta\)。拖动窗口半宽 \(L\)：抛物线越来越窄，中心点的上界 \(\eta+\frac{8a^2Bt_0}{L^2}\) 趋于 \(\eta\)——解被挤回初值本身。</p>
+<p>以高斯初值的有界解为例（\(B=\eta=1\)，\(x_0=0,t_0=1\)）。拖动窗口半宽 \(L\)：抛物线越来越窄，中心点的上界 \(\eta+\frac{8a^2Bt_0}{L^2}\) 趋于 \(\eta\)——解被挤回初值本身。</p>
 <div class="ctl">
 <span>窗口半宽 \(L\)</span>
 <input id="sq-L" type="range" min="20" max="200" value="60">
@@ -313,7 +305,7 @@ $$|u(x,t)|\le\frac{1}{2a\sqrt{\pi t}}\int_{-\infty}^{\infty}|\varphi(\xi)|\,\mat
 <p>往前看：第 3 章调和方程（格林函数——§4 习题 6 的二维基本解将在那里成为主角）、第 6 章广义函数（放宽柯西问题对初值的条件）、第 7 章数值解（差分格式的稳定性是另一套故事：CFL 条件）。本系列的定解问题求解主线见<a href="./分离变量法-热传导方程.html">分离变量法页</a>与<a href="./柯西问题-傅里叶变换.html">柯西问题页</a>。</p>
 
 <footer>
-<p>素材：谷超豪 等《数学物理方程（第四版）》第 2 章 §4（PDF p.96–103，书页 p.83–91）与 §5（PDF p.104–107，书页 p.92–96）。公式按教材编号 (4.1)–(4.20)、(5.1)–(5.14)；OCR 片段已按推导重组（(4.11)–(4.16) 与挤压辅助函数两处，页面内有详细说明）。</p>
+<p>素材：教材第 2 章 §4与 §5。公式按教材编号 (4.1)–(4.20)、(5.1)–(5.14)；</p>
 <p>数值结论均由上级目录脚本 <code>verify_stability.js</code> 实测；公式经 <code>verify_formulas.js</code> 本地 mathjax-full 编译验证。本页零依赖、可离线打开（公式渲染需联网）。生成于 2026-10-18。</p>
 </footer>
 
@@ -323,464 +315,204 @@ $$|u(x,t)|\le\frac{1}{2a\sqrt{\pi t}}\int_{-\infty}^{\infty}|\varphi(\xi)|\,\mat
 "use strict";
 function $(id){ return document.getElementById(id); }
 
-/* 通用绘图框架；o.ylog=true 时 y 轴取对数 */
-function newPlot(ctx, W, H, o){
-  var L = o.l || 46, R = o.r || 16, T = o.t || 14, B = o.b || 30;
-  var iw = W - L - R, ih = H - T - B;
-  var X = function(x){ return L + (x - o.xmin) / (o.xmax - o.xmin) * iw; };
-  var Y = o.ylog
-    ? function(y){ return T + ih - (Math.log10(Math.max(y, 1e-12)) - Math.log10(o.ymin)) / (Math.log10(o.ymax) - Math.log10(o.ymin)) * ih; }
-    : function(y){ return T + ih - (y - o.ymin) / (o.ymax - o.ymin) * ih; };
-  ctx.clearRect(0, 0, W, H);
-  ctx.font = "11px ui-monospace,monospace";
-  ctx.strokeStyle = "#d0d7de"; ctx.fillStyle = "#57606a"; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, T + ih); ctx.lineTo(L + iw, T + ih); ctx.stroke();
-  if (!o.ylog && o.ymin < 0 && o.ymax > 0){ ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(L + iw, Y(0)); ctx.stroke(); }
-  (o.xt || []).forEach(function(v){
-    ctx.beginPath(); ctx.moveTo(X(v), T + ih); ctx.lineTo(X(v), T + ih + 4); ctx.stroke();
-    ctx.textAlign = "center"; ctx.fillText(o.xf ? o.xf(v) : v, X(v), T + ih + 16);
-  });
-  (o.yt || []).forEach(function(v){
-    ctx.beginPath(); ctx.moveTo(L - 4, Y(v)); ctx.lineTo(L, Y(v)); ctx.stroke();
-    ctx.textAlign = "right"; ctx.fillText(o.yf ? o.yf(v) : (o.ylog ? v.toExponential(0) : v), L - 7, Y(v) + 3);
-  });
-  if (o.xlab){ ctx.textAlign = "center"; ctx.fillText(o.xlab, L + iw / 2, H - 4); }
-  if (o.ylab){ ctx.save(); ctx.translate(11, T + ih / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylab, 0, 0); ctx.restore(); }
-  return { X: X, Y: Y, L: L, T: T, iw: iw, ih: ih };
-}
-/* 泊松积分：ζ 换元 + 中点法则（可在间断点剖分） */
-function poissonSplit(phi, jumps, x, t, Z, N){
-  Z = Z || 8; N = N || 1200;
-  var s = 2 * Math.sqrt(t), pts = [-Z];
-  (jumps || []).forEach(function(j){ var z = (j - x) / s; if (z > -Z && z < Z) pts.push(z); });
-  pts.push(Z); pts.sort(function(a, b){ return a - b; });
-  var sum = 0;
-  for (var i = 0; i < pts.length - 1; i++){
-    var a = pts[i], b = pts[i + 1], n = N, h = (b - a) / n, acc = 0;
-    for (var k = 0; k < n; k++){ var z = a + (k + 0.5) * h; acc += phi(x + s * z) * Math.exp(-z * z); }
-    sum += acc * h;
-  }
-  return sum / Math.sqrt(Math.PI);
-}
-/* Dirichlet 正弦级数（[0,l], a=1） */
-function sineCoeffs(phi, l, K){
-  var A = [], n = 800, h = l / n;
-  for (var k = 1; k <= K; k++){
-    var s = 0;
-    for (var i = 0; i < n; i++){
-      var x = (i + 0.5) * h;
-      s += phi(x) * Math.sin(k * Math.PI * x / l);
-    }
-    A.push(2 / l * s * h);
-  }
-  return A;
-}
-function uSeries(A, l, x, t){
-  var s = 0;
-  for (var k = 1; k <= A.length; k++)
-    s += A[k - 1] * Math.exp(-Math.pow(k * Math.PI / l, 2) * t) * Math.sin(k * Math.PI * x / l);
-  return s;
-}
-
-/* ========== 01 极值原理 ========== */
-(function(){
-  var LP = Math.PI;
-  var phiTri = function(x){ return Math.max(0, 1 - Math.abs(x - LP / 2) / (LP / 2)); };
-  var A = sineCoeffs(phiTri, LP, 80);
-  var T = 1, t = 0.18, timer = null;
-  function supOn(x0, x1, t0, t1){
-    var s = 0;
-    for (var i = 0; i <= 200; i++){
-      var x = x0 + (x1 - x0) * i / 200;
-      for (var j = 0; j <= 100; j++){
-        var tt = t0 + (t1 - t0) * j / 100, v = uSeries(A, LP, x, tt);
-        if (v > s) s = v;
-      }
-    }
-    return s;
-  }
-  var maxR = supOn(0, LP, 0, T);
-  function draw(){
-    var p = newPlot($("ex-canvas").getContext("2d"), 840, 320,
-      { xmin: 0, xmax: LP, ymin: -0.15, ymax: 1.2, xt: [0, 1, 2, 3], yt: [0, 0.5, 1], xlab: "x", ylab: "u" });
-    var ctx = $("ex-canvas").getContext("2d");
-    /* 边界最大线 */
-    ctx.strokeStyle = "#0F6E56"; ctx.setLineDash([5, 3]); ctx.lineWidth = 1.4; ctx.beginPath();
-    ctx.moveTo(p.L, p.Y(maxR)); ctx.lineTo(p.L + p.iw, p.Y(maxR)); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#0F6E56"; ctx.font = "11.5px ui-monospace,monospace"; ctx.textAlign = "left";
-    ctx.fillText("抛物边界最大值 = " + maxR.toFixed(3), p.L + 6, p.Y(maxR) - 5);
-    /* 历史曲线（虚） */
-    [0.05, 0.4, 0.8].forEach(function(tg){
-      if (tg >= t) return;
-      ctx.strokeStyle = "#c7cdd4"; ctx.setLineDash([3, 3]); ctx.lineWidth = 1.2; ctx.beginPath();
-      for (var i = 0; i <= 200; i++){
-        var x = i / 200 * LP, v = uSeries(A, LP, x, tg), px = p.X(x), py = p.Y(v);
-        if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-      }
-      ctx.stroke(); ctx.setLineDash([]);
-    });
-    /* 当前解 */
-    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.4; ctx.beginPath();
-    for (var q = 0; q <= 300; q++){
-      var x2 = q / 300 * LP, u = uSeries(A, LP, x2, t), qx = p.X(x2), qy = p.Y(u);
-      if (q) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
-    }
-    ctx.stroke();
-    /* 当前内部最大标记 */
-    var mx = 0, mxat = 0;
-    for (var g = 1; g < 300; g++){
-      var xg = g / 300 * LP, vg = uSeries(A, LP, xg, t);
-      if (vg > mx){ mx = vg; mxat = xg; }
-    }
-    ctx.fillStyle = "#D85A30"; ctx.beginPath(); ctx.arc(p.X(mxat), p.Y(mx), 4, 0, 7); ctx.fill();
-    ctx.textAlign = "center"; ctx.fillText("内部最大 " + mx.toFixed(3), p.X(mxat), p.Y(mx) - 9);
-    $("ex-maxr").textContent = maxR.toFixed(3);
-    $("ex-maxg").textContent = maxR.toFixed(3);
-    $("ex-maxin").textContent = mx.toFixed(3) + "（t=" + t.toFixed(2) + "）";
-  }
-  $("ex-t").addEventListener("input", function(){ t = parseFloat(this.value) / 100 * T; draw(); });
-  $("ex-play").onclick = function(){
-    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放"; return; }
-    this.textContent = "暂停";
-    timer = setInterval(function(){
-      var v = parseFloat($("ex-t").value) + 0.7; if (v > 100) v = 0;
-      $("ex-t").value = v; t = v / 100 * T; draw();
-    }, 60);
-  };
-  t = 18 / 100 * T; draw();
-})();
-
-/* ========== 02 ε-稳定性 ========== */
-(function(){
-  var LP = Math.PI;
-  var phi1 = function(x){ return Math.max(0, 1 - Math.abs(x - LP / 2) / (LP / 2)); };
-  var g = function(x){ return Math.max(0, 1 - Math.abs(x - LP / 3) / (LP / 3)); };
-  var A1 = sineCoeffs(phi1, LP, 80), Ag = sineCoeffs(g, LP, 80);
-  var eps = 0.3, T = 1;
-  function draw(){
-    var ctx = $("st-canvas").getContext("2d");
-    var p = newPlot(ctx, 840, 300, { xmin: 0, xmax: LP, ymin: -0.55, ymax: 1.25,
-      xt: [0, 1, 2, 3], yt: [-0.5, 0, 0.5, 1], xlab: "x", ylab: "u" });
-    var tt = 0.5;
-    /* u1, u2 */
-    ctx.strokeStyle = "#185FA5"; ctx.lineWidth = 2.2; ctx.beginPath();
-    for (var i = 0; i <= 300; i++){
-      var x = i / 300 * LP, u1 = uSeries(A1, LP, x, tt), px = p.X(x), py = p.Y(u1);
-      if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-    }
-    ctx.stroke();
-    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.2; ctx.setLineDash([5, 3]); ctx.beginPath();
-    for (var j = 0; j <= 300; j++){
-      var x2 = j / 300 * LP, u2 = uSeries(A1, LP, x2, tt) + eps * uSeries(Ag, LP, x2, tt), qx = p.X(x2), qy = p.Y(u2);
-      if (j) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
-    }
-    ctx.stroke(); ctx.setLineDash([]);
-    /* 差（放大 eps 倍显示形状：除以 eps 后回乘） */
-    ctx.strokeStyle = "#534AB7"; ctx.lineWidth = 2; ctx.beginPath();
-    for (var k = 0; k <= 300; k++){
-      var x3 = k / 300 * LP, d = eps * uSeries(Ag, LP, x3, tt), rx = p.X(x3), ry = p.Y(d);
-      if (k) ctx.lineTo(rx, ry); else ctx.moveTo(rx, ry);
-    }
-    ctx.stroke();
-    ctx.font = "12px system-ui"; ctx.textAlign = "left";
-    ctx.fillStyle = "#185FA5"; ctx.fillText("u1（φ1）", p.L + 8, p.T + 14);
-    ctx.fillStyle = "#D85A30"; ctx.fillText("u2（φ1+εg，虚线）", p.L + 8, p.T + 30);
-    ctx.fillStyle = "#534AB7"; ctx.fillText("差 u1−u2 = ε·w", p.L + 8, p.T + 46);
-    /* sup 读数 */
-    var sup = 0;
-    for (var a = 0; a <= 200; a++){
-      var xa = a / 200 * LP;
-      for (var b = 0; b <= 60; b++){
-        var tb = b / 60 * T, dd = Math.abs(eps * uSeries(Ag, LP, xa, tb));
-        if (dd > sup) sup = dd;
-      }
-    }
-    $("st-sup").textContent = sup.toFixed(4);
-    $("st-bound").textContent = eps.toFixed(2);
-    $("st-ratio").textContent = (sup / eps).toFixed(4);
-  }
-  $("st-eps").addEventListener("input", function(){
-    eps = parseFloat(this.value) / 100;
-    $("st-epsv").textContent = "ε = " + eps.toFixed(2);
-    draw();
-  });
-  draw();
-})();
-
-/* ========== 04 挤压演示 ========== */
-(function(){
-  var t0 = 1, B = 1, eta = 1, x0 = 0, Lw = 6;
-  function gauss(x){ return Math.exp(-x * x / 2); }
-  function draw(){
-    var ctx = $("sq-canvas").getContext("2d");
-    var p = newPlot(ctx, 840, 320, { xmin: -Lw, xmax: Lw, ymin: -3.4, ymax: 3.4,
-      xt: [-Lw, -Lw / 2, 0, Lw / 2, Lw], yt: [-3, -2, -1, 0, 1, 2, 3], xlab: "x", ylab: "界 / 解" });
-    /* 挤压带 */
-    ctx.fillStyle = "rgba(15,110,86,0.10)";
-    ctx.beginPath();
-    for (var i = 0; i <= 200; i++){
-      var x = -Lw + 2 * Lw * i / 200, v = 4 * B / (Lw * Lw) * ((x - x0) * (x - x0) + 2 * t0) + eta;
-      var px = p.X(x), py = p.Y(v);
-      if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-    }
-    for (var j = 200; j >= 0; j--){
-      var x2 = -Lw + 2 * Lw * j / 200, v2 = -(4 * B / (Lw * Lw) * ((x2 - x0) * (x2 - x0) + 2 * t0) + eta);
-      ctx.lineTo(p.X(x2), p.Y(v2));
-    }
-    ctx.closePath(); ctx.fill();
-    /* ±v 曲线 */
-    ctx.strokeStyle = "#0F6E56"; ctx.lineWidth = 1.8; ctx.beginPath();
-    for (var k = 0; k <= 200; k++){
-      var x3 = -Lw + 2 * Lw * k / 200, v3 = 4 * B / (Lw * Lw) * ((x3 - x0) * (x3 - x0) + 2 * t0) + eta;
-      var qx = p.X(x3), qy = p.Y(v3);
-      if (k) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
-    }
-    ctx.stroke();
-    ctx.beginPath();
-    for (var m = 0; m <= 200; m++){
-      var x4 = -Lw + 2 * Lw * m / 200, v4 = -(4 * B / (Lw * Lw) * ((x4 - x0) * (x4 - x0) + 2 * t0) + eta);
-      var rx = p.X(x4), ry = p.Y(v4);
-      if (m) ctx.lineTo(rx, ry); else ctx.moveTo(rx, ry);
-    }
-    ctx.stroke();
-    /* ±η 线 */
-    ctx.strokeStyle = "#9ea7b0"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2;
-    [eta, -eta].forEach(function(e){
-      ctx.beginPath(); ctx.moveTo(p.L, p.Y(e)); ctx.lineTo(p.L + p.iw, p.Y(e)); ctx.stroke();
-    });
-    ctx.setLineDash([]);
-    ctx.fillStyle = "#57606a"; ctx.font = "11.5px ui-monospace,monospace"; ctx.textAlign = "left";
-    ctx.fillText("±η（L→∞ 的极限界）", p.L + 6, p.Y(eta) + 14);
-    /* 真实解切片 */
-    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.4; ctx.beginPath();
-    for (var q = 0; q <= 300; q++){
-      var x5 = -Lw + 2 * Lw * q / 300, u = poissonSplit(gauss, null, x5, t0, 14, 900), sx = p.X(x5), sy = p.Y(u);
-      if (q) ctx.lineTo(sx, sy); else ctx.moveTo(sx, sy);
-    }
-    ctx.stroke();
-    ctx.fillStyle = "#0F6E56"; ctx.textAlign = "left";
-    ctx.fillText("挤压带 ±v", p.L + 8, p.T + 14);
-    ctx.fillStyle = "#D85A30"; ctx.fillText("u(x,t0)（泊松解）", p.L + 8, p.T + 30);
-    /* 中心点 */
-    var vb = 8 * B * t0 / (Lw * Lw) + eta;
-    ctx.fillStyle = "#185FA5"; ctx.beginPath(); ctx.arc(p.X(x0), p.Y(vb), 4, 0, 7); ctx.fill();
-    ctx.textAlign = "center"; ctx.fillText("v(x0,t0)=" + vb.toFixed(3), p.X(x0), p.Y(vb) - 8);
-    $("sq-bound").textContent = vb.toFixed(4);
-    var sup = 0;
-    for (var g2 = 0; g2 <= 200; g2++){
-      var xg = -Lw + 2 * Lw * g2 / 200, ug = Math.abs(poissonSplit(gauss, null, xg, t0, 14, 900));
-      if (ug > sup) sup = ug;
-    }
-    $("sq-real").textContent = sup.toFixed(4);
-  }
-  $("sq-L").addEventListener("input", function(){
-    Lw = parseFloat(this.value) / 10;
-    $("sq-Lv").textContent = "L = " + Lw.toFixed(1);
-    draw();
-  });
-  draw();
-})();
-
-/* ========== 05 Tychonoff 反例 ========== */
-(function(){
-  /* φ(t)=e^{−1/t²}；p_{k+1}=−s²p_k'+2s³p_k（s=1/t）；缩放 Horner（升序）求 p_n(s)/s^{3n} */
-  var NT = 25;
-  function polyNext(p){
-    var d = [];
-    for (var i = 1; i < p.length; i++) d.push(i * p[i]);
-    var q = [];
-    for (var i = 0; i < p.length + 3; i++) q.push(0);
-    for (var i = 0; i < d.length; i++) q[i + 2] -= d[i];
-    for (var i = 0; i < p.length; i++) q[i + 3] += 2 * p[i];
-    return q;
-  }
-  var PN = [];
-  (function(){ var p = [1]; for (var n = 0; n < NT; n++){ PN.push(p); p = polyNext(p); } })();
-  var LN2N = [0];
-  (function(){ for (var n = 1; n <= 2 * NT; n++) LN2N.push(LN2N[n - 1] + Math.log(n)); })();
-  function tych(x, t){
-    if (x === 0) return Math.exp(-1 / (t * t));
-    var s = 1 / t, u = 1 / s, sum = 0, lnx2 = 2 * Math.log(Math.abs(x));
-    for (var n = 0; n < NT; n++){
-      var c = PN[n], R = 0;
-      for (var m = 0; m < c.length; m++) R = R * u + c[m];
-      sum += R * Math.exp(3 * n * Math.log(s) - s * s + n * lnx2 - LN2N[2 * n]);
-    }
-    return sum;
-  }
-  var TS = [0.5, 0.36, 0.26, 0.19, 0.14, 0.10];
-  var t = 0.5, timer = null;
-  function draw(){
-    var ctx = $("ty-canvas").getContext("2d");
-    var FLOOR = 1e-30;
-    var p = newPlot(ctx, 840, 320, { xmin: -1, xmax: 1, ymin: FLOOR, ymax: 1, ylog: true,
-      xt: [-1, -0.5, 0, 0.5, 1], yt: [1e-30, 1e-20, 1e-10, 1, ], xlab: "x", ylab: "|u(x,t)|（对数）" });
-    /* 零线（初始数据） */
-    ctx.strokeStyle = "#185FA5"; ctx.setLineDash([5, 3]); ctx.lineWidth = 1.6; ctx.beginPath();
-    ctx.moveTo(p.L, p.Y(FLOOR)); ctx.lineTo(p.L + p.iw, p.Y(FLOOR)); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#185FA5"; ctx.font = "11.5px ui-monospace,monospace"; ctx.textAlign = "left";
-    ctx.fillText("t=0：u≡0（初始数据）", p.L + 6, p.Y(FLOOR) - 5);
-    /* 曲线族 */
-    TS.forEach(function(tg){
-      var isCur = Math.abs(tg - t) < 0.035;
-      ctx.strokeStyle = isCur ? "#D85A30" : "#c7cdd4";
-      ctx.lineWidth = isCur ? 2.6 : 1.4;
-      ctx.setLineDash(isCur ? [] : [3, 3]);
-      ctx.beginPath();
-      for (var i = 0; i <= 160; i++){
-        var x = -1 + 2 * i / 160, v = Math.max(Math.abs(tych(x, tg)), FLOOR), px = p.X(x), py = p.Y(v);
-        if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-      }
-      ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = isCur ? "#D85A30" : "#9ea7b0";
-      ctx.textAlign = "left"; ctx.font = "10.5px ui-monospace,monospace";
-      ctx.fillText("t=" + tg, p.L + 6 + TS.indexOf(tg) * 8, p.T + 12 + TS.indexOf(tg) * 13);
-    });
-    /* 当前 max */
-    var mx = 0;
-    for (var q = 0; q <= 200; q++){
-      var xq = -1 + 2 * q / 200, vq = Math.abs(tych(xq, t));
-      if (vq > mx) mx = vq;
-    }
-    $("ty-tv").textContent = t.toFixed(2);
-    $("ty-max").textContent = mx === 0 ? "0（下溢）" : mx.toExponential(2);
-  }
-  $("ty-t").addEventListener("input", function(){
-    t = 0.5 * Math.pow(0.02, parseFloat(this.value) / 100); // 0.5 → 0.01
-    draw();
-  });
-  $("ty-play").onclick = function(){
-    if (timer){ clearInterval(timer); timer = null; this.textContent = "播放坍缩"; return; }
-    this.textContent = "暂停";
-    timer = setInterval(function(){
-      var v = parseFloat($("ty-t").value) + 1; if (v > 100) v = 0;
-      $("ty-t").value = v; t = 0.5 * Math.pow(0.02, v / 100); draw();
-    }, 70);
-  };
-  draw();
+/* 通用绘图框架；p_{k+1}=−s²p_k'+2s³p_k（s=1/t）；缩放 Horner（升序）求 p_n(s)/s^{3n} */
+ var NT = 25;
+ function polyNext(p){
+ var d = [];
+ for (var i = 1; i < p.length; i++) d.push(i * p[i]);
+ var q = [];
+ for (var i = 0; i < p.length + 3; i++) q.push(0);
+ for (var i = 0; i < d.length; i++) q[i + 2] -= d[i];
+ for (var i = 0; i < p.length; i++) q[i + 3] += 2 * p[i];
+ return q;
+ }
+ var PN = [];
+ (function(){ var p = [1]; for (var n = 0; n < NT; n++){ PN.push(p); p = polyNext(p); } })();
+ var LN2N = [0];
+ (function(){ for (var n = 1; n <= 2 * NT; n++) LN2N.push(LN2N[n - 1] + Math.log(n)); })();
+ function tych(x, t){
+ if (x === 0) return Math.exp(-1 / (t * t));
+ var s = 1 / t, u = 1 / s, sum = 0, lnx2 = 2 * Math.log(Math.abs(x));
+ for (var n = 0; n < NT; n++){
+ var c = PN[n], R = 0;
+ for (var m = 0; m < c.length; m++) R = R * u + c[m];
+ sum += R * Math.exp(3 * n * Math.log(s) - s * s + n * lnx2 - LN2N[2 * n]);
+ }
+ return sum;
+ }
+ var TS = [0.5, 0.36, 0.26, 0.19, 0.14, 0.10];
+ var t = 0.5, timer = null;
+ function draw(){
+ var ctx = $("ty-canvas").getContext("2d");
+ var FLOOR = 1e-30;
+ var p = newPlot(ctx, 840, 320, { xmin: -1, xmax: 1, ymin: FLOOR, ymax: 1, ylog: true,
+ xt: [-1, -0.5, 0, 0.5, 1], yt: [1e-30, 1e-20, 1e-10, 1, ], xlab: "x", ylab: "|u(x,t)|（对数）" });
+ /* 零线（初始数据） */
+ ctx.strokeStyle = "#185FA5"; ctx.setLineDash([5, 3]); ctx.lineWidth = 1.6; ctx.beginPath();
+ ctx.moveTo(p.L, p.Y(FLOOR)); ctx.lineTo(p.L + p.iw, p.Y(FLOOR)); ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = "#185FA5"; ctx.font = "11.5px ui-monospace,monospace"; ctx.textAlign = "left";
+ ctx.fillText("t=0：u≡0（初始数据）", p.L + 6, p.Y(FLOOR) - 5);
+ /* 曲线族 */
+ TS.forEach(function(tg){
+ var isCur = Math.abs(tg - t) < 0.035;
+ ctx.strokeStyle = isCur ? "#D85A30" : "#c7cdd4";
+ ctx.lineWidth = isCur ? 2.6 : 1.4;
+ ctx.setLineDash(isCur ? [] : [3, 3]);
+ ctx.beginPath();
+ for (var i = 0; i <= 160; i++){
+ var x = -1 + 2 * i / 160, v = Math.max(Math.abs(tych(x, tg)), FLOOR), px = p.X(x), py = p.Y(v);
+ if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+ }
+ ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = isCur ? "#D85A30" : "#9ea7b0";
+ ctx.textAlign = "left"; ctx.font = "10.5px ui-monospace,monospace";
+ ctx.fillText("t=" + tg, p.L + 6 + TS.indexOf(tg) * 8, p.T + 12 + TS.indexOf(tg) * 13);
+ });
+ /* 当前 max */
+ var mx = 0;
+ for (var q = 0; q <= 200; q++){
+ var xq = -1 + 2 * q / 200, vq = Math.abs(tych(xq, t));
+ if (vq > mx) mx = vq;
+ }
+ $("ty-tv").textContent = t.toFixed(2);
+ $("ty-max").textContent = mx === 0 ? "0（下溢）" : mx.toExponential(2);
+ }
+ $("ty-t").addEventListener("input", function(){
+ t = 0.5 * Math.pow(0.02, parseFloat(this.value) / 100); // 0.5 → 0.01
+ draw();
+ });
+ $("ty-play").onclick = function(){
+ if (timer){ clearInterval(timer); timer = null; this.textContent = "播放坍缩"; return; }
+ this.textContent = "暂停";
+ timer = setInterval(function(){
+ var v = parseFloat($("ty-t").value) + 1; if (v > 100) v = 0;
+ $("ty-t").value = v; t = 0.5 * Math.pow(0.02, v / 100); draw();
+ }, 70);
+ };
+ draw();
 })();
 
 /* ========== 06 指数衰减 ========== */
 (function(){
-  var LP = Math.PI;
-  var A = sineCoeffs(function(x){ return Math.sin(x) + 0.3 * Math.sin(2 * x) + 0.1 * Math.sin(3 * x); }, LP, 80);
-  function supExact(t){
-    var s = 0;
-    for (var j = 0; j <= 120; j++){
-      var x = j / 120 * LP, v = Math.abs(uSeries(A, LP, x, t));
-      if (v > s) s = v;
-    }
-    return s;
-  }
-  var TS = [], SUPS = [];
-  (function(){
-    for (var i = 0; i <= 60; i++){
-      var t = 0.5 + 39.5 * i / 60;
-      TS.push(t); SUPS.push(supExact(t));
-    }
-  })();
-  function draw(){
-    var ctx = $("ed-canvas").getContext("2d");
-    var p = newPlot(ctx, 840, 340, { xmin: 0, xmax: 40, ymin: 1e-18, ymax: 2, ylog: true,
-      xt: [0, 10, 20, 30, 40], yt: [1e-18, 1e-12, 1e-6, 1e-1, 1], xlab: "t", ylab: "振幅（对数）" });
-    /* 模态包络 */
-    [[1, 1], [2, 0.3], [3, 0.1]].forEach(function(mk){
-      var k = mk[0], c = mk[1];
-      ctx.strokeStyle = "#9ea7b0"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2; ctx.beginPath();
-      for (var i = 0; i <= 160; i++){
-        var t = i / 160 * 40, v = c * Math.exp(-k * k * t), px = p.X(t), py = p.Y(v);
-        if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-      }
-      ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = "#9ea7b0"; ctx.font = "10.5px ui-monospace,monospace"; ctx.textAlign = "left";
-      ctx.fillText("模态 " + k + "：|A|e^(−" + k * k + "t)", p.L + 6, p.T + 12 + (k - 1) * 13);
-    });
-    /* sup 曲线 */
-    ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.6; ctx.beginPath();
-    for (var q = 0; q < TS.length; q++){
-      var qx = p.X(TS[q]), qy = p.Y(SUPS[q]);
-      if (q) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
-    }
-    ctx.stroke();
-    ctx.fillStyle = "#D85A30"; ctx.font = "12px system-ui"; ctx.textAlign = "left";
-    ctx.fillText("sup|u(·,t)|", p.L + 8, p.T + 52);
-    /* 读数：精确时刻 t=20, 40 的斜率；t=10,20,40 的 sup·e^t */
-    var s20 = supExact(20), s40 = supExact(40);
-    var slope = Math.log(s40 / s20) / 20;
-    var r10 = supExact(10) * Math.exp(10), r20 = s20 * Math.exp(20), r40 = s40 * Math.exp(40);
-    $("ed-slope").textContent = slope.toFixed(4);
-    $("ed-ratio").textContent = r10.toFixed(2) + " / " + r20.toFixed(2) + " / " + r40.toFixed(2);
-  }
-  draw();
+ var LP = Math.PI;
+ var A = sineCoeffs(function(x){ return Math.sin(x) + 0.3 * Math.sin(2 * x) + 0.1 * Math.sin(3 * x); }, LP, 80);
+ function supExact(t){
+ var s = 0;
+ for (var j = 0; j <= 120; j++){
+ var x = j / 120 * LP, v = Math.abs(uSeries(A, LP, x, t));
+ if (v > s) s = v;
+ }
+ return s;
+ }
+ var TS = [], SUPS = [];
+ (function(){
+ for (var i = 0; i <= 60; i++){
+ var t = 0.5 + 39.5 * i / 60;
+ TS.push(t); SUPS.push(supExact(t));
+ }
+ })();
+ function draw(){
+ var ctx = $("ed-canvas").getContext("2d");
+ var p = newPlot(ctx, 840, 340, { xmin: 0, xmax: 40, ymin: 1e-18, ymax: 2, ylog: true,
+ xt: [0, 10, 20, 30, 40], yt: [1e-18, 1e-12, 1e-6, 1e-1, 1], xlab: "t", ylab: "振幅（对数）" });
+ /* 模态包络 */
+ [[1, 1], [2, 0.3], [3, 0.1]].forEach(function(mk){
+ var k = mk[0], c = mk[1];
+ ctx.strokeStyle = "#9ea7b0"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2; ctx.beginPath();
+ for (var i = 0; i <= 160; i++){
+ var t = i / 160 * 40, v = c * Math.exp(-k * k * t), px = p.X(t), py = p.Y(v);
+ if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+ }
+ ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle = "#9ea7b0"; ctx.font = "10.5px ui-monospace,monospace"; ctx.textAlign = "left";
+ ctx.fillText("模态 " + k + "：|A|e^(−" + k * k + "t)", p.L + 6, p.T + 12 + (k - 1) * 13);
+ });
+ /* sup 曲线 */
+ ctx.strokeStyle = "#D85A30"; ctx.lineWidth = 2.6; ctx.beginPath();
+ for (var q = 0; q < TS.length; q++){
+ var qx = p.X(TS[q]), qy = p.Y(SUPS[q]);
+ if (q) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
+ }
+ ctx.stroke();
+ ctx.fillStyle = "#D85A30"; ctx.font = "12px system-ui"; ctx.textAlign = "left";
+ ctx.fillText("sup|u(·,t)|", p.L + 8, p.T + 52);
+ /* 读数：精确时刻 t=20, 40 的斜率；t=10,20,40 的 sup·e^t */
+ var s20 = supExact(20), s40 = supExact(40);
+ var slope = Math.log(s40 / s20) / 20;
+ var r10 = supExact(10) * Math.exp(10), r20 = s20 * Math.exp(20), r40 = s40 * Math.exp(40);
+ $("ed-slope").textContent = slope.toFixed(4);
+ $("ed-ratio").textContent = r10.toFixed(2) + " / " + r20.toFixed(2) + " / " + r40.toFixed(2);
+ }
+ draw();
 })();
 
 /* ========== 07 代数衰减对比 ========== */
 (function(){
-  var boxc = function(x){ return (x >= -1 && x <= 1) ? 1 : 0; };
-  var gauss = function(x){ return Math.exp(-x * x / 2); };
-  /* 预计算四条 sup 曲线（高斯/方波取 x 网格上的数值 sup；2D 用可分离形式 u1(0,t)²） */
-  var TS = [], SB = [], SG = [], S2 = [], SI = [];
-  (function(){
-    var A = sineCoeffs(function(x){ return Math.sin(x) + 0.3 * Math.sin(2 * x) + 0.1 * Math.sin(3 * x); }, Math.PI, 80);
-    for (var i = 0; i <= 40; i++){
-      var t = Math.pow(10, 0 + 2.2 * i / 40); // 1 → 158
-      var sb = 0, sg = 0;
-      for (var j = 0; j <= 30; j++){
-        var x = -3 + 6 * j / 30;
-        var vb = Math.abs(poissonSplit(boxc, [-1, 1], x, t, 8, 800));
-        var vg = Math.abs(poissonSplit(gauss, null, x, t, 8, 800));
-        if (vb > sb) sb = vb;
-        if (vg > sg) sg = vg;
-      }
-      var s2 = Math.pow(poissonSplit(gauss, null, 0, t, 8, 800), 2); // 2D：u=u1(x)u1(y)，sup=u1(0,t)²
-      var si = 0;
-      for (var q = 0; q <= 60; q++){
-        var xq = q / 60 * Math.PI, vq = Math.abs(uSeries(A, Math.PI, xq, t));
-        if (vq > si) si = vq;
-      }
-      TS.push(t); SB.push(sb); SG.push(sg); S2.push(s2); SI.push(si);
-    }
-  })();
-  /* 读数：精确 t=10 与 t=100 处直接计算斜率 */
-  function supB(t){ var s = 0; for (var j = 0; j <= 60; j++){ var x = -3 + 6 * j / 60, v = Math.abs(poissonSplit(boxc, [-1, 1], x, t, 8, 800)); if (v > s) s = v; } return s; }
-  function supG(t){ var s = 0; for (var j = 0; j <= 60; j++){ var x = -3 + 6 * j / 60, v = Math.abs(poissonSplit(gauss, null, x, t, 8, 800)); if (v > s) s = v; } return s; }
-  function slopeOf(fn, t1, t2){ return Math.log(fn(t2) / fn(t1)) / Math.log(t2 / t1); }
-  function draw(){
-    var ctx = $("ad-canvas").getContext("2d");
-    var FLOOR = 1e-18;
-    var p = newPlot(ctx, 840, 360, { xmin: 1, xmax: 160, ymin: FLOOR, ymax: 1, ylog: true,
-      xt: [1, 3, 10, 30, 100], yt: [1e-18, 1e-12, 1e-6, 1e-1, 1], xlab: "t（对数）", ylab: "sup|u|（对数）" });
-    function curve(arr, color, w, dash){
-      ctx.strokeStyle = color; ctx.lineWidth = w;
-      ctx.setLineDash(dash || []);
-      ctx.beginPath();
-      for (var i = 0; i < TS.length; i++){
-        var v = Math.max(arr[i], FLOOR), px = p.X(TS[i]), py = p.Y(v);
-        if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-      }
-      ctx.stroke(); ctx.setLineDash([]);
-    }
-    curve(SB, "#185FA5", 2.4);
-    curve(SG, "#D85A30", 2.4);
-    curve(S2, "#534AB7", 2.4);
-    curve(SI, "#0F6E56", 2.4);
-    ctx.font = "12px system-ui"; ctx.textAlign = "left";
-    ctx.fillStyle = "#185FA5"; ctx.fillText("柯西 1D 方波（斜率 −1/2）", p.L + 8, p.T + 14);
-    ctx.fillStyle = "#D85A30"; ctx.fillText("柯西 1D 高斯（斜率 −1/2）", p.L + 8, p.T + 30);
-    ctx.fillStyle = "#534AB7"; ctx.fillText("柯西 2D 高斯（斜率 −1）", p.L + 8, p.T + 46);
-    ctx.fillStyle = "#0F6E56"; ctx.fillText("Dirichlet 初边值（指数衰减，t≈37 后跌出画面）", p.L + 8, p.T + 62);
-    $("ad-s1").textContent = slopeOf(supB, 10, 100).toFixed(3);
-    $("ad-s2").textContent = slopeOf(supG, 10, 100).toFixed(3);
-    $("ad-s3").textContent = slopeOf(function(t){ return Math.pow(poissonSplit(gauss, null, 0, t, 8, 800), 2); }, 10, 100).toFixed(3);
-  }
-  draw();
+ var boxc = function(x){ return (x >= -1 && x <= 1) ? 1 : 0; };
+ var gauss = function(x){ return Math.exp(-x * x / 2); };
+ /* 预计算四条 sup 曲线（高斯/方波取 x 网格上的数值 sup；2D 用可分离形式 u1(0,t)²） */
+ var TS = [], SB = [], SG = [], S2 = [], SI = [];
+ (function(){
+ var A = sineCoeffs(function(x){ return Math.sin(x) + 0.3 * Math.sin(2 * x) + 0.1 * Math.sin(3 * x); }, Math.PI, 80);
+ for (var i = 0; i <= 40; i++){
+ var t = Math.pow(10, 0 + 2.2 * i / 40); // 1 → 158
+ var sb = 0, sg = 0;
+ for (var j = 0; j <= 30; j++){
+ var x = -3 + 6 * j / 30;
+ var vb = Math.abs(poissonSplit(boxc, [-1, 1], x, t, 8, 800));
+ var vg = Math.abs(poissonSplit(gauss, null, x, t, 8, 800));
+ if (vb > sb) sb = vb;
+ if (vg > sg) sg = vg;
+ }
+ var s2 = Math.pow(poissonSplit(gauss, null, 0, t, 8, 800), 2); // 2D：u=u1(x)u1(y)，sup=u1(0,t)²
+ var si = 0;
+ for (var q = 0; q <= 60; q++){
+ var xq = q / 60 * Math.PI, vq = Math.abs(uSeries(A, Math.PI, xq, t));
+ if (vq > si) si = vq;
+ }
+ TS.push(t); SB.push(sb); SG.push(sg); S2.push(s2); SI.push(si);
+ }
+ })();
+ /* 读数：精确 t=10 与 t=100 处直接计算斜率 */
+ function supB(t){ var s = 0; for (var j = 0; j <= 60; j++){ var x = -3 + 6 * j / 60, v = Math.abs(poissonSplit(boxc, [-1, 1], x, t, 8, 800)); if (v > s) s = v; } return s; }
+ function supG(t){ var s = 0; for (var j = 0; j <= 60; j++){ var x = -3 + 6 * j / 60, v = Math.abs(poissonSplit(gauss, null, x, t, 8, 800)); if (v > s) s = v; } return s; }
+ function slopeOf(fn, t1, t2){ return Math.log(fn(t2) / fn(t1)) / Math.log(t2 / t1); }
+ function draw(){
+ var ctx = $("ad-canvas").getContext("2d");
+ var FLOOR = 1e-18;
+ var p = newPlot(ctx, 840, 360, { xmin: 1, xmax: 160, ymin: FLOOR, ymax: 1, ylog: true,
+ xt: [1, 3, 10, 30, 100], yt: [1e-18, 1e-12, 1e-6, 1e-1, 1], xlab: "t（对数）", ylab: "sup|u|（对数）" });
+ function curve(arr, color, w, dash){
+ ctx.strokeStyle = color; ctx.lineWidth = w;
+ ctx.setLineDash(dash || []);
+ ctx.beginPath();
+ for (var i = 0; i < TS.length; i++){
+ var v = Math.max(arr[i], FLOOR), px = p.X(TS[i]), py = p.Y(v);
+ if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+ }
+ ctx.stroke(); ctx.setLineDash([]);
+ }
+ curve(SB, "#185FA5", 2.4);
+ curve(SG, "#D85A30", 2.4);
+ curve(S2, "#534AB7", 2.4);
+ curve(SI, "#0F6E56", 2.4);
+ ctx.font = "12px system-ui"; ctx.textAlign = "left";
+ ctx.fillStyle = "#185FA5"; ctx.fillText("柯西 1D 方波（斜率 −1/2）", p.L + 8, p.T + 14);
+ ctx.fillStyle = "#D85A30"; ctx.fillText("柯西 1D 高斯（斜率 −1/2）", p.L + 8, p.T + 30);
+ ctx.fillStyle = "#534AB7"; ctx.fillText("柯西 2D 高斯（斜率 −1）", p.L + 8, p.T + 46);
+ ctx.fillStyle = "#0F6E56"; ctx.fillText("Dirichlet 初边值（指数衰减，t≈37 后跌出画面）", p.L + 8, p.T + 62);
+ $("ad-s1").textContent = slopeOf(supB, 10, 100).toFixed(3);
+ $("ad-s2").textContent = slopeOf(supG, 10, 100).toFixed(3);
+ $("ad-s3").textContent = slopeOf(function(t){ return Math.pow(poissonSplit(gauss, null, 0, t, 8, 800), 2); }, 10, 100).toFixed(3);
+ }
+ draw();
 })();
 
 setTimeout(function(){
-  if (!document.querySelector("mjx-container")) {
-    var b = document.getElementById("mjx-offline");
-    if (b) b.hidden = false;
-  }
+ if (!document.querySelector("mjx-container")) {
+ var b = document.getElementById("mjx-offline");
+ if (b) b.hidden = false;
+ }
 }, 2500);
 </script>
 </body>

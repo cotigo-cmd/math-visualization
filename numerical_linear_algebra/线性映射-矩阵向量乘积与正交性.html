@@ -5,41 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>线性映射 · 矩阵—向量乘积与正交性 · 数值线性代数</title>
 <!--
-  维护说明（给未来的自己）：
-  1. 本页 = 数值线性代数系列第 1 页（图号 NLA-01），教材 Trefethen & Bau《Numerical Linear Algebra》
-     Lecture 1–2（书页 1–16，PDF 页 = 书页 + 15）。系列索引在 ../index.html，总导航在 ../../index.html。
-  2. 版式身份「制图台」：暖纸底 + 深墨 + 朱砂/钢青双色 + 等宽数字 + 图签。全系列统一，勿混用别的风格。
-  3. 行间公式只用 $$ 与行内 \( \)；公式里的 < 一律 &lt;。改公式后跑 node ../../verify_formulas.js 本页。
-  4. 读数闸门：verify_readout_lin.js（工作区根）。新增交互块必须补断言 + 变异测试。
-  5. canvas 用固定 attribute 尺寸 + CSS max-width/height:auto，不要写死 CSS 高度（fit 长高Bug）。
+ 维护说明（给未来的自己）：
+ 1. 本页 = 数值线性代数系列第 1 页（图号 NLA-01），教材 教材。全系列统一，勿混用别的风格。
+ 3. 行间公式只用 $$ 与行内 \( \)；公式里的 < 一律 &lt;。改公式后跑 node ../../verify_formulas.js 本页。
+ 4. 读数闸门：verify_readout_lin.js（工作区根）。新增交互块必须补断言 + 变异测试。
+ 5. canvas 用固定 attribute 尺寸 + CSS max-width/height:auto，不要写死 CSS 高度（fit 长高Bug）。
 -->
 <script>
 window.MathJax = {
-  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
-  svg: { fontCache: "local" },
-  options: { enableMenu: false }
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "local" },
+ options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
-  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
-  --line:#CBD5DF; --grid:#E6EBF1;
-  --cinn:#B04A2F;      /* 朱砂：第一列/输入侧 */
-  --steel:#2F5D8A;     /* 钢青：第二列/结构 */
-  --green:#1F7A4D;     /* 正交余量 */
-  --amber:#8A6D1F;
+ --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+ --line:#CBD5DF; --grid:#E6EBF1;
+ --cinn:#B04A2F; /* 朱砂：第一列/输入侧 */
+ --steel:#2F5D8A; /* 钢青：第二列/结构 */
+ --green:#1F7A4D; /* 正交余量 */
+ --amber:#8A6D1F;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
-  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--steel);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 /* ---- 图签 ---- */
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
-  overflow:hidden;margin:0 0 14px;background:var(--card)}
+ overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -48,10 +46,10 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
 .tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
-  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
-  background:#EEF3F8;color:var(--steel)}
+ border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+ background:#EEF3F8;color:var(--steel)}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
-  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+ border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
 h3{font-size:15px;margin:26px 0 8px;color:var(--ink)}
 p{margin:10px 0}
@@ -60,21 +58,21 @@ li{margin:4px 0}
 .mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
 /* ---- 实验台 ---- */
 .lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
-  margin:22px 0;padding:18px 20px 20px}
+ margin:22px 0;padding:18px 20px 20px}
 .lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
 .lab-head .t{font-size:15.5px;font-weight:680}
 .lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
-  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+ background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
 .lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
 canvas{display:block;width:100%;height:auto;background:
-  linear-gradient(var(--card),var(--card));border:1px solid var(--line);border-radius:8px;touch-action:none}
+ linear-gradient(var(--card),var(--card));border:1px solid var(--line);border-radius:8px;touch-action:none}
 .ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
 .ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
 .ctrl label{color:var(--ink2);white-space:nowrap}
 .ctrl .nm{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
 input[type=range]{width:110px;accent-color:var(--cinn)}
 button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
-  border-radius:7px;padding:5px 13px;cursor:pointer}
+ border-radius:7px;padding:5px 13px;cursor:pointer}
 button:hover{border-color:var(--ink)}
 button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
@@ -82,15 +80,15 @@ button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .seg button.on{background:var(--steel);color:#fff}
 /* ---- 读数 ---- */
 .readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 18px}
+ display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 18px}
 .ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
-  border-bottom:1px dotted var(--grid);padding:3px 0}
+ border-bottom:1px dotted var(--grid);padding:3px 0}
 .ro .k{color:var(--ink2)}
 .ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
 .eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
-  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+ border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
-  border-radius:0 8px 8px 0;font-size:14px}
+ border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--steel);background:#EFF4F9}
 .note.g{border-left-color:var(--green);background:#EDF6F1}
 mjx-container[jax="SVG"]{max-width:100%}
@@ -100,7 +98,7 @@ table.tb{border-collapse:collapse;margin:12px 0;font-size:14px}
 table.tb td,table.tb th{border:1px solid var(--line);padding:5px 14px;text-align:center}
 table.tb th{background:var(--card);font-weight:600}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
-  font-size:13px;color:var(--ink2)}
+ font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
 .pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
@@ -113,10 +111,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="../index.html">数值线性代数</a></p>
 
 <div class="sheet">
-  <div class="cell"><p class="k">图号</p><p class="v no">NLA-01</p></div>
-  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">线性映射 · 矩阵—向量乘积与正交性</p></div>
-  <div class="cell"><p class="k">教材</p><p class="v">Lecture 1–2 · 书页 1–16</p></div>
-  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+ <div class="cell"><p class="k">图号</p><p class="v no">NLA-01</p></div>
+ <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">线性映射 · 矩阵—向量乘积与正交性</p></div>
+ <div class="cell"><p class="k">教材</p><p class="v">Lecture 1–2</p></div>
+ <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
 </div>
 
 <h1>矩阵—向量乘积的两种解读，与正交性</h1>
@@ -132,47 +130,47 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <div class="eq">$$ A(x+y)=Ax+Ay,\qquad A(\alpha x)=\alpha Ax. \tag{1.3} $$</div>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 01</span><span class="t">列组合机器：把 (1.2) 拆成四步</span><span class="tag">Lecture 1</span></div>
-  <p class="lab-sub">拖动 \(x\) 的尖端（灰箭头）或用滑杆改 \(A\) 的元素。播放按钮依次画出：① 两列 \(a_1,a_2\)；② 缩放 \(x_1a_1\)；③ 平移叠加 \(x_2a_2\)；④ 合力 \(b\)。注意最后一屏同时给出两种算法的结果——它们必须相等。</p>
-  <canvas id="cv-combine" width="600" height="430"></canvas>
-  <div class="ctrls">
-    <div class="ctrl"><label>\(a_{11}\)</label><input type="range" id="s-a11" min="-3" max="3" step="0.1" value="1.6"><span class="nm" id="v-a11"></span></div>
-    <div class="ctrl"><label>\(a_{12}\)</label><input type="range" id="s-a12" min="-3" max="3" step="0.1" value="-0.7"><span class="nm" id="v-a12"></span></div>
-    <div class="ctrl"><label>\(a_{21}\)</label><input type="range" id="s-a21" min="-3" max="3" step="0.1" value="0.9"><span class="nm" id="v-a21"></span></div>
-    <div class="ctrl"><label>\(a_{22}\)</label><input type="range" id="s-a22" min="-3" max="3" step="0.1" value="1.3"><span class="nm" id="v-a22"></span></div>
-    <button id="b-play">▶ 播放组合</button>
-    <button id="b-step">单步</button>
-    <button id="b-reset">重置</button>
-    <span class="seg" id="presets">
-      <button data-p="shear">剪切</button><button data-p="rot">旋转 30°</button><button data-p="vander" class="on">范德蒙 3×2</button>
-    </span>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">b₁（行点积）</span><span class="v" id="ro-b1row"></span></div>
-    <div class="ro"><span class="k">b₁（列组合）</span><span class="v" id="ro-b1col"></span></div>
-    <div class="ro"><span class="k">b₂（行点积）</span><span class="v" id="ro-b2row"></span></div>
-    <div class="ro"><span class="k">b₂（列组合）</span><span class="v" id="ro-b2col"></span></div>
-    <div class="ro"><span class="k">‖b‖₂</span><span class="v" id="ro-nb"></span></div>
-    <div class="ro"><span class="k">阶段</span><span class="v" id="ro-phase"></span></div>
-  </div>
-  <p class="hint">「范德蒙 3×2」预设给出 \(A=\begin{psmallmatrix}1&amp;0\\1&amp;1\\1&amp;2\end{psmallmatrix}\)：这是 \(3\times 2\) 矩阵，输出平面是 \(\mathbb{R}^3\)，画不出三维，于是改用下方的「函数的列」实验台来看它的本质。</p>
+ <div class="lab-head"><span class="no">实验 01</span><span class="t">列组合机器：把 (1.2) 拆成四步</span><span class="tag">Lecture 1</span></div>
+ <p class="lab-sub">拖动 \(x\) 的尖端（灰箭头）或用滑杆改 \(A\) 的元素。播放按钮依次画出：① 两列 \(a_1,a_2\)；② 缩放 \(x_1a_1\)；③ 平移叠加 \(x_2a_2\)；④ 合力 \(b\)。注意最后一屏同时给出两种算法的结果——它们必须相等。</p>
+ <canvas id="cv-combine" width="600" height="430"></canvas>
+ <div class="ctrls">
+ <div class="ctrl"><label>\(a_{11}\)</label><input type="range" id="s-a11" min="-3" max="3" step="0.1" value="1.6"><span class="nm" id="v-a11"></span></div>
+ <div class="ctrl"><label>\(a_{12}\)</label><input type="range" id="s-a12" min="-3" max="3" step="0.1" value="-0.7"><span class="nm" id="v-a12"></span></div>
+ <div class="ctrl"><label>\(a_{21}\)</label><input type="range" id="s-a21" min="-3" max="3" step="0.1" value="0.9"><span class="nm" id="v-a21"></span></div>
+ <div class="ctrl"><label>\(a_{22}\)</label><input type="range" id="s-a22" min="-3" max="3" step="0.1" value="1.3"><span class="nm" id="v-a22"></span></div>
+ <button id="b-play">▶ 播放组合</button>
+ <button id="b-step">单步</button>
+ <button id="b-reset">重置</button>
+ <span class="seg" id="presets">
+ <button data-p="shear">剪切</button><button data-p="rot">旋转 30°</button><button data-p="vander" class="on">范德蒙 3×2</button>
+ </span>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">b₁（行点积）</span><span class="v" id="ro-b1row"></span></div>
+ <div class="ro"><span class="k">b₁（列组合）</span><span class="v" id="ro-b1col"></span></div>
+ <div class="ro"><span class="k">b₂（行点积）</span><span class="v" id="ro-b2row"></span></div>
+ <div class="ro"><span class="k">b₂（列组合）</span><span class="v" id="ro-b2col"></span></div>
+ <div class="ro"><span class="k">‖b‖₂</span><span class="v" id="ro-nb"></span></div>
+ <div class="ro"><span class="k">阶段</span><span class="v" id="ro-phase"></span></div>
+ </div>
+ <p class="hint">「范德蒙 3×2」预设给出 \(A=\begin{psmallmatrix}1&amp;0\\1&amp;1\\1&amp;2\end{psmallmatrix}\)：这是 \(3\times 2\) 矩阵，输出平面是 \(\mathbb{R}^3\)，画不出三维，于是改用下方的「函数的列」实验台来看它的本质。</p>
 </section>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 01b</span><span class="t">函数的列：Vandermonde 矩阵的连续版</span><span class="tag">Example 1.1</span></div>
-  <p class="lab-sub">把「列」从向量换成函数：三条淡曲线是列 \(1,\ x,\ x^2\)，粗曲线是它们的组合 \(p(x)=c_0+c_1x+c_2x^2\)。采样点 \(x=-1,0,1\) 处的值就是离散 Vandermonde 乘积 \(Ac\) 的三个分量——矩阵不必想成 \(m\) 次标量求和，也可以是想成「一次向量求和」。</p>
-  <canvas id="cv-mono" width="600" height="330"></canvas>
-  <div class="ctrls">
-    <div class="ctrl"><label>\(c_0\)</label><input type="range" id="s-c0" min="-2" max="2" step="0.05" value="0.4"><span class="nm" id="v-c0"></span></div>
-    <div class="ctrl"><label>\(c_1\)</label><input type="range" id="s-c1" min="-2" max="2" step="0.05" value="0.8"><span class="nm" id="v-c1"></span></div>
-    <div class="ctrl"><label>\(c_2\)</label><input type="range" id="s-c2" min="-2" max="2" step="0.05" value="-0.5"><span class="nm" id="v-c2"></span></div>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">p(−1)</span><span class="v" id="ro-pm1"></span></div>
-    <div class="ro"><span class="k">p(0)</span><span class="v" id="ro-p0"></span></div>
-    <div class="ro"><span class="k">p(1)</span><span class="v" id="ro-p1"></span></div>
-    <div class="ro"><span class="k">(Ac)₁ 核对</span><span class="v" id="ro-ac1"></span></div>
-  </div>
+ <div class="lab-head"><span class="no">实验 01b</span><span class="t">函数的列：Vandermonde 矩阵的连续版</span><span class="tag">Example 1.1</span></div>
+ <p class="lab-sub">把「列」从向量换成函数：三条淡曲线是列 \(1,\ x,\ x^2\)，粗曲线是它们的组合 \(p(x)=c_0+c_1x+c_2x^2\)。采样点 \(x=-1,0,1\) 处的值就是离散 Vandermonde 乘积 \(Ac\) 的三个分量——矩阵不必想成 \(m\) 次标量求和，也可以是想成「一次向量求和」。</p>
+ <canvas id="cv-mono" width="600" height="330"></canvas>
+ <div class="ctrls">
+ <div class="ctrl"><label>\(c_0\)</label><input type="range" id="s-c0" min="-2" max="2" step="0.05" value="0.4"><span class="nm" id="v-c0"></span></div>
+ <div class="ctrl"><label>\(c_1\)</label><input type="range" id="s-c1" min="-2" max="2" step="0.05" value="0.8"><span class="nm" id="v-c1"></span></div>
+ <div class="ctrl"><label>\(c_2\)</label><input type="range" id="s-c2" min="-2" max="2" step="0.05" value="-0.5"><span class="nm" id="v-c2"></span></div>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">p(−1)</span><span class="v" id="ro-pm1"></span></div>
+ <div class="ro"><span class="k">p(0)</span><span class="v" id="ro-p0"></span></div>
+ <div class="ro"><span class="k">p(1)</span><span class="v" id="ro-p1"></span></div>
+ <div class="ro"><span class="k">(Ac)₁ 核对</span><span class="v" id="ro-ac1"></span></div>
+ </div>
 </section>
 
 <h2><span class="no">02</span>值域、零空间与秩：列视角的直接后果</h2>
@@ -181,22 +179,22 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>零空间 \(\operatorname{null}(A)=\{x:Ax=0\}\) 则是「把零向量表示成列的线性组合」的系数集合。若 \(A\) 是 \(m\times n\) 且 \(m&gt;n\)，满秩等价于映射是一对一的（定理 1.2）：满秩时每个 \(b\in\operatorname{range}(A)\) 的列展开系数唯一；亏秩时零空间里有非零方向，沿它平移不改变 \(Ax\)。下面的实验台把「不同 \(x\)、同一个 \(b\)」做成动画。</p>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 02</span><span class="t">被锁住的像：亏秩矩阵的值域是一条线</span><span class="tag">Theorem 1.1 / 1.2</span></div>
-  <p class="lab-sub">切换满秩/亏秩矩阵，拖动 \(x\)。亏秩时：\(Ax\) 永远落在 \(a_1\) 张成的红线（= 值域）上；沿零空间方向 \(n\)（绿箭头）平移 \(x\)，输出纹丝不动。</p>
-  <canvas id="cv-range" width="600" height="400"></canvas>
-  <div class="ctrls">
-    <span class="seg" id="rank-presets">
-      <button data-p="full" class="on">满秩</button><button data-p="deft">亏秩 [[1,2],[2,4]]</button>
-    </span>
-    <div class="ctrl"><label>零空间平移 \(t\)</label><input type="range" id="s-t" min="-2.5" max="2.5" step="0.05" value="1"><span class="nm" id="v-t"></span></div>
-    <button id="b-anim">▶ 沿零空间巡游</button>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">rank(A)</span><span class="v" id="ro-rank"></span></div>
-    <div class="ro"><span class="k">dim null(A)</span><span class="v" id="ro-nulldim"></span></div>
-    <div class="ro"><span class="k">‖Ax − Ax′‖</span><span class="v" id="ro-lock"></span></div>
-    <div class="ro"><span class="k">x 与 x′ 的距离</span><span class="v" id="ro-xdist"></span></div>
-  </div>
+ <div class="lab-head"><span class="no">实验 02</span><span class="t">被锁住的像：亏秩矩阵的值域是一条线</span><span class="tag">Theorem 1.1 / 1.2</span></div>
+ <p class="lab-sub">切换满秩/亏秩矩阵，拖动 \(x\)。亏秩时：\(Ax\) 永远落在 \(a_1\) 张成的红线（= 值域）上；沿零空间方向 \(n\)（绿箭头）平移 \(x\)，输出纹丝不动。</p>
+ <canvas id="cv-range" width="600" height="400"></canvas>
+ <div class="ctrls">
+ <span class="seg" id="rank-presets">
+ <button data-p="full" class="on">满秩</button><button data-p="deft">亏秩 [[1,2],[2,4]]</button>
+ </span>
+ <div class="ctrl"><label>零空间平移 \(t\)</label><input type="range" id="s-t" min="-2.5" max="2.5" step="0.05" value="1"><span class="nm" id="v-t"></span></div>
+ <button id="b-anim">▶ 沿零空间巡游</button>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">rank(A)</span><span class="v" id="ro-rank"></span></div>
+ <div class="ro"><span class="k">dim null(A)</span><span class="v" id="ro-nulldim"></span></div>
+ <div class="ro"><span class="k">‖Ax − Ax′‖</span><span class="v" id="ro-lock"></span></div>
+ <div class="ro"><span class="k">x 与 x′ 的距离</span><span class="v" id="ro-xdist"></span></div>
+ </div>
 </section>
 
 <h2><span class="no">03</span>内积与正交：把向量拆成互相垂直的块</h2>
@@ -207,63 +205,63 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>这条分解是后面一切的正交化算法的原型：Gram–Schmidt 是它的迭代版，最小二乘的几何是它的无限维版。正交集必线性无关（定理 2.1）：若 \(v_k=\sum_{i\ne k}c_iv_i\)，两边与 \(v_k\) 做内积，左边 \(\|v_k\|^2&gt;0\)，右边因正交性全灭，矛盾。</p>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 03</span><span class="t">正交分解沙盘：(2.6) 的三块</span><span class="tag">Lecture 2</span></div>
-  <p class="lab-sub">拖动 \(x\)（钢青）与 \(y\)（朱砂）。绿色是 \(y\) 在 \(x\) 方向上的投影，虚线是残差 \(r=y-\text{proj}\)——它与 \(x\) 成直角，这就是 (2.6)。读数里的勾股账本应当恒为 0。</p>
-  <canvas id="cv-inner" width="600" height="400"></canvas>
-  <div class="ctrls">
-    <button id="b-ortho">把 y 掰到 ⊥ x</button>
-    <button id="b-para">把 y 掰到 ∥ x</button>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">xᵀy</span><span class="v" id="ro-xy"></span></div>
-    <div class="ro"><span class="k">cos α</span><span class="v" id="ro-cos"></span></div>
-    <div class="ro"><span class="k">α（度）</span><span class="v" id="ro-ang"></span></div>
-    <div class="ro"><span class="k">‖proj‖</span><span class="v" id="ro-proj"></span></div>
-    <div class="ro"><span class="k">‖r‖</span><span class="v" id="ro-r"></span></div>
-    <div class="ro"><span class="k">勾股账本 ‖y‖²−‖proj‖²−‖r‖²</span><span class="v" id="ro-pyth"></span></div>
-  </div>
+ <div class="lab-head"><span class="no">实验 03</span><span class="t">正交分解沙盘：(2.6) 的三块</span><span class="tag">Lecture 2</span></div>
+ <p class="lab-sub">拖动 \(x\)（钢青）与 \(y\)（朱砂）。绿色是 \(y\) 在 \(x\) 方向上的投影，虚线是残差 \(r=y-\text{proj}\)——它与 \(x\) 成直角，这就是 (2.6)。读数里的勾股账本应当恒为 0。</p>
+ <canvas id="cv-inner" width="600" height="400"></canvas>
+ <div class="ctrls">
+ <button id="b-ortho">把 y 掰到 ⊥ x</button>
+ <button id="b-para">把 y 掰到 ∥ x</button>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">xᵀy</span><span class="v" id="ro-xy"></span></div>
+ <div class="ro"><span class="k">cos α</span><span class="v" id="ro-cos"></span></div>
+ <div class="ro"><span class="k">α（度）</span><span class="v" id="ro-ang"></span></div>
+ <div class="ro"><span class="k">‖proj‖</span><span class="v" id="ro-proj"></span></div>
+ <div class="ro"><span class="k">‖r‖</span><span class="v" id="ro-r"></span></div>
+ <div class="ro"><span class="k">勾股账本 ‖y‖²−‖proj‖²−‖r‖²</span><span class="v" id="ro-pyth"></span></div>
+ </div>
 </section>
 
 <h2><span class="no">04</span>正交矩阵：保长、保角的刚性运动</h2>
-<p>方阵 \(Q\) 满足 \(Q^{\mathrm{T}}Q=I\)（列是正交单位基）时称为正交矩阵。由 (2.4) \((AB)^{\mathrm{T}}=B^{\mathrm{T}}A^{\mathrm{T}}\)，</p>
+<p>方阵 \(Q\) 满足 \(Q^{\mathrm{T}}Q=I\)（列是正交单位基）时称为正交矩阵。由 (2.4) \((AB)^{\mathrm{T}}=B^{\mathrm{T}}A^{\mathrm{T}}\)。</p>
 <div class="eq">$$ (Qx)^{\mathrm{T}}(Qy)=x^{\mathrm{T}}Q^{\mathrm{T}}Qy=x^{\mathrm{T}}y,\qquad \|Qx\|_2=\|x\|_2. \tag{2.9–2.10} $$</div>
 <p>实正交矩阵就是旋转（\(\det Q=1\)）或反射（\(\det Q=-1\)）：它保持全部几何结构。反过来，一般的 \(A\) 会把单位圆抌成椭圆——那是 Lecture 4 的起点，本页先在实验台里埋一个伏笔。</p>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 04</span><span class="t">圆经过 Q 还是圆，经过剪切不再是圆</span><span class="tag">(2.9)(2.10)</span></div>
-  <p class="lab-sub">拖动角度滑杆看旋转矩阵 \(Q\) 的作用；拖动两个向量尖端。读数核对保距与保角。切到「剪切」模式：圆变成椭圆、角度被扭曲——单位圆的像何时重新变回椭圆的正交版本，正是 SVD 要回答的问题。</p>
-  <canvas id="cv-unitary" width="600" height="420"></canvas>
-  <div class="ctrls">
-    <div class="ctrl"><label>θ</label><input type="range" id="s-th" min="0" max="360" step="1" value="34"><span class="nm" id="v-th"></span></div>
-    <span class="seg" id="q-mode">
-      <button data-p="rot" class="on">旋转</button><button data-p="ref">反射</button><button data-p="shear">剪切</button>
-    </span>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">‖x‖₂ → ‖Qx‖₂</span><span class="v" id="ro-len"></span></div>
-    <div class="ro"><span class="k">∠(x,y) → ∠(Qx,Qy)</span><span class="v" id="ro-angq"></span></div>
-    <div class="ro"><span class="k">(Qx)ᵀ(Qy) − xᵀy</span><span class="v" id="ro-inner"></span></div>
-    <div class="ro"><span class="k">det Q</span><span class="v" id="ro-det"></span></div>
-  </div>
+ <div class="lab-head"><span class="no">实验 04</span><span class="t">圆经过 Q 还是圆，经过剪切不再是圆</span><span class="tag">(2.9)(2.10)</span></div>
+ <p class="lab-sub">拖动角度滑杆看旋转矩阵 \(Q\) 的作用；拖动两个向量尖端。读数核对保距与保角。切到「剪切」模式：圆变成椭圆、角度被扭曲——单位圆的像何时重新变回椭圆的正交版本，正是 SVD 要回答的问题。</p>
+ <canvas id="cv-unitary" width="600" height="420"></canvas>
+ <div class="ctrls">
+ <div class="ctrl"><label>θ</label><input type="range" id="s-th" min="0" max="360" step="1" value="34"><span class="nm" id="v-th"></span></div>
+ <span class="seg" id="q-mode">
+ <button data-p="rot" class="on">旋转</button><button data-p="ref">反射</button><button data-p="shear">剪切</button>
+ </span>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">‖x‖₂ → ‖Qx‖₂</span><span class="v" id="ro-len"></span></div>
+ <div class="ro"><span class="k">∠(x,y) → ∠(Qx,Qy)</span><span class="v" id="ro-angq"></span></div>
+ <div class="ro"><span class="k">(Qx)ᵀ(Qy) − xᵀy</span><span class="v" id="ro-inner"></span></div>
+ <div class="ro"><span class="k">det Q</span><span class="v" id="ro-det"></span></div>
+ </div>
 </section>
 
 <h2><span class="no">05</span>本页小结与习题</h2>
 <ul>
-  <li><strong>列视角优先</strong>：\(Ax\) 是列的线性组合；值域 = 列空间；\(A^{-1}b\) 是展开系数。算法的直觉（QR、SVD、最小二乘）全部长在这上面。</li>
-  <li><strong>满秩 ⟺ 一对一</strong>（\(m&gt;n\) 时，定理 1.2）：亏秩的几何标志就是像被锁进低维子空间，零空间给出「锁不住的移动方向」。</li>
-  <li><strong>正交集 ⟹ 线性无关</strong>（定理 2.1）；内积给出拆解工具 (2.6)：任意向量 = 各方向分量 + 正交残差。</li>
-  <li><strong>正交矩阵 = 刚性运动</strong>：保长、保角、保内积；一般的矩阵不保——把圆变成椭圆，引出 SVD。</li>
+ <li><strong>列视角优先</strong>：\(Ax\) 是列的线性组合；值域 = 列空间；\(A^{-1}b\) 是展开系数。算法的直觉（QR、SVD、最小二乘）全部长在这上面。</li>
+ <li><strong>满秩 ⟺ 一对一</strong>（\(m&gt;n\) 时，定理 1.2）：亏秩的几何标志就是像被锁进低维子空间，零空间给出「锁不住的移动方向」。</li>
+ <li><strong>正交集 ⟹ 线性无关</strong>（定理 2.1）；内积给出拆解工具 (2.6)：任意向量 = 各方向分量 + 正交残差。</li>
+ <li><strong>正交矩阵 = 刚性运动</strong>：保长、保角、保内积；一般的矩阵不保——把圆变成椭圆，引出 SVD。</li>
 </ul>
 <div class="note b"><strong>习题 2.1（既三角又正交 ⟹ 对角）</strong>：设 \(Q\) 上三角且 \(Q^{\mathrm{T}}Q=I\)。第一行只有 \(q_{11}\ne0\)，其模长为 1；第一列只有 \(q_{11}\ne0\)，故 \(q_{11}=\pm1\)。于是第一行/列乘上 \(q_{11}^{-1}\) 后归零，对右下角块归纳即得 \(Q=\operatorname{diag}(\pm1)\)——三角矩阵想「转动」空间，只能是对角线上符号的镜像。</div>
 <div class="note"><strong>下一页</strong>：给「大小」一把尺子——向量范数与诱导矩阵范数（Lecture 3）。我们会看到 \(\|A\|_2=\sigma_1\) 的伏笔在这里回收。</div>
 
 <div class="pager">
-  <a></a>
-  <a href="范数-单位球与诱导范数.html">下一页 · 范数 →</a>
+ <a></a>
+ <a href="范数-单位球与诱导范数.html">下一页 · 范数 →</a>
 </div>
 
 <footer>
-<p>教材引用：Trefethen &amp; Bau, <em>Numerical Linear Algebra</em>, Lecture 1–2（书页 1–16）。公式按教材重排（OCR 层丢失希腊字母/累加符号，已对照原书结构核对）；实验编号为本站自加。</p>
+<p>教材引用：Trefethen &amp; Bau, <em>Numerical Linear Algebra</em>, Lecture 1–2。实验编号为本站自加。</p>
 <p>本页全部读数由工作区根脚本 <span class="mx">verify_readout_lin.js</span> 与 <span class="mx">smoke_dom.js</span> 实测；公式经 <span class="mx">verify_formulas.js</span> 本地编译 0 failed。</p>
 </footer>
 
@@ -273,76 +271,76 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 "use strict";
 /* ================= 公共绘图工具 ================= */
 function fmt(x, d){ if(!isFinite(x)) return "—"; d=(d===undefined)?3:d;
-  if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
-  return x.toFixed(d); }
+ if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
+ return x.toFixed(d); }
 function makeStage(cv, W, H){
-  const ctx = cv.getContext("2d");
-  return { cv:cv, ctx:ctx, W:W, H:H };
+ const ctx = cv.getContext("2d");
+ return { cv:cv, ctx:ctx, W:W, H:H };
 }
 /* 世界坐标 -> 画布坐标：cx,cy 中心，s 每单位像素 */
 function mapper(cv, cx, cy, s){
-  return {
-    X:function(x){ return cx + x*s; },
-    Y:function(y){ return cy - y*s; },
-    x:function(px){ return (px-cx)/s; },
-    y:function(py){ return (cy-py)/s; }
-  };
+ return {
+ X:function(x){ return cx + x*s; },
+ Y:function(y){ return cy - y*s; },
+ x:function(px){ return (px-cx)/s; },
+ y:function(py){ return (cy-py)/s; }
+ };
 }
 function grid(ctx, cv, cx, cy, s, xmin, xmax, ymin, ymax){
-  ctx.save();
-  ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
-  for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
-    ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
-  for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
-    ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
-  ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
-  ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
-  ctx.restore();
+ ctx.save();
+ ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+ for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
+ ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
+ for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
+ ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
+ ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
+ ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
+ ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
+ ctx.restore();
 }
 function arrow(ctx, x1, y1, x2, y2, color, w, dash){
-  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
-  if(dash) ctx.setLineDash(dash);
-  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
-  const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
-  if(L>1){ const h=Math.min(9, L*0.28);
-    ctx.beginPath(); ctx.moveTo(x2,y2);
-    ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
-    ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
-    ctx.closePath(); ctx.fill(); }
-  ctx.restore();
+ ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
+ if(dash) ctx.setLineDash(dash);
+ ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+ const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
+ if(L>1){ const h=Math.min(9, L*0.28);
+ ctx.beginPath(); ctx.moveTo(x2,y2);
+ ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
+ ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
+ ctx.closePath(); ctx.fill(); }
+ ctx.restore();
 }
 function dot(ctx, x, y, color, r){
-  ctx.save(); ctx.fillStyle=color; ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore();
+ ctx.save(); ctx.fillStyle=color; ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore();
 }
 function label(ctx, txt, x, y, color, size, align){
-  ctx.save(); ctx.fillStyle=color||"#22303F";
-  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
-  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
-  ctx.fillText(txt, x, y); ctx.restore();
+ ctx.save(); ctx.fillStyle=color||"#22303F";
+ ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+ ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+ ctx.fillText(txt, x, y); ctx.restore();
 }
 function vec(ctx, m, v, color, w, dash){
-  arrow(ctx, m.X(0), m.Y(0), m.X(v[0]), m.Y(v[1]), color, w, dash);
+ arrow(ctx, m.X(0), m.Y(0), m.X(v[0]), m.Y(v[1]), color, w, dash);
 }
 /* 画布像素 -> 世界坐标（考虑 CSS 缩放） */
 function pt2world(cv, m, e){
-  const r = cv.getBoundingClientRect();
-  const px = (e.clientX - r.left) * cv.width / r.width;
-  const py = (e.clientY - r.top) * cv.height / r.height;
-  return [m.x(px), m.y(py)];
+ const r = cv.getBoundingClientRect();
+ const px = (e.clientX - r.left) * cv.width / r.width;
+ const py = (e.clientY - r.top) * cv.height / r.height;
+ return [m.x(px), m.y(py)];
 }
 function makeDrag(cv, m, get, set){
-  let dragging=false;
-  cv.addEventListener("pointerdown", function(e){
-    const w=pt2world(cv,m,e), g=get();
-    if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.55){ dragging=true;
-      cv.setPointerCapture(e.pointerId); set(w); }
-  });
-  cv.addEventListener("pointermove", function(e){
-    if(!dragging) return; set(pt2world(cv,m,e));
-  });
-  cv.addEventListener("pointerup", function(){ dragging=false; });
-  cv.addEventListener("pointerleave", function(){ dragging=false; });
+ let dragging=false;
+ cv.addEventListener("pointerdown", function(e){
+ const w=pt2world(cv,m,e), g=get();
+ if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.55){ dragging=true;
+ cv.setPointerCapture(e.pointerId); set(w); }
+ });
+ cv.addEventListener("pointermove", function(e){
+ if(!dragging) return; set(pt2world(cv,m,e));
+ });
+ cv.addEventListener("pointerup", function(){ dragging=false; });
+ cv.addEventListener("pointerleave", function(){ dragging=false; });
 }
 const $ = function(id){ return document.getElementById(id); };
 
@@ -353,82 +351,82 @@ const stateC = { a11:1.6, a12:-0.7, a21:0.9, a22:1.3, x1:1.0, x2:0.8, phase:3, t
 function matC(){ return [[stateC.a11, stateC.a12],[stateC.a21, stateC.a22]]; }
 function xC(){ return [stateC.x1, stateC.x2]; }
 function bC(){ const A=matC(), x=xC();
-  return [A[0][0]*x[0]+A[0][1]*x[1], A[1][0]*x[0]+A[1][1]*x[1]]; }
+ return [A[0][0]*x[0]+A[0][1]*x[1], A[1][0]*x[0]+A[1][1]*x[1]]; }
 const PHASE_TXT = ["① 两列 a₁, a₂", "② 缩放 x₁a₁", "③ 平移叠加 x₂a₂", "④ 合力 b = Ax"];
 function drawCombine(){
-  const ctx=cvC.getContext("2d"); ctx.clearRect(0,0,W1,H1);
-  grid(ctx, cvC, mC.X(0), mC.Y(0), 52, -3.2, 8.2, -4.1, 4.1);
-  const A=matC(), x=xC(), b=bC();
-  const a1=[A[0][0],A[1][0]], a2=[A[0][1],A[1][1]];
-  const P=stateC.phase;
-  /* 输入 x（灰） */
-  if(P>=0) vec(ctx, mC, x, "#9AA7B4", 1.8, [5,4]);
-  if(P>=0) label(ctx, "x", mC.X(x[0])+7, mC.Y(x[1])-8, "#5A6B7C", 12.5);
-  if(P>=0){ dot(ctx, mC.X(x[0]), mC.Y(x[1]), "#5A6B7C", 4.5); }
-  /* ① 两列 */
-  if(P>=0){ vec(ctx, mC, a1, "#B04A2F", 2.8); label(ctx, "a₁", mC.X(a1[0])+7, mC.Y(a1[1])-8, "#B04A2F", 13.5);
-            vec(ctx, mC, a2, "#2F5D8A", 2.8); label(ctx, "a₂", mC.X(a2[0])+7, mC.Y(a2[1])-8, "#2F5D8A", 13.5); }
-  /* ② x₁a₁ */
-  if(P>=1){ const s1=[x[0]*a1[0], x[0]*a1[1]];
-    vec(ctx, mC, s1, "#B04A2F", 3.4);
-    label(ctx, "x₁a₁", mC.X(s1[0])+7, mC.Y(s1[1])+13, "#B04A2F", 12.5); }
-  /* ③ x₂a₂ 平移 */
-  if(P>=2){ const s1=[x[0]*a1[0], x[0]*a1[1]], s2=[x[1]*a2[0], x[1]*a2[1]];
-    arrow(ctx, mC.X(s1[0]), mC.Y(s1[1]), mC.X(s1[0]+s2[0]), mC.Y(s1[1]+s2[1]), "#2F5D8A", 3.4);
-    dot(ctx, mC.X(s1[0]), mC.Y(s1[1]), "#22303F", 3.5);
-    label(ctx, "x₂a₂", mC.X(s1[0]+s2[0])+8, mC.Y(s1[1]+s2[1])+2, "#2F5D8A", 12.5); }
-  /* ④ b */
-  if(P>=3){ vec(ctx, mC, b, "#22303F", 3.8);
-    dot(ctx, mC.X(b[0]), mC.Y(b[1]), "#22303F", 5);
-    label(ctx, "b = Ax", mC.X(b[0])+8, mC.Y(b[1])-10, "#22303F", 14.5);
-    /* 平行四边形虚线 */
-    const s1=[x[0]*a1[0], x[0]*a1[1]], s2=[x[1]*a2[0], x[1]*a2[1]];
-    ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([4,4]); ctx.lineWidth=1.2;
-    ctx.beginPath(); ctx.moveTo(mC.X(a2[0]), mC.Y(a2[1])); ctx.lineTo(mC.X(b[0]), mC.Y(b[1])); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(mC.X(s1[0]), mC.Y(s1[1])); ctx.lineTo(mC.X(a2[0]), mC.Y(a2[1])); ctx.stroke();
-    ctx.restore(); }
-  /* 旁注：两种算法 */
-  label(ctx, "行视角：bᵢ = Σⱼ aᵢⱼxⱼ（两次点积）", mC.X(-3.1), mC.Y(-3.75), "#5A6B7C", 12);
-  label(ctx, "列视角：b = x₁a₁ + x₂a₂（一次向量求和）", mC.X(-3.1), mC.Y(-3.35), "#5A6B7C", 12);
-  $("ro-phase").textContent = PHASE_TXT[P];
-  $("ro-b1row").textContent = fmt(A[0][0]*x[0]+A[0][1]*x[1],4);
-  $("ro-b1col").textContent = fmt(x[0]*a1[0]+x[1]*a2[0],4);
-  $("ro-b2row").textContent = fmt(A[1][0]*x[0]+A[1][1]*x[1],4);
-  $("ro-b2col").textContent = fmt(x[0]*a1[1]+x[1]*a2[1],4);
-  $("ro-nb").textContent = fmt(Math.hypot(b[0],b[1]),4);
+ const ctx=cvC.getContext("2d"); ctx.clearRect(0,0,W1,H1);
+ grid(ctx, cvC, mC.X(0), mC.Y(0), 52, -3.2, 8.2, -4.1, 4.1);
+ const A=matC(), x=xC(), b=bC();
+ const a1=[A[0][0],A[1][0]], a2=[A[0][1],A[1][1]];
+ const P=stateC.phase;
+ /* 输入 x（灰） */
+ if(P>=0) vec(ctx, mC, x, "#9AA7B4", 1.8, [5,4]);
+ if(P>=0) label(ctx, "x", mC.X(x[0])+7, mC.Y(x[1])-8, "#5A6B7C", 12.5);
+ if(P>=0){ dot(ctx, mC.X(x[0]), mC.Y(x[1]), "#5A6B7C", 4.5); }
+ /* ① 两列 */
+ if(P>=0){ vec(ctx, mC, a1, "#B04A2F", 2.8); label(ctx, "a₁", mC.X(a1[0])+7, mC.Y(a1[1])-8, "#B04A2F", 13.5);
+ vec(ctx, mC, a2, "#2F5D8A", 2.8); label(ctx, "a₂", mC.X(a2[0])+7, mC.Y(a2[1])-8, "#2F5D8A", 13.5); }
+ /* ② x₁a₁ */
+ if(P>=1){ const s1=[x[0]*a1[0], x[0]*a1[1]];
+ vec(ctx, mC, s1, "#B04A2F", 3.4);
+ label(ctx, "x₁a₁", mC.X(s1[0])+7, mC.Y(s1[1])+13, "#B04A2F", 12.5); }
+ /* ③ x₂a₂ 平移 */
+ if(P>=2){ const s1=[x[0]*a1[0], x[0]*a1[1]], s2=[x[1]*a2[0], x[1]*a2[1]];
+ arrow(ctx, mC.X(s1[0]), mC.Y(s1[1]), mC.X(s1[0]+s2[0]), mC.Y(s1[1]+s2[1]), "#2F5D8A", 3.4);
+ dot(ctx, mC.X(s1[0]), mC.Y(s1[1]), "#22303F", 3.5);
+ label(ctx, "x₂a₂", mC.X(s1[0]+s2[0])+8, mC.Y(s1[1]+s2[1])+2, "#2F5D8A", 12.5); }
+ /* ④ b */
+ if(P>=3){ vec(ctx, mC, b, "#22303F", 3.8);
+ dot(ctx, mC.X(b[0]), mC.Y(b[1]), "#22303F", 5);
+ label(ctx, "b = Ax", mC.X(b[0])+8, mC.Y(b[1])-10, "#22303F", 14.5);
+ /* 平行四边形虚线 */
+ const s1=[x[0]*a1[0], x[0]*a1[1]], s2=[x[1]*a2[0], x[1]*a2[1]];
+ ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([4,4]); ctx.lineWidth=1.2;
+ ctx.beginPath(); ctx.moveTo(mC.X(a2[0]), mC.Y(a2[1])); ctx.lineTo(mC.X(b[0]), mC.Y(b[1])); ctx.stroke();
+ ctx.beginPath(); ctx.moveTo(mC.X(s1[0]), mC.Y(s1[1])); ctx.lineTo(mC.X(a2[0]), mC.Y(a2[1])); ctx.stroke();
+ ctx.restore(); }
+ /* 旁注：两种算法 */
+ label(ctx, "行视角：bᵢ = Σⱼ aᵢⱼxⱼ（两次点积）", mC.X(-3.1), mC.Y(-3.75), "#5A6B7C", 12);
+ label(ctx, "列视角：b = x₁a₁ + x₂a₂（一次向量求和）", mC.X(-3.1), mC.Y(-3.35), "#5A6B7C", 12);
+ $("ro-phase").textContent = PHASE_TXT[P];
+ $("ro-b1row").textContent = fmt(A[0][0]*x[0]+A[0][1]*x[1],4);
+ $("ro-b1col").textContent = fmt(x[0]*a1[0]+x[1]*a2[0],4);
+ $("ro-b2row").textContent = fmt(A[1][0]*x[0]+A[1][1]*x[1],4);
+ $("ro-b2col").textContent = fmt(x[0]*a1[1]+x[1]*a2[1],4);
+ $("ro-nb").textContent = fmt(Math.hypot(b[0],b[1]),4);
 }
 function playCombine(){
-  if(stateC.timer) return;
-  stateC.phase=0; drawCombine();
-  stateC.timer=setInterval(function(){
-    stateC.phase++;
-    if(stateC.phase>3){ clearInterval(stateC.timer); stateC.timer=null; stateC.phase=3; }
-    drawCombine();
-  }, 850);
+ if(stateC.timer) return;
+ stateC.phase=0; drawCombine();
+ stateC.timer=setInterval(function(){
+ stateC.phase++;
+ if(stateC.phase>3){ clearInterval(stateC.timer); stateC.timer=null; stateC.phase=3; }
+ drawCombine();
+ }, 850);
 }
 $("b-play").onclick=function(){ if(stateC.timer){clearInterval(stateC.timer);stateC.timer=null;} playCombine(); };
 $("b-step").onclick=function(){ if(stateC.timer){clearInterval(stateC.timer);stateC.timer=null;}
-  stateC.phase=(stateC.phase+1)%4; drawCombine(); };
+ stateC.phase=(stateC.phase+1)%4; drawCombine(); };
 $("b-reset").onclick=function(){ if(stateC.timer){clearInterval(stateC.timer);stateC.timer=null;}
-  stateC.phase=3; drawCombine(); };
+ stateC.phase=3; drawCombine(); };
 function syncSlidersC(){
-  $("v-a11").textContent=fmt(stateC.a11,2); $("v-a12").textContent=fmt(stateC.a12,2);
-  $("v-a21").textContent=fmt(stateC.a21,2); $("v-a22").textContent=fmt(stateC.a22,2);
+ $("v-a11").textContent=fmt(stateC.a11,2); $("v-a12").textContent=fmt(stateC.a12,2);
+ $("v-a21").textContent=fmt(stateC.a21,2); $("v-a22").textContent=fmt(stateC.a22,2);
 }
 [["s-a11","a11"],["s-a12","a12"],["s-a21","a21"],["s-a22","a22"]].forEach(function(p){
-  $(p[0]).addEventListener("input", function(){ stateC[p[1]]=parseFloat(this.value); syncSlidersC(); drawCombine(); });
+ $(p[0]).addEventListener("input", function(){ stateC[p[1]]=parseFloat(this.value); syncSlidersC(); drawCombine(); });
 });
 const PRESETS_C = {
-  shear:{a11:1,a12:1,a21:0,a22:1}, rot:{a11:0.9,a12:-0.4,a21:0.4,a22:0.9},
-  vander:{a11:1,a12:0,a21:1,a22:1}
+ shear:{a11:1,a12:1,a21:0,a22:1}, rot:{a11:0.9,a12:-0.4,a21:0.4,a22:0.9},
+ vander:{a11:1,a12:0,a21:1,a22:1}
 };
 $("presets").addEventListener("click", function(e){
-  const t=e.target; if(!t.dataset||!t.dataset.p) return;
-  const p=PRESETS_C[t.dataset.p]; if(!p) return;
-  stateC.a11=p.a11; stateC.a12=p.a12; stateC.a21=p.a21; stateC.a22=p.a22;
-  $("s-a11").value=p.a11; $("s-a12").value=p.a12; $("s-a21").value=p.a21; $("s-a22").value=p.a22;
-  [].forEach.call(this.querySelectorAll("button"), function(b){ b.classList.toggle("on", b===t); });
-  syncSlidersC(); drawCombine();
+ const t=e.target; if(!t.dataset||!t.dataset.p) return;
+ const p=PRESETS_C[t.dataset.p]; if(!p) return;
+ stateC.a11=p.a11; stateC.a12=p.a12; stateC.a21=p.a21; stateC.a22=p.a22;
+ $("s-a11").value=p.a11; $("s-a12").value=p.a12; $("s-a21").value=p.a21; $("s-a22").value=p.a22;
+ [].forEach.call(this.querySelectorAll("button"), function(b){ b.classList.toggle("on", b===t); });
+ syncSlidersC(); drawCombine();
 });
 makeDrag(cvC, mC, xC, function(w){ stateC.x1=Math.max(-3,Math.min(3,w[0])); stateC.x2=Math.max(-3,Math.min(3,w[1])); drawCombine(); });
 syncSlidersC(); drawCombine();
@@ -439,35 +437,35 @@ const mM = mapper(cvM, 300, 165, 118);
 const stateM = { c0:0.4, c1:0.8, c2:-0.5 };
 function pval(x){ return stateM.c0 + stateM.c1*x + stateM.c2*x*x; }
 function drawMono(){
-  const ctx=cvM.getContext("2d"); ctx.clearRect(0,0,WM,HM);
-  grid(ctx, cvM, mM.X(0), mM.Y(0), 118, -1.06, 1.06, -1.35, 1.35);
-  const xs=[]; for(let i=0;i<=240;i++) xs.push(-1+2*i/240);
-  /* 三条列函数（淡） */
-  const cols=[{f:function(x){return 1;}, c:"#B04A2F", n:"列 1"},
-              {f:function(x){return x;}, c:"#2F5D8A", n:"列 x"},
-              {f:function(x){return x*x;}, c:"#1F7A4D", n:"列 x²"}];
-  cols.forEach(function(col){
-    ctx.save(); ctx.strokeStyle=col.c; ctx.globalAlpha=0.32; ctx.lineWidth=1.6;
-    ctx.beginPath(); xs.forEach(function(x,i){ const px=mM.X(x), py=mM.Y(col.f(x));
-      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }); ctx.stroke(); ctx.restore();
-  });
-  /* 组合 p（粗） */
-  ctx.save(); ctx.strokeStyle="#22303F"; ctx.lineWidth=3;
-  ctx.beginPath(); xs.forEach(function(x,i){ const px=mM.X(x), py=mM.Y(pval(x));
-    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }); ctx.stroke(); ctx.restore();
-  /* 采样点 */
-  [-1,0,1].forEach(function(x){ dot(ctx, mM.X(x), mM.Y(pval(x)), "#22303F", 4.5);
-    label(ctx, "p("+x+")", mM.X(x), mM.Y(pval(x))-14, "#22303F", 11.5, "center"); });
-  label(ctx, "p(x)=c₀·1 + c₁·x + c₂·x²", mM.X(-1.02), mM.Y(1.22), "#22303F", 13);
-  $("ro-pm1").textContent = fmt(pval(-1),4);
-  $("ro-p0").textContent  = fmt(pval(0),4);
-  $("ro-p1").textContent  = fmt(pval(1),4);
-  $("ro-ac1").textContent = fmt(stateM.c0 + stateM.c1*(-1) + stateM.c2*1,4);
+ const ctx=cvM.getContext("2d"); ctx.clearRect(0,0,WM,HM);
+ grid(ctx, cvM, mM.X(0), mM.Y(0), 118, -1.06, 1.06, -1.35, 1.35);
+ const xs=[]; for(let i=0;i<=240;i++) xs.push(-1+2*i/240);
+ /* 三条列函数（淡） */
+ const cols=[{f:function(x){return 1;}, c:"#B04A2F", n:"列 1"},
+ {f:function(x){return x;}, c:"#2F5D8A", n:"列 x"},
+ {f:function(x){return x*x;}, c:"#1F7A4D", n:"列 x²"}];
+ cols.forEach(function(col){
+ ctx.save(); ctx.strokeStyle=col.c; ctx.globalAlpha=0.32; ctx.lineWidth=1.6;
+ ctx.beginPath(); xs.forEach(function(x,i){ const px=mM.X(x), py=mM.Y(col.f(x));
+ if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }); ctx.stroke(); ctx.restore();
+ });
+ /* 组合 p（粗） */
+ ctx.save(); ctx.strokeStyle="#22303F"; ctx.lineWidth=3;
+ ctx.beginPath(); xs.forEach(function(x,i){ const px=mM.X(x), py=mM.Y(pval(x));
+ if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }); ctx.stroke(); ctx.restore();
+ /* 采样点 */
+ [-1,0,1].forEach(function(x){ dot(ctx, mM.X(x), mM.Y(pval(x)), "#22303F", 4.5);
+ label(ctx, "p("+x+")", mM.X(x), mM.Y(pval(x))-14, "#22303F", 11.5, "center"); });
+ label(ctx, "p(x)=c₀·1 + c₁·x + c₂·x²", mM.X(-1.02), mM.Y(1.22), "#22303F", 13);
+ $("ro-pm1").textContent = fmt(pval(-1),4);
+ $("ro-p0").textContent = fmt(pval(0),4);
+ $("ro-p1").textContent = fmt(pval(1),4);
+ $("ro-ac1").textContent = fmt(stateM.c0 + stateM.c1*(-1) + stateM.c2*1,4);
 }
 [["s-c0","c0"],["s-c1","c1"],["s-c2","c2"]].forEach(function(p){
-  $(p[0]).addEventListener("input", function(){ stateM[p[1]]=parseFloat(this.value);
-    $("v-c0").textContent=fmt(stateM.c0,2); $("v-c1").textContent=fmt(stateM.c1,2); $("v-c2").textContent=fmt(stateM.c2,2);
-    drawMono(); });
+ $(p[0]).addEventListener("input", function(){ stateM[p[1]]=parseFloat(this.value);
+ $("v-c0").textContent=fmt(stateM.c0,2); $("v-c1").textContent=fmt(stateM.c1,2); $("v-c2").textContent=fmt(stateM.c2,2);
+ drawMono(); });
 });
 $("v-c0").textContent=fmt(stateM.c0,2); $("v-c1").textContent=fmt(stateM.c1,2); $("v-c2").textContent=fmt(stateM.c2,2);
 drawMono();
@@ -479,76 +477,76 @@ const stateR = { mode:"full", x:[1.4,1.1], t:1.0, anim:null };
 const MATS = { full:[[1.2,0.4],[0.3,1.1]], deft:[[1,2],[2,4]] };
 function matR(){ return MATS[stateR.mode]; }
 function nullDirR(){ const A=matR();
-  /* 2×2 零空间方向：解 a11*x+a12*y=0 */
-  return [A[0][1], -A[0][0]]; }
+ /* 2×2 零空间方向：解 a11*x+a12*y=0 */
+ return [A[0][1], -A[0][0]]; }
 function AxR(A,x){ return [A[0][0]*x[0]+A[0][1]*x[1], A[1][0]*x[0]+A[1][1]*x[1]]; }
 function drawRange(){
-  const ctx=cvR.getContext("2d"); ctx.clearRect(0,0,WR,HR);
-  grid(ctx, cvR, mR.X(0), mR.Y(0), 46, -4.1, 11.2, -4.3, 4.3);
-  const A=matR(), x=stateR.x, n=nullDirR();
-  const nn=Math.hypot(n[0],n[1])||1, nu=[n[0]/nn, n[1]/nn];
-  const xp=[x[0]+stateR.t*nu[0], x[1]+stateR.t*nu[1]];
-  const b=AxR(A,x), bp=AxR(A,xp);
-  /* 值域：满秩=全平面（提示），亏秩=一条线 */
-  if(stateR.mode==="deft"){
-    const d=[A[0][0],A[1][0]], L=Math.hypot(d[0],d[1])||1, u=[d[0]/L,d[1]/L];
-    ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2; ctx.setLineDash([7,5]);
-    ctx.beginPath(); ctx.moveTo(mR.X(-u[0]*9), mR.Y(-u[1]*9)); ctx.lineTo(mR.X(u[0]*9), mR.Y(u[1]*9));
-    ctx.stroke(); ctx.restore();
-    label(ctx, "range(A) = span{a₁}（一维）", mR.X(-4.0), mR.Y(-3.95), "#B04A2F", 12.5);
-  } else {
-    label(ctx, "range(A) = 全平面 ℝ²（满秩）", mR.X(-4.0), mR.Y(-3.95), "#B04A2F", 12.5);
-  }
-  /* 列 */
-  vec(ctx, mR, [A[0][0],A[1][0]], "#B04A2F", 2.6);
-  label(ctx, "a₁", mR.X(A[0][0])+7, mR.Y(A[1][0])-8, "#B04A2F", 12.5);
-  vec(ctx, mR, [A[0][1],A[1][1]], "#2F5D8A", 2.6);
-  label(ctx, "a₂", mR.X(A[0][1])+7, mR.Y(A[1][1])-8, "#2F5D8A", 12.5);
-  /* 零空间方向 */
-  if(stateR.mode==="deft"){
-    arrow(ctx, mR.X(xp[0]), mR.Y(xp[1]), mR.X(xp[0]+nu[0]*1.4), mR.Y(xp[1]+nu[1]*1.4), "#1F7A4D", 2.4, [5,4]);
-    label(ctx, "n ∈ null(A)", mR.X(xp[0]+nu[0]*1.5)+6, mR.Y(xp[1]+nu[1]*1.5), "#1F7A4D", 12);
-  }
-  /* x 与 x' */
-  vec(ctx, mR, x, "#9AA7B4", 2.2);
-  label(ctx, "x", mR.X(x[0])+7, mR.Y(x[1])-8, "#5A6B7C", 12.5);
-  if(stateR.mode==="deft"){
-    vec(ctx, mR, xp, "#9AA7B4", 1.8, [5,4]);
-    label(ctx, "x′", mR.X(xp[0])+7, mR.Y(xp[1])+14, "#5A6B7C", 12);
-  }
-  /* 输出 */
-  vec(ctx, mR, b, "#22303F", 3.6);
-  dot(ctx, mR.X(b[0]), mR.Y(b[1]), "#22303F", 5);
-  label(ctx, "Ax", mR.X(b[0])+8, mR.Y(b[1])-9, "#22303F", 14);
-  if(stateR.mode==="deft"){
-    vec(ctx, mR, bp, "#22303F", 3.6);
-    label(ctx, "Ax′（重合）", mR.X(bp[0])+8, mR.Y(bp[1])+15, "#22303F", 12);
-  }
-  $("ro-rank").textContent = (stateR.mode==="full") ? "2" : "1";
-  $("ro-nulldim").textContent = (stateR.mode==="full") ? "0" : "1";
-  $("ro-lock").textContent = fmt(Math.hypot(b[0]-bp[0], b[1]-bp[1]), 6);
-  $("ro-xdist").textContent = fmt(Math.hypot(x[0]-xp[0], x[1]-xp[1]), 4);
+ const ctx=cvR.getContext("2d"); ctx.clearRect(0,0,WR,HR);
+ grid(ctx, cvR, mR.X(0), mR.Y(0), 46, -4.1, 11.2, -4.3, 4.3);
+ const A=matR(), x=stateR.x, n=nullDirR();
+ const nn=Math.hypot(n[0],n[1])||1, nu=[n[0]/nn, n[1]/nn];
+ const xp=[x[0]+stateR.t*nu[0], x[1]+stateR.t*nu[1]];
+ const b=AxR(A,x), bp=AxR(A,xp);
+ /* 值域：满秩=全平面（提示），亏秩=一条线 */
+ if(stateR.mode==="deft"){
+ const d=[A[0][0],A[1][0]], L=Math.hypot(d[0],d[1])||1, u=[d[0]/L,d[1]/L];
+ ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2; ctx.setLineDash([7,5]);
+ ctx.beginPath(); ctx.moveTo(mR.X(-u[0]*9), mR.Y(-u[1]*9)); ctx.lineTo(mR.X(u[0]*9), mR.Y(u[1]*9));
+ ctx.stroke(); ctx.restore();
+ label(ctx, "range(A) = span{a₁}（一维）", mR.X(-4.0), mR.Y(-3.95), "#B04A2F", 12.5);
+ } else {
+ label(ctx, "range(A) = 全平面 ℝ²（满秩）", mR.X(-4.0), mR.Y(-3.95), "#B04A2F", 12.5);
+ }
+ /* 列 */
+ vec(ctx, mR, [A[0][0],A[1][0]], "#B04A2F", 2.6);
+ label(ctx, "a₁", mR.X(A[0][0])+7, mR.Y(A[1][0])-8, "#B04A2F", 12.5);
+ vec(ctx, mR, [A[0][1],A[1][1]], "#2F5D8A", 2.6);
+ label(ctx, "a₂", mR.X(A[0][1])+7, mR.Y(A[1][1])-8, "#2F5D8A", 12.5);
+ /* 零空间方向 */
+ if(stateR.mode==="deft"){
+ arrow(ctx, mR.X(xp[0]), mR.Y(xp[1]), mR.X(xp[0]+nu[0]*1.4), mR.Y(xp[1]+nu[1]*1.4), "#1F7A4D", 2.4, [5,4]);
+ label(ctx, "n ∈ null(A)", mR.X(xp[0]+nu[0]*1.5)+6, mR.Y(xp[1]+nu[1]*1.5), "#1F7A4D", 12);
+ }
+ /* x 与 x' */
+ vec(ctx, mR, x, "#9AA7B4", 2.2);
+ label(ctx, "x", mR.X(x[0])+7, mR.Y(x[1])-8, "#5A6B7C", 12.5);
+ if(stateR.mode==="deft"){
+ vec(ctx, mR, xp, "#9AA7B4", 1.8, [5,4]);
+ label(ctx, "x′", mR.X(xp[0])+7, mR.Y(xp[1])+14, "#5A6B7C", 12);
+ }
+ /* 输出 */
+ vec(ctx, mR, b, "#22303F", 3.6);
+ dot(ctx, mR.X(b[0]), mR.Y(b[1]), "#22303F", 5);
+ label(ctx, "Ax", mR.X(b[0])+8, mR.Y(b[1])-9, "#22303F", 14);
+ if(stateR.mode==="deft"){
+ vec(ctx, mR, bp, "#22303F", 3.6);
+ label(ctx, "Ax′（重合）", mR.X(bp[0])+8, mR.Y(bp[1])+15, "#22303F", 12);
+ }
+ $("ro-rank").textContent = (stateR.mode==="full") ? "2" : "1";
+ $("ro-nulldim").textContent = (stateR.mode==="full") ? "0" : "1";
+ $("ro-lock").textContent = fmt(Math.hypot(b[0]-bp[0], b[1]-bp[1]), 6);
+ $("ro-xdist").textContent = fmt(Math.hypot(x[0]-xp[0], x[1]-xp[1]), 4);
 }
 $("rank-presets").addEventListener("click", function(e){
-  const t=e.target; if(!t.dataset||!t.dataset.p) return;
-  stateR.mode=t.dataset.p;
-  [].forEach.call(this.querySelectorAll("button"), function(b){ b.classList.toggle("on", b===t); });
-  drawRange();
+ const t=e.target; if(!t.dataset||!t.dataset.p) return;
+ stateR.mode=t.dataset.p;
+ [].forEach.call(this.querySelectorAll("button"), function(b){ b.classList.toggle("on", b===t); });
+ drawRange();
 });
 $("s-t").addEventListener("input", function(){ stateR.t=parseFloat(this.value);
-  $("v-t").textContent=fmt(stateR.t,2); drawRange(); });
+ $("v-t").textContent=fmt(stateR.t,2); drawRange(); });
 $("v-t").textContent=fmt(stateR.t,2);
 $("b-anim").onclick=function(){
-  if(stateR.anim){ clearInterval(stateR.anim); stateR.anim=null; return; }
-  let dir=1;
-  stateR.anim=setInterval(function(){
-    stateR.t+=0.06*dir;
-    if(stateR.t>2.5){stateR.t=2.5;dir=-1;} if(stateR.t<-2.5){stateR.t=-2.5;dir=1;}
-    $("s-t").value=stateR.t; $("v-t").textContent=fmt(stateR.t,2); drawRange();
-  }, 40);
+ if(stateR.anim){ clearInterval(stateR.anim); stateR.anim=null; return; }
+ let dir=1;
+ stateR.anim=setInterval(function(){
+ stateR.t+=0.06*dir;
+ if(stateR.t>2.5){stateR.t=2.5;dir=-1;} if(stateR.t<-2.5){stateR.t=-2.5;dir=1;}
+ $("s-t").value=stateR.t; $("v-t").textContent=fmt(stateR.t,2); drawRange();
+ }, 40);
 };
 makeDrag(cvR, mR, function(){ return stateR.x; }, function(w){
-  stateR.x=[Math.max(-4,Math.min(4,w[0])), Math.max(-4,Math.min(4,w[1]))]; drawRange(); });
+ stateR.x=[Math.max(-4,Math.min(4,w[0])), Math.max(-4,Math.min(4,w[1]))]; drawRange(); });
 drawRange();
 
 /* ================= 实验 03 · 正交分解 ================= */
@@ -556,62 +554,62 @@ const cvI = $("cv-inner"), WI=600, HI=400;
 const mI = mapper(cvI, 180, 200, 52);
 const stateI = { x:[2.2,0.9], y:[-0.7,1.9] };
 function drawInner(){
-  const ctx=cvI.getContext("2d"); ctx.clearRect(0,0,WI,HI);
-  grid(ctx, cvI, mI.X(0), mI.Y(0), 52, -3.4, 9.5, -3.8, 3.8);
-  const x=stateI.x, y=stateI.y;
-  const xx=x[0]*x[0]+x[1]*x[1]||1e-12;
-  const coef=(x[0]*y[0]+x[1]*y[1])/xx;
-  const proj=[coef*x[0], coef*x[1]];
-  const r=[y[0]-proj[0], y[1]-proj[1]];
-  /* x 方向射线 */
-  arrow(ctx, mI.X(0), mI.Y(0), mI.X(x[0]*6), mI.Y(x[1]*6), "#2F5D8A", 1.4, [6,5]);
-  /* y, proj, r */
-  vec(ctx, mI, y, "#B04A2F", 3.2);
-  vec(ctx, mI, proj, "#1F7A4D", 3.2);
-  arrow(ctx, mI.X(proj[0]), mI.Y(proj[1]), mI.X(y[0]), mI.Y(y[1]), "#1F7A4D", 2.6, [6,4]);
-  vec(ctx, mI, x, "#2F5D8A", 3.2);
-  /* 直角标记 */
-  const rl=Math.hypot(r[0],r[1]);
-  if(rl>0.12){
-    const u=[r[0]/rl, r[1]/rl], v=[-u[1], u[0]];
-    ctx.save(); ctx.strokeStyle="#1F7A4D"; ctx.lineWidth=1.6;
-    ctx.beginPath();
-    ctx.moveTo(mI.X(proj[0]+u[0]*0.22), mI.Y(proj[1]+u[1]*0.22));
-    ctx.lineTo(mI.X(proj[0]+u[0]*0.22+v[0]*0.22), mI.Y(proj[1]+u[1]*0.22+v[1]*0.22));
-    ctx.lineTo(mI.X(proj[0]+v[0]*0.22), mI.Y(proj[1]+v[1]*0.22));
-    ctx.stroke(); ctx.restore();
-  }
-  dot(ctx, mI.X(y[0]), mI.Y(y[1]), "#B04A2F", 4.5);
-  dot(ctx, mI.X(x[0]), mI.Y(x[1]), "#2F5D8A", 4.5);
-  label(ctx, "y", mI.X(y[0])+8, mI.Y(y[1])-9, "#B04A2F", 13.5);
-  label(ctx, "proj = (xᵀy/‖x‖²)x", mI.X(proj[0])+6, mI.Y(proj[1])+16, "#1F7A4D", 12);
-  label(ctx, "r ⟂ x", mI.X((proj[0]+y[0])/2)+8, mI.Y((proj[1]+y[1])/2), "#1F7A4D", 12);
-  label(ctx, "x", mI.X(x[0])+8, mI.Y(x[1])+12, "#2F5D8A", 13.5);
-  /* 角度弧 */
-  const ax=Math.atan2(x[1],x[0]), ay=Math.atan2(y[1],y[0]);
-  ctx.save(); ctx.strokeStyle="#8A6D1F"; ctx.lineWidth=1.6;
-  ctx.beginPath(); ctx.arc(mI.X(0), mI.Y(0), 46, -Math.max(ax,ay), -Math.min(ax,ay)); ctx.stroke(); ctx.restore();
-  const am=(ax+ay)/2;
-  label(ctx, "α", mI.X(Math.cos(am)*0.95), mI.Y(Math.sin(am)*0.95), "#8A6D1F", 13, "center");
-  const xy=x[0]*y[0]+x[1]*y[1];
-  $("ro-xy").textContent=fmt(xy,4);
-  $("ro-cos").textContent=fmt(xy/(Math.hypot(x[0],x[1])*Math.hypot(y[0],y[1])||1e-12),4);
-  $("ro-ang").textContent=fmt(Math.acos(Math.max(-1,Math.min(1,xy/(Math.hypot(x[0],x[1])*Math.hypot(y[0],y[1])||1e-12))))*180/Math.PI,2);
-  $("ro-proj").textContent=fmt(Math.hypot(proj[0],proj[1]),4);
-  $("ro-r").textContent=fmt(rl,4);
-  $("ro-pyth").textContent=fmt((y[0]*y[0]+y[1]*y[1])-(proj[0]*proj[0]+proj[1]*proj[1])-rl*rl,6);
+ const ctx=cvI.getContext("2d"); ctx.clearRect(0,0,WI,HI);
+ grid(ctx, cvI, mI.X(0), mI.Y(0), 52, -3.4, 9.5, -3.8, 3.8);
+ const x=stateI.x, y=stateI.y;
+ const xx=x[0]*x[0]+x[1]*x[1]||1e-12;
+ const coef=(x[0]*y[0]+x[1]*y[1])/xx;
+ const proj=[coef*x[0], coef*x[1]];
+ const r=[y[0]-proj[0], y[1]-proj[1]];
+ /* x 方向射线 */
+ arrow(ctx, mI.X(0), mI.Y(0), mI.X(x[0]*6), mI.Y(x[1]*6), "#2F5D8A", 1.4, [6,5]);
+ /* y, proj, r */
+ vec(ctx, mI, y, "#B04A2F", 3.2);
+ vec(ctx, mI, proj, "#1F7A4D", 3.2);
+ arrow(ctx, mI.X(proj[0]), mI.Y(proj[1]), mI.X(y[0]), mI.Y(y[1]), "#1F7A4D", 2.6, [6,4]);
+ vec(ctx, mI, x, "#2F5D8A", 3.2);
+ /* 直角标记 */
+ const rl=Math.hypot(r[0],r[1]);
+ if(rl>0.12){
+ const u=[r[0]/rl, r[1]/rl], v=[-u[1], u[0]];
+ ctx.save(); ctx.strokeStyle="#1F7A4D"; ctx.lineWidth=1.6;
+ ctx.beginPath();
+ ctx.moveTo(mI.X(proj[0]+u[0]*0.22), mI.Y(proj[1]+u[1]*0.22));
+ ctx.lineTo(mI.X(proj[0]+u[0]*0.22+v[0]*0.22), mI.Y(proj[1]+u[1]*0.22+v[1]*0.22));
+ ctx.lineTo(mI.X(proj[0]+v[0]*0.22), mI.Y(proj[1]+v[1]*0.22));
+ ctx.stroke(); ctx.restore();
+ }
+ dot(ctx, mI.X(y[0]), mI.Y(y[1]), "#B04A2F", 4.5);
+ dot(ctx, mI.X(x[0]), mI.Y(x[1]), "#2F5D8A", 4.5);
+ label(ctx, "y", mI.X(y[0])+8, mI.Y(y[1])-9, "#B04A2F", 13.5);
+ label(ctx, "proj = (xᵀy/‖x‖²)x", mI.X(proj[0])+6, mI.Y(proj[1])+16, "#1F7A4D", 12);
+ label(ctx, "r ⟂ x", mI.X((proj[0]+y[0])/2)+8, mI.Y((proj[1]+y[1])/2), "#1F7A4D", 12);
+ label(ctx, "x", mI.X(x[0])+8, mI.Y(x[1])+12, "#2F5D8A", 13.5);
+ /* 角度弧 */
+ const ax=Math.atan2(x[1],x[0]), ay=Math.atan2(y[1],y[0]);
+ ctx.save(); ctx.strokeStyle="#8A6D1F"; ctx.lineWidth=1.6;
+ ctx.beginPath(); ctx.arc(mI.X(0), mI.Y(0), 46, -Math.max(ax,ay), -Math.min(ax,ay)); ctx.stroke(); ctx.restore();
+ const am=(ax+ay)/2;
+ label(ctx, "α", mI.X(Math.cos(am)*0.95), mI.Y(Math.sin(am)*0.95), "#8A6D1F", 13, "center");
+ const xy=x[0]*y[0]+x[1]*y[1];
+ $("ro-xy").textContent=fmt(xy,4);
+ $("ro-cos").textContent=fmt(xy/(Math.hypot(x[0],x[1])*Math.hypot(y[0],y[1])||1e-12),4);
+ $("ro-ang").textContent=fmt(Math.acos(Math.max(-1,Math.min(1,xy/(Math.hypot(x[0],x[1])*Math.hypot(y[0],y[1])||1e-12))))*180/Math.PI,2);
+ $("ro-proj").textContent=fmt(Math.hypot(proj[0],proj[1]),4);
+ $("ro-r").textContent=fmt(rl,4);
+ $("ro-pyth").textContent=fmt((y[0]*y[0]+y[1]*y[1])-(proj[0]*proj[0]+proj[1]*proj[1])-rl*rl,6);
 }
 function setY(dir){
-  const x=stateI.x, L=Math.hypot(x[0],x[1]);
-  stateI.y = (dir==="ortho") ? [-x[1]/L*1.7, x[0]/L*1.7] : [x[0]/L*1.7, x[1]/L*1.7];
-  drawInner();
+ const x=stateI.x, L=Math.hypot(x[0],x[1]);
+ stateI.y = (dir==="ortho") ? [-x[1]/L*1.7, x[0]/L*1.7] : [x[0]/L*1.7, x[1]/L*1.7];
+ drawInner();
 }
 $("b-ortho").onclick=function(){ setY("ortho"); };
 $("b-para").onclick=function(){ setY("para"); };
 makeDrag(cvI, mI, function(){ return stateI.x; }, function(w){
-  stateI.x=[Math.max(-3,Math.min(3,w[0])), Math.max(-3,Math.min(3,w[1]))]; drawInner(); });
+ stateI.x=[Math.max(-3,Math.min(3,w[0])), Math.max(-3,Math.min(3,w[1]))]; drawInner(); });
 makeDrag(cvI, mI, function(){ return stateI.y; }, function(w){
-  stateI.y=[Math.max(-3,Math.min(3,w[0])), Math.max(-3,Math.min(3,w[1]))]; drawInner(); });
+ stateI.y=[Math.max(-3,Math.min(3,w[0])), Math.max(-3,Math.min(3,w[1]))]; drawInner(); });
 drawInner();
 
 /* ================= 实验 04 · 正交矩阵 ================= */
@@ -619,59 +617,59 @@ const cvU = $("cv-unitary"), WU=600, HU=420;
 const mU = mapper(cvU, 180, 210, 46);
 const stateU = { th:34, mode:"rot", x:[1.8,0.7], y:[-0.6,1.6] };
 function matU(){
-  const t=stateU.th*Math.PI/180, c=Math.cos(t), s=Math.sin(t);
-  if(stateU.mode==="rot")  return [[c,-s],[s,c]];
-  if(stateU.mode==="ref")  return [[c,s],[s,-c]];
-  return [[1,0.85],[0,1]]; /* 剪切 */
+ const t=stateU.th*Math.PI/180, c=Math.cos(t), s=Math.sin(t);
+ if(stateU.mode==="rot") return [[c,-s],[s,c]];
+ if(stateU.mode==="ref") return [[c,s],[s,-c]];
+ return [[1,0.85],[0,1]]; /* 剪切 */
 }
 function drawUnitary(){
-  const ctx=cvU.getContext("2d"); ctx.clearRect(0,0,WU,HU);
-  grid(ctx, cvU, mU.X(0), mU.Y(0), 46, -3.9, 9.9, -4.5, 4.5);
-  const Q=matU(), x=stateU.x, y=stateU.y;
-  const qx=[Q[0][0]*x[0]+Q[0][1]*x[1], Q[1][0]*x[0]+Q[1][1]*x[1]];
-  const qy=[Q[0][0]*y[0]+Q[0][1]*y[1], Q[1][0]*y[0]+Q[1][1]*y[1]];
-  /* 单位圆 */
-  ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([6,5]); ctx.lineWidth=1.6;
-  ctx.beginPath(); ctx.arc(mU.X(0), mU.Y(0), 46, 0, 7); ctx.stroke();
-  ctx.setLineDash([]); ctx.strokeStyle=(stateU.mode==="shear")?"#B04A2F":"#1F7A4D"; ctx.lineWidth=2;
-  ctx.beginPath();
-  for(let i=0;i<=72;i++){ const t=i/72*2*Math.PI;
-    const px=Q[0][0]*Math.cos(t)+Q[0][1]*Math.sin(t), py=Q[1][0]*Math.cos(t)+Q[1][1]*Math.sin(t);
-    if(i===0) ctx.moveTo(mU.X(px), mU.Y(py)); else ctx.lineTo(mU.X(px), mU.Y(py)); }
-  ctx.stroke(); ctx.restore();
-  label(ctx, "单位圆 S", mU.X(0.72), mU.Y(-0.95), "#5A6B7C", 12);
-  label(ctx, (stateU.mode==="shear")?"QS（椭圆！）":"QS（重合）",
-        mU.X(1.35), mU.Y((stateU.mode==="shear")?1.02:0.98), (stateU.mode==="shear")?"#B04A2F":"#1F7A4D", 12.5);
-  vec(ctx, mU, x, "#9AA7B4", 2);  label(ctx, "x", mU.X(x[0])+7, mU.Y(x[1])+13, "#5A6B7C", 12);
-  vec(ctx, mU, y, "#9AA7B4", 2);  label(ctx, "y", mU.X(y[0])-16, mU.Y(y[1])+4, "#5A6B7C", 12);
-  vec(ctx, mU, qx, "#B04A2F", 3.2); label(ctx, "Qx", mU.X(qx[0])+8, mU.Y(qx[1])-8, "#B04A2F", 13.5);
-  vec(ctx, mU, qy, "#2F5D8A", 3.2); label(ctx, "Qy", mU.X(qy[0])+8, mU.Y(qy[1])+13, "#2F5D8A", 13.5);
-  /* 角度弧 */
-  function ang(v,w){ const c=(v[0]*w[0]+v[1]*w[1])/(Math.hypot(v[0],v[1])*Math.hypot(w[0],w[1])||1e-12);
-    return Math.acos(Math.max(-1,Math.min(1,c))); }
-  const a1=ang(x,y), a2=ang(qx,qy);
-  [ [x,y,"#9AA7B4",0.75], [qx,qy,"#8A6D1F",0.75] ].forEach(function(pr){
-    const av=Math.atan2(pr[0][1],pr[0][0]), aw=Math.atan2(pr[1][1],pr[1][0]);
-    ctx.save(); ctx.strokeStyle=pr[2]; ctx.lineWidth=1.4;
-    ctx.beginPath(); ctx.arc(mU.X(0), mU.Y(0), 34, -Math.max(av,aw), -Math.min(av,aw)); ctx.stroke(); ctx.restore();
-  });
-  $("v-th").textContent=stateU.th+"°";
-  $("ro-len").textContent=fmt(Math.hypot(x[0],x[1]),4)+" → "+fmt(Math.hypot(qx[0],qx[1]),4);
-  $("ro-angq").textContent=fmt(a1*180/Math.PI,2)+"° → "+fmt(a2*180/Math.PI,2)+"°";
-  $("ro-inner").textContent=fmt((qx[0]*qy[0]+qx[1]*qy[1])-(x[0]*y[0]+x[1]*y[1]),6);
-  $("ro-det").textContent=fmt(Q[0][0]*Q[1][1]-Q[0][1]*Q[1][0],3);
+ const ctx=cvU.getContext("2d"); ctx.clearRect(0,0,WU,HU);
+ grid(ctx, cvU, mU.X(0), mU.Y(0), 46, -3.9, 9.9, -4.5, 4.5);
+ const Q=matU(), x=stateU.x, y=stateU.y;
+ const qx=[Q[0][0]*x[0]+Q[0][1]*x[1], Q[1][0]*x[0]+Q[1][1]*x[1]];
+ const qy=[Q[0][0]*y[0]+Q[0][1]*y[1], Q[1][0]*y[0]+Q[1][1]*y[1]];
+ /* 单位圆 */
+ ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([6,5]); ctx.lineWidth=1.6;
+ ctx.beginPath(); ctx.arc(mU.X(0), mU.Y(0), 46, 0, 7); ctx.stroke();
+ ctx.setLineDash([]); ctx.strokeStyle=(stateU.mode==="shear")?"#B04A2F":"#1F7A4D"; ctx.lineWidth=2;
+ ctx.beginPath();
+ for(let i=0;i<=72;i++){ const t=i/72*2*Math.PI;
+ const px=Q[0][0]*Math.cos(t)+Q[0][1]*Math.sin(t), py=Q[1][0]*Math.cos(t)+Q[1][1]*Math.sin(t);
+ if(i===0) ctx.moveTo(mU.X(px), mU.Y(py)); else ctx.lineTo(mU.X(px), mU.Y(py)); }
+ ctx.stroke(); ctx.restore();
+ label(ctx, "单位圆 S", mU.X(0.72), mU.Y(-0.95), "#5A6B7C", 12);
+ label(ctx, (stateU.mode==="shear")?"QS（椭圆！）":"QS（重合）",
+ mU.X(1.35), mU.Y((stateU.mode==="shear")?1.02:0.98), (stateU.mode==="shear")?"#B04A2F":"#1F7A4D", 12.5);
+ vec(ctx, mU, x, "#9AA7B4", 2); label(ctx, "x", mU.X(x[0])+7, mU.Y(x[1])+13, "#5A6B7C", 12);
+ vec(ctx, mU, y, "#9AA7B4", 2); label(ctx, "y", mU.X(y[0])-16, mU.Y(y[1])+4, "#5A6B7C", 12);
+ vec(ctx, mU, qx, "#B04A2F", 3.2); label(ctx, "Qx", mU.X(qx[0])+8, mU.Y(qx[1])-8, "#B04A2F", 13.5);
+ vec(ctx, mU, qy, "#2F5D8A", 3.2); label(ctx, "Qy", mU.X(qy[0])+8, mU.Y(qy[1])+13, "#2F5D8A", 13.5);
+ /* 角度弧 */
+ function ang(v,w){ const c=(v[0]*w[0]+v[1]*w[1])/(Math.hypot(v[0],v[1])*Math.hypot(w[0],w[1])||1e-12);
+ return Math.acos(Math.max(-1,Math.min(1,c))); }
+ const a1=ang(x,y), a2=ang(qx,qy);
+ [ [x,y,"#9AA7B4",0.75], [qx,qy,"#8A6D1F",0.75] ].forEach(function(pr){
+ const av=Math.atan2(pr[0][1],pr[0][0]), aw=Math.atan2(pr[1][1],pr[1][0]);
+ ctx.save(); ctx.strokeStyle=pr[2]; ctx.lineWidth=1.4;
+ ctx.beginPath(); ctx.arc(mU.X(0), mU.Y(0), 34, -Math.max(av,aw), -Math.min(av,aw)); ctx.stroke(); ctx.restore();
+ });
+ $("v-th").textContent=stateU.th+"°";
+ $("ro-len").textContent=fmt(Math.hypot(x[0],x[1]),4)+" → "+fmt(Math.hypot(qx[0],qx[1]),4);
+ $("ro-angq").textContent=fmt(a1*180/Math.PI,2)+"° → "+fmt(a2*180/Math.PI,2)+"°";
+ $("ro-inner").textContent=fmt((qx[0]*qy[0]+qx[1]*qy[1])-(x[0]*y[0]+x[1]*y[1]),6);
+ $("ro-det").textContent=fmt(Q[0][0]*Q[1][1]-Q[0][1]*Q[1][0],3);
 }
 $("s-th").addEventListener("input", function(){ stateU.th=parseFloat(this.value); drawUnitary(); });
 $("q-mode").addEventListener("click", function(e){
-  const t=e.target; if(!t.dataset||!t.dataset.p) return;
-  stateU.mode=t.dataset.p;
-  [].forEach.call(this.querySelectorAll("button"), function(b){ b.classList.toggle("on", b===t); });
-  drawUnitary();
+ const t=e.target; if(!t.dataset||!t.dataset.p) return;
+ stateU.mode=t.dataset.p;
+ [].forEach.call(this.querySelectorAll("button"), function(b){ b.classList.toggle("on", b===t); });
+ drawUnitary();
 });
 makeDrag(cvU, mU, function(){ return stateU.x; }, function(w){
-  stateU.x=[Math.max(-3.5,Math.min(3.5,w[0])), Math.max(-3.5,Math.min(3.5,w[1]))]; drawUnitary(); });
+ stateU.x=[Math.max(-3.5,Math.min(3.5,w[0])), Math.max(-3.5,Math.min(3.5,w[1]))]; drawUnitary(); });
 makeDrag(cvU, mU, function(){ return stateU.y; }, function(w){
-  stateU.y=[Math.max(-3.5,Math.min(3.5,w[0])), Math.max(-3.5,Math.min(3.5,w[1]))]; drawUnitary(); });
+ stateU.y=[Math.max(-3.5,Math.min(3.5,w[0])), Math.max(-3.5,Math.min(3.5,w[1]))]; drawUnitary(); });
 drawUnitary();
 </script>
 </body>

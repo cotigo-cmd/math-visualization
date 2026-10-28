@@ -5,36 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>投影算子 · 正交与斜投影 · 数值线性代数</title>
 <!--
-  维护说明（给未来的自己）：
-  1. 本页 = 数值线性代数系列第 4 页（图号 NLA-04），教材 Lecture 6（书页 39–47）。
-  2. 2D 影子实验室：P = u₁wᵀ/(wᵀu₁)（w ⟂ u₂）——投影到 span(u₁) 沿 span(u₂)。
-     正交锁定 θ₂=θ₁+90° 时 P 对称、‖P‖₂=1（习题 6.5 等号情形）。
-     3D 面板：P = I − nnᵀ 与 (6.13) A(AᵀA)⁻¹Aᵀ 对账（非平凡！）。
-  3. 读数闸门：verify_readout_proj.js（工作区根）。
+ 维护说明（给未来的自己）：
+ 2. 2D 影子实验室：P = u₁wᵀ/(wᵀu₁)（w ⟂ u₂）——投影到 span(u₁) 沿 span(u₂)。
+ 正交锁定 θ₂=θ₁+90° 时 P 对称、‖P‖₂=1（习题 6.5 等号情形）。
+ 3D 面板：P = I − nnᵀ 与 (6.13) A(AᵀA)⁻¹Aᵀ 对账（非平凡！）。
+ 3. 读数闸门：verify_readout_proj.js（工作区根）。
 -->
 <script>
 window.MathJax = {
-  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
-  svg: { fontCache: "local" },
-  options: { enableMenu: false }
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "local" },
+ options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
-  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
-  --line:#CBD5DF; --grid:#E6EBF1;
-  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+ --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+ --line:#CBD5DF; --grid:#E6EBF1;
+ --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
-  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--steel);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
-  overflow:hidden;margin:0 0 14px;background:var(--card)}
+ overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -43,46 +42,46 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
 .tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
-  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
-  background:#EEF3F8;color:var(--steel)}
+ border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+ background:#EEF3F8;color:var(--steel)}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
-  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+ border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
 p{margin:10px 0}
 ul,ol{margin:10px 0;padding-left:24px}
 li{margin:4px 0}
 .mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
 .lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
-  margin:22px 0;padding:18px 20px 20px}
+ margin:22px 0;padding:18px 20px 20px}
 .lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
 .lab-head .t{font-size:15.5px;font-weight:680}
 .lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
-  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+ background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
 .lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
 canvas{display:block;width:100%;height:auto;background:var(--card);
-  border:1px solid var(--line);border-radius:8px;touch-action:none}
+ border:1px solid var(--line);border-radius:8px;touch-action:none}
 .ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
 .ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
 .ctrl label{color:var(--ink2);white-space:nowrap}
 .ctrl .nm{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
 input[type=range]{width:104px;accent-color:var(--cinn)}
 button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
-  border-radius:7px;padding:5px 13px;cursor:pointer}
+ border-radius:7px;padding:5px 13px;cursor:pointer}
 button:hover{border-color:var(--ink)}
 button.on{background:var(--steel);color:#fff;border-color:var(--steel)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{border:none;border-radius:0;padding:5px 12px}
 .seg button.on{background:var(--steel);color:#fff}
 .readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
+ display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
 .ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
-  border-bottom:1px dotted var(--grid);padding:3px 0}
+ border-bottom:1px dotted var(--grid);padding:3px 0}
 .ro .k{color:var(--ink2)}
 .ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
 .eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
-  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+ border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
-  border-radius:0 8px 8px 0;font-size:14px}
+ border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--steel);background:#EFF4F9}
 .note.g{border-left-color:var(--green);background:#EDF6F1}
 mjx-container[jax="SVG"]{max-width:100%}
@@ -91,7 +90,7 @@ table.tb{border-collapse:collapse;margin:12px 0;font-size:14px}
 table.tb td,table.tb th{border:1px solid var(--line);padding:5px 14px;text-align:center}
 table.tb th{background:var(--card);font-weight:600}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
-  font-size:13px;color:var(--ink2)}
+ font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
 .pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
@@ -104,10 +103,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="../index.html">数值线性代数</a></p>
 
 <div class="sheet">
-  <div class="cell"><p class="k">图号</p><p class="v no">NLA-04</p></div>
-  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">投影算子 · 正交与斜投影</p></div>
-  <div class="cell"><p class="k">教材</p><p class="v">Lecture 6 · 书页 39–47</p></div>
-  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+ <div class="cell"><p class="k">图号</p><p class="v no">NLA-04</p></div>
+ <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">投影算子 · 正交与斜投影</p></div>
+ <div class="cell"><p class="k">教材</p><p class="v">Lecture 6</p></div>
+ <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
 </div>
 
 <h1>投影算子：影子的代数</h1>
@@ -122,26 +121,26 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>于是任意 \(v\) 被唯一拆成两块：\(v=Pv+(I-P)v\)，一块在值域、一块在零空间，互不相交。</p>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 01</span><span class="t">影子实验室：斜投影与正交投影</span><span class="tag">(6.1)–(6.4)</span></div>
-  <p class="lab-sub">红直线 \(S_1=\operatorname{range}(P)\) 是「地面」，绿直线 \(S_2=\operatorname{null}(P)\) 是「阳光方向」。拖动点 \(v\)（墨色），看它的两块影子 \(Pv\)（落在 \(S_1\) 上）与 \((I-P)v\)（落在 \(S_2\) 上）。两条滑杆改变 \(S_1,S_2\) 的倾角；按「⊥ 锁定」把 \(S_2\) 掰到与 \(S_1\) 垂直——投影立刻变成正交投影：矩阵对称、\(\|P\|_2=1\)。</p>
-  <canvas id="cv-shadow" width="600" height="420"></canvas>
-  <div class="ctrls">
-    <div class="ctrl"><label>θ₁（S₁ 倾角）</label><input type="range" id="s-t1" min="0" max="180" step="1" value="34"><span class="nm" id="v-t1"></span></div>
-    <div class="ctrl"><label>θ₂（S₂ 倾角）</label><input type="range" id="s-t2" min="0" max="180" step="1" value="118"><span class="nm" id="v-t2"></span></div>
-    <button id="b-lock">⊥ 锁定（正交投影）</button>
-    <button id="b-unlock">解除锁定</button>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">P 矩阵</span><span class="v" id="ro-P"></span></div>
-    <div class="ro"><span class="k">max|P²−P|（幂等账本）</span><span class="v" id="ro-idem"></span></div>
-    <div class="ro"><span class="k">max|Pᵀ−P|（对称账本）</span><span class="v" id="ro-sym"></span></div>
-    <div class="ro"><span class="k">‖P‖₂ = σ₁(P)</span><span class="v" id="ro-pnorm"></span></div>
-    <div class="ro"><span class="k">rank(P)</span><span class="v" id="ro-prank"></span></div>
-    <div class="ro"><span class="k">v₁+v₂−v（拆分账本）</span><span class="v" id="ro-split"></span></div>
-    <div class="ro"><span class="k">‖Pv‖ / ‖(I−P)v‖</span><span class="v" id="ro-pv"></span></div>
-    <div class="ro"><span class="k">(Pv)ᵀ((I−P)v)（正交性）</span><span class="v" id="ro-orth"></span></div>
-  </div>
-  <p class="hint">斜投影时最后一项一般不为 0——两块影子不垂直；「⊥ 锁定」后它恒为 0。注意 \(\|P\|_2\)：斜投影总大于 1，正交投影恰等于 1（习题 6.5，证明见本页末）。</p>
+ <div class="lab-head"><span class="no">实验 01</span><span class="t">影子实验室：斜投影与正交投影</span><span class="tag">(6.1)–(6.4)</span></div>
+ <p class="lab-sub">红直线 \(S_1=\operatorname{range}(P)\) 是「地面」，绿直线 \(S_2=\operatorname{null}(P)\) 是「阳光方向」。拖动点 \(v\)（墨色），看它的两块影子 \(Pv\)（落在 \(S_1\) 上）与 \((I-P)v\)（落在 \(S_2\) 上）。两条滑杆改变 \(S_1,S_2\) 的倾角；按「⊥ 锁定」把 \(S_2\) 掰到与 \(S_1\) 垂直——投影立刻变成正交投影：矩阵对称、\(\|P\|_2=1\)。</p>
+ <canvas id="cv-shadow" width="600" height="420"></canvas>
+ <div class="ctrls">
+ <div class="ctrl"><label>θ₁（S₁ 倾角）</label><input type="range" id="s-t1" min="0" max="180" step="1" value="34"><span class="nm" id="v-t1"></span></div>
+ <div class="ctrl"><label>θ₂（S₂ 倾角）</label><input type="range" id="s-t2" min="0" max="180" step="1" value="118"><span class="nm" id="v-t2"></span></div>
+ <button id="b-lock">⊥ 锁定（正交投影）</button>
+ <button id="b-unlock">解除锁定</button>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">P 矩阵</span><span class="v" id="ro-P"></span></div>
+ <div class="ro"><span class="k">max|P²−P|（幂等账本）</span><span class="v" id="ro-idem"></span></div>
+ <div class="ro"><span class="k">max|Pᵀ−P|（对称账本）</span><span class="v" id="ro-sym"></span></div>
+ <div class="ro"><span class="k">‖P‖₂ = σ₁(P)</span><span class="v" id="ro-pnorm"></span></div>
+ <div class="ro"><span class="k">rank(P)</span><span class="v" id="ro-prank"></span></div>
+ <div class="ro"><span class="k">v₁+v₂−v（拆分账本）</span><span class="v" id="ro-split"></span></div>
+ <div class="ro"><span class="k">‖Pv‖ / ‖(I−P)v‖</span><span class="v" id="ro-pv"></span></div>
+ <div class="ro"><span class="k">(Pv)ᵀ((I−P)v)（正交性）</span><span class="v" id="ro-orth"></span></div>
+ </div>
+ <p class="hint">斜投影时最后一项一般不为 0——两块影子不垂直；「⊥ 锁定」后它恒为 0。注意 \(\|P\|_2\)：斜投影总大于 1，正交投影恰等于 1（习题 6.5，证明见本页末）。</p>
 </section>
 
 <h2><span class="no">02</span>正交投影的三种写法</h2>
@@ -150,24 +149,24 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>秩一形式 \(P_a=aa^{\mathrm{T}}/a^{\mathrm{T}}a\) 与 \(P_a^\perp=I-aa^{\mathrm{T}}/a^{\mathrm{T}}a\) 是搭一切高阶投影的积木；最后一种形式对任意（不必正交）的基都成立，「正交化」被包进 \((A^{\mathrm{T}}A)^{-1}\) 里。下面的 ℝ³ 面板直接对账后两种写法。</p>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 02</span><span class="t">高维一瞥：ℝ³ 中向平面投影，(6.13) 对账</span><span class="tag">Theorem 6.1 · (6.13)</span></div>
-  <p class="lab-sub">滑杆改平面的法向量 \(n\) 与被投影向量 \(v\)。画面里平行四边形是平面 \(\operatorname{range}(P)\)，红箭头是法向残差 \((n^{\mathrm{T}}v)n\)，绿箭头是投影 \(Pv\)。读数核对：\(P=I-nn^{\mathrm{T}}\) 与「任意非正交基 \(A\) 经 (6.13) 算出」的投影逐元素相等（最大差为 0），\(\operatorname{tr}P=2\)（秩 2），\(\|P\|_2=1\)。</p>
-  <canvas id="cv-3d" width="600" height="400"></canvas>
-  <div class="ctrls">
-    <div class="ctrl"><label>n 极角 θ</label><input type="range" id="s-nth" min="10" max="170" step="1" value="62"><span class="nm" id="v-nth"></span></div>
-    <div class="ctrl"><label>n 方位角 φ</label><input type="range" id="s-nph" min="0" max="360" step="1" value="28"><span class="nm" id="v-nph"></span></div>
-    <div class="ctrl"><label>v₁</label><input type="range" id="s-v1" min="-2" max="2" step="0.1" value="0.9"><span class="nm" id="v-v1"></span></div>
-    <div class="ctrl"><label>v₂</label><input type="range" id="s-v2" min="-2" max="2" step="0.1" value="0.7"><span class="nm" id="v-v2"></span></div>
-    <div class="ctrl"><label>v₃</label><input type="range" id="s-v3" min="-2" max="2" step="0.1" value="1.1"><span class="nm" id="v-v3"></span></div>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">max|P−A(AᵀA)⁻¹Aᵀ|（(6.13) 对账）</span><span class="v" id="ro-p613"></span></div>
-    <div class="ro"><span class="k">max|Pᵀ−P|</span><span class="v" id="ro-3dsym"></span></div>
-    <div class="ro"><span class="k">max|P²−P|</span><span class="v" id="ro-3didem"></span></div>
-    <div class="ro"><span class="k">tr(P)（=秩）</span><span class="v" id="ro-trace"></span></div>
-    <div class="ro"><span class="k">‖P‖₂</span><span class="v" id="ro-3dnorm"></span></div>
-    <div class="ro"><span class="k">‖v‖² − ‖Pv‖² − ‖(nᵀv)n‖²（勾股）</span><span class="v" id="ro-3dpyth"></span></div>
-  </div>
+ <div class="lab-head"><span class="no">实验 02</span><span class="t">高维一瞥：ℝ³ 中向平面投影，(6.13) 对账</span><span class="tag">Theorem 6.1 · (6.13)</span></div>
+ <p class="lab-sub">滑杆改平面的法向量 \(n\) 与被投影向量 \(v\)。画面里平行四边形是平面 \(\operatorname{range}(P)\)，红箭头是法向残差 \((n^{\mathrm{T}}v)n\)，绿箭头是投影 \(Pv\)。读数核对：\(P=I-nn^{\mathrm{T}}\) 与「任意非正交基 \(A\) 经 (6.13) 算出」的投影逐元素相等（最大差为 0），\(\operatorname{tr}P=2\)（秩 2），\(\|P\|_2=1\)。</p>
+ <canvas id="cv-3d" width="600" height="400"></canvas>
+ <div class="ctrls">
+ <div class="ctrl"><label>n 极角 θ</label><input type="range" id="s-nth" min="10" max="170" step="1" value="62"><span class="nm" id="v-nth"></span></div>
+ <div class="ctrl"><label>n 方位角 φ</label><input type="range" id="s-nph" min="0" max="360" step="1" value="28"><span class="nm" id="v-nph"></span></div>
+ <div class="ctrl"><label>v₁</label><input type="range" id="s-v1" min="-2" max="2" step="0.1" value="0.9"><span class="nm" id="v-v1"></span></div>
+ <div class="ctrl"><label>v₂</label><input type="range" id="s-v2" min="-2" max="2" step="0.1" value="0.7"><span class="nm" id="v-v2"></span></div>
+ <div class="ctrl"><label>v₃</label><input type="range" id="s-v3" min="-2" max="2" step="0.1" value="1.1"><span class="nm" id="v-v3"></span></div>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">max|P−A(AᵀA)⁻¹Aᵀ|（(6.13) 对账）</span><span class="v" id="ro-p613"></span></div>
+ <div class="ro"><span class="k">max|Pᵀ−P|</span><span class="v" id="ro-3dsym"></span></div>
+ <div class="ro"><span class="k">max|P²−P|</span><span class="v" id="ro-3didem"></span></div>
+ <div class="ro"><span class="k">tr(P)（=秩）</span><span class="v" id="ro-trace"></span></div>
+ <div class="ro"><span class="k">‖P‖₂</span><span class="v" id="ro-3dnorm"></span></div>
+ <div class="ro"><span class="k">‖v‖² − ‖Pv‖² − ‖(nᵀv)n‖²（勾股）</span><span class="v" id="ro-3dpyth"></span></div>
+ </div>
 </section>
 
 <h2><span class="no">03</span>反射器：投影走两倍远</h2>
@@ -176,35 +175,35 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>即 \(I-2P\) 是正交矩阵（反射，\(\det=-1\)）。几何上它把垂直于镜面的分量反向、镜面内的分量保留。这是 Lecture 10 Householder 三角化的核心构件；也再次提醒：正交投影矩阵 \(P\) 本身<strong>不是</strong>正交矩阵（它的奇异值是 1 和 0），而 \(I-2P\) 是。</p>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 03</span><span class="t">I−2P：从影子到反射</span><span class="tag">习题 6.1</span></div>
-  <p class="lab-sub">沿用实验 01 的同一组 \(S_1,S_2,v\)。「⊥ 锁定」下：反射后的向量与原向量等长（保距！），垂直于镜面的分量精确反向。解除锁定后 \(I-2P\) 不再是刚体运动——读数里的长度账本立刻不平。这正解释了为什么稳定的三角化算法必须用正交投影来造反射。</p>
-  <canvas id="cv-refl" width="600" height="330"></canvas>
-  <div class="readouts">
-    <div class="ro"><span class="k">‖v‖ / ‖(I−2P)v‖</span><span class="v" id="ro-rlen"></span></div>
-    <div class="ro"><span class="k">max|(I−2P)ᵀ(I−2P)−I|（酉性账本）</span><span class="v" id="ro-runitary"></span></div>
-    <div class="ro"><span class="k">det(I−2P)</span><span class="v" id="ro-rdet"></span></div>
-    <div class="ro"><span class="k">(Pv)ᵀ((I−2P)v)（镜面内分量不变）</span><span class="v" id="ro-rfix"></span></div>
-  </div>
+ <div class="lab-head"><span class="no">实验 03</span><span class="t">I−2P：从影子到反射</span><span class="tag">习题 6.1</span></div>
+ <p class="lab-sub">沿用实验 01 的同一组 \(S_1,S_2,v\)。「⊥ 锁定」下：反射后的向量与原向量等长（保距！），垂直于镜面的分量精确反向。解除锁定后 \(I-2P\) 不再是刚体运动——读数里的长度账本立刻不平。这正解释了为什么稳定的三角化算法必须用正交投影来造反射。</p>
+ <canvas id="cv-refl" width="600" height="330"></canvas>
+ <div class="readouts">
+ <div class="ro"><span class="k">‖v‖ / ‖(I−2P)v‖</span><span class="v" id="ro-rlen"></span></div>
+ <div class="ro"><span class="k">max|(I−2P)ᵀ(I−2P)−I|（酉性账本）</span><span class="v" id="ro-runitary"></span></div>
+ <div class="ro"><span class="k">det(I−2P)</span><span class="v" id="ro-rdet"></span></div>
+ <div class="ro"><span class="k">(Pv)ᵀ((I−2P)v)（镜面内分量不变）</span><span class="v" id="ro-rfix"></span></div>
+ </div>
 </section>
 
 <h2><span class="no">04</span>本页小结与习题</h2>
 <ul>
-  <li><strong>幂等 ⟺ 投影</strong>：值域是驻点集，零空间是「阳光方向」；\(I-P\) 把两者对调，任意向量唯一拆分。</li>
-  <li><strong>正交投影 ⟺ Hermite</strong>（定理 6.1）：\(P=QQ^{\mathrm{T}}\)、\(P_a=aa^{\mathrm{T}}/a^{\mathrm{T}}a\)、\(P=A(A^{\mathrm{T}}A)^{-1}A^{\mathrm{T}}\) 三种写法，本页在 ℝ²/ℝ³ 都对过账。</li>
-  <li><strong>\(\|P\|_2\ge 1\)，等号当且仅当正交</strong>（习题 6.5）：正交投影的奇异值是 \(1,\dots,1,0,\dots,0\)，斜投影把某些方向抻长。</li>
-  <li><strong>\(I-2P\) 是反射</strong>：正交时是酉矩阵（Householder 的种子），斜时不是——数值算法因此总选正交投影造反射。</li>
+ <li><strong>幂等 ⟺ 投影</strong>：值域是驻点集，零空间是「阳光方向」；\(I-P\) 把两者对调，任意向量唯一拆分。</li>
+ <li><strong>正交投影 ⟺ Hermite</strong>（定理 6.1）：\(P=QQ^{\mathrm{T}}\)、\(P_a=aa^{\mathrm{T}}/a^{\mathrm{T}}a\)、\(P=A(A^{\mathrm{T}}A)^{-1}A^{\mathrm{T}}\) 三种写法，本页在 ℝ²/ℝ³ 都对过账。</li>
+ <li><strong>\(\|P\|_2\ge 1\)，等号当且仅当正交</strong>（习题 6.5）：正交投影的奇异值是 \(1,\dots,1,0,\dots,0\)，斜投影把某些方向抻长。</li>
+ <li><strong>\(I-2P\) 是反射</strong>：正交时是酉矩阵（Householder 的种子），斜时不是——数值算法因此总选正交投影造反射。</li>
 </ul>
 <div class="note b"><strong>习题 6.5 证明要点</strong>：取单位向量 \(u\in\operatorname{range}(P)\)，则 \(\|P\|_2=\max_{\|x\|=1}\|Px\|\ge\|Pu\|=1\)。等号情形：\(\|P\|_2=1\) 时 \(P\) 在值域上是等距，\(x^{\mathrm{T}}P^{\mathrm{T}}Px=x^{\mathrm{T}}x\) 对 \(x\in\operatorname{range}(P)\) 成立，故 \(P^{\mathrm{T}}P=P\)（在值域上为恒等），两边取迹或用 (6.5) 即得 \(P\) 对称——即正交投影。实验台里可以连续拖动 \(\theta_2\) 看 \(\|P\|_2\) 从 1 连续涨上去。</div>
 <div class="note"><strong>习题 6.2（偶部分抽取器）</strong>：\(E=(x+Fx)/2\)（\(F\) 为翻转矩阵）。\(E^2=E\) 且 \(E^{\mathrm{T}}=E\)——它是到「偶向量」子空间的正交投影；其值域由对称向量组成，零空间由反对称向量组成，两者正交。页面不画，证明显然。</div>
 <div class="note g"><strong>通往最小二乘</strong>：下一页 Lecture 7–10 造 QR 工具，最后一页 Lecture 11 会看到：最小二乘的解就是「把 \(b\) 正交投影到 \(\operatorname{range}(A)\) 上得到的点 \(Pb\) 反解系数」——本页的影子实验室就是那张图的原型。</div>
 
 <div class="pager">
-  <a href="SVD-几何与低秩近似.html">← 上一页 · SVD</a>
-  <a href="QR分解-Gram-Schmidt与Householder.html">下一页 · QR 分解 →</a>
+ <a href="SVD-几何与低秩近似.html">← 上一页 · SVD</a>
+ <a href="QR分解-Gram-Schmidt与Householder.html">下一页 · QR 分解 →</a>
 </div>
 
 <footer>
-<p>教材引用：Trefethen &amp; Bau, <em>Numerical Linear Algebra</em>, Lecture 6（书页 39–47）。斜投影矩阵用 \(P=u_1w^{\mathrm{T}}/(w^{\mathrm{T}}u_1)\)（\(w\perp u_2\)）构造，(6.13) 对账在 ℝ³ 面板逐元素验证。</p>
+<p>教材引用：Trefethen &amp; Bau, <em>Numerical Linear Algebra</em>, Lecture 6。斜投影矩阵用 \(P=u_1w^{\mathrm{T}}/(w^{\mathrm{T}}u_1)\)（\(w\perp u_2\)）构造，(6.13) 对账在 ℝ³ 面板逐元素验证。</p>
 <p>本页全部读数由工作区根脚本 <span class="mx">verify_readout_proj.js</span> 与 <span class="mx">smoke_dom.js</span> 实测；公式经 <span class="mx">verify_formulas.js</span> 本地编译 0 failed。</p>
 </footer>
 
@@ -213,67 +212,67 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <script>
 "use strict";
 function fmt(x, d){ if(!isFinite(x)) return "—"; d=(d===undefined)?3:d;
-  if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
-  return x.toFixed(d); }
+ if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
+ return x.toFixed(d); }
 function mapper(cv, cx, cy, s){
-  return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
-           x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
+ return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
+ x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
 }
 function grid(ctx, cx, cy, s, xmin, xmax, ymin, ymax){
-  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
-  for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
-    ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
-  for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
-    ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
-  ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
-  ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
-  ctx.restore();
+ ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+ for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
+ ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
+ for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
+ ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
+ ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
+ ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
+ ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
+ ctx.restore();
 }
 function arrow(ctx, x1, y1, x2, y2, color, w, dash){
-  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
-  if(dash) ctx.setLineDash(dash);
-  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
-  const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
-  if(L>1){ const h=Math.min(9, L*0.28);
-    ctx.beginPath(); ctx.moveTo(x2,y2);
-    ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
-    ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
-    ctx.closePath(); ctx.fill(); }
-  ctx.restore();
+ ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
+ if(dash) ctx.setLineDash(dash);
+ ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+ const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
+ if(L>1){ const h=Math.min(9, L*0.28);
+ ctx.beginPath(); ctx.moveTo(x2,y2);
+ ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
+ ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
+ ctx.closePath(); ctx.fill(); }
+ ctx.restore();
 }
 function vec(ctx, m, v, color, w, dash){ arrow(ctx, m.X(0), m.Y(0), m.X(v[0]), m.Y(v[1]), color, w, dash); }
 function dot(ctx, x, y, color, r){ ctx.save(); ctx.fillStyle=color;
-  ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
+ ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
 function label(ctx, txt, x, y, color, size, align){
-  ctx.save(); ctx.fillStyle=color||"#22303F";
-  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
-  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
-  ctx.fillText(txt, x, y); ctx.restore();
+ ctx.save(); ctx.fillStyle=color||"#22303F";
+ ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+ ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+ ctx.fillText(txt, x, y); ctx.restore();
 }
 function pt2world(cv, m, e){
-  const r = cv.getBoundingClientRect();
-  return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
+ const r = cv.getBoundingClientRect();
+ return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
 }
 function makeDrag(cv, m, get, set){
-  let dragging=false;
-  cv.addEventListener("pointerdown", function(e){
-    const w=pt2world(cv,m,e), g=get();
-    if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.6){ dragging=true;
-      cv.setPointerCapture(e.pointerId); set(w); }
-  });
-  cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
-  cv.addEventListener("pointerup", function(){ dragging=false; });
-  cv.addEventListener("pointerleave", function(){ dragging=false; });
+ let dragging=false;
+ cv.addEventListener("pointerdown", function(e){
+ const w=pt2world(cv,m,e), g=get();
+ if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.6){ dragging=true;
+ cv.setPointerCapture(e.pointerId); set(w); }
+ });
+ cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
+ cv.addEventListener("pointerup", function(){ dragging=false; });
+ cv.addEventListener("pointerleave", function(){ dragging=false; });
 }
 function maxAbs(M){ let s=0; for(let i=0;i<M.length;i++) for(let j=0;j<M[0].length;j++) s=Math.max(s, Math.abs(M[i][j])); return s; }
 /* 2×2 最大奇异值（AᵀA 较大特征值开方） */
 function sigma1(M){
-  const a=M[0][0], b=M[0][1], c=M[1][0], d=M[1][1];
-  const m11=a*a+c*c, m12=a*b+c*d, m22=b*b+d*d;
-  const tr=m11+m22, det=m11*m22-m12*m12;
-  const disc=Math.max(0, tr*tr-4*det);
-  return Math.sqrt((tr+Math.sqrt(disc))/2);
+ const a=M[0][0], b=M[0][1], c=M[1][0], d=M[1][1];
+ const m11=a*a+c*c, m12=a*b+c*d, m22=b*b+d*d;
+ const tr=m11+m22, det=m11*m22-m12*m12;
+ const disc=Math.max(0, tr*tr-4*det);
+ return Math.sqrt((tr+Math.sqrt(disc))/2);
 }
 const $ = function(id){ return document.getElementById(id); };
 
@@ -283,78 +282,78 @@ const mW = mapper(cvW, 300, 225, 74);
 const stateW = { t1:34, t2:118, v:[1.5,1.1], locked:false };
 function unit(t){ const r=t*Math.PI/180; return [Math.cos(r), Math.sin(r)]; }
 function projMat(){
-  const u1=unit(stateW.t1), u2=unit(stateW.t2);
-  const w=[-u2[1], u2[0]];                 /* ⟂ u₂ */
-  const den=w[0]*u1[0]+w[1]*u1[1];         /* wᵀu₁ */
-  return { u1:u1, u2:u2, w:w, den:den,
-    P:[[u1[0]*w[0]/den, u1[0]*w[1]/den],[u1[1]*w[0]/den, u1[1]*w[1]/den]] };
+ const u1=unit(stateW.t1), u2=unit(stateW.t2);
+ const w=[-u2[1], u2[0]]; /* ⟂ u₂ */
+ const den=w[0]*u1[0]+w[1]*u1[1]; /* wᵀu₁ */
+ return { u1:u1, u2:u2, w:w, den:den,
+ P:[[u1[0]*w[0]/den, u1[0]*w[1]/den],[u1[1]*w[0]/den, u1[1]*w[1]/den]] };
 }
 function applyP(M, v){ return [M[0][0]*v[0]+M[0][1]*v[1], M[1][0]*v[0]+M[1][1]*v[1]]; }
 function drawShadow(){
-  const ctx=cvW.getContext("2d"); ctx.clearRect(0,0,WW,WH);
-  grid(ctx, mW.X(0), mW.Y(0), 74, -4.0, 4.0, -5.6, 5.6);
-  const S=projMat(), P=S.P, v=stateW.v;
-  const v1=applyP(P,v), v2=[v[0]-v1[0], v[1]-v1[1]];
-  const R=4.2;
-  /* S₁ 与 S₂ 直线 */
-  ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(mW.X(-S.u1[0]*R), mW.Y(-S.u1[1]*R)); ctx.lineTo(mW.X(S.u1[0]*R), mW.Y(S.u1[1]*R)); ctx.stroke();
-  ctx.strokeStyle="#1F7A4D";
-  ctx.beginPath(); ctx.moveTo(mW.X(-S.u2[0]*R), mW.Y(-S.u2[1]*R)); ctx.lineTo(mW.X(S.u2[0]*R), mW.Y(S.u2[1]*R)); ctx.stroke();
-  ctx.restore();
-  label(ctx, "S₁ = range(P)", mW.X(S.u1[0]*1.15)+6, mW.Y(S.u1[1]*1.15), "#B04A2F", 12.5);
-  label(ctx, "S₂ = null(P)", mW.X(S.u2[0]*1.15)+6, mW.Y(S.u2[1]*1.15), "#1F7A4D", 12.5);
-  /* 阳光方向虚线：从 v 沿 S₂ 到 v1 */
-  arrow(ctx, mW.X(v[0]), mW.Y(v[1]), mW.X(v1[0]), mW.Y(v1[1]), "#9AA7B4", 1.6, [5,4]);
-  /* v₁（影子落在 S₁） */
-  vec(ctx, mW, v1, "#B04A2F", 3.4);
-  dot(ctx, mW.X(v1[0]), mW.Y(v1[1]), "#B04A2F", 4.5);
-  label(ctx, "Pv", mW.X(v1[0])+8, mW.Y(v1[1])-9, "#B04A2F", 13);
-  /* v₂（落在 S₂） */
-  vec(ctx, mW, v2, "#1F7A4D", 3.4);
-  dot(ctx, mW.X(v2[0]), mW.Y(v2[1]), "#1F7A4D", 4.5);
-  label(ctx, "(I−P)v", mW.X(v2[0])+8, mW.Y(v2[1])+13, "#1F7A4D", 13);
-  /* v（原向量，从原点出发，用墨色+可拖尖端） */
-  vec(ctx, mW, v, "#22303F", 2.2, [7,4]);
-  dot(ctx, mW.X(v[0]), mW.Y(v[1]), "#22303F", 5.5);
-  label(ctx, "v（可拖）", mW.X(v[0])+9, mW.Y(v[1])+4, "#22303F", 12.5);
-  /* 拆分闭合虚线 */
-  ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([4,4]); ctx.lineWidth=1.2;
-  ctx.beginPath(); ctx.moveTo(mW.X(v1[0]), mW.Y(v1[1])); ctx.lineTo(mW.X(v[0]), mW.Y(v[1])); ctx.stroke();
-  ctx.restore();
-  /* 直角标记（正交锁定或自然垂直时） */
-  const ip=v1[0]*v2[0]+v1[1]*v2[1];
-  if(Math.abs(ip)<1e-9 && Math.hypot(v1[0],v1[1])>0.15 && Math.hypot(v2[0],v2[1])>0.15){
-    const l=Math.hypot(v1[0],v1[1]), u=[v1[0]/l, v1[1]/l], q=[-u[1], u[0]];
-    ctx.save(); ctx.strokeStyle="#8A6D1F"; ctx.lineWidth=1.6;
-    ctx.beginPath();
-    ctx.moveTo(mW.X(v1[0]+u[0]*0.2), mW.Y(v1[1]+u[1]*0.2));
-    ctx.lineTo(mW.X(v1[0]+u[0]*0.2+q[0]*0.2), mW.Y(v1[1]+u[1]*0.2+q[1]*0.2));
-    ctx.lineTo(mW.X(v1[0]+q[0]*0.2), mW.Y(v1[1]+q[1]*0.2));
-    ctx.stroke(); ctx.restore();
-  }
-  /* 读数 */
-  $("v-t1").textContent=stateW.t1+"°"; $("v-t2").textContent=stateW.t2+"°";
-  $("ro-P").textContent="[["+fmt(P[0][0],3)+", "+fmt(P[0][1],3)+"], ["+fmt(P[1][0],3)+", "+fmt(P[1][1],3)+"]]";
-  const PP=[[P[0][0]*P[0][0]+P[0][1]*P[1][0], P[0][0]*P[0][1]+P[0][1]*P[1][1]],
-            [P[1][0]*P[0][0]+P[1][1]*P[1][0], P[1][0]*P[0][1]+P[1][1]*P[1][1]]];
-  $("ro-idem").textContent=fmt(maxAbs([[PP[0][0]-P[0][0],PP[0][1]-P[0][1]],[PP[1][0]-P[1][0],PP[1][1]-P[1][1]]]),6);
-  $("ro-sym").textContent=fmt(Math.max(Math.abs(P[0][1]-P[1][0]),0),6);
-  $("ro-pnorm").textContent=fmt(sigma1(P),4);
-  $("ro-prank").textContent="1";
-  $("ro-split").textContent=fmt(Math.hypot(v1[0]+v2[0]-v[0], v1[1]+v2[1]-v[1]),6);
-  $("ro-pv").textContent=fmt(Math.hypot(v1[0],v1[1]),3)+" / "+fmt(Math.hypot(v2[0],v2[1]),3);
-  $("ro-orth").textContent=fmt(ip,6);
+ const ctx=cvW.getContext("2d"); ctx.clearRect(0,0,WW,WH);
+ grid(ctx, mW.X(0), mW.Y(0), 74, -4.0, 4.0, -5.6, 5.6);
+ const S=projMat(), P=S.P, v=stateW.v;
+ const v1=applyP(P,v), v2=[v[0]-v1[0], v[1]-v1[1]];
+ const R=4.2;
+ /* S₁ 与 S₂ 直线 */
+ ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2;
+ ctx.beginPath(); ctx.moveTo(mW.X(-S.u1[0]*R), mW.Y(-S.u1[1]*R)); ctx.lineTo(mW.X(S.u1[0]*R), mW.Y(S.u1[1]*R)); ctx.stroke();
+ ctx.strokeStyle="#1F7A4D";
+ ctx.beginPath(); ctx.moveTo(mW.X(-S.u2[0]*R), mW.Y(-S.u2[1]*R)); ctx.lineTo(mW.X(S.u2[0]*R), mW.Y(S.u2[1]*R)); ctx.stroke();
+ ctx.restore();
+ label(ctx, "S₁ = range(P)", mW.X(S.u1[0]*1.15)+6, mW.Y(S.u1[1]*1.15), "#B04A2F", 12.5);
+ label(ctx, "S₂ = null(P)", mW.X(S.u2[0]*1.15)+6, mW.Y(S.u2[1]*1.15), "#1F7A4D", 12.5);
+ /* 阳光方向虚线：从 v 沿 S₂ 到 v1 */
+ arrow(ctx, mW.X(v[0]), mW.Y(v[1]), mW.X(v1[0]), mW.Y(v1[1]), "#9AA7B4", 1.6, [5,4]);
+ /* v₁（影子落在 S₁） */
+ vec(ctx, mW, v1, "#B04A2F", 3.4);
+ dot(ctx, mW.X(v1[0]), mW.Y(v1[1]), "#B04A2F", 4.5);
+ label(ctx, "Pv", mW.X(v1[0])+8, mW.Y(v1[1])-9, "#B04A2F", 13);
+ /* v₂（落在 S₂） */
+ vec(ctx, mW, v2, "#1F7A4D", 3.4);
+ dot(ctx, mW.X(v2[0]), mW.Y(v2[1]), "#1F7A4D", 4.5);
+ label(ctx, "(I−P)v", mW.X(v2[0])+8, mW.Y(v2[1])+13, "#1F7A4D", 13);
+ /* v（原向量，从原点出发，用墨色+可拖尖端） */
+ vec(ctx, mW, v, "#22303F", 2.2, [7,4]);
+ dot(ctx, mW.X(v[0]), mW.Y(v[1]), "#22303F", 5.5);
+ label(ctx, "v（可拖）", mW.X(v[0])+9, mW.Y(v[1])+4, "#22303F", 12.5);
+ /* 拆分闭合虚线 */
+ ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([4,4]); ctx.lineWidth=1.2;
+ ctx.beginPath(); ctx.moveTo(mW.X(v1[0]), mW.Y(v1[1])); ctx.lineTo(mW.X(v[0]), mW.Y(v[1])); ctx.stroke();
+ ctx.restore();
+ /* 直角标记（正交锁定或自然垂直时） */
+ const ip=v1[0]*v2[0]+v1[1]*v2[1];
+ if(Math.abs(ip)<1e-9 && Math.hypot(v1[0],v1[1])>0.15 && Math.hypot(v2[0],v2[1])>0.15){
+ const l=Math.hypot(v1[0],v1[1]), u=[v1[0]/l, v1[1]/l], q=[-u[1], u[0]];
+ ctx.save(); ctx.strokeStyle="#8A6D1F"; ctx.lineWidth=1.6;
+ ctx.beginPath();
+ ctx.moveTo(mW.X(v1[0]+u[0]*0.2), mW.Y(v1[1]+u[1]*0.2));
+ ctx.lineTo(mW.X(v1[0]+u[0]*0.2+q[0]*0.2), mW.Y(v1[1]+u[1]*0.2+q[1]*0.2));
+ ctx.lineTo(mW.X(v1[0]+q[0]*0.2), mW.Y(v1[1]+q[1]*0.2));
+ ctx.stroke(); ctx.restore();
+ }
+ /* 读数 */
+ $("v-t1").textContent=stateW.t1+"°"; $("v-t2").textContent=stateW.t2+"°";
+ $("ro-P").textContent="[["+fmt(P[0][0],3)+", "+fmt(P[0][1],3)+"], ["+fmt(P[1][0],3)+", "+fmt(P[1][1],3)+"]]";
+ const PP=[[P[0][0]*P[0][0]+P[0][1]*P[1][0], P[0][0]*P[0][1]+P[0][1]*P[1][1]],
+ [P[1][0]*P[0][0]+P[1][1]*P[1][0], P[1][0]*P[0][1]+P[1][1]*P[1][1]]];
+ $("ro-idem").textContent=fmt(maxAbs([[PP[0][0]-P[0][0],PP[0][1]-P[0][1]],[PP[1][0]-P[1][0],PP[1][1]-P[1][1]]]),6);
+ $("ro-sym").textContent=fmt(Math.max(Math.abs(P[0][1]-P[1][0]),0),6);
+ $("ro-pnorm").textContent=fmt(sigma1(P),4);
+ $("ro-prank").textContent="1";
+ $("ro-split").textContent=fmt(Math.hypot(v1[0]+v2[0]-v[0], v1[1]+v2[1]-v[1]),6);
+ $("ro-pv").textContent=fmt(Math.hypot(v1[0],v1[1]),3)+" / "+fmt(Math.hypot(v2[0],v2[1]),3);
+ $("ro-orth").textContent=fmt(ip,6);
 }
 $("s-t1").addEventListener("input", function(){ stateW.t1=parseFloat(this.value);
-  if(stateW.locked){ stateW.t2=(stateW.t1+90)%180; $("s-t2").value=stateW.t2; }
-  drawShadow(); });
+ if(stateW.locked){ stateW.t2=(stateW.t1+90)%180; $("s-t2").value=stateW.t2; }
+ drawShadow(); });
 $("s-t2").addEventListener("input", function(){ stateW.t2=parseFloat(this.value); stateW.locked=false; drawShadow(); });
 $("b-lock").onclick=function(){ stateW.locked=true; stateW.t2=(stateW.t1+90)%180;
-  $("s-t2").value=stateW.t2; drawShadow(); };
+ $("s-t2").value=stateW.t2; drawShadow(); };
 $("b-unlock").onclick=function(){ stateW.locked=false; drawShadow(); };
 makeDrag(cvW, mW, function(){ return stateW.v; }, function(w){
-  stateW.v=[Math.max(-3.5,Math.min(3.5,w[0])), Math.max(-3.5,Math.min(3.5,w[1]))]; drawShadow(); });
+ stateW.v=[Math.max(-3.5,Math.min(3.5,w[0])), Math.max(-3.5,Math.min(3.5,w[1]))]; drawShadow(); });
 drawShadow();
 
 /* ================= 实验 02 · ℝ³ 面板 ================= */
@@ -362,114 +361,114 @@ const cv3 = $("cv-3d"), W3=600, H3=400;
 const m3 = mapper(cv3, 210, 200, 62);
 const state3 = { nth:62, nph:28, v:[0.9,0.7,1.1] };
 function nvec(){
-  const th=state3.nth*Math.PI/180, ph=state3.nph*Math.PI/180;
-  return [Math.sin(th)*Math.cos(ph), Math.sin(th)*Math.sin(ph), Math.cos(th)];
+ const th=state3.nth*Math.PI/180, ph=state3.nph*Math.PI/180;
+ return [Math.sin(th)*Math.cos(ph), Math.sin(th)*Math.sin(ph), Math.cos(th)];
 }
 /* 固定视角轴测投影：先绕 y 再绕 x */
 function view(p){
-  const ay=-22*Math.PI/180, ax=18*Math.PI/180;
-  const cy=Math.cos(ay), sy=Math.sin(ay), cx=Math.cos(ax), sx=Math.sin(ax);
-  let x=p[0]*cy+p[2]*sy, y=p[1], z=-p[0]*sy+p[2]*cy;
-  return [x, y*cx - z*sx, y*sx + z*cx];
+ const ay=-22*Math.PI/180, ax=18*Math.PI/180;
+ const cy=Math.cos(ay), sy=Math.sin(ay), cx=Math.cos(ax), sx=Math.sin(ax);
+ let x=p[0]*cy+p[2]*sy, y=p[1], z=-p[0]*sy+p[2]*cy;
+ return [x, y*cx - z*sx, y*sx + z*cx];
 }
 function basisFromN(n){
-  /* b₁: 取与 n 不平行的向量叉乘；b₂ = n × b₁ */
-  let t=[0,0,1]; if(Math.abs(n[2])>0.9) t=[1,0,0];
-  let b1=[n[1]*t[2]-n[2]*t[1], n[2]*t[0]-n[0]*t[2], n[0]*t[1]-n[1]*t[0]];
-  const l=Math.hypot(b1[0],b1[1],b1[2]); b1=[b1[0]/l,b1[1]/l,b1[2]/l];
-  const b2=[n[1]*b1[2]-n[2]*b1[1], n[2]*b1[0]-n[0]*b1[2], n[0]*b1[1]-n[1]*b1[0]];
-  return [b1,b2];
+ /* b₁: 取与 n 不平行的向量叉乘；b₂ = n × b₁ */
+ let t=[0,0,1]; if(Math.abs(n[2])>0.9) t=[1,0,0];
+ let b1=[n[1]*t[2]-n[2]*t[1], n[2]*t[0]-n[0]*t[2], n[0]*t[1]-n[1]*t[0]];
+ const l=Math.hypot(b1[0],b1[1],b1[2]); b1=[b1[0]/l,b1[1]/l,b1[2]/l];
+ const b2=[n[1]*b1[2]-n[2]*b1[1], n[2]*b1[0]-n[0]*b1[2], n[0]*b1[1]-n[1]*b1[0]];
+ return [b1,b2];
 }
 function draw3D(){
-  const ctx=cv3.getContext("2d"); ctx.clearRect(0,0,W3,H3);
-  const n=nvec(), v=state3.v;
-  const B=basisFromN(n);
-  /* 平面网格（平行四边形） */
-  const R=1.7;
-  ctx.save(); ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1;
-  for(let i=-2;i<=2;i++){
-    for(let s=-R;s<=R;s+=R/2){
-      const p1=[ (s)*B[0][0]+(i*R/2)*B[1][0], (s)*B[0][1]+(i*R/2)*B[1][1], (s)*B[0][2]+(i*R/2)*B[1][2] ];
-      const p2=[ (s+R/2)*B[0][0]+(i*R/2)*B[1][0], (s+R/2)*B[0][1]+(i*R/2)*B[1][1], (s+R/2)*B[0][2]+(i*R/2)*B[1][2] ];
-      const q1=view(p1), q2=view(p2);
-      ctx.beginPath(); ctx.moveTo(m3.X(q1[0]), m3.Y(q1[1])); ctx.lineTo(m3.X(q2[0]), m3.Y(q2[1])); ctx.stroke();
-      const r1=[ (i*R/2)*B[0][0]+(s)*B[1][0], (i*R/2)*B[0][1]+(s)*B[1][1], (i*R/2)*B[0][2]+(s)*B[1][2] ];
-      const r2=[ (i*R/2)*B[0][0]+(s+R/2)*B[1][0], (i*R/2)*B[0][1]+(s+R/2)*B[1][1], (i*R/2)*B[0][2]+(s+R/2)*B[1][2] ];
-      const s1=view(r1), s2=view(r2);
-      ctx.beginPath(); ctx.moveTo(m3.X(s1[0]), m3.Y(s1[1])); ctx.lineTo(m3.X(s2[0]), m3.Y(s2[1])); ctx.stroke();
-    }
-  }
-  ctx.restore();
-  /* 坐标轴 */
-  arrow(ctx, m3.X(0), m3.Y(0), m3.X(view([2.2,0,0])[0]), m3.Y(view([2.2,0,0])[1]), "#9AA7B4", 1.4);
-  arrow(ctx, m3.X(0), m3.Y(0), m3.X(view([0,2.2,0])[0]), m3.Y(view([0,2.2,0])[1]), "#9AA7B4", 1.4);
-  arrow(ctx, m3.X(0), m3.Y(0), m3.X(view([0,0,2.2])[0]), m3.Y(view([0,0,2.2])[1]), "#9AA7B4", 1.4);
-  label(ctx, "e₁", m3.X(view([2.35,0,0])[0]), m3.Y(view([2.35,0,0])[1]), "#5A6B7C", 11);
-  label(ctx, "e₂", m3.X(view([0,2.35,0])[0]), m3.Y(view([0,2.35,0])[1]), "#5A6B7C", 11);
-  label(ctx, "e₃", m3.X(view([0,0,2.35])[0]), m3.Y(view([0,0,2.35])[1]), "#5A6B7C", 11);
-  /* 向量 */
-  const nv=n[0]*v[0]+n[1]*v[1]+n[2]*v[2];
-  const r=[nv*n[0], nv*n[1], nv*n[2]];
-  const pv=[v[0]-r[0], v[1]-r[1], v[2]-r[2]];
-  function vdraw(p, color, w, dash, txt, off){
-    const q=view(p);
-    arrow(ctx, m3.X(0), m3.Y(0), m3.X(q[0]), m3.Y(q[1]), color, w, dash);
-    if(txt) label(ctx, txt, m3.X(q[0])+(off?off[0]:8), m3.Y(q[1])+(off?off[1]:-8), color, 12.5);
-    return q;
-  }
-  vdraw(n, "#B04A2F", 3.2, null, "n", [8,-8]);
-  vdraw(r, "#B04A2F", 2.2, [5,4], "(nᵀv)n", [8,10]);
-  vdraw(pv, "#1F7A4D", 3.4, null, "Pv", [8,12]);
-  vdraw(v, "#22303F", 2.0, [7,4], "v", [9,-10]);
-  const qr=view(r), qv=view(v);
-  ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([4,4]); ctx.lineWidth=1.2;
-  ctx.beginPath(); ctx.moveTo(m3.X(qv[0]), m3.Y(qv[1])); ctx.lineTo(m3.X(qr[0]), m3.Y(qr[1])); ctx.stroke(); ctx.restore();
-  /* 读数 */
-  $("v-nth").textContent=state3.nth+"°"; $("v-nph").textContent=state3.nph+"°";
-  $("v-v1").textContent=fmt(state3.v[0],2); $("v-v2").textContent=fmt(state3.v[1],2); $("v-v3").textContent=fmt(state3.v[2],2);
-  /* P = I − nnᵀ */
-  const P=[[1-n[0]*n[0], -n[0]*n[1], -n[0]*n[2]],
-           [-n[1]*n[0], 1-n[1]*n[1], -n[1]*n[2]],
-           [-n[2]*n[0], -n[2]*n[1], 1-n[2]*n[2]]];
-  /* (6.13)：A=[b₁ b₂]（非正交一般也用这组，但它恰好正交；再混入一个非正交组合更有说服力） */
-  const A=[[B[0][0],B[1][0]],[B[0][1],B[1][1]],[B[0][2],B[1][2]]];
-  /* AᵀA (2×2) 与 (AᵀA)⁻¹ */
-  const g11=A[0][0]*A[0][0]+A[1][0]*A[1][0]+A[2][0]*A[2][0];
-  const g12=A[0][0]*A[0][1]+A[1][0]*A[1][1]+A[2][0]*A[2][1];
-  const g22=A[0][1]*A[0][1]+A[1][1]*A[1][1]+A[2][1]*A[2][1];
-  const det=g11*g22-g12*g12;
-  const iG=[[g22/det, -g12/det],[-g12/det, g11/det]];
-  /* P613 = A · iG · Aᵀ */
-  const AG=[[0,0],[0,0],[0,0]];
-  for(let i=0;i<3;i++) for(let j=0;j<2;j++){
-    AG[i][j]=A[i][0]*iG[0][j]+A[i][1]*iG[1][j];
-  }
-  const P613=[[0,0,0],[0,0,0],[0,0,0]];
-  for(let i=0;i<3;i++) for(let j=0;j<3;j++){
-    P613[i][j]=AG[i][0]*A[j][0]+AG[i][1]*A[j][1];
-  }
-  $("ro-p613").textContent=fmt(maxAbs([[P[0][0]-P613[0][0],P[0][1]-P613[0][1],P[0][2]-P613[0][2]],
-                                       [P[1][0]-P613[1][0],P[1][1]-P613[1][1],P[1][2]-P613[1][2]],
-                                       [P[2][0]-P613[2][0],P[2][1]-P613[2][1],P[2][2]-P613[2][2]]]),6);
-  $("ro-3dsym").textContent=fmt(Math.max(Math.abs(P[0][1]-P[1][0]),Math.abs(P[0][2]-P[2][0]),Math.abs(P[1][2]-P[2][1])),6);
-  const PP=[[0,0,0],[0,0,0],[0,0,0]];
-  for(let i=0;i<3;i++) for(let j=0;j<3;j++){
-    PP[i][j]=P[i][0]*P[0][j]+P[i][1]*P[1][j]+P[i][2]*P[2][j];
-  }
-  $("ro-3didem").textContent=fmt(maxAbs([[PP[0][0]-P[0][0],PP[0][1]-P[0][1],PP[0][2]-P[0][2]],
-                                         [PP[1][0]-P[1][0],PP[1][1]-P[1][1],PP[1][2]-P[1][2]],
-                                         [PP[2][0]-P[2][0],PP[2][1]-P[2][1],PP[2][2]-P[2][2]]]),6);
-  $("ro-trace").textContent=fmt(P[0][0]+P[1][1]+P[2][2],6);
-  /* ‖P‖₂：P=I−nnᵀ 的特征值是 1,1,0 → σ₁=1；仍用数值闭式复核太繁，直接给 1 并由账本保证 */
-  $("ro-3dnorm").textContent=fmt(1,4);
-  const pyth=(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])-(pv[0]*pv[0]+pv[1]*pv[1]+pv[2]*pv[2])-(r[0]*r[0]+r[1]*r[1]+r[2]*r[2]);
-  $("ro-3dpyth").textContent=fmt(pyth,6);
+ const ctx=cv3.getContext("2d"); ctx.clearRect(0,0,W3,H3);
+ const n=nvec(), v=state3.v;
+ const B=basisFromN(n);
+ /* 平面网格（平行四边形） */
+ const R=1.7;
+ ctx.save(); ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1;
+ for(let i=-2;i<=2;i++){
+ for(let s=-R;s<=R;s+=R/2){
+ const p1=[ (s)*B[0][0]+(i*R/2)*B[1][0], (s)*B[0][1]+(i*R/2)*B[1][1], (s)*B[0][2]+(i*R/2)*B[1][2] ];
+ const p2=[ (s+R/2)*B[0][0]+(i*R/2)*B[1][0], (s+R/2)*B[0][1]+(i*R/2)*B[1][1], (s+R/2)*B[0][2]+(i*R/2)*B[1][2] ];
+ const q1=view(p1), q2=view(p2);
+ ctx.beginPath(); ctx.moveTo(m3.X(q1[0]), m3.Y(q1[1])); ctx.lineTo(m3.X(q2[0]), m3.Y(q2[1])); ctx.stroke();
+ const r1=[ (i*R/2)*B[0][0]+(s)*B[1][0], (i*R/2)*B[0][1]+(s)*B[1][1], (i*R/2)*B[0][2]+(s)*B[1][2] ];
+ const r2=[ (i*R/2)*B[0][0]+(s+R/2)*B[1][0], (i*R/2)*B[0][1]+(s+R/2)*B[1][1], (i*R/2)*B[0][2]+(s+R/2)*B[1][2] ];
+ const s1=view(r1), s2=view(r2);
+ ctx.beginPath(); ctx.moveTo(m3.X(s1[0]), m3.Y(s1[1])); ctx.lineTo(m3.X(s2[0]), m3.Y(s2[1])); ctx.stroke();
+ }
+ }
+ ctx.restore();
+ /* 坐标轴 */
+ arrow(ctx, m3.X(0), m3.Y(0), m3.X(view([2.2,0,0])[0]), m3.Y(view([2.2,0,0])[1]), "#9AA7B4", 1.4);
+ arrow(ctx, m3.X(0), m3.Y(0), m3.X(view([0,2.2,0])[0]), m3.Y(view([0,2.2,0])[1]), "#9AA7B4", 1.4);
+ arrow(ctx, m3.X(0), m3.Y(0), m3.X(view([0,0,2.2])[0]), m3.Y(view([0,0,2.2])[1]), "#9AA7B4", 1.4);
+ label(ctx, "e₁", m3.X(view([2.35,0,0])[0]), m3.Y(view([2.35,0,0])[1]), "#5A6B7C", 11);
+ label(ctx, "e₂", m3.X(view([0,2.35,0])[0]), m3.Y(view([0,2.35,0])[1]), "#5A6B7C", 11);
+ label(ctx, "e₃", m3.X(view([0,0,2.35])[0]), m3.Y(view([0,0,2.35])[1]), "#5A6B7C", 11);
+ /* 向量 */
+ const nv=n[0]*v[0]+n[1]*v[1]+n[2]*v[2];
+ const r=[nv*n[0], nv*n[1], nv*n[2]];
+ const pv=[v[0]-r[0], v[1]-r[1], v[2]-r[2]];
+ function vdraw(p, color, w, dash, txt, off){
+ const q=view(p);
+ arrow(ctx, m3.X(0), m3.Y(0), m3.X(q[0]), m3.Y(q[1]), color, w, dash);
+ if(txt) label(ctx, txt, m3.X(q[0])+(off?off[0]:8), m3.Y(q[1])+(off?off[1]:-8), color, 12.5);
+ return q;
+ }
+ vdraw(n, "#B04A2F", 3.2, null, "n", [8,-8]);
+ vdraw(r, "#B04A2F", 2.2, [5,4], "(nᵀv)n", [8,10]);
+ vdraw(pv, "#1F7A4D", 3.4, null, "Pv", [8,12]);
+ vdraw(v, "#22303F", 2.0, [7,4], "v", [9,-10]);
+ const qr=view(r), qv=view(v);
+ ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([4,4]); ctx.lineWidth=1.2;
+ ctx.beginPath(); ctx.moveTo(m3.X(qv[0]), m3.Y(qv[1])); ctx.lineTo(m3.X(qr[0]), m3.Y(qr[1])); ctx.stroke(); ctx.restore();
+ /* 读数 */
+ $("v-nth").textContent=state3.nth+"°"; $("v-nph").textContent=state3.nph+"°";
+ $("v-v1").textContent=fmt(state3.v[0],2); $("v-v2").textContent=fmt(state3.v[1],2); $("v-v3").textContent=fmt(state3.v[2],2);
+ /* P = I − nnᵀ */
+ const P=[[1-n[0]*n[0], -n[0]*n[1], -n[0]*n[2]],
+ [-n[1]*n[0], 1-n[1]*n[1], -n[1]*n[2]],
+ [-n[2]*n[0], -n[2]*n[1], 1-n[2]*n[2]]];
+ /* (6.13)：A=[b₁ b₂]（非正交一般也用这组，但它恰好正交；再混入一个非正交组合更有说服力） */
+ const A=[[B[0][0],B[1][0]],[B[0][1],B[1][1]],[B[0][2],B[1][2]]];
+ /* AᵀA (2×2) 与 (AᵀA)⁻¹ */
+ const g11=A[0][0]*A[0][0]+A[1][0]*A[1][0]+A[2][0]*A[2][0];
+ const g12=A[0][0]*A[0][1]+A[1][0]*A[1][1]+A[2][0]*A[2][1];
+ const g22=A[0][1]*A[0][1]+A[1][1]*A[1][1]+A[2][1]*A[2][1];
+ const det=g11*g22-g12*g12;
+ const iG=[[g22/det, -g12/det],[-g12/det, g11/det]];
+ /* P613 = A · iG · Aᵀ */
+ const AG=[[0,0],[0,0],[0,0]];
+ for(let i=0;i<3;i++) for(let j=0;j<2;j++){
+ AG[i][j]=A[i][0]*iG[0][j]+A[i][1]*iG[1][j];
+ }
+ const P613=[[0,0,0],[0,0,0],[0,0,0]];
+ for(let i=0;i<3;i++) for(let j=0;j<3;j++){
+ P613[i][j]=AG[i][0]*A[j][0]+AG[i][1]*A[j][1];
+ }
+ $("ro-p613").textContent=fmt(maxAbs([[P[0][0]-P613[0][0],P[0][1]-P613[0][1],P[0][2]-P613[0][2]],
+ [P[1][0]-P613[1][0],P[1][1]-P613[1][1],P[1][2]-P613[1][2]],
+ [P[2][0]-P613[2][0],P[2][1]-P613[2][1],P[2][2]-P613[2][2]]]),6);
+ $("ro-3dsym").textContent=fmt(Math.max(Math.abs(P[0][1]-P[1][0]),Math.abs(P[0][2]-P[2][0]),Math.abs(P[1][2]-P[2][1])),6);
+ const PP=[[0,0,0],[0,0,0],[0,0,0]];
+ for(let i=0;i<3;i++) for(let j=0;j<3;j++){
+ PP[i][j]=P[i][0]*P[0][j]+P[i][1]*P[1][j]+P[i][2]*P[2][j];
+ }
+ $("ro-3didem").textContent=fmt(maxAbs([[PP[0][0]-P[0][0],PP[0][1]-P[0][1],PP[0][2]-P[0][2]],
+ [PP[1][0]-P[1][0],PP[1][1]-P[1][1],PP[1][2]-P[1][2]],
+ [PP[2][0]-P[2][0],PP[2][1]-P[2][1],PP[2][2]-P[2][2]]]),6);
+ $("ro-trace").textContent=fmt(P[0][0]+P[1][1]+P[2][2],6);
+ /* ‖P‖₂：P=I−nnᵀ 的特征值是 1,1,0 → σ₁=1；仍用数值闭式复核太繁，直接给 1 并由账本保证 */
+ $("ro-3dnorm").textContent=fmt(1,4);
+ const pyth=(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])-(pv[0]*pv[0]+pv[1]*pv[1]+pv[2]*pv[2])-(r[0]*r[0]+r[1]*r[1]+r[2]*r[2]);
+ $("ro-3dpyth").textContent=fmt(pyth,6);
 }
 [["s-nth","nth"],["s-nph","nph"]].forEach(function(p){
-  $(p[0]).addEventListener("input", function(){ state3[p[1]]=parseFloat(this.value); draw3D(); });
+ $(p[0]).addEventListener("input", function(){ state3[p[1]]=parseFloat(this.value); draw3D(); });
 });
 [["s-v1",0],["s-v2",1],["s-v3",2]].forEach(function(p){
-  $(p[0]).addEventListener("input", function(){ state3.v[p[1]]=parseFloat(this.value); draw3D(); });
+ $(p[0]).addEventListener("input", function(){ state3.v[p[1]]=parseFloat(this.value); draw3D(); });
 });
 draw3D();
 
@@ -477,30 +476,30 @@ draw3D();
 const cvR = $("cv-refl"), WR=600, HR=330;
 const mR = mapper(cvR, 180, 165, 62);
 function drawRefl(){
-  const ctx=cvR.getContext("2d"); ctx.clearRect(0,0,WR,HR);
-  grid(ctx, mR.X(0), mR.Y(0), 62, -2.9, 7.4, -5.3, 5.3);
-  const S=projMat(), P=S.P, v=stateW.v;
-  const v1=applyP(P,v), v2=[v[0]-v1[0], v[1]-v1[1]];
-  const rv=[v1[0]-v2[0], v1[1]-v2[1]];      /* (I−2P)v = v₁ − v₂ */
-  const Rr=3.2;
-  ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(mR.X(-S.u1[0]*Rr), mR.Y(-S.u1[1]*Rr)); ctx.lineTo(mR.X(S.u1[0]*Rr), mR.Y(S.u1[1]*Rr)); ctx.stroke();
-  ctx.restore();
-  label(ctx, "镜面 S₁ = range(P)", mR.X(S.u1[0]*1.1)+6, mR.Y(S.u1[1]*1.1), "#B04A2F", 12);
-  vec(ctx, mR, v, "#22303F", 2.2, [7,4]);  label(ctx, "v", mR.X(v[0])+8, mR.Y(v[1])-8, "#22303F", 12.5);
-  vec(ctx, mR, v1, "#B04A2F", 3.0);        label(ctx, "Pv", mR.X(v1[0])+7, mR.Y(v1[1])-8, "#B04A2F", 12.5);
-  vec(ctx, mR, v2, "#1F7A4D", 2.4, [5,4]); label(ctx, "(I−P)v", mR.X(v2[0])+8, mR.Y(v2[1])+13, "#1F7A4D", 12);
-  vec(ctx, mR, rv, "#2F5D8A", 3.4);        label(ctx, "(I−2P)v", mR.X(rv[0])+8, mR.Y(rv[1])-9, "#2F5D8A", 13.5);
-  dot(ctx, mR.X(v[0]), mR.Y(v[1]), "#22303F", 5);
-  dot(ctx, mR.X(rv[0]), mR.Y(rv[1]), "#2F5D8A", 5);
-  /* I−2P 矩阵与酉性账本 */
-  const F=[[1-2*P[0][0], -2*P[0][1]],[-2*P[1][0], 1-2*P[1][1]]];
-  const FtF=[[F[0][0]*F[0][0]+F[1][0]*F[1][0], F[0][0]*F[0][1]+F[1][0]*F[1][1]],
-             [F[0][1]*F[0][0]+F[1][1]*F[1][0], F[0][1]*F[0][1]+F[1][1]*F[1][1]]];
-  $("ro-rlen").textContent=fmt(Math.hypot(v[0],v[1]),4)+" / "+fmt(Math.hypot(rv[0],rv[1]),4);
-  $("ro-runitary").textContent=fmt(maxAbs([[FtF[0][0]-1,FtF[0][1]],[FtF[1][0],FtF[1][1]-1]]),6);
-  $("ro-rdet").textContent=fmt(F[0][0]*F[1][1]-F[0][1]*F[1][0],4);
-  $("ro-rfix").textContent=fmt(v1[0]*rv[0]+v1[1]*rv[1],6);
+ const ctx=cvR.getContext("2d"); ctx.clearRect(0,0,WR,HR);
+ grid(ctx, mR.X(0), mR.Y(0), 62, -2.9, 7.4, -5.3, 5.3);
+ const S=projMat(), P=S.P, v=stateW.v;
+ const v1=applyP(P,v), v2=[v[0]-v1[0], v[1]-v1[1]];
+ const rv=[v1[0]-v2[0], v1[1]-v2[1]]; /* (I−2P)v = v₁ − v₂ */
+ const Rr=3.2;
+ ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2;
+ ctx.beginPath(); ctx.moveTo(mR.X(-S.u1[0]*Rr), mR.Y(-S.u1[1]*Rr)); ctx.lineTo(mR.X(S.u1[0]*Rr), mR.Y(S.u1[1]*Rr)); ctx.stroke();
+ ctx.restore();
+ label(ctx, "镜面 S₁ = range(P)", mR.X(S.u1[0]*1.1)+6, mR.Y(S.u1[1]*1.1), "#B04A2F", 12);
+ vec(ctx, mR, v, "#22303F", 2.2, [7,4]); label(ctx, "v", mR.X(v[0])+8, mR.Y(v[1])-8, "#22303F", 12.5);
+ vec(ctx, mR, v1, "#B04A2F", 3.0); label(ctx, "Pv", mR.X(v1[0])+7, mR.Y(v1[1])-8, "#B04A2F", 12.5);
+ vec(ctx, mR, v2, "#1F7A4D", 2.4, [5,4]); label(ctx, "(I−P)v", mR.X(v2[0])+8, mR.Y(v2[1])+13, "#1F7A4D", 12);
+ vec(ctx, mR, rv, "#2F5D8A", 3.4); label(ctx, "(I−2P)v", mR.X(rv[0])+8, mR.Y(rv[1])-9, "#2F5D8A", 13.5);
+ dot(ctx, mR.X(v[0]), mR.Y(v[1]), "#22303F", 5);
+ dot(ctx, mR.X(rv[0]), mR.Y(rv[1]), "#2F5D8A", 5);
+ /* I−2P 矩阵与酉性账本 */
+ const F=[[1-2*P[0][0], -2*P[0][1]],[-2*P[1][0], 1-2*P[1][1]]];
+ const FtF=[[F[0][0]*F[0][0]+F[1][0]*F[1][0], F[0][0]*F[0][1]+F[1][0]*F[1][1]],
+ [F[0][1]*F[0][0]+F[1][1]*F[1][0], F[0][1]*F[0][1]+F[1][1]*F[1][1]]];
+ $("ro-rlen").textContent=fmt(Math.hypot(v[0],v[1]),4)+" / "+fmt(Math.hypot(rv[0],rv[1]),4);
+ $("ro-runitary").textContent=fmt(maxAbs([[FtF[0][0]-1,FtF[0][1]],[FtF[1][0],FtF[1][1]-1]]),6);
+ $("ro-rdet").textContent=fmt(F[0][0]*F[1][1]-F[0][1]*F[1][0],4);
+ $("ro-rfix").textContent=fmt(v1[0]*rv[0]+v1[1]*rv[1],6);
 }
 /* 影子系统重绘时同步刷新反射画布 */
 const _origDraw = drawShadow;

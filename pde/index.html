@@ -5,43 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>数学物理方程 · 可视化系列</title>
 <!--
-  维护说明（给未来的自己）：
-  1. 本站是「数学可视化」门户（https://cotigo-cmd.github.io/math-visualization/）的一个学科：本目录 = site/pde/，
-     上级 site/index.html 是全站总导航（六学科卡片）。页面仍全部放在本目录，直接编辑，无副本。
-  2. 新增页面：把做好的 .html 放进本目录，然后在下方加一张 <a class="card"> 卡片，href 写相对路径。
-  3. 规划中的章节：把对应卡片从 .planned 改成 <a> 并填 href。
-  4. 更新线上：对整个 math_visualization/site/ 目录重新发布（app 已存在，链接不变，内容覆盖）。
-  5. 验证脚本在 math_visualization/ 根（相对路径 ../../verify_formulas.js），改完公式后跑一遍再发布。
+ 维护说明（给未来的自己）：
+ 1. 本站是「数学可视化」门户（https://cotigo-cmd.github.io/math-visualization）的一个学科：本目录 = site/pde/，
+ 上级 site/index.html 是全站总导航（六学科卡片）。页面仍全部放在本目录，直接编辑，无副本。
+ 2. 新增页面：把做好的 .html 放进本目录，然后在下方加一张 <a class="card"> 卡片，href 写相对路径。
+ 3. 规划中的章节：把对应卡片从 .planned 改成 <a> 并填 href。
+ 4. 更新线上：对整个 math_visualization/site/ 目录重新发布（app 已存在，链接不变，内容覆盖）。
+ 5. 验证脚本在 math_visualization/ 根（相对路径 ../../verify_formulas.js），改完公式后跑一遍再发布。
 -->
 <style>
 :root{
-  --text:#1f2328; --muted:#57606a; --border:#d0d7de;
-  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
-  --card:#f6f8fa;
+ --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+ --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+ --card:#f6f8fa;
 }
 *{box-sizing:border-box}
 body{margin:0;background:#fff;color:var(--text);
-  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:780px;margin:0 auto;padding:60px 20px 60px}
 h1{font-size:27px;margin:0 0 8px;font-weight:600}
 p.lead{color:var(--muted);font-size:15.5px;margin:0 0 12px}
 h2{font-size:14px;font-weight:600;color:var(--muted);margin:40px 0 14px;
-  letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:8px}
+ letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:8px}
 a.card,.card{display:block;background:var(--card);border:1px solid var(--border);
-  border-radius:12px;padding:18px 22px;margin:0 0 12px;text-decoration:none;color:var(--text)}
+ border-radius:12px;padding:18px 22px;margin:0 0 12px;text-decoration:none;color:var(--text)}
 a.card:hover{border-color:var(--accent)}
 .card .t{font-size:16.5px;font-weight:600;color:var(--accent-dark);margin:0 0 4px}
 .card .d{font-size:13.5px;color:var(--muted);margin:0}
 .tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,monospace;
-  border-radius:5px;padding:1px 8px;margin-right:10px;vertical-align:2px;font-weight:500}
+ border-radius:5px;padding:1px 8px;margin-right:10px;vertical-align:2px;font-weight:500}
 .tag.live{background:#E1F5EE;color:#085041}
 .tag.plan{background:#F1EFE8;color:#5F5E5A}
 .tag.ch{background:var(--accent-soft);color:var(--accent-dark)}
 .card.planned{opacity:.62}
 footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--border);
-  font-size:13px;color:var(--muted)}
+ font-size:13px;color:var(--muted)}
 footer code{font-family:ui-monospace,monospace;background:var(--card);
-  border:1px solid var(--border);border-radius:4px;padding:0 5px;font-size:12px}
+ border:1px solid var(--border);border-radius:4px;padding:0 5px;font-size:12px}
 .crumb{font-size:13px;margin:0 0 18px}
 .crumb a{color:var(--accent);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
@@ -112,7 +112,7 @@ footer code{font-family:ui-monospace,monospace;background:var(--card);
 </a>
 <a class="card" href="./广义函数与基本解-弱导数与卷积法.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">第 6 章</span>广义函数与基本解</p>
-<p class="d">广义解三级阶梯（经典→强→弱→广义函数解，含能量不等式 (1.7) 的传递作用）· δ 序列逼近台（盒核 / 热核 / 泊松核 / 教材 α_ε / 单边指数五族，实测收敛阶 2.000 / 1.995 / 0.978 / 2.000 / 1.990，移位试验函数下不对称核掉到 0.912）· 基本空间 D ⊂ S ⊂ E 与对偶反包含 · 弱导数台（⟨H',φ⟩=φ(0)、⟨|x|'',φ⟩=2φ(0)、跳跃公式 f'=g(0)δ+Hg' 两端 0.5755636165、差分商 50→500→5000 发散）· 傅里叶台（F[δ_ε]→1 二阶收敛 7.606e-1→1.042e-4、F[δ(x−a)]=e^{−iaξ} 偏差 6.0e-6、⟨F[H'],φ⟩ 与 ⟨iξF[H],φ⟩ 对账 3.5e-5）· 调和基本解符号账（−(1/2π)ln(1/r) 与 −1/(4πr) 给 +φ(0)，拨符号按钮翻到 −φ(0)；加常数贡献 4.3e-14）· 基本解流水线（热核 ∫E=1、E_t=a²E_xx 解析恒等、E*u₀=0.2658635945 对账闭式；三维波 t[φ]_{r=at} 球面平均与闭式十位一致、残差 1.36e-8）· 弦振动基本解是盒 (1/2a)1{|x|&lt;at}（习题 4，三路径 0.6206712195 一致）· 三处 OCR 漏负号订正 + 一处教材印刷瑕疵 · 速查表。闸门 verify_readout_pde6.js 60 项</p>
+<p class="d">广义解三级阶梯（经典→强→弱→广义函数解，含能量不等式 (1.7) 的传递作用）· δ 序列逼近台（盒核 / 热核 / 泊松核 / 教材 α_ε / 单边指数五族，实测收敛阶 2.000 / 1.995 / 0.978 / 2.000 / 1.990，移位试验函数下不对称核掉到 0.912）· 基本空间 D ⊂ S ⊂ E 与对偶反包含 · 弱导数台（⟨H',φ⟩=φ(0)、⟨|x|'',φ⟩=2φ(0)、跳跃公式 f'=g(0)δ+Hg' 两端 0.5755636165、差分商 50→500→5000 发散）· 傅里叶台（F[δ_ε]→1 二阶收敛 7.606e-1→1.042e-4、F[δ(x−a)]=e^{−iaξ} 偏差 6.0e-6、⟨F[H'],φ⟩ 与 ⟨iξF[H],φ⟩ 对账 3.5e-5）· 调和基本解符号账（−(1/2π)ln(1/r) 与 −1/(4πr) 给 +φ(0)，拨符号按钮翻到 −φ(0)；加常数贡献 4.3e-14）· 基本解流水线（热核 ∫E=1、E_t=a²E_xx 解析恒等、E*u₀=0.2658635945 对账闭式；闸门 verify_readout_pde6.js 60 项</p>
 </a>
 <div class="card planned">
 <p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 7 章</span>方程组的数值解</p>
@@ -121,7 +121,7 @@ footer code{font-family:ui-monospace,monospace;background:var(--card);
 
 <footer>
 <p>添加新页面：把 .html 放入本目录，在 index.html 对应章节加一张卡片，随全站重新发布即可（本页 HTML 注释里有详细维护说明）。</p>
-<p>目录：math_visualization/site/pde/ · 发布根：math_visualization/site/ · 验证脚本在工作区根（相对路径 ../../） · 生成于 2026-10-16，最近更新 2026-10-27（第 6 章「广义函数与基本解」上线）</p>
+<p>目录：math_visualization/site/pde/ · 发布根：math_visualization/site/ · 验证脚本在工作区根（相对路径 ../..） · 生成于 2026-10-16，最近更新 2026-10-27（第 6 章「广义函数与基本解」上线）</p>
 </footer>
 </div>
 </body>

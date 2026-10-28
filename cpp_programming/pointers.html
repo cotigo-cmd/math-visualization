@@ -5,29 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>指针 · 地址、解引用与所有权 — CPP-01</title>
 <!--
-  CPP-01 · C++ 程序设计 §6（谭浩强《C++ 程序设计》第 6 章）
-  维护说明：
-  - 本页无数学公式，故意不引 MathJax，完全离线可用；不要为了「统一」硬加 $ 定界符。
-  - 所有渲染走 innerHTML 字符串（DOM 桩没有 appendChild，读数闸门要能跑）。
-  - 页面脚本暴露 window.PTR，供 verify_readout_ptr.js 直接调用纯函数核对。
-  - 版式身份「内存检查器」：冷灰纸 + 墨 + 青(指针) / 琥珀(地址) + 等宽读数 + 图签 CPP-0x。
+ CPP-01 · C++ 程序设计 §6（教材第 6 章）
+ 维护说明：
+ - 本页无数学公式，故意不引 MathJax，完全离线可用；不要为了「统一」硬加 $ 定界符。
+ - 所有渲染走 innerHTML 字符串（DOM 桩没有 appendChild，读数闸门要能跑）。
+ - 页面脚本暴露 window.PTR，供 verify_readout_ptr.js 直接调用纯函数核对。
+ - 版式身份「内存检查器」：冷灰纸 + 墨 + 青(指针) / 琥珀(地址) + 等宽读数 + 图签 CPP-0x。
 -->
 <style>
 :root{
-  --paper:#F2F4F6; --card:#FFFFFF; --ink:#101820; --muted:#5A6672;
-  --line:#D3DAE1; --line2:#B7C0C9;
-  --teal:#1F7A8C; --teal-soft:#E7F2F4;
-  --amber:#B45F06; --amber-soft:#FBF0E2;
-  --red:#B4232C; --red-soft:#FBEAEA;
-  --green:#2F7A4F; --green-soft:#E9F3ED;
-  --mono:ui-monospace,"JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
-  --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+ --paper:#F2F4F6; --card:#FFFFFF; --ink:#101820; --muted:#5A6672;
+ --line:#D3DAE1; --line2:#B7C0C9;
+ --teal:#1F7A8C; --teal-soft:#E7F2F4;
+ --amber:#B45F06; --amber-soft:#FBF0E2;
+ --red:#B4232C; --red-soft:#FBEAEA;
+ --green:#2F7A4F; --green-soft:#E9F3ED;
+ --mono:ui-monospace,"JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
+ --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font:15.5px/1.78 var(--sans);
-  background-image:linear-gradient(rgba(31,122,140,.045) 1px,transparent 1px);
-  background-size:100% 28px}
+ background-image:linear-gradient(rgba(31,122,140,.045) 1px,transparent 1px);
+ background-size:100% 28px}
 .wrap{max-width:940px;margin:0 auto;padding:44px 22px 72px}
 
 /* ---------- 页眉 ---------- */
@@ -36,7 +36,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font:15.5px/1.78 var(--sa
 .crumb a:hover{text-decoration:underline}
 .titlebar{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:12px}
 .fig{font-family:var(--mono);font-size:12px;letter-spacing:.08em;background:var(--ink);color:#fff;
-  padding:3px 9px;border-radius:3px;white-space:nowrap}
+ padding:3px 9px;border-radius:3px;white-space:nowrap}
 h1{font-size:25px;line-height:1.35;margin:0;font-weight:650;letter-spacing:-.01em}
 .sub{font-family:var(--mono);font-size:12px;color:var(--muted);margin:10px 0 0}
 .lead{font-size:15.5px;margin:16px 0 0;max-width:70ch}
@@ -45,32 +45,32 @@ h1{font-size:25px;line-height:1.35;margin:0;font-weight:650;letter-spacing:-.01e
 /* ---------- 目录 ---------- */
 .toc{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}
 .toc a{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--muted);
-  border:1px solid var(--line);background:var(--card);border-radius:20px;padding:4px 12px}
+ border:1px solid var(--line);background:var(--card);border-radius:20px;padding:4px 12px}
 .toc a:hover{border-color:var(--teal);color:var(--teal)}
 
 /* ---------- 章节 ---------- */
 section{margin:44px 0 0}
 h2{font-size:19px;font-weight:650;margin:0 0 4px;padding-left:44px;position:relative;letter-spacing:-.01em}
 h2 .num{position:absolute;left:0;top:2px;font-family:var(--mono);font-size:12px;color:var(--amber);
-  border-bottom:2px solid var(--amber);padding-bottom:2px}
+ border-bottom:2px solid var(--amber);padding-bottom:2px}
 h2 + .dek{font-size:13px;color:var(--muted);margin:0 0 18px;padding-left:44px}
 @media(max-width:640px){h2{padding-left:0}h2 .num{position:static;display:block;margin-bottom:6px;border:0;padding:0}
-  h2+.dek{padding-left:0}}
+ h2+.dek{padding-left:0}}
 
 p{margin:0 0 14px}
 code{font-family:var(--mono);font-size:.9em;background:#EDF0F3;border:1px solid var(--line);
-  border-radius:4px;padding:1px 5px;white-space:nowrap}
+ border-radius:4px;padding:1px 5px;white-space:nowrap}
 @media(max-width:660px){code{white-space:normal;word-break:break-word}}
 pre{font-family:var(--mono);font-size:12.5px;line-height:1.65;background:#111820;color:#D8E1E8;
-  border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+ border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
 pre b{color:#7FD1DE;font-weight:400}
 pre i{color:#E0A45C;font-style:normal}
 
 /* ---------- 面板 ---------- */
 .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;
-  box-shadow:0 1px 2px rgba(16,24,32,.04);margin:0 0 16px;overflow:hidden}
+ box-shadow:0 1px 2px rgba(16,24,32,.04);margin:0 0 16px;overflow:hidden}
 .panel .ph{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
-  padding:9px 14px;border-bottom:1px solid var(--line);background:#FAFBFC}
+ padding:9px 14px;border-bottom:1px solid var(--line);background:#FAFBFC}
 .panel .ph .t{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--muted)}
 input[type=range]{accent-color:#1F7A8C}
 .panel .pb{padding:14px}
@@ -82,7 +82,7 @@ canvas{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
 /* ---------- 按钮 ---------- */
 .ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 14px 14px}
 .btn{font-family:var(--mono);font-size:12.5px;background:#fff;color:var(--ink);
-  border:1px solid var(--line2);border-radius:6px;padding:6px 12px;cursor:pointer;line-height:1.4}
+ border:1px solid var(--line2);border-radius:6px;padding:6px 12px;cursor:pointer;line-height:1.4}
 .btn:hover{border-color:var(--teal);color:var(--teal)}
 .btn.on{background:var(--teal);border-color:var(--teal);color:#fff}
 .btn.danger:hover{border-color:var(--red);color:var(--red)}
@@ -104,7 +104,7 @@ canvas{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
 /* ---------- 数组 ---------- */
 .arr{display:flex;gap:6px;margin:4px 0 0}
 .cell{flex:1;min-width:0;border:1px solid var(--line2);border-radius:6px;background:#fff;
-  padding:7px 8px;text-align:center}
+ padding:7px 8px;text-align:center}
 .cell .a{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cell .v{font-family:var(--mono);font-size:15px;font-weight:600}
 .cell .n{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
@@ -112,7 +112,7 @@ canvas{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
 .cell.oob{border-color:var(--red);border-style:dashed;background:var(--red-soft)}
 .ruler{display:flex;gap:6px;margin:6px 0 0}
 .ruler .seg{flex:1;min-width:0;border-top:2px solid var(--line);padding-top:4px;
-  font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center}
+ font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center}
 
 /* ---------- 传参面板 ---------- */
 .frames{display:grid;grid-template-columns:1fr;gap:10px}
@@ -121,7 +121,7 @@ canvas{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
 .fr-t{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.05em;margin-bottom:7px}
 .pair{display:flex;gap:10px;flex-wrap:wrap}
 .bx{font-family:var(--mono);font-size:13px;border:1px solid var(--line2);background:#fff;
-  border-radius:5px;padding:4px 10px}
+ border-radius:5px;padding:4px 10px}
 .bx.ptr{border-color:var(--teal);color:var(--teal);background:var(--teal-soft)}
 .bx.alias{border-style:dashed;border-color:var(--amber);color:var(--amber);background:var(--amber-soft)}
 .step{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:9px;min-height:20px}
@@ -138,13 +138,13 @@ tr.sel td{background:var(--teal-soft)}
 
 /* ---------- 提示块 ---------- */
 .note{border-left:3px solid var(--teal);background:var(--teal-soft);padding:11px 14px;
-  border-radius:0 6px 6px 0;font-size:14px;margin:0 0 16px}
+ border-radius:0 6px 6px 0;font-size:14px;margin:0 0 16px}
 .note.warn{border-color:var(--red);background:var(--red-soft)}
 .note.tip{border-color:var(--amber);background:var(--amber-soft)}
 .note p:last-child{margin:0}
 .note b{font-weight:650}
 .tagx{font-family:var(--mono);font-size:10.5px;border-radius:3px;padding:1px 6px;
-  background:var(--ink);color:#fff;margin-right:6px}
+ background:var(--ink);color:#fff;margin-right:6px}
 
 /* ---------- 堆 ---------- */
 .heapwrap{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -152,14 +152,14 @@ tr.sel td{background:var(--teal-soft)}
 .zone{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:#FCFDFD;min-height:120px}
 .zone .zt{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.05em;margin-bottom:10px}
 .blk{font-family:var(--mono);font-size:12.5px;border:1px solid var(--line2);border-radius:6px;
-  padding:8px 10px;background:#fff;display:inline-block;min-width:120px}
+ padding:8px 10px;background:#fff;display:inline-block;min-width:120px}
 .blk.freed{border-style:dashed;color:#8A939C;background:repeating-linear-gradient(45deg,#F4F5F6,#F4F5F6 5px,#EBEDEF 5px,#EBEDEF 10px)}
 .blk.dangle{border-color:var(--red);color:var(--red);background:var(--red-soft)}
 .blk.owned{border-color:var(--teal);background:var(--teal-soft)}
 .ar{font-family:var(--mono);font-size:16px;color:var(--teal);margin:8px 0}
 
 footer{margin-top:52px;padding-top:16px;border-top:1px solid var(--line);
-  font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+ font-size:12.5px;color:var(--muted);font-family:var(--mono)}
 footer a{color:var(--teal)}
 </style>
 </head>
@@ -169,20 +169,20 @@ footer a{color:var(--teal)}
 <p class="crumb"><a href="../index.html">数学可视化 · 全部学科</a> ／ <a href="./index.html">C++ 程序设计</a></p>
 
 <div class="titlebar">
-  <span class="fig">CPP-01</span>
-  <h1>指针：地址、解引用与所有权</h1>
+ <span class="fig">CPP-01</span>
+ <h1>指针：地址、解引用与所有权</h1>
 </div>
-<p class="sub">谭浩强《C++ 程序设计》§6（6.1–6.3 · 6.7 · 6.10 · 6.11）· 图 CPP-01 · 五个交互实验</p>
+<p class="sub">教材§6（6.1–6.3 · 6.7 · 6.10 · 6.11）· 图 CPP-01 · 五个交互实验</p>
 
 <p class="lead">指针难，不是因为语法怪，而是因为它把平时看不见的东西搬到了前台：<em>内存是一排带编号的格子</em>。变量是给格子起的名字，指针是<b>存着格子编号的变量</b>。下面每一节都给出一个可以拨动的实验；看数字比看文字快。</p>
 
 <nav class="toc">
-  <a href="#s1">01 地址 · 解引用</a>
-  <a href="#s2">02 p+1 加多少</a>
-  <a href="#s3">03 三种传参</a>
-  <a href="#s4">04 const 四种写法</a>
-  <a href="#s5">05 栈、堆与所有权</a>
-  <a href="#s6">06 速查</a>
+ <a href="#s1">01 地址 · 解引用</a>
+ <a href="#s2">02 p+1 加多少</a>
+ <a href="#s3">03 三种传参</a>
+ <a href="#s4">04 const 四种写法</a>
+ <a href="#s5">05 栈、堆与所有权</a>
+ <a href="#s6">06 速查</a>
 </nav>
 
 <!-- ============ 1 ============ -->
@@ -193,17 +193,17 @@ footer a{color:var(--teal)}
 <p>编译器把每个变量安排到一个编号上，这个编号就叫<b>地址</b>。运行时刻指针里存的既不是 <code>42</code> 也不是 <code>"a"</code>，而是一个整数编号。<code>&amp;a</code> 取出 <code>a</code> 的编号，<code>*p</code> 表示「去 <code>p</code> 里记的那个编号，按 <code>int</code> 读出 4 个字节」。</p>
 
 <div class="panel">
-  <div class="ph"><span class="t">图 CPP-01a · 一块栈内存的实况</span><span class="t" id="m1hint">用下方按钮移动 p 的指向</span></div>
-  <div class="cvwrap"><canvas id="cv1" width="760" height="238"></canvas></div>
-  <div class="ctl">
-    <button class="btn" id="b1a">p = &amp;a</button>
-    <button class="btn" id="b1b">p = &amp;b</button>
-    <button class="btn" id="b1c">p = &amp;c</button>
-    <button class="btn" id="b1inc">p++</button>
-    <button class="btn" id="b1w">*p = 99</button>
-    <button class="btn danger" id="b1n">p = nullptr</button>
-  </div>
-  <div class="ro" id="ro1"></div>
+ <div class="ph"><span class="t">图 CPP-01a · 一块栈内存的实况</span><span class="t" id="m1hint">用下方按钮移动 p 的指向</span></div>
+ <div class="cvwrap"><canvas id="cv1" width="760" height="238"></canvas></div>
+ <div class="ctl">
+ <button class="btn" id="b1a">p = &amp;a</button>
+ <button class="btn" id="b1b">p = &amp;b</button>
+ <button class="btn" id="b1c">p = &amp;c</button>
+ <button class="btn" id="b1inc">p++</button>
+ <button class="btn" id="b1w">*p = 99</button>
+ <button class="btn danger" id="b1n">p = nullptr</button>
+ </div>
+ <div class="ro" id="ro1"></div>
 </div>
 
 <p><b>指针自己也是变量</b>，也占一格内存（<code>0x00007ffd1014</code> 那一格就是 <code>p</code>）。这就是「二级指针」<code>int** pp = &amp;p</code> 存在的理由：想改 <code>p</code> 本身，就得拿到 <code>p</code> 的地址。</p>
@@ -213,13 +213,13 @@ footer a{color:var(--teal)}
 </div>
 
 <p>下面这段代码对应上图（<code>a</code>、<code>b</code>、<code>c</code> 相邻排列是编译器的常见安排，标准并不保证顺序）：</p>
-<pre>int  a = 42, b = 17, c = -3;
-int* p = &amp;a;          <i>// p 里存的是 a 的地址</i>
-std::cout &lt;&lt; p;      <i>// 0x00007ffd1000 —— 一个整数编号</i>
-std::cout &lt;&lt; *p;     <i>// 42 —— 按编号回去读 4 个字节</i>
-*p = 99;             <i>// 改的是 a 本身，不是 p</i>
-p = &amp;b;              <i>// p 改指向；a 仍是 99</i>
-p = nullptr;         <i>// 空指针：合法状态，但 *p 是 UB（多数平台段错误）</i></pre>
+<pre>int a = 42, b = 17, c = -3;
+int* p = &amp;a; <i>// p 里存的是 a 的地址</i>
+std::cout &lt;&lt; p; <i>// 0x00007ffd1000 —— 一个整数编号</i>
+std::cout &lt;&lt; *p; <i>// 42 —— 按编号回去读 4 个字节</i>
+*p = 99; <i>// 改的是 a 本身，不是 p</i>
+p = &amp;b; <i>// p 改指向；a 仍是 99</i>
+p = nullptr; <i>// 空指针：合法状态，但 *p 是 UB（多数平台段错误）</i></pre>
 </section>
 
 <!-- ============ 2 ============ -->
@@ -230,22 +230,22 @@ p = nullptr;         <i>// 空指针：合法状态，但 *p 是 UB（多数平�
 <p>教材 §6.10.2 的原话：<code>p+i</code> 代表地址 <code>p + i*d</code>，<code>d</code> 是 <code>p</code> 所指变量占用的字节数。所以同一句 <code>p+1</code>，<code>int*</code> 走 4 字节，<code>char*</code> 走 1 字节，<code>double*</code> 走 8 字节。</p>
 
 <div class="panel">
-  <div class="ph"><span class="t">图 CPP-01b · 同一数组，三种元素类型</span><span class="t" id="m2hint"></span></div>
-  <div class="pb">
-    <div class="ctl" style="padding:0 0 14px">
-      <button class="btn on" id="b2int">int · 4 B</button>
-      <button class="btn" id="b2char">char · 1 B</button>
-      <button class="btn" id="b2double">double · 8 B</button>
-    </div>
-    <div class="arr" id="arr2"></div>
-    <div class="ruler" id="ruler2"></div>
-    <div style="display:flex;align-items:center;gap:12px;margin:18px 0 4px;flex-wrap:wrap">
-      <span style="font-family:var(--mono);font-size:12.5px;color:var(--muted)">i =</span>
-      <input type="range" id="s2i" min="-1" max="6" step="1" value="2" style="flex:1;min-width:180px;max-width:340px">
-      <span id="s2iv" style="font-family:var(--mono);font-size:12.5px;font-weight:600"></span>
-    </div>
-  </div>
-  <div class="ro" id="ro2"></div>
+ <div class="ph"><span class="t">图 CPP-01b · 同一数组，三种元素类型</span><span class="t" id="m2hint"></span></div>
+ <div class="pb">
+ <div class="ctl" style="padding:0 0 14px">
+ <button class="btn on" id="b2int">int · 4 B</button>
+ <button class="btn" id="b2char">char · 1 B</button>
+ <button class="btn" id="b2double">double · 8 B</button>
+ </div>
+ <div class="arr" id="arr2"></div>
+ <div class="ruler" id="ruler2"></div>
+ <div style="display:flex;align-items:center;gap:12px;margin:18px 0 4px;flex-wrap:wrap">
+ <span style="font-family:var(--mono);font-size:12.5px;color:var(--muted)">i =</span>
+ <input type="range" id="s2i" min="-1" max="6" step="1" value="2" style="flex:1;min-width:180px;max-width:340px">
+ <span id="s2iv" style="font-family:var(--mono);font-size:12.5px;font-weight:600"></span>
+ </div>
+ </div>
+ <div class="ro" id="ro2"></div>
 </div>
 
 <p>因为 <code>a[i]</code> 被定义为 <code>*(a+i)</code>，所以下标运算本身就是一次指针加法再解引用。<code>&amp;a[i] == a + i</code>。数组名在大多数表达式里退化成首元素地址——但 <code>sizeof(a)</code> 是例外，它给出整个数组的字节数（只有在定义 <code>a</code> 的那个作用域里才成立；传进函数后就退化成了指针）。</p>
@@ -255,18 +255,18 @@ p = nullptr;         <i>// 空指针：合法状态，但 *p 是 UB（多数平�
 </div>
 
 <div class="panel">
-  <div class="ph"><span class="t">图 CPP-01c · 声明读法：从变量名往外读</span></div>
-  <div class="pb">
-    <table>
-      <tr><th class="mono">声明</th><th class="mono">类型</th><th>读法</th></tr>
-      <tr><td class="mono">int *p[4];</td><td class="mono">int *[4]</td><td>p 是数组，4 个元素，每个是 int*（指针数组）</td></tr>
-      <tr><td class="mono">int (*p)[4];</td><td class="mono">int (*)[4]</td><td>p 是指针，指向「含 4 个 int 的数组」（数组指针，<code>p+1</code> 跨 16 字节）</td></tr>
-      <tr><td class="mono">int *p();</td><td class="mono">int *()</td><td>p 是函数，返回 int*</td></tr>
-      <tr><td class="mono">int (*p)();</td><td class="mono">int (*)()</td><td>p 是指针，指向返回 int 的函数（函数指针）</td></tr>
-      <tr><td class="mono">int **p;</td><td class="mono">int **</td><td>p 是指针，指向一个 int* 指针</td></tr>
-    </table>
-    <p style="font-size:13px;color:var(--muted);margin:0">记忆法：<b>先看变量名，先右后左</b>（右看 <code>[]</code>/<code>()</code>，左看 <code>*</code>），括号改变优先顺序。上表即 §6.10.1 表 6.2 的等价整理。</p>
-  </div>
+ <div class="ph"><span class="t">图 CPP-01c · 声明读法：从变量名往外读</span></div>
+ <div class="pb">
+ <table>
+ <tr><th class="mono">声明</th><th class="mono">类型</th><th>读法</th></tr>
+ <tr><td class="mono">int *p[4];</td><td class="mono">int *[4]</td><td>p 是数组，4 个元素，每个是 int*（指针数组）</td></tr>
+ <tr><td class="mono">int (*p)[4];</td><td class="mono">int (*)[4]</td><td>p 是指针，指向「含 4 个 int 的数组」（数组指针，<code>p+1</code> 跨 16 字节）</td></tr>
+ <tr><td class="mono">int *p();</td><td class="mono">int *()</td><td>p 是函数，返回 int*</td></tr>
+ <tr><td class="mono">int (*p)();</td><td class="mono">int (*)()</td><td>p 是指针，指向返回 int 的函数（函数指针）</td></tr>
+ <tr><td class="mono">int **p;</td><td class="mono">int **</td><td>p 是指针，指向一个 int* 指针</td></tr>
+ </table>
+ <p style="font-size:13px;color:var(--muted);margin:0">记忆法：<b>先看变量名，先右后左</b>（右看 <code>[]</code>/<code>()</code>，左看 <code>*</code>），括号改变优先顺序。上表即 §6.10.1 表 6.2 的等价整理。</p>
+ </div>
 </div>
 </section>
 
@@ -278,46 +278,46 @@ p = nullptr;         <i>// 空指针：合法状态，但 *p 是 UB（多数平�
 <p>规则只有一条：<b>实参到形参永远是拷贝。</b>值传给的是「3」这个数，指针传给的是「编号」，引用不传，只是给实参起了第二个名字。所以「传指针能改外面」并不是指针的特权，而是因为拷贝到的是地址，顺着地址能摸回原变量。</p>
 
 <div class="panel">
-  <div class="ph"><span class="t">① void swap(int a, int b) — 按值</span></div>
-  <div class="pb"><div class="frames" id="p3value"></div>
-    <div class="step" id="st3value"></div><div class="verdict" id="vd3value"></div>
-    <div class="ctl" style="padding:10px 0 0"><button class="btn" id="b3value">第 1 步 →</button>
-      <button class="btn" id="b3valueR">重来</button></div>
-  </div>
+ <div class="ph"><span class="t">① void swap(int a, int b) — 按值</span></div>
+ <div class="pb"><div class="frames" id="p3value"></div>
+ <div class="step" id="st3value"></div><div class="verdict" id="vd3value"></div>
+ <div class="ctl" style="padding:10px 0 0"><button class="btn" id="b3value">第 1 步 →</button>
+ <button class="btn" id="b3valueR">重来</button></div>
+ </div>
 </div>
 
 <div class="panel">
-  <div class="ph"><span class="t">② void swap(int* px, int* py) — 按指针</span></div>
-  <div class="pb"><div class="frames" id="p3ptr"></div>
-    <div class="step" id="st3ptr"></div><div class="verdict" id="vd3ptr"></div>
-    <div class="ctl" style="padding:10px 0 0"><button class="btn" id="b3ptr">第 1 步 →</button>
-      <button class="btn" id="b3ptrR">重来</button></div>
-  </div>
+ <div class="ph"><span class="t">② void swap(int* px, int* py) — 按指针</span></div>
+ <div class="pb"><div class="frames" id="p3ptr"></div>
+ <div class="step" id="st3ptr"></div><div class="verdict" id="vd3ptr"></div>
+ <div class="ctl" style="padding:10px 0 0"><button class="btn" id="b3ptr">第 1 步 →</button>
+ <button class="btn" id="b3ptrR">重来</button></div>
+ </div>
 </div>
 
 <div class="panel">
-  <div class="ph"><span class="t">③ void swap(int&amp; rx, int&amp; ry) — 按引用</span></div>
-  <div class="pb"><div class="frames" id="p3ref"></div>
-    <div class="step" id="st3ref"></div><div class="verdict" id="vd3ref"></div>
-    <div class="ctl" style="padding:10px 0 0"><button class="btn" id="b3ref">第 1 步 →</button>
-      <button class="btn" id="b3refR">重来</button></div>
-  </div>
+ <div class="ph"><span class="t">③ void swap(int&amp; rx, int&amp; ry) — 按引用</span></div>
+ <div class="pb"><div class="frames" id="p3ref"></div>
+ <div class="step" id="st3ref"></div><div class="verdict" id="vd3ref"></div>
+ <div class="ctl" style="padding:10px 0 0"><button class="btn" id="b3ref">第 1 步 →</button>
+ <button class="btn" id="b3refR">重来</button></div>
+ </div>
 </div>
 
 <p>推论：想在函数里<b>改调用方的指针本身</b>（而不只是它所指的对象），必须传 <code>int**</code> 或 <code>int*&amp;</code>。这是「用指针作函数参数」最容易翻车的地方。</p>
 
-<pre>void alloc(int* p){ p = new int[10]; }        <i>// 改的是形参副本，外面 p 仍是 nullptr —— 泄漏 + 无效</i>
-void alloc(int** pp){ *pp = new int[10]; }     <i>// 顺着 pp 改到外面的 p（§6.7 二级指针）</i>
-void alloc(int*&amp; p){ p  = new int[10]; }       <i>// 引用版，C++ 里更常用（§6.11）</i></pre>
+<pre>void alloc(int* p){ p = new int[10]; } <i>// 改的是形参副本，外面 p 仍是 nullptr —— 泄漏 + 无效</i>
+void alloc(int** pp){ *pp = new int[10]; } <i>// 顺着 pp 改到外面的 p（§6.7 二级指针）</i>
+void alloc(int*&amp; p){ p = new int[10]; } <i>// 引用版，C++ 里更常用（§6.11）</i></pre>
 
 <table>
-  <tr><th>对比项</th><th>指针 <code>int*</code></th><th>引用 <code>int&amp;</code></th></tr>
-  <tr><td>能否为空</td><td>能，<code>nullptr</code> 是合法值</td><td>不能，必须绑定到一个对象</td></tr>
-  <tr><td>能否改绑</td><td>能，随时指向别处</td><td>不能，一生只绑一个对象</td></tr>
-  <tr><td>是否必须初始化</td><td>不必（但未初始化的指针是定时炸弹）</td><td>必须</td></tr>
-  <tr><td>占用内存</td><td>占，一个地址（8 字节）</td><td>概念上不占，实现上通常就是个指针</td></tr>
-  <tr><td>多级</td><td><code>int**</code> 合法</td><td>无「引用的引用」（<code>int&amp;&amp;</code> 是右值引用，另一回事）</td></tr>
-  <tr><td>典型用途</td><td>可选的输出参数、数组、动态内存、多态</td><td>函数形参、运算符重载、避免拷贝</td></tr>
+ <tr><th>对比项</th><th>指针 <code>int*</code></th><th>引用 <code>int&amp;</code></th></tr>
+ <tr><td>能否为空</td><td>能，<code>nullptr</code> 是合法值</td><td>不能，必须绑定到一个对象</td></tr>
+ <tr><td>能否改绑</td><td>能，随时指向别处</td><td>不能，一生只绑一个对象</td></tr>
+ <tr><td>是否必须初始化</td><td>不必（但未初始化的指针是定时炸弹）</td><td>必须</td></tr>
+ <tr><td>占用内存</td><td>占，一个地址（8 字节）</td><td>概念上不占，实现上通常就是个指针</td></tr>
+ <tr><td>多级</td><td><code>int**</code> 合法</td><td>无「引用的引用」（<code>int&amp;&amp;</code> 是右值引用，另一回事）</td></tr>
+ <tr><td>典型用途</td><td>可选的输出参数、数组、动态内存、多态</td><td>函数形参、运算符重载、避免拷贝</td></tr>
 </table>
 </section>
 
@@ -329,21 +329,21 @@ void alloc(int*&amp; p){ p  = new int[10]; }       <i>// 引用版，C++ 里更�
 <p>读法：<code>const</code> 修饰它<b>左边</b>最近的东西；若 <code>const</code> 在最左边，则修饰它右边。等价关系：<code>const int* p</code> ≡ <code>int const* p</code>。所以真正要分清的是两件事——<b>能不能改 <code>*p</code></b>（所指对象）与<b>能不能改 <code>p</code></b>（指向本身）。</p>
 
 <div class="panel">
-  <div class="ph"><span class="t">图 CPP-01d · 权限矩阵（试试看会发生什么）</span></div>
-  <div class="pb">
-    <table id="tb4">
-      <tr><th class="mono">声明</th><th>含义</th><th class="mono">*p = 5</th><th class="mono">p = &amp;b</th></tr>
-      <tr data-i="0"><td class="mono">int * p</td><td>普通指针</td><td class="mono" id="c40">&nbsp;</td><td class="mono" id="c41">&nbsp;</td></tr>
-      <tr data-i="1"><td class="mono">const int * p</td><td>指向常量的指针（pointer to const）</td><td class="mono" id="c410">&nbsp;</td><td class="mono" id="c411">&nbsp;</td></tr>
-      <tr data-i="2"><td class="mono">int * const p</td><td>常指针（const pointer），必须初始化</td><td class="mono" id="c420">&nbsp;</td><td class="mono" id="c421">&nbsp;</td></tr>
-      <tr data-i="3"><td class="mono">const int * const p</td><td>两者都锁死</td><td class="mono" id="c430">&nbsp;</td><td class="mono" id="c431">&nbsp;</td></tr>
-    </table>
-    <div class="ctl" style="padding:4px 0 0">
-      <button class="btn" id="b4w">试 *p = 5</button>
-      <button class="btn" id="b4r">试 p = &amp;b</button>
-    </div>
-    <div class="step" id="st4">先在上表点一行选定声明。</div>
-  </div>
+ <div class="ph"><span class="t">图 CPP-01d · 权限矩阵（试试看会发生什么）</span></div>
+ <div class="pb">
+ <table id="tb4">
+ <tr><th class="mono">声明</th><th>含义</th><th class="mono">*p = 5</th><th class="mono">p = &amp;b</th></tr>
+ <tr data-i="0"><td class="mono">int * p</td><td>普通指针</td><td class="mono" id="c40">&nbsp;</td><td class="mono" id="c41">&nbsp;</td></tr>
+ <tr data-i="1"><td class="mono">const int * p</td><td>指向常量的指针（pointer to const）</td><td class="mono" id="c410">&nbsp;</td><td class="mono" id="c411">&nbsp;</td></tr>
+ <tr data-i="2"><td class="mono">int * const p</td><td>常指针（const pointer），必须初始化</td><td class="mono" id="c420">&nbsp;</td><td class="mono" id="c421">&nbsp;</td></tr>
+ <tr data-i="3"><td class="mono">const int * const p</td><td>两者都锁死</td><td class="mono" id="c430">&nbsp;</td><td class="mono" id="c431">&nbsp;</td></tr>
+ </table>
+ <div class="ctl" style="padding:4px 0 0">
+ <button class="btn" id="b4w">试 *p = 5</button>
+ <button class="btn" id="b4r">试 p = &amp;b</button>
+ </div>
+ <div class="step" id="st4">先在上表点一行选定声明。</div>
+ </div>
 </div>
 
 <div class="note tip">
@@ -359,32 +359,32 @@ void alloc(int*&amp; p){ p  = new int[10]; }       <i>// 引用版，C++ 里更�
 <p>局部变量住在<b>栈</b>上，函数返回就自动消失；<code>new</code> 出来的对象住在<b>堆</b>上，只有 <code>delete</code> 才会消失。<code>delete</code> 只是把堆块还给分配器，<b>它不会改你的指针</b>——指针仍记着那个编号，于是变成<b>悬垂指针</b>（dangling pointer）。</p>
 
 <div class="panel">
-  <div class="ph"><span class="t">图 CPP-01e · 一次 new / delete 的完整生命史</span></div>
-  <div class="pb">
-    <div class="heapwrap">
-      <div class="zone"><div class="zt">栈 · 局部变量 p</div><div id="stk5"></div></div>
-      <div class="zone"><div class="zt">堆 · 动态分配对象</div><div id="hp5"></div></div>
-    </div>
-    <div class="step" id="st5"></div>
-    <div class="ctl" style="padding:12px 0 0">
-      <button class="btn" id="b5new">int* p = new int(7)</button>
-      <button class="btn" id="b5w">*p = 9</button>
-      <button class="btn" id="b5del">delete p</button>
-      <button class="btn" id="b5use">读 *p（此时悬垂）</button>
-      <button class="btn" id="b5null">p = nullptr</button>
-      <button class="btn" id="b5leak">直接离开作用域</button>
-      <button class="btn" id="b5u">unique_ptr 版</button>
-    </div>
-    <div class="ro" id="ro5"></div>
-  </div>
+ <div class="ph"><span class="t">图 CPP-01e · 一次 new / delete 的完整生命史</span></div>
+ <div class="pb">
+ <div class="heapwrap">
+ <div class="zone"><div class="zt">栈 · 局部变量 p</div><div id="stk5"></div></div>
+ <div class="zone"><div class="zt">堆 · 动态分配对象</div><div id="hp5"></div></div>
+ </div>
+ <div class="step" id="st5"></div>
+ <div class="ctl" style="padding:12px 0 0">
+ <button class="btn" id="b5new">int* p = new int(7)</button>
+ <button class="btn" id="b5w">*p = 9</button>
+ <button class="btn" id="b5del">delete p</button>
+ <button class="btn" id="b5use">读 *p（此时悬垂）</button>
+ <button class="btn" id="b5null">p = nullptr</button>
+ <button class="btn" id="b5leak">直接离开作用域</button>
+ <button class="btn" id="b5u">unique_ptr 版</button>
+ </div>
+ <div class="ro" id="ro5"></div>
+ </div>
 </div>
 
 <p>三条铁律（违反任意一条都是 UB，且往往在别处才崩）：</p>
 <table>
-  <tr><th class="mono">规则</th><th>为什么</th></tr>
-  <tr><td class="mono">delete 后立刻置 nullptr</td><td>把「已失效」变成「可检测的空」，第二次 delete 空指针是合法的空操作</td></tr>
-  <tr><td class="mono">一个块只 delete 一次</td><td>二次释放会破坏分配器的空闲链表（double free），常被攻击者利用</td></tr>
-  <tr><td class="mono">new[] 配 delete[]</td><td><code>new int[10]</code> 用 <code>delete</code> 释放是 UB；数组版需要知道析构多少个元素</td></tr>
+ <tr><th class="mono">规则</th><th>为什么</th></tr>
+ <tr><td class="mono">delete 后立刻置 nullptr</td><td>把「已失效」变成「可检测的空」，第二次 delete 空指针是合法的空操作</td></tr>
+ <tr><td class="mono">一个块只 delete 一次</td><td>二次释放会破坏分配器的空闲链表（double free），常被攻击者利用</td></tr>
+ <tr><td class="mono">new[] 配 delete[]</td><td><code>new int[10]</code> 用 <code>delete</code> 释放是 UB；数组版需要知道析构多少个元素</td></tr>
 </table>
 
 <p>现代 C++ 的正解是让<b>所有权</b>由对象类型表达，让析构函数替你 <code>delete</code>（RAII）：<code>std::unique_ptr&lt;int&gt; p = std::make_unique&lt;int&gt;(7);</code>——离开作用域自动释放，拷贝被禁止，编译期就堵住了二次释放与泄漏。</p>
@@ -396,15 +396,15 @@ void alloc(int*&amp; p){ p  = new int[10]; }       <i>// 引用版，C++ 里更�
 <p class="dek">考前十分钟看这一节。</p>
 
 <table>
-  <tr><th class="mono">写法</th><th>含义</th></tr>
-  <tr><td class="mono">&amp;x</td><td>取 x 的地址（类型 <code>int*</code>）</td></tr>
-  <tr><td class="mono">*p</td><td>解引用：按 p 中的地址访问对象（左值，可读可写）</td></tr>
-  <tr><td class="mono">p-&gt;m</td><td>等价 <code>(*p).m</code></td></tr>
-  <tr><td class="mono">a[i]</td><td>等价 <code>*(a+i)</code>；对指针同样成立</td></tr>
-  <tr><td class="mono">p + i</td><td>地址加 <code>i*sizeof(*p)</code> 字节</td></tr>
-  <tr><td class="mono">p - q</td><td>两指针相减得 <code>ptrdiff_t</code>：相隔多少个<b>元素</b>（须同数组）</td></tr>
-  <tr><td class="mono">p == q</td><td>比较的是地址，不是所指内容</td></tr>
-  <tr><td class="mono">nullptr</td><td>空指针常量（C++11）；<code>NULL</code> 是宏，可能是 <code>0</code>，有重载歧义风险</td></tr>
+ <tr><th class="mono">写法</th><th>含义</th></tr>
+ <tr><td class="mono">&amp;x</td><td>取 x 的地址（类型 <code>int*</code>）</td></tr>
+ <tr><td class="mono">*p</td><td>解引用：按 p 中的地址访问对象（左值，可读可写）</td></tr>
+ <tr><td class="mono">p-&gt;m</td><td>等价 <code>(*p).m</code></td></tr>
+ <tr><td class="mono">a[i]</td><td>等价 <code>*(a+i)</code>；对指针同样成立</td></tr>
+ <tr><td class="mono">p + i</td><td>地址加 <code>i*sizeof(*p)</code> 字节</td></tr>
+ <tr><td class="mono">p - q</td><td>两指针相减得 <code>ptrdiff_t</code>：相隔多少个<b>元素</b>（须同数组）</td></tr>
+ <tr><td class="mono">p == q</td><td>比较的是地址，不是所指内容</td></tr>
+ <tr><td class="mono">nullptr</td><td>空指针常量（C++11）；<code>NULL</code> 是宏，可能是 <code>0</code>，有重载歧义风险</td></tr>
 </table>
 
 <div class="note warn">
@@ -418,7 +418,7 @@ void alloc(int*&amp; p){ p  = new int[10]; }       <i>// 引用版，C++ 里更�
 </section>
 
 <footer>
-<p>CPP-01 · 依据谭浩强《C++ 程序设计》第 6 章 6.1–6.3、6.7、6.10、6.11 重组；图中的地址为示意（典型的 64 位 Linux 栈地址），变量间的相邻关系由编译器决定，标准不保证。</p>
+<p>CPP-01 · 依据教材第 6 章 6.1–6.3、6.7、6.10、6.11 重组；图中的地址为示意（典型的 64 位 Linux 栈地址），变量间的相邻关系由编译器决定，标准不保证。</p>
 <p>返回 <a href="./index.html">C++ 程序设计</a> · <a href="../index.html">全部学科</a></p>
 </footer>
 
@@ -431,8 +431,8 @@ void alloc(int*&amp; p){ p  = new int[10]; }       <i>// 引用版，C++ 里更�
 /* ================= 工具 ================= */
 function $(id){ return document.getElementById(id); }
 function hex8(n){
-  var s = (n >>> 0).toString(16);
-  return '0x' + ('00000000' + s).slice(-8);
+ var s = (n >>> 0).toString(16);
+ return '0x' + ('00000000' + s).slice(-8);
 }
 function el(html){ return html; }
 function setHTML(id, html){ var e = $(id); if(e) e.innerHTML = html; }
@@ -446,342 +446,342 @@ var m1 = { vals:[42,17,-3,null,null,null], pIndex:0 };
 function addr1(k){ return BASE1 + k * STRIDE1; }
 function pValue1(){ return m1.pIndex < 0 ? 0 : addr1(m1.pIndex); }
 function deref1(){
-  if(m1.pIndex < 0) return { ok:false, code:'nullptr' };
-  if(m1.pIndex > 2) return { ok:false, code:'uninit' };
-  return { ok:true, v:m1.vals[m1.pIndex] };
+ if(m1.pIndex < 0) return { ok:false, code:'nullptr' };
+ if(m1.pIndex > 2) return { ok:false, code:'uninit' };
+ return { ok:true, v:m1.vals[m1.pIndex] };
 }
-function writeThrough1(v){                     // *p = v
-  var d = deref1();
-  if(!d.ok) return d;
-  m1.vals[m1.pIndex] = v;
-  return { ok:true, v:v };
+function writeThrough1(v){ // *p = v
+ var d = deref1();
+ if(!d.ok) return d;
+ m1.vals[m1.pIndex] = v;
+ return { ok:true, v:v };
 }
 function setTarget1(k){ m1.pIndex = k; render1(); }
 function stepPtr1(delta){
-  if(m1.pIndex < 0) return;
-  var nx = m1.pIndex + delta;
-  if(nx > 4) nx = 4;                            // 越过最后一块可访问区就停住
-  m1.pIndex = nx;
-  render1();
+ if(m1.pIndex < 0) return;
+ var nx = m1.pIndex + delta;
+ if(nx > 4) nx = 4; // 越过最后一块可访问区就停住
+ m1.pIndex = nx;
+ render1();
 }
 
 function draw1(){
-  var cv = $('cv1'); if(!cv || !cv.getContext) return;
-  var ctx = cv.getContext('2d'); if(!ctx) return;
-  var W = 760, H = 238, dpr = Math.min(window.devicePixelRatio || 1, 2);
-  cv.width = W * dpr; cv.height = H * dpr;
-  if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, W, H);
+ var cv = $('cv1'); if(!cv || !cv.getContext) return;
+ var ctx = cv.getContext('2d'); if(!ctx) return;
+ var W = 760, H = 238, dpr = Math.min(window.devicePixelRatio || 1, 2);
+ cv.width = W * dpr; cv.height = H * dpr;
+ if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+ ctx.clearRect(0, 0, W, H);
 
-  var cw = 100, gap = 12, x0 = 50, y0 = 66, ch = 64;
-  function cx(k){ return x0 + k * (cw + gap); }
-  var mono = 'ui-monospace, Consolas, monospace';
+ var cw = 100, gap = 12, x0 = 50, y0 = 66, ch = 64;
+ function cx(k){ return x0 + k * (cw + gap); }
+ var mono = 'ui-monospace, Consolas, monospace';
 
-  ctx.fillStyle = '#5A6672';
-  ctx.font = '11px ' + mono;
-  ctx.fillText('栈区 · 每格 4 字节（int）· 地址向右递增 →', x0, 28);
-  ctx.fillText('高地址 ↑', 6, y0 + ch / 2);
+ ctx.fillStyle = '#5A6672';
+ ctx.font = '11px ' + mono;
+ ctx.fillText('栈区 · 每格 4 字节（int）· 地址向右递增 →', x0, 28);
+ ctx.fillText('高地址 ↑', 6, y0 + ch / 2);
 
-  for(var k = 0; k < N1; k++){
-    var x = cx(k), isP = (k === 5), isT = (m1.pIndex === k), uninit = (k === 3 || k === 4);
-    ctx.fillStyle = '#77838F';
-    ctx.font = '10px ' + mono;
-    ctx.fillText(hex8(addr1(k)), x + 2, y0 - 8);
+ for(var k = 0; k < N1; k++){
+ var x = cx(k), isP = (k === 5), isT = (m1.pIndex === k), uninit = (k === 3 || k === 4);
+ ctx.fillStyle = '#77838F';
+ ctx.font = '10px ' + mono;
+ ctx.fillText(hex8(addr1(k)), x + 2, y0 - 8);
 
-    if(isT) ctx.fillStyle = '#E7F2F4';
-    else if(uninit) ctx.fillStyle = '#FAFAF8';
-    else ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(x, y0, cw, ch);
+ if(isT) ctx.fillStyle = '#E7F2F4';
+ else if(uninit) ctx.fillStyle = '#FAFAF8';
+ else ctx.fillStyle = '#FFFFFF';
+ ctx.fillRect(x, y0, cw, ch);
 
-    if(ctx.setLineDash) ctx.setLineDash(uninit ? [4,3] : []);
-    ctx.strokeStyle = isT ? '#1F7A8C' : (uninit ? '#C9CED6' : '#B7C0C9');
-    ctx.lineWidth = isT ? 2 : 1;
-    if(ctx.strokeRect) ctx.strokeRect(x + 1, y0 + 1, cw - 2, ch - 2);
-    if(ctx.setLineDash) ctx.setLineDash([]);
+ if(ctx.setLineDash) ctx.setLineDash(uninit ? [4,3] : []);
+ ctx.strokeStyle = isT ? '#1F7A8C' : (uninit ? '#C9CED6' : '#B7C0C9');
+ ctx.lineWidth = isT ? 2 : 1;
+ if(ctx.strokeRect) ctx.strokeRect(x + 1, y0 + 1, cw - 2, ch - 2);
+ if(ctx.setLineDash) ctx.setLineDash([]);
 
-    var txt, fs = 15;
-    if(isP){ txt = (m1.pIndex < 0) ? 'nullptr' : hex8(pValue1()); fs = 13; }
-    else if(uninit){ txt = '?'; }
-    else { txt = String(m1.vals[k]); }
-    ctx.fillStyle = isP ? '#B45F06' : (uninit ? '#9AA4AE' : '#101820');
-    ctx.font = fs + 'px ' + mono;
-    ctx.fillText(txt, x + 9, y0 + ch / 2 + 5);
+ var txt, fs = 15;
+ if(isP){ txt = (m1.pIndex < 0) ? 'nullptr' : hex8(pValue1()); fs = 13; }
+ else if(uninit){ txt = '?'; }
+ else { txt = String(m1.vals[k]); }
+ ctx.fillStyle = isP ? '#B45F06' : (uninit ? '#9AA4AE' : '#101820');
+ ctx.font = fs + 'px ' + mono;
+ ctx.fillText(txt, x + 9, y0 + ch / 2 + 5);
 
-    ctx.fillStyle = '#3A4650';
-    ctx.font = '12px ' + mono;
-    ctx.fillText(NAMES1[k] ? NAMES1[k] : '—', x + 4, y0 + ch + 17);
-  }
+ ctx.fillStyle = '#3A4650';
+ ctx.font = '12px ' + mono;
+ ctx.fillText(NAMES1[k] ? NAMES1[k] : '—', x + 4, y0 + ch + 17);
+ }
 
-  // 箭头：p 的底面 → 目标格底面
-  if(m1.pIndex >= 0 && m1.pIndex <= 4){
-    var x1 = cx(5) + cw / 2, y1 = y0 + ch + 4;
-    var x2 = cx(m1.pIndex) + cw / 2, y2 = y0 + ch + 4;
-    ctx.strokeStyle = '#1F7A8C';
-    ctx.lineWidth = 1.8;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    if(ctx.bezierCurveTo) ctx.bezierCurveTo(x1, y1 + 58, x2, y2 + 58, x2, y2 + 10);
-    else ctx.lineTo(x2, y2 + 10);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - 5, y2 + 10);
-    ctx.lineTo(x2 + 5, y2 + 10);
-    if(ctx.closePath) ctx.closePath();
-    ctx.fillStyle = '#1F7A8C';
-    ctx.fill();
-    ctx.font = '11px ' + mono;
-    var lab = 'p 里存的就是这个编号';
-    var wLab = 110;
-    var mx = Math.min(Math.max((x1 + x2) / 2 - wLab / 2, 4), W - wLab - 4);
-    ctx.fillText(lab, mx, y0 + ch + 78);
-  } else {
-    ctx.fillStyle = '#B4232C';
-    ctx.font = '12px ' + mono;
-    ctx.fillText('空指针：不指向任何对象，解引用即 UB', x0, y0 + ch + 60);
-  }
+ // 箭头：p 的底面 → 目标格底面
+ if(m1.pIndex >= 0 && m1.pIndex <= 4){
+ var x1 = cx(5) + cw / 2, y1 = y0 + ch + 4;
+ var x2 = cx(m1.pIndex) + cw / 2, y2 = y0 + ch + 4;
+ ctx.strokeStyle = '#1F7A8C';
+ ctx.lineWidth = 1.8;
+ ctx.beginPath();
+ ctx.moveTo(x1, y1);
+ if(ctx.bezierCurveTo) ctx.bezierCurveTo(x1, y1 + 58, x2, y2 + 58, x2, y2 + 10);
+ else ctx.lineTo(x2, y2 + 10);
+ ctx.stroke();
+ ctx.beginPath();
+ ctx.moveTo(x2, y2);
+ ctx.lineTo(x2 - 5, y2 + 10);
+ ctx.lineTo(x2 + 5, y2 + 10);
+ if(ctx.closePath) ctx.closePath();
+ ctx.fillStyle = '#1F7A8C';
+ ctx.fill();
+ ctx.font = '11px ' + mono;
+ var lab = 'p 里存的就是这个编号';
+ var wLab = 110;
+ var mx = Math.min(Math.max((x1 + x2) / 2 - wLab / 2, 4), W - wLab - 4);
+ ctx.fillText(lab, mx, y0 + ch + 78);
+ } else {
+ ctx.fillStyle = '#B4232C';
+ ctx.font = '12px ' + mono;
+ ctx.fillText('空指针：不指向任何对象，解引用即 UB', x0, y0 + ch + 60);
+ }
 }
 
 function render1(){
-  if(!$('ro1')) return;
-  var d = deref1();
-  var pv = (m1.pIndex < 0) ? 'nullptr（0x0）' : hex8(pValue1()) + '  →  &' + NAMES1[m1.pIndex];
-  var dv, cls;
-  if(d.ok){ dv = String(d.v); cls = ''; }
-  else if(d.code === 'nullptr'){ dv = '段错误：解引用空指针'; cls = 'bad'; }
-  else { dv = '未初始化内存（UB）'; cls = 'bad'; }
-  setHTML('ro1',
-    '<div class="l"><span class="k">p 的值（一个地址）</span><span class="v addr">' + pv + '</span></div>' +
-    '<div class="l"><span class="k">*p（按该地址读 4 字节）</span><span class="v ' + cls + '">' + dv + '</span></div>' +
-    '<div class="l"><span class="k">&amp;p（p 自己的地址）</span><span class="v addr">' + hex8(addr1(5)) + '</span></div>' +
-    '<div class="l"><span class="k">sizeof(p) / sizeof(*p)</span><span class="v">8 / 4 字节</span></div>');
-  draw1();
+ if(!$('ro1')) return;
+ var d = deref1();
+ var pv = (m1.pIndex < 0) ? 'nullptr（0x0）' : hex8(pValue1()) + ' → &' + NAMES1[m1.pIndex];
+ var dv, cls;
+ if(d.ok){ dv = String(d.v); cls = ''; }
+ else if(d.code === 'nullptr'){ dv = '段错误：解引用空指针'; cls = 'bad'; }
+ else { dv = '未初始化内存（UB）'; cls = 'bad'; }
+ setHTML('ro1',
+ '<div class="l"><span class="k">p 的值（一个地址）</span><span class="v addr">' + pv + '</span></div>' +
+ '<div class="l"><span class="k">*p（按该地址读 4 字节）</span><span class="v ' + cls + '">' + dv + '</span></div>' +
+ '<div class="l"><span class="k">&amp;p（p 自己的地址）</span><span class="v addr">' + hex8(addr1(5)) + '</span></div>' +
+ '<div class="l"><span class="k">sizeof(p) / sizeof(*p)</span><span class="v">8 / 4 字节</span></div>');
+ draw1();
 }
 
 /* ================= 图 CPP-01b：数组与步长 ================= */
 var M2 = {
-  base: 0x7ffd2000,
-  type: 'int',
-  i: 2,
-  spec: {
-    int:    { size:4, vals:[10,20,30,40,50],               show:function(v){ return String(v); } },
-    char:   { size:1, vals:[65,66,67,68,69],                show:function(v){ return "'" + String.fromCharCode(v) + "'"; } },
-    double: { size:8, vals:[1.5,2.5,3.5,4.5,5.5],           show:function(v){ return v.toFixed(1); } }
-  }
+ base: 0x7ffd2000,
+ type: 'int',
+ i: 2,
+ spec: {
+ int: { size:4, vals:[10,20,30,40,50], show:function(v){ return String(v); } },
+ char: { size:1, vals:[65,66,67,68,69], show:function(v){ return "'" + String.fromCharCode(v) + "'"; } },
+ double: { size:8, vals:[1.5,2.5,3.5,4.5,5.5], show:function(v){ return v.toFixed(1); } }
+ }
 };
 function spec2(){ return M2.spec[M2.type]; }
 function addr2(i){
-  return M2.base + i * spec2().size;
+ return M2.base + i * spec2().size;
 }
 function elem2(i){
-  var s = spec2();
-  return (i >= 0 && i < 5) ? s.vals[i] : null;
+ var s = spec2();
+ return (i >= 0 && i < 5) ? s.vals[i] : null;
 }
 function inRange2(i){ return i >= 0 && i < 5; }
 
 function render2(){
-  if(!$('arr2')) return;
-  var s = spec2(), h = '';
-  for(var k = 0; k < 5; k++){
-    var hit = (k === M2.i), oob = (!inRange2(M2.i) && k === 0);
-    h += '<div class="cell' + (hit ? ' hit' : '') + '">' +
-         '<div class="a">' + hex8(addr2(k)) + '</div>' +
-         '<div class="v">' + s.show(s.vals[k]) + '</div>' +
-         '<div class="n">a[' + k + ']</div></div>';
-  }
-  setHTML('arr2', h);
+ if(!$('arr2')) return;
+ var s = spec2(), h = '';
+ for(var k = 0; k < 5; k++){
+ var hit = (k === M2.i), oob = (!inRange2(M2.i) && k === 0);
+ h += '<div class="cell' + (hit ? ' hit' : '') + '">' +
+ '<div class="a">' + hex8(addr2(k)) + '</div>' +
+ '<div class="v">' + s.show(s.vals[k]) + '</div>' +
+ '<div class="n">a[' + k + ']</div></div>';
+ }
+ setHTML('arr2', h);
 
-  var r = '';
-  for(var j = 0; j < 5; j++){
-    r += '<div class="seg" style="flex:' + s.size + ' 1 0">+' + (j * s.size) + ' B</div>';
-  }
-  setHTML('ruler2', r);
+ var r = '';
+ for(var j = 0; j < 5; j++){
+ r += '<div class="seg" style="flex:' + s.size + ' 1 0">+' + (j * s.size) + ' B</div>';
+ }
+ setHTML('ruler2', r);
 
-  var ok = inRange2(M2.i);
-  var cur = ok ? s.show(s.vals[M2.i]) : '不可预知';
-  var tgt = (M2.i >= 0 ? '+' : '−') + Math.abs(M2.i);
-  setHTML('ro2',
-    '<div class="l"><span class="k">p = a（首元素地址）</span><span class="v addr">' + hex8(M2.base) + '</span></div>' +
-    '<div class="l"><span class="k">p + (' + tgt + ') 的地址</span><span class="v addr' + (ok ? '' : ' bad') + '">' + hex8(addr2(M2.i)) + '</span></div>' +
-    '<div class="l"><span class="k">地址增量 = i × sizeof(' + M2.type + ')</span><span class="v">' + (M2.i * s.size) + ' 字节</span></div>' +
-    '<div class="l"><span class="k">*(p + ' + tgt + ')</span><span class="v ' + (ok ? 'ok' : 'bad') + '">' + cur + (ok ? '' : '（越界 · UB）') + '</span></div>' +
-    '<div class="l"><span class="k">sizeof(' + M2.type + ') / sizeof(a)</span><span class="v">' + s.size + ' / ' + (s.size * 5) + ' 字节</span></div>');
-  setText('s2iv', 'i = ' + M2.i + '  （p' + (M2.i >= 0 ? '+' : '−') + Math.abs(M2.i) + '）');
-  setText('m2hint', '步长随类型改变，读数同步变化');
+ var ok = inRange2(M2.i);
+ var cur = ok ? s.show(s.vals[M2.i]) : '不可预知';
+ var tgt = (M2.i >= 0 ? '+' : '−') + Math.abs(M2.i);
+ setHTML('ro2',
+ '<div class="l"><span class="k">p = a（首元素地址）</span><span class="v addr">' + hex8(M2.base) + '</span></div>' +
+ '<div class="l"><span class="k">p + (' + tgt + ') 的地址</span><span class="v addr' + (ok ? '' : ' bad') + '">' + hex8(addr2(M2.i)) + '</span></div>' +
+ '<div class="l"><span class="k">地址增量 = i × sizeof(' + M2.type + ')</span><span class="v">' + (M2.i * s.size) + ' 字节</span></div>' +
+ '<div class="l"><span class="k">*(p + ' + tgt + ')</span><span class="v ' + (ok ? 'ok' : 'bad') + '">' + cur + (ok ? '' : '（越界 · UB）') + '</span></div>' +
+ '<div class="l"><span class="k">sizeof(' + M2.type + ') / sizeof(a)</span><span class="v">' + s.size + ' / ' + (s.size * 5) + ' 字节</span></div>');
+ setText('s2iv', 'i = ' + M2.i + ' （p' + (M2.i >= 0 ? '+' : '−') + Math.abs(M2.i) + '）');
+ setText('m2hint', '步长随类型改变，读数同步变化');
 }
 
 /* ================= 图 CPP-01c：三种传参 ================= */
 function mkSwap(mode){
-  return { mode:mode, phase:0, x:3, y:8, cx:3, cy:8 };
+ return { mode:mode, phase:0, x:3, y:8, cx:3, cy:8 };
 }
 function stepSwap(s){
-  if(s.phase >= 3) return s;
-  s.phase++;
-  if(s.phase === 1){            // 实参 → 形参：永远是拷贝
-    s.cx = s.x; s.cy = s.y;
-  } else if(s.phase === 2){     // 函数体内交换
-    var t = s.cx; s.cx = s.cy; s.cy = t;
-    if(s.mode !== 'value'){     // 指针 / 引用：改到了调用方的对象
-      s.x = s.cx; s.y = s.cy;
-    }
-  }
-  return s;
+ if(s.phase >= 3) return s;
+ s.phase++;
+ if(s.phase === 1){ // 实参 → 形参：永远是拷贝
+ s.cx = s.x; s.cy = s.y;
+ } else if(s.phase === 2){ // 函数体内交换
+ var t = s.cx; s.cx = s.cy; s.cy = t;
+ if(s.mode !== 'value'){ // 指针 / 引用：改到了调用方的对象
+ s.x = s.cx; s.y = s.cy;
+ }
+ }
+ return s;
 }
 var SW = { value:mkSwap('value'), ptr:mkSwap('ptr'), ref:mkSwap('ref') };
 
 function renderSwap(mode){
-  var s = SW[mode];
-  var callee;
-  if(mode === 'value'){
-    callee = '<div class="bx">a = ' + s.cx + '</div><div class="bx">b = ' + s.cy + '</div>';
-  } else if(mode === 'ptr'){
-    callee = '<div class="bx ptr">px = &amp;x</div><div class="bx ptr">py = &amp;y</div>';
-  } else {
-    callee = '<div class="bx alias">rx ≡ x</div><div class="bx alias">ry ≡ y</div>';
-  }
-  var html =
-    '<div class="frame"><div class="fr-t">main() 栈帧 · 实参</div>' +
-      '<div class="pair"><div class="bx">x = ' + s.x + '</div><div class="bx">y = ' + s.y + '</div></div></div>' +
-    '<div class="frame callee"><div class="fr-t">swap() 栈帧 · 形参</div><div class="pair">' + callee + '</div></div>';
-  setHTML('p3' + mode, html);
+ var s = SW[mode];
+ var callee;
+ if(mode === 'value'){
+ callee = '<div class="bx">a = ' + s.cx + '</div><div class="bx">b = ' + s.cy + '</div>';
+ } else if(mode === 'ptr'){
+ callee = '<div class="bx ptr">px = &amp;x</div><div class="bx ptr">py = &amp;y</div>';
+ } else {
+ callee = '<div class="bx alias">rx ≡ x</div><div class="bx alias">ry ≡ y</div>';
+ }
+ var html =
+ '<div class="frame"><div class="fr-t">main() 栈帧 · 实参</div>' +
+ '<div class="pair"><div class="bx">x = ' + s.x + '</div><div class="bx">y = ' + s.y + '</div></div></div>' +
+ '<div class="frame callee"><div class="fr-t">swap() 栈帧 · 形参</div><div class="pair">' + callee + '</div></div>';
+ setHTML('p3' + mode, html);
 
-  var cap = [
-    '未调用。x = ' + s.x + '，y = ' + s.y + '。',
-    mode === 'value' ? '① 传入：形参 a、b 得到 x、y 的副本（两份独立内存）。'
-      : mode === 'ptr' ? '① 传入：px、py 得到的是 x、y 的地址副本（副本是地址，地址指向原件）。'
-      : '① 传入：没有副本，rx、ry 就是 x、y 的别名。',
-    mode === 'value' ? '② 交换：只动了栈帧里的 a、b，main 的 x、y 一个字都没变。'
-      : mode === 'ptr' ? '② 交换：*px 与 *py 换值，写穿到 main 的 x、y。'
-      : '② 交换：rx、ry 就是 x、y，改了立刻可见。',
-    mode === 'value' ? '③ 返回：形参销毁，x = ' + s.x + '，y = ' + s.y + ' —— 白干。'
-      : '③ 返回：x = ' + s.x + '，y = ' + s.y + ' —— 交换成功。'
-  ];
-  setText('st3' + mode, cap[s.phase]);
-  var vd = $('vd3' + mode);
-  if(vd){
-    if(s.phase >= 3){
-      vd.textContent = (s.x === 8 && s.y === 3) ? '✓ main 里真的换了' : '✗ main 里没换（值拷贝）';
-      vd.className = 'verdict ' + ((s.x === 8 && s.y === 3) ? 'yes' : 'no');
-    } else { vd.textContent = ''; vd.className = 'verdict'; }
-  }
-  var b = $('b3' + mode);
-  if(b) b.disabled = (s.phase >= 3);
-  var lb = $('b3' + mode);
-  if(lb) lb.textContent = (s.phase >= 3) ? '已结束' : ('第 ' + (s.phase + 1) + ' 步 →');
+ var cap = [
+ '未调用。x = ' + s.x + '，y = ' + s.y + '。',
+ mode === 'value' ? '① 传入：形参 a、b 得到 x、y 的副本（两份独立内存）。'
+ : mode === 'ptr' ? '① 传入：px、py 得到的是 x、y 的地址副本（副本是地址，地址指向原件）。'
+ : '① 传入：没有副本，rx、ry 就是 x、y 的别名。',
+ mode === 'value' ? '② 交换：只动了栈帧里的 a、b，main 的 x、y 一个字都没变。'
+ : mode === 'ptr' ? '② 交换：*px 与 *py 换值，写穿到 main 的 x、y。'
+ : '② 交换：rx、ry 就是 x、y，改了立刻可见。',
+ mode === 'value' ? '③ 返回：形参销毁，x = ' + s.x + '，y = ' + s.y + ' —— 白干。'
+ : '③ 返回：x = ' + s.x + '，y = ' + s.y + ' —— 交换成功。'
+ ];
+ setText('st3' + mode, cap[s.phase]);
+ var vd = $('vd3' + mode);
+ if(vd){
+ if(s.phase >= 3){
+ vd.textContent = (s.x === 8 && s.y === 3) ? '✓ main 里真的换了' : '✗ main 里没换（值拷贝）';
+ vd.className = 'verdict ' + ((s.x === 8 && s.y === 3) ? 'yes' : 'no');
+ } else { vd.textContent = ''; vd.className = 'verdict'; }
+ }
+ var b = $('b3' + mode);
+ if(b) b.disabled = (s.phase >= 3);
+ var lb = $('b3' + mode);
+ if(lb) lb.textContent = (s.phase >= 3) ? '已结束' : ('第 ' + (s.phase + 1) + ' 步 →');
 }
 
 /* ================= 图 CPP-01d：const 权限矩阵 ================= */
 var M4 = [
-  { decl:'int * p',              write:true,  retarget:true,  why:'普通指针：*p 与 p 都能改' },
-  { decl:'const int * p',        write:false, retarget:true,  why:'指向常量的指针：不能通过 p 改对象，但 p 可以改指别处' },
-  { decl:'int * const p',        write:true,  retarget:false, why:'常指针：*p 可改，p 本身锁死（必须初始化）' },
-  { decl:'const int * const p',  write:false, retarget:false, why:'两者都锁死：既不能改对象，也不能改指向' }
+ { decl:'int * p', write:true, retarget:true, why:'普通指针：*p 与 p 都能改' },
+ { decl:'const int * p', write:false, retarget:true, why:'指向常量的指针：不能通过 p 改对象，但 p 可以改指别处' },
+ { decl:'int * const p', write:true, retarget:false, why:'常指针：*p 可改，p 本身锁死（必须初始化）' },
+ { decl:'const int * const p', write:false, retarget:false, why:'两者都锁死：既不能改对象，也不能改指向' }
 ];
 var sel4 = 0;
 
 function render4(){
-  var ids = [['c40','c41'],['c410','c411'],['c420','c421'],['c430','c431']];
-  for(var i = 0; i < 4; i++){
-    setText(ids[i][0], M4[i].write    ? '✓ 允许' : '✗ 编译错误');
-    setText(ids[i][1], M4[i].retarget ? '✓ 允许' : '✗ 编译错误');
-    var a = $(ids[i][0]), b = $(ids[i][1]);
-    if(a) a.style.color = M4[i].write    ? '#2F7A4F' : '#B4232C';
-    if(b) b.style.color = M4[i].retarget ? '#2F7A4F' : '#B4232C';
-  }
-  var tb = $('tb4');
-  if(tb && tb.rows){
-    for(var r = 1; r < tb.rows.length; r++){
-      var row = tb.rows[r];
-      if(row.className !== undefined) row.className = (r - 1 === sel4) ? 'sel' : '';
-      else if(row.setAttribute) row.setAttribute('class', (r - 1 === sel4) ? 'sel' : '');
-    }
-  }
-  setText('st4', '当前：' + M4[sel4].decl + '　—　' + M4[sel4].why);
+ var ids = [['c40','c41'],['c410','c411'],['c420','c421'],['c430','c431']];
+ for(var i = 0; i < 4; i++){
+ setText(ids[i][0], M4[i].write ? '✓ 允许' : '✗ 编译错误');
+ setText(ids[i][1], M4[i].retarget ? '✓ 允许' : '✗ 编译错误');
+ var a = $(ids[i][0]), b = $(ids[i][1]);
+ if(a) a.style.color = M4[i].write ? '#2F7A4F' : '#B4232C';
+ if(b) b.style.color = M4[i].retarget ? '#2F7A4F' : '#B4232C';
+ }
+ var tb = $('tb4');
+ if(tb && tb.rows){
+ for(var r = 1; r < tb.rows.length; r++){
+ var row = tb.rows[r];
+ if(row.className !== undefined) row.className = (r - 1 === sel4) ? 'sel' : '';
+ else if(row.setAttribute) row.setAttribute('class', (r - 1 === sel4) ? 'sel' : '');
+ }
+ }
+ setText('st4', '当前：' + M4[sel4].decl + '　—　' + M4[sel4].why);
 }
 function tryOp4(which){
-  var d = M4[sel4];
-  var ok = (which === 'write') ? d.write : d.retarget;
-  var msg = (which === 'write') ? '*p = 5' : 'p = &b';
-  var s = $('st4');
-  if(s){
-    s.textContent = (ok ? '✓ ' : '✗ ') + msg + '　' + (ok ? '编过' : '编译错误（read-only）') +
-      '　·　' + d.decl + ' — ' + d.why;
-    s.style.color = ok ? '#2F7A4F' : '#B4232C';
-    s.style.fontFamily = 'var(--mono)';
-    s.style.fontSize = '12px';
-  }
+ var d = M4[sel4];
+ var ok = (which === 'write') ? d.write : d.retarget;
+ var msg = (which === 'write') ? '*p = 5' : 'p = &b';
+ var s = $('st4');
+ if(s){
+ s.textContent = (ok ? '✓ ' : '✗ ') + msg + '　' + (ok ? '编过' : '编译错误（read-only）') +
+ '　·　' + d.decl + ' — ' + d.why;
+ s.style.color = ok ? '#2F7A4F' : '#B4232C';
+ s.style.fontFamily = 'var(--mono)';
+ s.style.fontSize = '12px';
+ }
 }
 
 /* ================= 图 CPP-01e：堆生命史 ================= */
 var M5 = {
-  ptr:'null',        // null | owns | dangling
-  alive:false,
-  val:null,
-  leak:0,
-  uaf:0,
-  msg:'还没分配。指针在栈上，堆上什么都没有。',
-  ver:''
+ ptr:'null', // null | owns | dangling
+ alive:false,
+ val:null,
+ leak:0,
+ uaf:0,
+ msg:'还没分配。指针在栈上，堆上什么都没有。',
+ ver:''
 };
 
 function render5(){
-  var stk;
-  if(M5.ptr === 'null') stk = '<div class="blk">p = nullptr</div>';
-  else if(M5.ptr === 'owns') stk = '<div class="blk owned">p = 0x55f0a3c0</div>';
-  else stk = '<div class="blk dangle">p = 0x55f0a3c0　（已失效）</div>';
+ var stk;
+ if(M5.ptr === 'null') stk = '<div class="blk">p = nullptr</div>';
+ else if(M5.ptr === 'owns') stk = '<div class="blk owned">p = 0x55f0a3c0</div>';
+ else stk = '<div class="blk dangle">p = 0x55f0a3c0　（已失效）</div>';
 
-  var heap;
-  if(M5.alive) heap = '<div class="blk owned">0x55f0a3c0 : int = ' + M5.val + '</div>';
-  else if(M5.ptr === 'dangling' || M5.freedShown) heap = '<div class="blk freed">0x55f0a3c0 : 已释放</div>';
-  else heap = '<div class="blk" style="color:#9AA4AE">（空）</div>';
+ var heap;
+ if(M5.alive) heap = '<div class="blk owned">0x55f0a3c0 : int = ' + M5.val + '</div>';
+ else if(M5.ptr === 'dangling' || M5.freedShown) heap = '<div class="blk freed">0x55f0a3c0 : 已释放</div>';
+ else heap = '<div class="blk" style="color:#9AA4AE">（空）</div>';
 
-  setHTML('stk5', stk + (M5.ptr === 'owns' || M5.ptr === 'dangling' ? '<div class="ar">↓ 指向</div>' : ''));
-  setHTML('hp5', heap);
-  setText('st5', M5.msg);
+ setHTML('stk5', stk + (M5.ptr === 'owns' || M5.ptr === 'dangling' ? '<div class="ar">↓ 指向</div>' : ''));
+ setHTML('hp5', heap);
+ setText('st5', M5.msg);
 
-  setHTML('ro5',
-    '<div class="l"><span class="k">堆块状态</span><span class="v ' + (M5.alive ? 'ok' : '') + '">' +
-      (M5.alive ? '存活 ' + M5.val : (M5.freedShown ? '已释放' : '不存在')) + '</span></div>' +
-    '<div class="l"><span class="k">p 状态</span><span class="v ' + (M5.ptr === 'dangling' ? 'bad' : '') + '">' +
-      (M5.ptr === 'null' ? '空指针（安全）' : M5.ptr === 'owns' ? '拥有一个堆块' : '悬垂（危险）') + '</span></div>' +
-    '<div class="l"><span class="k">use-after-free 检测</span><span class="v ' + (M5.uaf ? 'bad' : 'ok') + '">' +
-      (M5.uaf ? '捕获 ' + M5.uaf + ' 次' : '无') + '</span></div>' +
-    '<div class="l"><span class="k">泄漏块计数</span><span class="v ' + (M5.leak ? 'bad' : 'ok') + '">' +
-      M5.leak + '</span></div>' +
-    (M5.ver ? '<div class="l"><span class="k">判读</span><span class="v">' + M5.ver + '</span></div>' : ''));
+ setHTML('ro5',
+ '<div class="l"><span class="k">堆块状态</span><span class="v ' + (M5.alive ? 'ok' : '') + '">' +
+ (M5.alive ? '存活 ' + M5.val : (M5.freedShown ? '已释放' : '不存在')) + '</span></div>' +
+ '<div class="l"><span class="k">p 状态</span><span class="v ' + (M5.ptr === 'dangling' ? 'bad' : '') + '">' +
+ (M5.ptr === 'null' ? '空指针（安全）' : M5.ptr === 'owns' ? '拥有一个堆块' : '悬垂（危险）') + '</span></div>' +
+ '<div class="l"><span class="k">use-after-free 检测</span><span class="v ' + (M5.uaf ? 'bad' : 'ok') + '">' +
+ (M5.uaf ? '捕获 ' + M5.uaf + ' 次' : '无') + '</span></div>' +
+ '<div class="l"><span class="k">泄漏块计数</span><span class="v ' + (M5.leak ? 'bad' : 'ok') + '">' +
+ M5.leak + '</span></div>' +
+ (M5.ver ? '<div class="l"><span class="k">判读</span><span class="v">' + M5.ver + '</span></div>' : ''));
 }
 
 function act5(kind){
-  if(kind === 'new'){
-    if(M5.alive){ M5.msg = '已经有一块了，再 new 一次就丢了旧地址 → 泄漏。先 delete。'; }
-    else if(M5.ptr === 'dangling'){ M5.msg = '注意：p 还是悬垂值，直接覆盖会丢掉旧地址（那块已经释放，不算泄漏）。'; M5.ptr='owns'; M5.alive=true; M5.val=7; }
-    else { M5.ptr = 'owns'; M5.alive = true; M5.val = 7; M5.freedShown = false; M5.msg = 'new int(7)：堆上分到一块 4 字节，p 记住它的编号。'; M5.ver=''; }
-  } else if(kind === 'write'){
-    if(M5.alive){ M5.val = 9; M5.msg = '*p = 9：顺着 p 的地址写进堆块，p 本身没变。'; }
-    else if(M5.ptr === 'dangling'){ M5.uaf++; M5.msg = '写穿已释放的块 → 未定义行为（可能踩到分配器元数据）。'; }
-    else { M5.msg = '还没有分配，*p 无法进行。'; }
-  } else if(kind === 'del'){
-    if(M5.alive){ M5.alive = false; M5.ptr = 'dangling'; M5.freedShown = true;
-      M5.msg = 'delete p：堆块归还分配器，但 p 里的编号一个字节都没变 —— 悬垂指针诞生。'; }
-    else if(M5.ptr === 'null'){ M5.msg = 'delete nullptr 是合法的空操作。'; }
-    else { M5.msg = '这块已经释放过，再 delete 就是 double free（UB）。'; M5.uaf++; }
-  } else if(kind === 'use'){
-    if(M5.alive){ M5.msg = '此时 *p = ' + M5.val + '，读是安全的。'; }
-    else if(M5.ptr === 'dangling'){ M5.uaf++; M5.msg = '读出的是已释放内存的内容：可能还是旧值，也可能是别人的数据。ASan 会在这里直接报错。'; }
-    else { M5.uaf++; M5.msg = '解引用空指针 → 段错误。'; }
-  } else if(kind === 'null'){
-    if(M5.ptr === 'dangling'){ M5.ptr = 'null'; M5.msg = 'p = nullptr：悬垂值被抹掉，从此解引用会被检测到（而不是静默踩内存）。这是 delete 后该做的事。'; }
-    else if(M5.ptr === 'null'){ M5.msg = '已经是空指针了。'; }
-    else { M5.msg = '先把块释放，再置空；否则这一置空就丢了唯一地址 → 泄漏。'; M5.leak++; M5.ptr='null'; M5.alive=false; }
-  } else if(kind === 'leak'){
-    if(M5.alive){ M5.leak++; M5.alive = false; M5.ptr = 'null';
-      M5.msg = '作用域结束：栈上的 p 自动消失，堆块没人指向它，也不会自动回收 —— 泄漏。'; }
-    else { M5.msg = '没有存活堆块，离开作用域什么也不会泄漏。'; }
-  } else if(kind === 'u'){
-    M5.ptr = 'null'; M5.alive = false; M5.freedShown = true;
-    M5.msg = 'unique_ptr<int> q = make_unique<int>(7)；离开作用域时析构函数自动 delete —— 泄漏与悬垂在类型层面就被堵住了。';
-    M5.ver = 'RAII：所有权 = 类型';
-  }
-  render5();
+ if(kind === 'new'){
+ if(M5.alive){ M5.msg = '已经有一块了，再 new 一次就丢了旧地址 → 泄漏。先 delete。'; }
+ else if(M5.ptr === 'dangling'){ M5.msg = '注意：p 还是悬垂值，直接覆盖会丢掉旧地址（那块已经释放，不算泄漏）。'; M5.ptr='owns'; M5.alive=true; M5.val=7; }
+ else { M5.ptr = 'owns'; M5.alive = true; M5.val = 7; M5.freedShown = false; M5.msg = 'new int(7)：堆上分到一块 4 字节，p 记住它的编号。'; M5.ver=''; }
+ } else if(kind === 'write'){
+ if(M5.alive){ M5.val = 9; M5.msg = '*p = 9：顺着 p 的地址写进堆块，p 本身没变。'; }
+ else if(M5.ptr === 'dangling'){ M5.uaf++; M5.msg = '写穿已释放的块 → 未定义行为（可能踩到分配器元数据）。'; }
+ else { M5.msg = '还没有分配，*p 无法进行。'; }
+ } else if(kind === 'del'){
+ if(M5.alive){ M5.alive = false; M5.ptr = 'dangling'; M5.freedShown = true;
+ M5.msg = 'delete p：堆块归还分配器，但 p 里的编号一个字节都没变 —— 悬垂指针诞生。'; }
+ else if(M5.ptr === 'null'){ M5.msg = 'delete nullptr 是合法的空操作。'; }
+ else { M5.msg = '这块已经释放过，再 delete 就是 double free（UB）。'; M5.uaf++; }
+ } else if(kind === 'use'){
+ if(M5.alive){ M5.msg = '此时 *p = ' + M5.val + '，读是安全的。'; }
+ else if(M5.ptr === 'dangling'){ M5.uaf++; M5.msg = '读出的是已释放内存的内容：可能还是旧值，也可能是别人的数据。ASan 会在这里直接报错。'; }
+ else { M5.uaf++; M5.msg = '解引用空指针 → 段错误。'; }
+ } else if(kind === 'null'){
+ if(M5.ptr === 'dangling'){ M5.ptr = 'null'; M5.msg = 'p = nullptr：悬垂值被抹掉，从此解引用会被检测到（而不是静默踩内存）。这是 delete 后该做的事。'; }
+ else if(M5.ptr === 'null'){ M5.msg = '已经是空指针了。'; }
+ else { M5.msg = '先把块释放，再置空；否则这一置空就丢了唯一地址 → 泄漏。'; M5.leak++; M5.ptr='null'; M5.alive=false; }
+ } else if(kind === 'leak'){
+ if(M5.alive){ M5.leak++; M5.alive = false; M5.ptr = 'null';
+ M5.msg = '作用域结束：栈上的 p 自动消失，堆块没人指向它，也不会自动回收 —— 泄漏。'; }
+ else { M5.msg = '没有存活堆块，离开作用域什么也不会泄漏。'; }
+ } else if(kind === 'u'){
+ M5.ptr = 'null'; M5.alive = false; M5.freedShown = true;
+ M5.msg = 'unique_ptr<int> q = make_unique<int>(7)；离开作用域时析构函数自动 delete —— 泄漏与悬垂在类型层面就被堵住了。';
+ M5.ver = 'RAII：所有权 = 类型';
+ }
+ render5();
 }
 
 /* ================= 事件绑定 ================= */
@@ -799,51 +799,51 @@ on('b2char', function(){ M2.type='char'; setOn('b2char'); render2(); });
 on('b2double', function(){ M2.type='double'; setOn('b2double'); render2(); });
 
 function setOn(active){
-  ['b2int','b2char','b2double'].forEach(function(id){
-    var e = $(id); if(!e) return;
-    if(e.className !== undefined) e.className = 'btn' + (id === active ? ' on' : '');
-  });
+ ['b2int','b2char','b2double'].forEach(function(id){
+ var e = $(id); if(!e) return;
+ if(e.className !== undefined) e.className = 'btn' + (id === active ? ' on' : '');
+ });
 }
 
 var s2 = $('s2i');
 if(s2 && s2.addEventListener){
-  s2.addEventListener('input', function(){
-    M2.i = parseInt(s2.value, 10);
-    if(isNaN(M2.i)) M2.i = 0;
-    render2();
-  });
+ s2.addEventListener('input', function(){
+ M2.i = parseInt(s2.value, 10);
+ if(isNaN(M2.i)) M2.i = 0;
+ render2();
+ });
 }
 
 on('b3value', function(){ stepSwap(SW.value); renderSwap('value'); });
-on('b3ptr',   function(){ stepSwap(SW.ptr);   renderSwap('ptr'); });
-on('b3ref',   function(){ stepSwap(SW.ref);   renderSwap('ref'); });
+on('b3ptr', function(){ stepSwap(SW.ptr); renderSwap('ptr'); });
+on('b3ref', function(){ stepSwap(SW.ref); renderSwap('ref'); });
 on('b3valueR',function(){ SW.value = mkSwap('value'); renderSwap('value'); });
-on('b3ptrR',  function(){ SW.ptr   = mkSwap('ptr');   renderSwap('ptr'); });
-on('b3refR',  function(){ SW.ref   = mkSwap('ref');   renderSwap('ref'); });
+on('b3ptrR', function(){ SW.ptr = mkSwap('ptr'); renderSwap('ptr'); });
+on('b3refR', function(){ SW.ref = mkSwap('ref'); renderSwap('ref'); });
 
 on('b4w', function(){ tryOp4('write'); });
 on('b4r', function(){ tryOp4('retarget'); });
 
 on('b5new', function(){ act5('new'); });
-on('b5w',   function(){ act5('write'); });
+on('b5w', function(){ act5('write'); });
 on('b5del', function(){ act5('del'); });
 on('b5use', function(){ act5('use'); });
 on('b5null',function(){ act5('null'); });
 on('b5leak',function(){ act5('leak'); });
-on('b5u',   function(){ act5('u'); });
+on('b5u', function(){ act5('u'); });
 
 // 表格点行选 const 声明
 var tb4 = $('tb4');
 if(tb4 && tb4.addEventListener){
-  tb4.addEventListener('click', function(ev){
-    var t = ev && ev.target;
-    while(t && t.tagName && t.tagName.toUpperCase() !== 'TR' && t.parentNode){ t = t.parentNode; }
-    if(!t || !t.getAttribute) return;
-    var idx = t.getAttribute('data-i');
-    if(idx === null || idx === undefined) return;
-    sel4 = parseInt(idx, 10);
-    render4();
-  });
+ tb4.addEventListener('click', function(ev){
+ var t = ev && ev.target;
+ while(t && t.tagName && t.tagName.toUpperCase() !== 'TR' && t.parentNode){ t = t.parentNode; }
+ if(!t || !t.getAttribute) return;
+ var idx = t.getAttribute('data-i');
+ if(idx === null || idx === undefined) return;
+ sel4 = parseInt(idx, 10);
+ render4();
+ });
 }
 
 /* ================= 首次渲染 ================= */
@@ -855,13 +855,13 @@ render5();
 
 /* ================= 暴露给读数闸门 ================= */
 window.PTR = {
-  m1: m1, addr1: addr1, pValue1: pValue1, deref1: deref1,
-  writeThrough1: writeThrough1, setTarget1: setTarget1, stepPtr1: stepPtr1,
-  M2: M2, addr2: addr2, elem2: elem2, inRange2: inRange2,
-  mkSwap: mkSwap, stepSwap: stepSwap, SW: SW,
-  M4: M4, tryOp4: tryOp4, getSel4: function(){ return sel4; }, setSel4: function(k){ sel4 = k; render4(); },
-  M5: M5, act5: act5,
-  SIZEOF_PTR: 8, SIZEOF_INT: 4, BASE1: BASE1
+ m1: m1, addr1: addr1, pValue1: pValue1, deref1: deref1,
+ writeThrough1: writeThrough1, setTarget1: setTarget1, stepPtr1: stepPtr1,
+ M2: M2, addr2: addr2, elem2: elem2, inRange2: inRange2,
+ mkSwap: mkSwap, stepSwap: stepSwap, SW: SW,
+ M4: M4, tryOp4: tryOp4, getSel4: function(){ return sel4; }, setSel4: function(k){ sel4 = k; render4(); },
+ M5: M5, act5: act5,
+ SIZEOF_PTR: 8, SIZEOF_INT: 4, BASE1: BASE1
 };
 
 })();

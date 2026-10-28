@@ -5,51 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>数值分析 · 可视化系列</title>
 <!--
-  维护说明（给未来的自己）：
-  1. 本站是「数学可视化」门户（https://cotigo-cmd.github.io/math-visualization/）的一个学科：本目录 = site/numerical_analysis/，
-     上级 site/index.html 是全站总导航。发布方式是随整个 math_visualization/site/ 一起发布（app 已存在，链接不变）。
-     早期方案（复制到 Studio/numerical_analysis 独立 app）已废除——单门户承载全部学科，见 MEMORY.md。
-  2. 新增页面：做好 .html 放本目录，在下面对应讲次加一张 <a class="card">；规划项从 div.planned 改成 a。
-  3. 课件（2026-10-25 起为主素材）：四川大学 2026 年数值分析课件（朱瑞），切片在知识库
-     ~/.workbuddy/wiki-knowledge/raw/courseware/na-2026/（每讲一个 md + 同名 PDF，勿改）。
-     切片公式上下标扁平化，引用前对照同目录 PDF 渲染核对；每页首行「课程考核方式」等是幻灯片模板侧栏，非正文。
-     目录按课件讲序组织；张平文、李铁军《数值分析》（北京大学出版社 2007）降为参考书目，
-     课件未覆盖的课本章节（FFT、常微分方程数值方法、Monte Carlo）暂不排期。
-  4. 改完公式跑 `node ../../verify_formulas.js <页面>`（要求 0 failed），数值跑 ../../verify_*.js 实测脚本。
+ 维护说明（给未来的自己）：
+ 1. 本站是「数学可视化」门户（https://cotigo-cmd.github.io/math-visualization）的一个学科：本目录 = site/numerical_analysis/，
+ 上级 site/index.html 是全站总导航。发布方式是随整个 math_visualization/site/ 一起发布（app 已存在，链接不变）。
+ 早期方案（复制到 Studio/numerical_analysis 独立 app）已废除——单门户承载全部学科，见 MEMORY.md。
+ 2. 新增页面：做好 .html 放本目录，在下面对应讲次加一张 <a class="card">；规划项从 div.planned 改成 a。
+ 4. 改完公式跑 `node ../../verify_formulas.js <页面>`（要求 0 failed），数值跑 ../../verify_*.js 实测脚本。
 -->
 <style>
 :root{
-  --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
-  --line:#e3dccd; --line-2:#cfc6b2;
-  --orange:#c2531f; --orange-soft:#fbeee5;
-  --teal:#0d6b5d; --teal-soft:#e7f3ef;
-  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
-  --ghost:rgba(160,148,124,.15);
+ --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
+ --line:#e3dccd; --line-2:#cfc6b2;
+ --orange:#c2531f; --orange-soft:#fbeee5;
+ --teal:#0d6b5d; --teal-soft:#e7f3ef;
+ --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ --ghost:rgba(160,148,124,.15);
 }
 *{box-sizing:border-box}
 body{margin:0;color:var(--ink);
-  background:
-    linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
-    linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
-    var(--paper);
-  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ background:
+ linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
+ linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
+ var(--paper);
+ font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:820px;margin:0 auto;padding:62px 22px 70px}
 .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
 h1{font-size:28px;margin:8px 0 10px;font-weight:650;letter-spacing:-.01em}
 p.lead{color:#4a4438;font-size:15.5px;margin:0 0 10px;max-width:70ch}
 .meta{font-size:12.5px;color:var(--muted);margin:14px 0 0;font-family:var(--mono)}
 h2{font-size:13px;font-weight:600;color:var(--muted);margin:44px 0 14px;letter-spacing:.06em;
-  text-transform:uppercase;border-bottom:1px solid var(--line-2);padding-bottom:8px;
-  display:flex;justify-content:space-between;align-items:baseline}
+ text-transform:uppercase;border-bottom:1px solid var(--line-2);padding-bottom:8px;
+ display:flex;justify-content:space-between;align-items:baseline}
 h2 span{font-family:var(--mono);font-weight:400;letter-spacing:.02em;text-transform:none}
 a.card,.card{display:block;background:var(--sheet);border:1px solid var(--line);border-radius:12px;
-  padding:16px 20px;margin:0 0 11px;text-decoration:none;color:var(--ink);position:relative}
+ padding:16px 20px;margin:0 0 11px;text-decoration:none;color:var(--ink);position:relative}
 a.card{border-left:3px solid var(--orange)}
 a.card:hover{border-color:var(--orange);background:#fff}
 .card .t{font-size:16px;font-weight:650;margin:0 0 5px;color:#2c2418}
 .card .d{font-size:13.4px;color:var(--muted);margin:0;line-height:1.75}
 .tag{display:inline-block;font-family:var(--mono);font-size:11px;border-radius:999px;
-  padding:1px 9px;margin-right:8px;vertical-align:2px;letter-spacing:.02em}
+ padding:1px 9px;margin-right:8px;vertical-align:2px;letter-spacing:.02em}
 .tag.live{background:var(--teal-soft);color:var(--teal);border:1px solid rgba(13,107,93,.28)}
 .tag.plan{background:#f0ece2;color:#7a7264;border:1px solid var(--line)}
 .tag.ch{background:var(--orange-soft);color:var(--orange);border:1px solid rgba(194,83,31,.3)}
@@ -57,7 +52,7 @@ a.card:hover{border-color:var(--orange);background:#fff}
 .card.planned .t{font-weight:600;color:#5c5548}
 footer{margin-top:52px;padding-top:16px;border-top:1px solid var(--line-2);font-size:12.6px;color:var(--muted)}
 footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var(--line);
-  border-radius:4px;padding:0 5px;font-size:11.8px}
+ border-radius:4px;padding:0 5px;font-size:11.8px}
 .crumb{font-size:13px;margin:0 0 18px}
 .crumb a{color:var(--orange);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
@@ -70,7 +65,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a></p>
 <p class="kicker">数值分析 · 交互教学页</p>
 <h1>数值分析 · 可视化系列</h1>
-<p class="lead">四川大学 2026 年数值分析课件（朱瑞）的配套交互页。每页一个可拖动的实验台，页内所有数字都由工作区脚本实测得出，不做「看起来合理」的填充。 不必是本校学生——页面按概念命名，任何数值分析教材都能对应上。</p>
+<p class="lead">数值分析课程讲义（2026）的配套交互页。每页一个可拖动的实验台，页内所有数字都由工作区脚本实测得出，不做「看起来合理」的填充。 不必是本校学生——页面按概念命名，任何数值分析教材都能对应上。</p>
 <p class="meta">课件 5 章 20 讲 · 2026-10-25 起由课本目录切换为课件目录 · 页面零依赖、可离线打开（公式渲染需联网）</p>
 
 <h2>第 1 讲 · 绪论与误差分析 <span>ch01</span></h2>
@@ -102,82 +97,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <a class="card" href="./分段插值-分段线性与分段三次Hermite.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">第 2.5 讲</span>分段插值：分段线性与分段三次 Hermite</p>
 <p class="d">引例「改一个数据点的 0.5，整条抛物线跟着动」（中点误差 0.0785 → 0.5135）· 支集对照（全局 Lagrange 的 Lebesgue 常数 10.946，分段基函数 max = 1.0000、支集长 2.000）· 分段线性折线（结点处导数跃变，误差 4.99e−3 对界 5.31e−3）· 双对数实测阶 1.955、实测/界 0.9398 · 三条曲线同台（分段线性 4.99e−3 / 分段三次 Hermite 1.62e−6 / 全局 Lagrange 1.76e−10，Hermite 误差贴住 h⁴/384 界 1.73e−6）· 导数逼近与支集（导数阶 2.916，改一个点只动 3 格）</p>
-<p class="d" style="margin-top:6px">与第 2.4 讲的分工：三次 Hermite 的单区间构造与重结点差商在那边，本页做「把它分段拼起来」的一般理论——支集、一致收敛、误差阶为什么从 h² 跳到 h⁴。第 2.6 讲的样条 = 分段三次 Hermite + 一组关于导数的方程。</p>
-</a>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 2.6 讲</span>样条插值</p>
-<p class="d">三次样条的力学类比（弯曲能最小）· 三对角方程组的追赶法 · 自然样条 / 夹持样条的边界条件对照 · 样条 vs 高次插值在同一组节点上的误差</p>
-</div>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 2.10 讲</span>二维插值</p>
-<p class="d">张量积双线性 / 双三次插值 · 网格数据上的分片曲面 · 二维 Runge 现象的对照 · 散点情形简介</p>
-</div>
-
-<h2>第 3 章 · 函数逼近 <span>ch03</span></h2>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 3.1 讲</span>最佳一致逼近</p>
-<p class="d">交错点组与 Chebyshev 定理 · Remez 算法逐步逼近的动画 · 最佳逼近多项式的唯一性 · 与插值的误差标度对照</p>
-</div>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 3.2 讲</span>最佳平方逼近与正交多项式</p>
-<p class="d">最小二乘的投影几何（与本站数值线性代数·投影算子页互为参照）· 正交多项式递推 · Legendre / Chebyshev 基的数值对比 · 二乘逼近的误差阶实测</p>
-</div>
-
-<h2>第 4 章 · 数值积分与数值微分 <span>ch04</span></h2>
-
-<a class="card" href="./数值积分-面积-代数精度-Romberg.html">
-<p class="t"><span class="tag live">已上线</span><span class="tag ch">第 4.1–4.2 讲</span>数值积分：Newton-Cotes 公式与 Romberg 外推</p>
-<p class="d">四种公式的面积细化动画（可放大 300× 看误差带）· 代数精度检验矩阵自动生成（0/1/1/3/3/3/5/7）· Romberg 表逐列折半 + 双对数看阶 2/4/6/8 · 中心差商与最优步长 U 形曲线（h*≈1e−5）· Gauss 与同节点 Newton-Cotes 的精度对照</p>
-</a>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 4.3 讲</span>自适应积分</p>
-<p class="d">区间对半的误差估计与局部细分（自适应 Simpson 的递归结构）· 自适应树的可视化 · 光滑与间断被积的细分策略差异</p>
-</div>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 4.3 讲</span>Gauss 积分与数值微分</p>
-<p class="d">Gauss-Legendre 节点与权重的构造（正交多项式零点）· 代数精度 2n−1 的实测核对（代数精度矩阵已在第 4.1–4.2 讲页上线，本页侧重节点构造与高精度来源）· 数值微分的截断 / 舍入权衡</p>
-</div>
-
-<h2>第 5 章 · 方程组的数值解法 <span>ch05</span></h2>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 5.1 讲</span>高斯消元法与选主元</p>
-<p class="d">消元过程的动画与 LU 分解 · 部分选主元的增长因子实测 · 三对角 / 带状矩阵的算法特化</p>
-</div>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 5.2 讲</span>向量与矩阵范数</p>
-<p class="d">常用范数的单位球 · 诱导范数与算子视角（与本站数值线性代数·范数页互为参照，本页从方程组误差估计切入）· 范数等价常数</p>
-</div>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 5.3 讲</span>矩阵的性态与条件数</p>
-<p class="d">条件数的几何（单位圆映成椭圆的轴比）· 病态方程组的误差放大实测 · 条件数的估计与规避（本站 NLA 学科不考此内容，此处按课件完整覆盖）</p>
-</div>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 5.4 讲</span>线性方程组的迭代法</p>
-<p class="d">Jacobi / Gauss-Seidel / SOR 的迭代矩阵与谱半径 · 收敛性实测 ·  stopping 判据 · 与直接法的适用范围对照</p>
-</div>
-
-<a class="card" href="./非线性方程-迭代法与收敛阶.html">
-<p class="t"><span class="tag live">已上线</span><span class="tag ch">第 5.5 讲 · 前半</span>非线性方程：迭代法与收敛阶</p>
-<p class="d">蛛网图播放（收敛 / 发散两种改写对照）· Newton 切线单步动画与切点、交点标记 · 误差比实测 0.5630 = 理论 |f″/2f′| · 收敛阶双对数散点拟合（2.02 / 1.63 / 0.99）· 二重根退化成一阶 · 复平面 z³−1 牛顿分形与点击查轨道</p>
-</a>
-
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">第 5.5 讲 · 后半</span>非线性方程组的 Newton 与 Broyden</p>
-<p class="d">Jacobi 矩阵在二维的几何（两条曲线求交）· 二维 Newton 逐步动画 · 差商 Jacobi 与秩一更新 · 收敛盆地的二维切片</p>
-</div>
-
-<footer>
-<p>课件：四川大学数学学院 2026 年数值分析课件（朱瑞；学习通课程课件，归档于知识库 <code>raw/courseware/na-2026/</code>，md 切片 + 同名 PDF）。2026-10-25 起本目录由课本（张平文、李铁军《数值分析》，北京大学出版社 2007）切换为课件讲序；张平文教材降为参考书目，课件未覆盖的课本章节（FFT、常微分方程数值方法、Monte Carlo）暂不排期。</p>
+<p class="d" style="margin-top:6px">与第 2.4 讲的分工：三次 Hermite 的单区间构造与重结点差商在那边，本页做「把它分段拼起来」的一般理论——支集、一致收敛、误差阶为什么从 h² 跳到 h⁴。第 2.6 讲的样条 = 分段三次 Hermite + 一组关于导数的方程。2026-10-25 起本目录由课本（张平文、李铁军《数值分析》，北京大学出版社 2007）切换为课件讲序；张平文教材降为参考书目，课件未覆盖的课本章节（FFT、常微分方程数值方法、Monte Carlo）暂不排期。</p>
 <p>已上线七页的课件归属：「绪论」= 第 1 讲，「Lagrange 插值」= 第 2.1–2.2 讲，「Newton 插值」= 第 2.3 讲，「Hermite 插值」= 第 2.4 讲，「分段插值」= 第 2.5 讲，「数值积分」= 第 4.1–4.2 讲，「非线性方程迭代法」= 第 5.5 讲前半；七页内容均可用课件对应讲次复核。</p>
 <p>校验：数值脚本在工作区根 <code>math_visualization/</code>（相对路径 <code>../../verify_runge.js</code> 等）；公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed。</p>
 </footer>

@@ -6,53 +6,53 @@
 <title>数学可视化 · 交互教学门户</title>
 <meta name="description" content="六门计算数学课程的概念实验台：SVD、QR、投影、最小二乘、条件数、共轭梯度、插值、数值积分、δ 函数、波方程、算子范数，每页一个可拖动的实验台，零依赖、可离线打开。">
 <!--
-  维护说明（给未来的自己）：
-  1. 本页 = 全站总导航。结构：site/index.html（总导航）
-     → site/<学科>/index.html（学科章节导航）→ site/<学科>/<页面>.html（教学页）。
-  2. 新增学科：在 site/ 下建目录（英文名），写它的 index.html，然后在下面加一张卡片。
-  3. 更新线上：改完文件后 git add -A && git commit && git push，约 30 秒生效。
-     线上地址 https://cotigo-cmd.github.io/math-visualization/
-  4. 验证脚本在 math_visualization/ 根（verify_formulas.js 等），学科页改完公式后跑一遍再发布。
-     排版闸门 python audit_layout.py（要求溢出 0），规则见 排版与目录规范.md。
-  5. 「先按问题找」区块是给外人的入口：只放指向现有页的链接，不新增页面，
-     加页时不必维护它（除非那页正好是某概念的唯一入口）。
+ 维护说明（给未来的自己）：
+ 1. 本页 = 全站总导航。结构：site/index.html（总导航）
+ → site/<学科>/index.html（学科章节导航）→ site/<学科>/<页面>.html（教学页）。
+ 2. 新增学科：在 site/ 下建目录（英文名），写它的 index.html，然后在下面加一张卡片。
+ 3. 更新线上：改完文件后 git add -A && git commit && git push，约 30 秒生效。
+ 线上地址 https://cotigo-cmd.github.io/math-visualization/
+ 4. 验证脚本在 math_visualization/ 根（verify_formulas.js 等），学科页改完公式后跑一遍再发布。
+ 排版闸门 python audit_layout.py（要求溢出 0），规则见 排版与目录规范.md。
+ 5. 「先按问题找」区块是给外人的入口：只放指向现有页的链接，不新增页面，
+ 加页时不必维护它（除非那页正好是某概念的唯一入口）。
 -->
 <style>
 :root{
-  --text:#1f2328; --muted:#57606a; --border:#d0d7de;
-  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
-  --card:#f6f8fa;
+ --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+ --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+ --card:#f6f8fa;
 }
 *{box-sizing:border-box}
 body{margin:0;background:#fff;color:var(--text);
-  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:860px;margin:0 auto;padding:64px 22px 60px}
 h1{font-size:28px;margin:0 0 10px;font-weight:650;letter-spacing:-.01em}
 p.lead{color:var(--muted);font-size:15.5px;margin:0 0 6px;max-width:66ch}
 p.meta{color:var(--muted);font-size:13px;margin:0 0 28px}
 .quick{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
 .quick a{font-size:13.5px;color:var(--accent-dark);text-decoration:none;
-  border:1px solid var(--border);border-radius:999px;padding:4px 13px;background:#fff;line-height:1.5}
+ border:1px solid var(--border);border-radius:999px;padding:4px 13px;background:#fff;line-height:1.5}
 .quick a:hover{border-color:var(--accent);background:var(--accent-soft)}
 .hint{font-size:12.5px;color:var(--muted);margin:0 0 34px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 40px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
 a.card{display:block;background:var(--card);border:1px solid var(--border);
-  border-radius:12px;padding:18px 22px;text-decoration:none;color:var(--text)}
+ border-radius:12px;padding:18px 22px;text-decoration:none;color:var(--text)}
 a.card:hover{border-color:var(--accent);background:#fff}
 .card .t{font-size:16.5px;font-weight:650;color:var(--accent-dark);margin:0 0 4px}
 .card .d{font-size:13.5px;color:var(--muted);margin:0 0 8px;line-height:1.7}
 .card .b{font-size:12.5px;color:var(--muted);margin:0;font-family:ui-monospace,monospace}
 .tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,monospace;
-  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500}
+ border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500}
 .tag.live{background:#E1F5EE;color:#085041}
 .tag.plan{background:#F1EFE8;color:#5F5E5A}
 h2{font-size:14px;font-weight:600;color:var(--muted);margin:40px 0 14px;
-  letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:8px}
+ letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:8px}
 footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--border);
-  font-size:13px;color:var(--muted)}
+ font-size:13px;color:var(--muted)}
 footer code{font-family:ui-monospace,monospace;background:var(--card);
-  border:1px solid var(--border);border-radius:4px;padding:0 5px;font-size:12px}
+ border:1px solid var(--border);border-radius:4px;padding:0 5px;font-size:12px}
 </style>
 </head>
 <body>
@@ -64,19 +64,19 @@ footer code{font-family:ui-monospace,monospace;background:var(--card);
 
 <h2>先按问题找</h2>
 <div class="quick">
-  <a href="./numerical_linear_algebra/SVD-几何与低秩近似.html">SVD 到底在做什么</a>
-  <a href="./numerical_linear_algebra/QR分解-Gram-Schmidt与Householder.html">QR 和正规方程谁更稳</a>
-  <a href="./numerical_linear_algebra/最小二乘-几何与三种解法.html">最小二乘三种解法差在哪</a>
-  <a href="./numerical_linear_algebra/条件数-几何与误差放大.html">误差怎么被放大</a>
-  <a href="./numerical_linear_algebra/共轭梯度-Krylov几何与预条件.html">CG 凭什么几十步就收敛</a>
-  <a href="./numerical_analysis/插值-Runge现象与切比雪夫节点.html">插值为什么会在两端炸掉</a>
-  <a href="./numerical_analysis/数值积分-面积-代数精度-Romberg.html">数值积分精确到什么程度</a>
-  <a href="./numerical_analysis/绪论-误差-浮点数与稳定性.html">浮点数为什么会吃掉有效数字</a>
-  <a href="./pde/广义函数与基本解-弱导数与卷积法.html">δ 函数怎么「算」</a>
-  <a href="./pde/高维波动方程-球平均法与泊松公式.html">为什么 3 维的波才有清晰波前</a>
-  <a href="./functional_analysis/算子范数与共轭空间.html">算子范数在量什么</a>
-  <a href="./cpp_programming/pointers.html">指针到底指向哪块内存</a>
-  <a href="./parallel_computing/Amdahl与Gustafson-加速比定律.html">多开 8 个核能快几倍</a>
+ <a href="./numerical_linear_algebra/SVD-几何与低秩近似.html">SVD 到底在做什么</a>
+ <a href="./numerical_linear_algebra/QR分解-Gram-Schmidt与Householder.html">QR 和正规方程谁更稳</a>
+ <a href="./numerical_linear_algebra/最小二乘-几何与三种解法.html">最小二乘三种解法差在哪</a>
+ <a href="./numerical_linear_algebra/条件数-几何与误差放大.html">误差怎么被放大</a>
+ <a href="./numerical_linear_algebra/共轭梯度-Krylov几何与预条件.html">CG 凭什么几十步就收敛</a>
+ <a href="./numerical_analysis/插值-Runge现象与切比雪夫节点.html">插值为什么会在两端炸掉</a>
+ <a href="./numerical_analysis/数值积分-面积-代数精度-Romberg.html">数值积分精确到什么程度</a>
+ <a href="./numerical_analysis/绪论-误差-浮点数与稳定性.html">浮点数为什么会吃掉有效数字</a>
+ <a href="./pde/广义函数与基本解-弱导数与卷积法.html">δ 函数怎么「算」</a>
+ <a href="./pde/高维波动方程-球平均法与泊松公式.html">为什么 3 维的波才有清晰波前</a>
+ <a href="./functional_analysis/算子范数与共轭空间.html">算子范数在量什么</a>
+ <a href="./cpp_programming/pointers.html">指针到底指向哪块内存</a>
+ <a href="./parallel_computing/Amdahl与Gustafson-加速比定律.html">多开 8 个核能快几倍</a>
 </div>
 <p class="hint">不知道属于哪门课就点上面；想按课程顺序读，就往下选学科。</p>
 
@@ -91,7 +91,7 @@ footer code{font-family:ui-monospace,monospace;background:var(--card);
 
 <a class="card" href="./numerical_analysis/index.html">
 <p class="t"><span class="tag live">已上线</span>数值分析</p>
-<p class="d">误差与浮点稳定性 · Lagrange 插值与 Runge 现象 · Newton 差商表 · Hermite 重结点差商 · 分段插值 · Newton-Cotes 与 Romberg 外推 · 非线性方程迭代法与收敛阶。7 个交互页（按四川大学 2026 课件讲序排；其他教材可按概念名对应）。</p>
+<p class="d">误差与浮点稳定性 · Lagrange 插值与 Runge 现象 · Newton 差商表 · Hermite 重结点差商 · 分段插值 · Newton-Cotes 与 Romberg 外推 · 非线性方程迭代法与收敛阶。7 个交互页（按2026 课程讲义讲序排；其他教材可按概念名对应）。</p>
 <p class="b">numerical_analysis/ · 第 1、2.1–2.5、4.1–4.2、5.5 讲已上线</p>
 </a>
 

@@ -5,68 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Newton 插值与差商 · 数值分析 第 2.3 讲</title>
 <!--
-  维护说明（给未来的自己）：
-  1. 素材：四川大学 2026 数值分析课件（朱瑞）第 2.3 讲 牛顿插值，切片
-     ~/.workbuddy/wiki-knowledge/raw/courseware/na-2026/ch02-03-newton-divided-difference.md
-     （28 页 PDF：chapter2-3-牛顿插值-2026.pdf）。引用：式 (1.1) 上三角方程组、定义 1 + 式 (1.4)
-     差商定义、性质 1–10（(1.5) 递推、(2.6) Newton 多项式、(2.7) 差商与 ω′ 的联系、(2.8) 对称性、
-     (2.9) 差商与导数、(2.10) 线性泛函、(2.11) Leibniz、性质 10 多项式差商为零）、定理 1 + 式 (3.13) 余项、
-     表 6.1/6.2（1+sin(3x) 差商表）、例 1（概率积分 f(0.485)）、课件 p.18–22 Runge 解释、表 7.7（舍入传播）、
-     表 7.8/7.9（结点顺序）、Matlab dividif 代码。
-     每页首行「课程考核方式」是幻灯片模板侧栏，不是正文。
-  2. 页内每个数字都由工作区根目录 verify_na23.js 实测（vm 执行本页脚本 + 独立重算参考值），改算例必须重跑。
-  3. 公式改动后跑 `node verify_formulas.js Newton插值-差商表与增量修正.html`（要求 0 failed）；
-     行间公式只能用 $$（配置只注册 $$ 与 \(\)），公式内 < 写成 &lt;。
-  4. 两处课件订正（本页已实测核对，页内均已注明）：
-     ① 例 1 的公式切片写作 (1/√π)∫₀ˣ e^{−t²}dt，但数据表 0.4846555 = erf(0.46) = (2/√π)∫₀ˣ e^{−t²}dt。
-        按 (1/√π) 算得 0.2423277，与表不符；按 (2/√π) 算得 0.4846554，与表逐位吻合。故按 (2/√π) 采用。
-     ② 例 1 的余项界 |R₃| < 0.9×10⁻⁹ 用了 |f⁽⁴⁾| ≤ 2.3，而 [0.46,0.49] 上实测 max|f⁽⁴⁾| = 4.383
-        （课件把 1/√π 的因子漏在界外）。用 4.383 得界 1.712×10⁻⁹，实测误差 1.705×10⁻⁹ —— 界是紧的。
+ 维护说明（给未来的自己）：
+ 差商定义、性质 1–10（(1.5) 递推、(2.6) Newton 多项式、(2.7) 差商与 ω′ 的联系、(2.8) 对称性、
+ (2.9) 差商与导数、(2.10) 线性泛函、(2.11) Leibniz、性质 10 多项式差商为零）、定理 1 + 式 (3.13) 余项、
+ 表 7.8/7.9（结点顺序）、Matlab dividif 代码。
+ 每页首行「课程考核方式」是幻灯片模板侧栏，不是正文。
+ 2. 页内每个数字都由工作区根目录 verify_na23.js 实测（vm 执行本页脚本 + 独立重算参考值），改算例必须重跑。
+ 3. 公式改动后跑 `node verify_formulas.js Newton插值-差商表与增量修正.html`（要求 0 failed）；
+ 行间公式只能用 $$（配置只注册 $$ 与 \(\)），公式内 < 写成 &lt;。
+ 按 (1/√π) 算得 0.2423277，与表不符；按 (2/√π) 算得 0.4846554，与表逐位吻合。故按 (2/√π) 采用。
+ ② 例 1 的余项界 |R₃| < 0.9×10⁻⁹ 用了 |f⁽⁴⁾| ≤ 2.3，而 [0.46,0.49] 上实测 max|f⁽⁴⁾| = 4.383
 -->
 <script>
 window.MathJax = {
-  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
-  svg: { fontCache: "global" },
-  options: { enableMenu: false },
-  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "global" },
+ options: { enableMenu: false },
+ startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
-  --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
-  --line:#e3dccd; --line-2:#cfc6b2;
-  --orange:#c2531f; --orange-soft:#fbeee5;
-  --teal:#0d6b5d; --teal-soft:#e7f3ef;
-  --ch:#35507f; --ch-soft:#e8ecf6;
-  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
-  --ghost:rgba(160,148,124,.16);
+ --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
+ --line:#e3dccd; --line-2:#cfc6b2;
+ --orange:#c2531f; --orange-soft:#fbeee5;
+ --teal:#0d6b5d; --teal-soft:#e7f3ef;
+ --ch:#35507f; --ch-soft:#e8ecf6;
+ --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ --ghost:rgba(160,148,124,.16);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;color:var(--ink);
-  background:
-    linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
-    linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
-    var(--paper);
-  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ background:
+ linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
+ linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
+ var(--paper);
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:900px;margin:0 auto;padding:0 22px 90px}
 a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(13,107,93,.3)}
 a:hover{border-bottom-color:var(--teal)}
 h1{font-size:29px;line-height:1.3;margin:0 0 10px;font-weight:650;letter-spacing:-.01em}
 h2{font-size:21px;margin:66px 0 14px;font-weight:650;display:flex;align-items:baseline;gap:12px}
 h2 .no{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ch);
-  border:1px solid rgba(53,80,127,.34);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
+ border:1px solid rgba(53,80,127,.34);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
 h3{font-size:16.5px;margin:32px 0 8px;font-weight:650}
 p{margin:12px 0;max-width:74ch}
 .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
 .hero{padding:58px 0 6px}
 .hero p.lead{font-size:16.5px;color:#4a4438;max-width:74ch}
 #mjx-offline{display:none;margin:0 0 4px;padding:9px 16px;background:#fff4d6;border:1px solid #e8cf92;
-  border-radius:8px;font-size:13.5px;color:#6b5417}
+ border-radius:8px;font-size:13.5px;color:#6b5417}
 body:not(.mjx-ready) #mjx-offline{display:block}
 nav{position:sticky;top:0;z-index:20;margin:26px 0 0;
-  background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+ background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 nav .inner{max-width:900px;margin:0 auto;padding:9px 22px;display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
 nav a{color:var(--muted);border:0}
 nav a:hover{color:var(--ch)}
@@ -80,7 +73,7 @@ nav a:hover{color:var(--ch)}
 .glance .c b{color:var(--ch)}
 
 .lab{background:var(--sheet);border:1px solid var(--line);border-radius:14px;
-  padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
+ padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
 .lab-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .lab-head .t{font-size:12.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted)}
 canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px solid var(--line)}
@@ -93,22 +86,22 @@ canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px sol
 .ctrls .grp{display:flex;align-items:center;gap:9px}
 .ctrls .grp .lbl{color:var(--muted);font-size:12.5px;font-family:var(--mono)}
 input[type=range]{-webkit-appearance:none;appearance:none;width:170px;height:3px;border-radius:3px;
-  background:var(--line-2);outline:none}
+ background:var(--line-2);outline:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
-  background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
+ background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
 input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--orange);
-  border:2px solid #fff;cursor:pointer}
+ border:2px solid #fff;cursor:pointer}
 .seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
 .seg button{font:inherit;font-size:13px;padding:5px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .seg button+button{border-left:1px solid var(--line-2)}
 .seg button[aria-pressed=true]{background:var(--ch-soft);color:var(--ch);font-weight:600}
 .btn{font:inherit;font-size:13px;padding:5px 14px;border:1px solid var(--line-2);border-radius:8px;
-  background:#fff;color:var(--ink);cursor:pointer}
+ background:#fff;color:var(--ink);cursor:pointer}
 .btn:hover{border-color:var(--ch);color:var(--ch)}
 .btn.primary{background:var(--ch);border-color:var(--ch);color:#fff}
 .btn.primary:hover{background:#29406a;color:#fff}
 .reads{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
-  border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+ border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
 .reads div{background:#fffdf8;padding:10px 12px}
 .reads .k{font-size:11.5px;color:var(--muted)}
 .reads .v{font-family:var(--mono);font-size:16px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
@@ -125,12 +118,12 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 .hint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
 
 .eq{font-size:17px;text-align:center;margin:18px 0;padding:12px 16px;background:var(--sheet);
-  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+ border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 mjx-container[jax="SVG"]{max-width:100%}
 mjx-assistive-mml{position:absolute!important;width:1px;height:1px;overflow:hidden!important;clip:rect(1px,1px,1px,1px)}
 mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
 .note{border-left:3px solid var(--orange);background:var(--orange-soft);padding:10px 16px;margin:16px 0;
-  border-radius:0 8px 8px 0;font-size:14.5px}
+ border-radius:0 8px 8px 0;font-size:14.5px}
 .note.teal{border-left-color:var(--teal);background:var(--teal-soft)}
 .note.ch{border-left-color:var(--ch);background:var(--ch-soft)}
 .note p{margin:6px 0}
@@ -147,26 +140,26 @@ ul,ol{max-width:74ch}
 li{margin:5px 0}
 footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line-2);font-size:12.8px;color:var(--muted)}
 footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var(--line);
-  border-radius:4px;padding:0 5px;font-size:12px}
+ border-radius:4px;padding:0 5px;font-size:12px}
 /* 差商表 */
 .ddwrap{overflow-x:auto;margin:6px 0 2px}
 table.dd{border-collapse:separate;border-spacing:3px;font-family:var(--mono);font-size:12.6px;
-  font-variant-numeric:tabular-nums;margin:0;min-width:520px}
+ font-variant-numeric:tabular-nums;margin:0;min-width:520px}
 table.dd th{font-size:11px;color:var(--muted);font-weight:600;text-align:center;border:0;padding:2px 4px}
 table.dd td{border:1px solid var(--line);border-radius:5px;text-align:center;padding:5px 7px;
-  background:#fff;color:#b3ab9b;transition:background .18s,color .18s,border-color .18s}
+ background:#fff;color:#b3ab9b;transition:background .18s,color .18s,border-color .18s}
 table.dd td.x{background:#f7f3ea;color:var(--ink);font-weight:600}
 table.dd td.on{background:var(--ch-soft);color:var(--ch);border-color:rgba(53,80,127,.4)}
 table.dd td.fresh{background:var(--orange-soft);color:var(--orange);border-color:rgba(194,83,31,.45)}
 table.dd td.diag{box-shadow:inset 0 -2px 0 var(--orange)}
 @media (max-width:680px){
-  #cv-inc{height:290px} #cv-erf{height:290px} #cv-deriv{height:300px}
-  #cv-round{height:300px} #cv-order{height:280px}
-  .glance{grid-template-columns:1fr}
-  .reads{grid-template-columns:repeat(2,1fr)}
-  h1{font-size:24px}
-  table{font-size:12.1px}
-  th,td{padding:6px 6px}
+ #cv-inc{height:290px} #cv-erf{height:290px} #cv-deriv{height:300px}
+ #cv-round{height:300px} #cv-order{height:280px}
+ .glance{grid-template-columns:1fr}
+ .reads{grid-template-columns:repeat(2,1fr)}
+ h1{font-size:24px}
+ table{font-size:12.1px}
+ th,td{padding:6px 6px}
 }
 </style>
 </head>
@@ -198,9 +191,9 @@ Lagrange 插值把答案写得很漂亮，但它有一个工程上致命的毛�
 <div class="wrap">
 
 <div class="glance">
-  <div class="a"><b>−1.4797</b><span>\(1+\sin 3x\) 在 \(0,0.4,\dots,2.0\) 上的 5 阶差商（课件表 6.1 末格），即 \(N_5\) 的首项系数</span></div>
-  <div class="b"><b>1.705×10⁻⁹</b><span>课件例 1 的实测误差 \(|N_3(0.485)-f(0.485)|\)，修正后的余项界 1.712×10⁻⁹ 只比它大 0.4%</span></div>
-  <div class="c"><b>1.28×10⁵</b><span>课件表 7.8 十点在原始顺序下的前代放大 \(1/\min_k|\omega_k(x_k)|\)；改升序后降到 1.84×10⁴</span></div>
+ <div class="a"><b>−1.4797</b><span>\(1+\sin 3x\) 在 \(0,0.4,\dots,2.0\) 上的 5 阶差商（课件表 6.1 末格），即 \(N_5\) 的首项系数</span></div>
+ <div class="b"><b>1.705×10⁻⁹</b><span>课件例 1 的实测误差 \(|N_3(0.485)-f(0.485)|\)，修正后的余项界 1.712×10⁻⁹ 只比它大 0.4%</span></div>
+ <div class="c"><b>1.28×10⁵</b><span>课件表 7.8 十点在原始顺序下的前代放大 \(1/\min_k|\omega_k(x_k)|\)；改升序后降到 1.84×10⁴</span></div>
 </div>
 
 <!-- ================= 01 ================= -->
@@ -268,29 +261,29 @@ $$f[x_0,\dots,x_k,x_m]=\frac{f[x_0,\dots,x_{k-1},x_m]-f[x_0,\dots,x_{k-1},x_k]}{
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">实验 01 · 差商表逐列生成</span>
-    <span class="t" id="dd-state">已生成到 0 阶（仅函数值）</span>
-  </div>
-  <div class="ddwrap" id="dd-tbl"></div>
-  <div class="ctrls">
-    <div class="grp">
-      <span class="lbl">阶数 j</span>
-      <input type="range" id="dd-k" min="0" max="5" step="1" value="0" aria-label="差商阶数">
-      <span class="lbl" id="dd-kv">0</span>
-    </div>
-    <div class="grp seg" role="group" aria-label="是否插入结点">
-      <button id="dd-plain" aria-pressed="true">原始 6 点</button>
-      <button id="dd-ins" aria-pressed="false">插入 x = 0.2</button>
-    </div>
-  </div>
-  <div class="reads">
-    <div><div class="k">本列新算的格子</div><div class="v ch" id="dd-cells">0</div></div>
-    <div><div class="k">已累计格子（每格 1 次除法）</div><div class="v" id="dd-total">0</div></div>
-    <div><div class="k">当前阶系数 a_j（对角线）</div><div class="v orange" id="dd-coef">—</div></div>
-    <div><div class="k">N_j 在区间上的 max|f−N_j|</div><div class="v teal" id="dd-err">—</div></div>
-  </div>
-  <p class="hint" id="dd-note">插入 \(x=0.2\) 时，注意旧表的<strong>每一列都往右挪一格</strong>、值全变——但那是同一批数据在"新节点集合"下的差商，不是重算错误。真正的增量是只加一列。</p>
+ <div class="lab-head">
+ <span class="t">实验 01 · 差商表逐列生成</span>
+ <span class="t" id="dd-state">已生成到 0 阶（仅函数值）</span>
+ </div>
+ <div class="ddwrap" id="dd-tbl"></div>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">阶数 j</span>
+ <input type="range" id="dd-k" min="0" max="5" step="1" value="0" aria-label="差商阶数">
+ <span class="lbl" id="dd-kv">0</span>
+ </div>
+ <div class="grp seg" role="group" aria-label="是否插入结点">
+ <button id="dd-plain" aria-pressed="true">原始 6 点</button>
+ <button id="dd-ins" aria-pressed="false">插入 x = 0.2</button>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">本列新算的格子</div><div class="v ch" id="dd-cells">0</div></div>
+ <div><div class="k">已累计格子（每格 1 次除法）</div><div class="v" id="dd-total">0</div></div>
+ <div><div class="k">当前阶系数 a_j（对角线）</div><div class="v orange" id="dd-coef">—</div></div>
+ <div><div class="k">N_j 在区间上的 max|f−N_j|</div><div class="v teal" id="dd-err">—</div></div>
+ </div>
+ <p class="hint" id="dd-note">插入 \(x=0.2\) 时，注意旧表的<strong>每一列都往右挪一格</strong>、值全变——但那是同一批数据在"新节点集合"下的差商，不是重算错误。真正的增量是只加一列。</p>
 </div>
 
 <p>
@@ -342,35 +335,35 @@ $$R_n(x)=f(x)-N_n(x)=f[x,x_0,\dots,x_n]\prod_{i=0}^{n}(x-x_i).$$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">实验 02 · N_k 逐阶累加</span>
-    <span class="t" id="inc-state">k = 0（只有 f(x₀)）</span>
-  </div>
-  <canvas id="cv-inc" aria-label="N_k 逐阶累加曲线与误差"></canvas>
-  <div class="legend">
-    <span><i class="gray"></i>f(x) = 1 + sin 3x</span>
-    <span><i class="teal"></i>上一阶 N_{k−1}</span>
-    <span><i></i>当前 N_k</span>
-    <span><i class="dot"></i>插值节点</span>
-  </div>
-  <div class="ctrls">
-    <div class="grp">
-      <span class="lbl">阶数 k</span>
-      <input type="range" id="inc-k" min="0" max="5" step="1" value="0" aria-label="累加阶数">
-      <span class="lbl" id="inc-kv">0</span>
-    </div>
-    <div class="grp">
-      <button class="btn" id="inc-prev">← 退一阶</button>
-      <button class="btn primary" id="inc-next">进一阶 →</button>
-    </div>
-  </div>
-  <div class="reads">
-    <div><div class="k">新加的系数 a_k</div><div class="v orange" id="inc-a">1.000000</div></div>
-    <div><div class="k">新项 a_k·ω_k 在区间上的 max|·|</div><div class="v" id="inc-term">—</div></div>
-    <div><div class="k">max|f − N_k|（4000 点采样）</div><div class="v ch" id="inc-max">1.000</div></div>
-    <div><div class="k">节点处残差 max|f(x_i) − N_k(x_i)|</div><div class="v teal" id="inc-node">0</div></div>
-  </div>
-  <p class="hint">拖动时盯住第三、四格：<strong>节点残差一直是机器零</strong>（这是插值的定义），而<strong>区间误差会先变大再变小</strong>——1.000 → 4.981 → 6.947 → 3.674 → 1.818 → 0.0266。加点只保证"新节点的账结清"，不保证"整段更准"。</p>
+ <div class="lab-head">
+ <span class="t">实验 02 · N_k 逐阶累加</span>
+ <span class="t" id="inc-state">k = 0（只有 f(x₀)）</span>
+ </div>
+ <canvas id="cv-inc" aria-label="N_k 逐阶累加曲线与误差"></canvas>
+ <div class="legend">
+ <span><i class="gray"></i>f(x) = 1 + sin 3x</span>
+ <span><i class="teal"></i>上一阶 N_{k−1}</span>
+ <span><i></i>当前 N_k</span>
+ <span><i class="dot"></i>插值节点</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">阶数 k</span>
+ <input type="range" id="inc-k" min="0" max="5" step="1" value="0" aria-label="累加阶数">
+ <span class="lbl" id="inc-kv">0</span>
+ </div>
+ <div class="grp">
+ <button class="btn" id="inc-prev">← 退一阶</button>
+ <button class="btn primary" id="inc-next">进一阶 →</button>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">新加的系数 a_k</div><div class="v orange" id="inc-a">1.000000</div></div>
+ <div><div class="k">新项 a_k·ω_k 在区间上的 max|·|</div><div class="v" id="inc-term">—</div></div>
+ <div><div class="k">max|f − N_k|（4000 点采样）</div><div class="v ch" id="inc-max">1.000</div></div>
+ <div><div class="k">节点处残差 max|f(x_i) − N_k(x_i)|</div><div class="v teal" id="inc-node">0</div></div>
+ </div>
+ <p class="hint">拖动时盯住第三、四格：<strong>节点残差一直是机器零</strong>（这是插值的定义），而<strong>区间误差会先变大再变小</strong>——1.000 → 4.981 → 6.947 → 3.674 → 1.818 → 0.0266。加点只保证"新节点的账结清"，不保证"整段更准"。</p>
 </div>
 
 <p>
@@ -378,23 +371,7 @@ $$R_n(x)=f(x)-N_n(x)=f[x,x_0,\dots,x_n]\prod_{i=0}^{n}(x-x_i).$$
 </p>
 
 <div class="note">
-<p><strong>判据。</strong> 判断"要不要加节点"，不能只看 \(a_k\) 大不大，要看 \(|a_k|\cdot\max|\omega_k|\) 是否变小。课件第 2.1–2.2 讲那页的 Runge 实验就是这个量的失控：\(|a_k|\) 不衰减、\(\omega_k\) 在两端暴涨，两项一起把误差推上去。</p>
-</div>
-
-<!-- ================= 05 ================= -->
-<h2 id="erf"><span class="no">05</span>实验 03 · 课件例 1：概率积分，以及一处课件笔误</h2>
-
-<p>
-课件例 1 给了一张概率积分的数据表，要求用三次 Newton 公式算 \(f(0.485)\)：
-</p>
-
-<table>
-<thead><tr><th class="mono">x</th><th class="mono">0.46</th><th class="mono">0.47</th><th class="mono">0.48</th><th class="mono">0.49</th></tr></thead>
-<tbody><tr><td class="mono">f(x)</td><td class="mono">0.4846555</td><td class="mono">0.4937452</td><td class="mono">0.5027498</td><td class="mono">0.5116683</td></tr></tbody>
-</table>
-
-<div class="note">
-<p><strong>订正 1（公式系数）.</strong> 切片里把被积函数前的系数写作 \(1/\sqrt{\pi}\)。但按 \(f(x)=\frac{1}{\sqrt\pi}\int_0^x e^{-t^2}\,dt\) 算，\(f(0.46)=0.2423277\)，与表中 \(0.4846555\) 差整整一倍。改按
+<p><strong>判据。</strong> 判断"要不要加节点"，不能只看 \(a_k\) 大不大，要看 \(|a_k|\cdot\max|\omega_k|\) 是否变小。课件第 2.1–2.2 讲那页的 Runge 实验就是这个量的失控：\(|a_k|\) 不衰减、\(\omega_k\) 在两端暴涨，两项一起把误差推上去。但按 \(f(x)=\frac{1}{\sqrt\pi}\int_0^x e^{-t^2}\,dt\) 算，\(f(0.46)=0.2423277\)，与表中 \(0.4846555\) 差整整一倍。改按
 $$f(x)=\frac{2}{\sqrt\pi}\int_0^x e^{-t^2}\,dt=\operatorname{erf}(x)$$
 算，四个节点依次得 \(0.4846553900,\ 0.4937450509,\ 0.5027496707,\ 0.5116682612\)（60 位十进制级数核过），与表<strong>吻合到 6 位小数、第 7 位差 1–2 个单位</strong>（课件表值偏大，最大偏差 \(1.5\times10^{-7}\)）。故本页按 \(2/\sqrt\pi\) 采用；这个函数就是误差函数 \(\operatorname{erf}\)，下面用它作"真值"。</p>
 </div>
@@ -430,31 +407,31 @@ $$f^{(4)}(x)=\frac{(24x-16x^3)e^{-x^2}}{\sqrt\pi},$$
 </div>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">实验 03 · 误差与余项界逐点对照</span>
-    <span class="t" id="erf-state">x* = 0.485</span>
-  </div>
-  <canvas id="cv-erf" aria-label="N3 与 erf 的误差曲线和余项界"></canvas>
-  <div class="legend">
-    <span><i class="ch"></i>实测误差 |N₃(x) − erf(x)|</span>
-    <span><i class="teal"></i>余项界 |f⁽⁴⁾|max/4!·|ω₄(x)|</span>
-    <span><i class="dot"></i>当前 x*</span>
-    <span><i class="gray"></i>四个插值节点</span>
-  </div>
-  <div class="ctrls">
-    <div class="grp">
-      <span class="lbl">x*</span>
-      <input type="range" id="erf-xs" min="0.4605" max="0.4895" step="0.0005" value="0.485" aria-label="查询点">
-      <span class="lbl" id="erf-xv">0.4850</span>
-    </div>
-  </div>
-  <div class="reads">
-    <div><div class="k">N₃(x*)</div><div class="v ch" id="erf-n3">0.5072198</div></div>
-    <div><div class="k">erf(x*)（真值）</div><div class="v" id="erf-true">0.5072198</div></div>
-    <div><div class="k">实测误差</div><div class="v orange" id="erf-err">1.705e−9</div></div>
-    <div><div class="k">误差 / 界</div><div class="v teal" id="erf-ratio">0.996</div></div>
-  </div>
-  <p class="hint">把 \(x^*\) 拖到节点上，误差归零、界也归零（\(\omega_4\) 有零点）；拖到两节点中间，两条曲线几乎重合。误差曲线是<strong>双峰</strong>的（0.465 与 0.485 附近），峰值位置与 \(\omega_4\) 的极值位置一致——这正是余项公式 \(R=f[x,x_0..x_3]\prod(x-x_i)\) 的结构：形状由 \(\omega_4\) 定，幅度由那个差商定。</p>
+ <div class="lab-head">
+ <span class="t">实验 03 · 误差与余项界逐点对照</span>
+ <span class="t" id="erf-state">x* = 0.485</span>
+ </div>
+ <canvas id="cv-erf" aria-label="N3 与 erf 的误差曲线和余项界"></canvas>
+ <div class="legend">
+ <span><i class="ch"></i>实测误差 |N₃(x) − erf(x)|</span>
+ <span><i class="teal"></i>余项界 |f⁽⁴⁾|max/4!·|ω₄(x)|</span>
+ <span><i class="dot"></i>当前 x*</span>
+ <span><i class="gray"></i>四个插值节点</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">x*</span>
+ <input type="range" id="erf-xs" min="0.4605" max="0.4895" step="0.0005" value="0.485" aria-label="查询点">
+ <span class="lbl" id="erf-xv">0.4850</span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">N₃(x*)</div><div class="v ch" id="erf-n3">0.5072198</div></div>
+ <div><div class="k">erf(x*)（真值）</div><div class="v" id="erf-true">0.5072198</div></div>
+ <div><div class="k">实测误差</div><div class="v orange" id="erf-err">1.705e−9</div></div>
+ <div><div class="k">误差 / 界</div><div class="v teal" id="erf-ratio">0.996</div></div>
+ </div>
+ <p class="hint">把 \(x^*\) 拖到节点上，误差归零、界也归零（\(\omega_4\) 有零点）；拖到两节点中间，两条曲线几乎重合。误差曲线是<strong>双峰</strong>的（0.465 与 0.485 附近），峰值位置与 \(\omega_4\) 的极值位置一致——这正是余项公式 \(R=f[x,x_0..x_3]\prod(x-x_i)\) 的结构：形状由 \(\omega_4\) 定，幅度由那个差商定。</p>
 </div>
 
 <!-- ================= 06 ================= -->
@@ -467,34 +444,34 @@ $$f[x_0,x_1,\dots,x_m]=\frac{f^{(m)}(\xi)}{m!}.$$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">实验 04 · 高阶差商的衰减（等距节点）</span>
-    <span class="t" id="dv-state">f = eˣ，m = 6</span>
-  </div>
-  <canvas id="cv-deriv" aria-label="高阶差商随阶数的衰减：指数函数与 Runge 函数对照"></canvas>
-  <div class="legend">
-    <span><i class="ch"></i>|f[x₀,…,x_m]|（当前函数）</span>
-    <span><i class="teal"></i>1/m!（若 f⁽ᵐ⁾ 有界，差商应以此速率衰减）</span>
-    <span><i class="dot"></i>当前 m</span>
-  </div>
-  <div class="ctrls">
-    <div class="grp seg" role="group" aria-label="函数">
-      <button id="dv-exp" aria-pressed="true">eˣ，[0,1]</button>
-      <button id="dv-runge" aria-pressed="false">1/(1+x²)，[−5,5]</button>
-    </div>
-    <div class="grp">
-      <span class="lbl">阶数 m</span>
-      <input type="range" id="dv-m" min="2" max="14" step="1" value="6" aria-label="差商阶数">
-      <span class="lbl" id="dv-mv">6</span>
-    </div>
-  </div>
-  <div class="reads">
-    <div><div class="k">|f[x₀,…,x_m]|</div><div class="v ch" id="dv-dd">2.306e−3</div></div>
-    <div><div class="k">× m!（≈ max|f⁽ᵐ⁾| 的量级）</div><div class="v" id="dv-scaled">1.660</div></div>
-    <div><div class="k">1/m!</div><div class="v teal" id="dv-fact">1.389e−3</div></div>
-    <div><div class="k">与 m−2 阶之比（同奇偶）</div><div class="v orange" id="dv-ratio">0.1664</div></div>
-  </div>
-  <p class="hint">切到 \(1/(1+x^2)\) 看差别：\(e^x\) 的差商与 \(1/m!\) 同步下降（\(m=14\) 时 \(1.897\times10^{-11}\)，而 \(1/14!=1.147\times10^{-11}\)，同一量级）；Runge 函数偶数阶每升两阶只掉到原来的 <strong>0.165</strong>（\(m=14\) 时 \(6.14\times10^{-7}\)，比 \(1/14!\) 大 <strong>5.3 万倍</strong>），奇数阶因为 \(f\) 关于原点对称<strong>恰为 0</strong>（画成图底的空心圈——这不是算错，是结构）。\(1/m!\) 掉得太快、差商掉得太慢，余项 \(\omega_n f[x,x_0..x_n]\) 就被后者拖住——这就是课件 p.18–22 用差商重证 Runge 现象的实质。</p>
+ <div class="lab-head">
+ <span class="t">实验 04 · 高阶差商的衰减（等距节点）</span>
+ <span class="t" id="dv-state">f = eˣ，m = 6</span>
+ </div>
+ <canvas id="cv-deriv" aria-label="高阶差商随阶数的衰减：指数函数与 Runge 函数对照"></canvas>
+ <div class="legend">
+ <span><i class="ch"></i>|f[x₀,…,x_m]|（当前函数）</span>
+ <span><i class="teal"></i>1/m!（若 f⁽ᵐ⁾ 有界，差商应以此速率衰减）</span>
+ <span><i class="dot"></i>当前 m</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp seg" role="group" aria-label="函数">
+ <button id="dv-exp" aria-pressed="true">eˣ，[0,1]</button>
+ <button id="dv-runge" aria-pressed="false">1/(1+x²)，[−5,5]</button>
+ </div>
+ <div class="grp">
+ <span class="lbl">阶数 m</span>
+ <input type="range" id="dv-m" min="2" max="14" step="1" value="6" aria-label="差商阶数">
+ <span class="lbl" id="dv-mv">6</span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">|f[x₀,…,x_m]|</div><div class="v ch" id="dv-dd">2.306e−3</div></div>
+ <div><div class="k">× m!（≈ max|f⁽ᵐ⁾| 的量级）</div><div class="v" id="dv-scaled">1.660</div></div>
+ <div><div class="k">1/m!</div><div class="v teal" id="dv-fact">1.389e−3</div></div>
+ <div><div class="k">与 m−2 阶之比（同奇偶）</div><div class="v orange" id="dv-ratio">0.1664</div></div>
+ </div>
+ <p class="hint">切到 \(1/(1+x^2)\) 看差别：\(e^x\) 的差商与 \(1/m!\) 同步下降（\(m=14\) 时 \(1.897\times10^{-11}\)，而 \(1/14!=1.147\times10^{-11}\)，同一量级）；Runge 函数偶数阶每升两阶只掉到原来的 <strong>0.165</strong>（\(m=14\) 时 \(6.14\times10^{-7}\)，比 \(1/14!\) 大 <strong>5.3 万倍</strong>），奇数阶因为 \(f\) 关于原点对称<strong>恰为 0</strong>（画成图底的空心圈——这不是算错，是结构）。\(1/m!\) 掉得太快、差商掉得太慢，余项 \(\omega_n f[x,x_0..x_n]\) 就被后者拖住——这就是课件 p.18–22 用差商重证 Runge 现象的实质。</p>
 </div>
 
 <p>
@@ -521,31 +498,31 @@ $$\delta f[x_0,\dots,x_m]\approx\frac{\epsilon}{m!\,h^{m}},$$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">实验 05 · 5 阶差商随步长的变化</span>
-    <span class="t" id="rd-state">h = 1.0e−2</span>
-  </div>
-  <canvas id="cv-round" aria-label="5 阶差商随步长 h 的变化与噪声地板"></canvas>
-  <div class="legend">
-    <span><i class="ch"></i>实测 |f[x₀,…,x₅]|</span>
-    <span><i class="teal"></i>真值 2.025 = 243cos(3ξ)/120</span>
-    <span><i class="gray"></i>噪声地板 ε/(5!·h⁵)</span>
-    <span><i class="dot"></i>当前 h</span>
-  </div>
-  <div class="ctrls">
-    <div class="grp">
-      <span class="lbl">log₁₀ h</span>
-      <input type="range" id="rd-h" min="-6" max="-2" step="0.05" value="-2" aria-label="步长指数">
-      <span class="lbl" id="rd-hv">−2.00</span>
-    </div>
-  </div>
-  <div class="reads">
-    <div><div class="k">h</div><div class="v" id="rd-hval">1.000e−2</div></div>
-    <div><div class="k">实测 5 阶差商</div><div class="v ch" id="rd-d5">2.019</div></div>
-    <div><div class="k">真值（性质 7）</div><div class="v teal" id="rd-true">2.025</div></div>
-    <div><div class="k">保住的有效位数</div><div class="v orange" id="rd-digits">0.1</div></div>
-  </div>
-  <p class="hint">把 \(h\) 从 \(10^{-2}\) 拖到 \(10^{-6}\)：\(h\ge10^{-3}\) 时读数稳定在 2.02–2.03；\(h=10^{-4}\) 时变成 740，\(h=10^{-5}\) 时 \(3.70\times10^{7}\)，\(h=10^{-6}\) 时 \(5.55\times10^{12}\)。噪声地板那条线斜率为 \(-5\)（每缩小 10 倍 \(h\)，噪声涨 \(10^{5}\) 倍），实测曲线一旦贴上去就再也回不来。<strong>这就是为什么"节点越密越好"是错的</strong>。（滑杆只到 \(10^{-2}\)：\(h\) 再大时 \(\xi\) 跑到 0.5 附近，\(\cos3\xi\) 不再是 1，"真值 2.025"这条线本身就不成立。）</p>
+ <div class="lab-head">
+ <span class="t">实验 05 · 5 阶差商随步长的变化</span>
+ <span class="t" id="rd-state">h = 1.0e−2</span>
+ </div>
+ <canvas id="cv-round" aria-label="5 阶差商随步长 h 的变化与噪声地板"></canvas>
+ <div class="legend">
+ <span><i class="ch"></i>实测 |f[x₀,…,x₅]|</span>
+ <span><i class="teal"></i>真值 2.025 = 243cos(3ξ)/120</span>
+ <span><i class="gray"></i>噪声地板 ε/(5!·h⁵)</span>
+ <span><i class="dot"></i>当前 h</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">log₁₀ h</span>
+ <input type="range" id="rd-h" min="-6" max="-2" step="0.05" value="-2" aria-label="步长指数">
+ <span class="lbl" id="rd-hv">−2.00</span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">h</div><div class="v" id="rd-hval">1.000e−2</div></div>
+ <div><div class="k">实测 5 阶差商</div><div class="v ch" id="rd-d5">2.019</div></div>
+ <div><div class="k">真值（性质 7）</div><div class="v teal" id="rd-true">2.025</div></div>
+ <div><div class="k">保住的有效位数</div><div class="v orange" id="rd-digits">0.1</div></div>
+ </div>
+ <p class="hint">把 \(h\) 从 \(10^{-2}\) 拖到 \(10^{-6}\)：\(h\ge10^{-3}\) 时读数稳定在 2.02–2.03；\(h=10^{-4}\) 时变成 740，\(h=10^{-5}\) 时 \(3.70\times10^{7}\)，\(h=10^{-6}\) 时 \(5.55\times10^{12}\)。噪声地板那条线斜率为 \(-5\)（每缩小 10 倍 \(h\)，噪声涨 \(10^{5}\) 倍），实测曲线一旦贴上去就再也回不来。<strong>这就是为什么"节点越密越好"是错的</strong>。（滑杆只到 \(10^{-2}\)：\(h\) 再大时 \(\xi\) 跑到 0.5 附近，\(\cos3\xi\) 不再是 1，"真值 2.025"这条线本身就不成立。）</p>
 </div>
 
 <p>
@@ -564,29 +541,29 @@ $$\delta f[x_0,\dots,x_m]\approx\frac{\epsilon}{m!\,h^{m}},$$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">实验 06 · 表 7.8 十点在三种顺序下的前代放大</span>
-    <span class="t" id="or-state">原始顺序</span>
-  </div>
-  <canvas id="cv-order" aria-label="三种结点顺序下差商表对角线的绝对值"></canvas>
-  <div class="legend">
-    <span><i class="ch"></i>|ω_k(x_k)|（对数轴）</span>
-    <span><i></i>最小的一格（决定放大）</span>
-  </div>
-  <div class="ctrls">
-    <div class="grp seg" role="group" aria-label="结点顺序">
-      <button id="or-a" aria-pressed="true">原始顺序</button>
-      <button id="or-b" aria-pressed="false">按 x 升序</button>
-      <button id="or-c" aria-pressed="false">按距均值升序</button>
-    </div>
-  </div>
-  <div class="reads">
-    <div><div class="k">min_k |ω_k(x_k)|</div><div class="v orange" id="or-min">7.808e−6</div></div>
-    <div><div class="k">前代放大 1/min|ω|</div><div class="v ch" id="or-inv">1.281e5</div></div>
-    <div><div class="k">max_k |a_k|</div><div class="v" id="or-maxa">6.805</div></div>
-    <div><div class="k">a₉ 相对升序的偏差</div><div class="v teal" id="or-a9">−1.24e−12</div></div>
-  </div>
-  <p class="hint">三种顺序：\(\min|\omega|\) = \(7.808\times10^{-6}\)（原始）、\(5.436\times10^{-5}\)（升序）、\(1.364\times10^{-5}\)（距均值）——与课件表 7.9 的 \(7.80827\times10^{-6}\)、\(5.43547\times10^{-5}\)、\(1.36436\times10^{-5}\) 吻合到 4 位有效数字。放大倍数分别是 \(1.28\times10^{5}\)、\(1.84\times10^{4}\)、\(7.33\times10^{4}\)，<strong>升序最好，差 7 倍</strong>。而最高阶系数 \(a_9=-6.8051696\) 三种顺序一致到 \(10^{-12}\)——性质 6 在双精度下近似成立，但中间量已经不同了。</p>
+ <div class="lab-head">
+ <span class="t">实验 06 · 表 7.8 十点在三种顺序下的前代放大</span>
+ <span class="t" id="or-state">原始顺序</span>
+ </div>
+ <canvas id="cv-order" aria-label="三种结点顺序下差商表对角线的绝对值"></canvas>
+ <div class="legend">
+ <span><i class="ch"></i>|ω_k(x_k)|（对数轴）</span>
+ <span><i></i>最小的一格（决定放大）</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp seg" role="group" aria-label="结点顺序">
+ <button id="or-a" aria-pressed="true">原始顺序</button>
+ <button id="or-b" aria-pressed="false">按 x 升序</button>
+ <button id="or-c" aria-pressed="false">按距均值升序</button>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">min_k |ω_k(x_k)|</div><div class="v orange" id="or-min">7.808e−6</div></div>
+ <div><div class="k">前代放大 1/min|ω|</div><div class="v ch" id="or-inv">1.281e5</div></div>
+ <div><div class="k">max_k |a_k|</div><div class="v" id="or-maxa">6.805</div></div>
+ <div><div class="k">a₉ 相对升序的偏差</div><div class="v teal" id="or-a9">−1.24e−12</div></div>
+ </div>
+ <p class="hint">三种顺序：\(\min|\omega|\) = \(7.808\times10^{-6}\)（原始）、\(5.436\times10^{-5}\)（升序）、\(1.364\times10^{-5}\)（距均值）——与课件表 7.9 的 \(7.80827\times10^{-6}\)、\(5.43547\times10^{-5}\)、\(1.36436\times10^{-5}\) 吻合到 4 位有效数字。放大倍数分别是 \(1.28\times10^{5}\)、\(1.84\times10^{4}\)、\(7.33\times10^{4}\)，<strong>升序最好，差 7 倍</strong>。而最高阶系数 \(a_9=-6.8051696\) 三种顺序一致到 \(10^{-12}\)——性质 6 在双精度下近似成立，但中间量已经不同了。</p>
 </div>
 
 <p>
@@ -615,11 +592,7 @@ $$L_n(x)=\frac{\sum_i \frac{w_i}{x-x_i}f(x_i)}{\sum_i \frac{w_i}{x-x_i}},$$
 </table>
 
 <p>
-这一讲真正的收获不是公式，而是<strong>把"插值多项式"看成一张可以逐格增长的三角表</strong>：表的第一列是数据，对角线是系数，每一格是一次减法加一次除法，而这张表的每一个数字都能用"差商 = 导数 / \(m!\)"翻译回分析语言。后面第 2.4 讲 Hermite 会把这张表扩展到"节点重复出现"（重节点差商），第 2.6 讲样条会用三对角方程组换掉这张表——但"增量修正 + 误差可估"这两个思想一直用到最后一讲。
-</p>
-
-<footer>
-<p>素材：四川大学数学学院 2026 年数值分析课件（朱瑞）第 2.3 讲「牛顿插值」，28 页（切片 <code>ch02-03-newton-divided-difference.md</code> + <code>chapter2-3-牛顿插值-2026.pdf</code>）。引用：式 (1.1)(1.4)(1.5)(2.6)–(2.11)(3.13)、性质 1–10、定理 1、表 6.1/6.2/7.7/7.8/7.9、例 1、Matlab <code>dividif</code>。页内两处课件订正（例 1 的 \(1/\sqrt\pi\to2/\sqrt\pi\)、余项界 2.3 的漏因子）见第 05 节。</p>
+这一讲真正的收获不是公式，而是<strong>把"插值多项式"看成一张可以逐格增长的三角表</strong>：表的第一列是数据，对角线是系数，每一格是一次减法加一次除法，而这张表的每一个数字都能用"差商 = 导数 / \(m!\)"翻译回分析语言。后面第 2.4 讲 Hermite 会把这张表扩展到"节点重复出现"（重节点差商），第 2.6 讲样条会用三对角方程组换掉这张表——但"增量修正 + 误差可估"这两个思想一直用到最后一讲。引用：式 (1.1)(1.4)(1.5)(2.6)–(2.11)(3.13)、性质 1–10、定理 1、表 6.1/6.2/7.7/7.8/7.9、例 1、Matlab <code>dividif</code>。页内两处课件订正（例 1 的 \(1/\sqrt\pi\to2/\sqrt\pi\)、余项界 2.3 的漏因子）见第 05 节。</p>
 <p>与本站其他页的分工：Lagrange 基、Runge 现象、Lebesgue 常数、Chebyshev 节点在<strong>第 2.1–2.2 讲</strong>那页（<code>插值-Runge现象与切比雪夫节点.html</code>），本页只取差商视角，不重复画 Runge 曲线；一阶差商的"最优步长 U 形"在第 1 讲那页（<code>绪论-误差-浮点数与稳定性.html</code> 实验 05），本页做的是高阶版本。</p>
 <p>校验：本页所有读数由工作区根目录 <code>verify_na23.js</code> 实测（vm 执行页面脚本 + 独立重算参考值）；公式由 <code>verify_formulas.js</code> 本地编译，要求 0 failed。</p>
 </footer>
@@ -631,43 +604,43 @@ $$L_n(x)=\frac{\sum_i \frac{w_i}{x-x_i}f(x_i)}{\sum_i \frac{w_i}{x-x_i}},$$
 var $ = function(id){ return document.getElementById(id); };
 
 /* ============================================================
-   数值核心（闸门 verify_na23.js 会调用 window.NA23 里的同名函数复核）
-   ============================================================ */
+ 数值核心（闸门 verify_na23.js 会调用 window.NA23 里的同名函数复核）
+ ============================================================ */
 function ddTable(xs, ys){
-  var n = xs.length, T = [], i, j;
-  for (i = 0; i < n; i++) T.push([ys[i]]);
-  for (j = 1; j < n; j++) for (i = j; i < n; i++)
-    T[i][j] = (T[i][j-1] - T[i-1][j-1]) / (xs[i] - xs[i-j]);
-  return T;                      // T[i][j] = f[x_{i-j}, …, x_i]
+ var n = xs.length, T = [], i, j;
+ for (i = 0; i < n; i++) T.push([ys[i]]);
+ for (j = 1; j < n; j++) for (i = j; i < n; i++)
+ T[i][j] = (T[i][j-1] - T[i-1][j-1]) / (xs[i] - xs[i-j]);
+ return T; // T[i][j] = f[x_{i-j}, …, x_i]
 }
 function newtonCoef(xs, ys){
-  var n = xs.length, c = ys.slice(), i, j;
-  for (j = 1; j < n; j++) for (i = n - 1; i >= j; i--)
-    c[i] = (c[i] - c[i-1]) / (xs[i] - xs[i-j]);
-  return c;
+ var n = xs.length, c = ys.slice(), i, j;
+ for (j = 1; j < n; j++) for (i = n - 1; i >= j; i--)
+ c[i] = (c[i] - c[i-1]) / (xs[i] - xs[i-j]);
+ return c;
 }
 function newtonEval(xs, c, x){
-  var s = c[c.length-1], k;
-  for (k = c.length - 2; k >= 0; k--) s = s * (x - xs[k]) + c[k];
-  return s;
+ var s = c[c.length-1], k;
+ for (k = c.length - 2; k >= 0; k--) s = s * (x - xs[k]) + c[k];
+ return s;
 }
 function fact(n){ var s = 1, i; for (i = 2; i <= n; i++) s *= i; return s; }
 
 var F1 = function(x){ return 1 + Math.sin(3*x); };
 var X1 = [0, 0.4, 0.8, 1.2, 1.6, 2.0];
 var Y1 = X1.map(F1);
-var X1I = [0, 0.2, 0.4, 0.8, 1.2, 1.6, 2.0];   // 插入 0.2（课件表 6.2）
+var X1I = [0, 0.2, 0.4, 0.8, 1.2, 1.6, 2.0]; // 插入 0.2（课件表 6.2）
 var Y1I = X1I.map(F1);
 
 /* 概率积分 f(x)=erf(x)=2/√π ∫₀ˣ e^{−t²}dt（级数，双精度满精度） */
 function erf(x){
-  var s = 0, term = x, n;
-  for (n = 0; n < 200; n++){
-    s += term / (2*n + 1);
-    term *= -x*x / (n + 1);
-    if (Math.abs(term / (2*n + 1)) < 1e-20) break;
-  }
-  return 2 / Math.sqrt(Math.PI) * s;
+ var s = 0, term = x, n;
+ for (n = 0; n < 200; n++){
+ s += term / (2*n + 1);
+ term *= -x*x / (n + 1);
+ if (Math.abs(term / (2*n + 1)) < 1e-20) break;
+ }
+ return 2 / Math.sqrt(Math.PI) * s;
 }
 var X2 = [0.46, 0.47, 0.48, 0.49];
 var Y2 = X2.map(erf);
@@ -675,558 +648,558 @@ var C2 = newtonCoef(X2, Y2);
 /* 例 1 的四阶导 f⁗(x) = (24x − 16x³)e^{−x²}/√π */
 function f4(x){ return (24*x - 16*x*x*x) * Math.exp(-x*x) / Math.sqrt(Math.PI); }
 var M4 = (function(){ var m = 0, t, v; for (t = 0; t <= 3000; t++){
-  v = Math.abs(f4(0.46 + 0.03*t/3000)); if (v > m) m = v; } return m; })();   // 4.383
+ v = Math.abs(f4(0.46 + 0.03*t/3000)); if (v > m) m = v; } return m; })(); // 4.383
 
 /* ============================================================
-   格式
-   ============================================================ */
+ 格式
+ ============================================================ */
 var MINUS = '\u2212';
 function fixed(v, d){
-  if (!isFinite(v)) return '—';
-  var s = Math.abs(v).toFixed(d);
-  return (v < 0 ? MINUS : '') + s;
+ if (!isFinite(v)) return '—';
+ var s = Math.abs(v).toFixed(d);
+ return (v < 0 ? MINUS : '') + s;
 }
 function exs(v, d){
-  if (!isFinite(v)) return '—';
-  if (v === 0) return '0';
-  d = (d === undefined) ? 3 : d;
-  var e = Math.floor(Math.log10(Math.abs(v)));
-  var m = v / Math.pow(10, e);
-  if (Math.abs(m) >= 10){ m /= 10; e += 1; }
-  if (Math.abs(m) < 1){ m *= 10; e -= 1; }
-  return (m < 0 ? MINUS : '') + Math.abs(m).toFixed(d) + 'e' + (e < 0 ? MINUS : '') + Math.abs(e);
+ if (!isFinite(v)) return '—';
+ if (v === 0) return '0';
+ d = (d === undefined) ? 3 : d;
+ var e = Math.floor(Math.log10(Math.abs(v)));
+ var m = v / Math.pow(10, e);
+ if (Math.abs(m) >= 10){ m /= 10; e += 1; }
+ if (Math.abs(m) < 1){ m *= 10; e -= 1; }
+ return (m < 0 ? MINUS : '') + Math.abs(m).toFixed(d) + 'e' + (e < 0 ? MINUS : '') + Math.abs(e);
 }
 function num(v){
-  if (!isFinite(v)) return '—';
-  var a = Math.abs(v);
-  if (a !== 0 && (a < 1e-3 || a >= 1e5)) return exs(v, 3);
-  return fixed(v, 4);
+ if (!isFinite(v)) return '—';
+ var a = Math.abs(v);
+ if (a !== 0 && (a < 1e-3 || a >= 1e5)) return exs(v, 3);
+ return fixed(v, 4);
 }
 function setText(id, s){ var el = $(id); if (el) el.textContent = s; }
 
 /* ============================================================
-   画布工具
-   ============================================================ */
+ 画布工具
+ ============================================================ */
 function fit(cv){
-  var dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
-  var r = cv.getBoundingClientRect();
-  var w = Math.round(r.width), h = Math.round(r.height);
-  cv.width = w * dpr; cv.height = h * dpr;
-  var g = cv.getContext('2d');
-  g.setTransform(dpr, 0, 0, dpr, 0, 0);
-  g.clearRect(0, 0, w, h);
-  return { g: g, w: w, h: h };
+ var dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+ var r = cv.getBoundingClientRect();
+ var w = Math.round(r.width), h = Math.round(r.height);
+ cv.width = w * dpr; cv.height = h * dpr;
+ var g = cv.getContext('2d');
+ g.setTransform(dpr, 0, 0, dpr, 0, 0);
+ g.clearRect(0, 0, w, h);
+ return { g: g, w: w, h: h };
 }
 function mkMap(w, h, pad, xr, yr){
-  var iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
-  return {
-    X: function(x){ return pad.l + (x - xr[0]) / (xr[1] - xr[0]) * iw; },
-    Y: function(y){ return pad.t + (yr[1] - y) / (yr[1] - yr[0]) * ih; },
-    xr: xr, yr: yr, pad: pad, iw: iw, ih: ih
-  };
+ var iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+ return {
+ X: function(x){ return pad.l + (x - xr[0]) / (xr[1] - xr[0]) * iw; },
+ Y: function(y){ return pad.t + (yr[1] - y) / (yr[1] - yr[0]) * ih; },
+ xr: xr, yr: yr, pad: pad, iw: iw, ih: ih
+ };
 }
 function grid(g, M, nx, ny, col){
-  g.strokeStyle = col || '#eee7d8'; g.lineWidth = 1;
-  var i;
-  for (i = 0; i <= nx; i++){
-    var x = M.pad.l + M.iw * i / nx;
-    g.beginPath(); g.moveTo(x, M.pad.t); g.lineTo(x, M.pad.t + M.ih); g.stroke();
-  }
-  for (i = 0; i <= ny; i++){
-    var y = M.pad.t + M.ih * i / ny;
-    g.beginPath(); g.moveTo(M.pad.l, y); g.lineTo(M.pad.l + M.iw, y); g.stroke();
-  }
+ g.strokeStyle = col || '#eee7d8'; g.lineWidth = 1;
+ var i;
+ for (i = 0; i <= nx; i++){
+ var x = M.pad.l + M.iw * i / nx;
+ g.beginPath(); g.moveTo(x, M.pad.t); g.lineTo(x, M.pad.t + M.ih); g.stroke();
+ }
+ for (i = 0; i <= ny; i++){
+ var y = M.pad.t + M.ih * i / ny;
+ g.beginPath(); g.moveTo(M.pad.l, y); g.lineTo(M.pad.l + M.iw, y); g.stroke();
+ }
 }
 function frame(g, M){
-  g.strokeStyle = '#cfc6b2'; g.lineWidth = 1;
-  g.strokeRect(M.pad.l, M.pad.t, M.iw, M.ih);
+ g.strokeStyle = '#cfc6b2'; g.lineWidth = 1;
+ g.strokeRect(M.pad.l, M.pad.t, M.iw, M.ih);
 }
 function label(g, s, x, y, col, align, size){
-  g.fillStyle = col || '#6d665a';
-  g.font = (size || 11) + 'px ui-monospace,SFMono-Regular,Consolas,monospace';
-  g.textAlign = align || 'left';
-  g.textBaseline = 'middle';
-  g.fillText(s, x, y);
+ g.fillStyle = col || '#6d665a';
+ g.font = (size || 11) + 'px ui-monospace,SFMono-Regular,Consolas,monospace';
+ g.textAlign = align || 'left';
+ g.textBaseline = 'middle';
+ g.fillText(s, x, y);
 }
 function clipPlot(g, M){
-  g.save();
-  g.beginPath(); g.rect(M.pad.l, M.pad.t, M.iw, M.ih); g.clip();
+ g.save();
+ g.beginPath(); g.rect(M.pad.l, M.pad.t, M.iw, M.ih); g.clip();
 }
 function unclip(g){ g.restore(); }
 
 /* ============================================================
-   实验 01 · 差商表逐列生成
-   ============================================================ */
+ 实验 01 · 差商表逐列生成
+ ============================================================ */
 var ddIns = false;
 function ddRender(){
-  var xs = ddIns ? X1I : X1, ys = ddIns ? Y1I : Y1;
-  var T = ddTable(xs, ys), n = xs.length;
-  var k = Math.max(0, Math.min(n - 1, parseInt($('dd-k').value, 10) || 0));
-  var html = '<table class="dd"><thead><tr><th>i</th><th>x<sub>i</sub></th><th>f(x<sub>i</sub>)</th>';
-  var j;
-  for (j = 1; j < n; j++) html += '<th>' + j + ' 阶</th>';
-  html += '</tr></thead><tbody>';
-  var i;
-  for (i = 0; i < n; i++){
-    html += '<tr><td style="border:0;color:#b3ab9b;font-size:11px">' + i + '</td>';
-    html += '<td class="x">' + xs[i].toFixed(1) + '</td>';
-    for (j = 0; j < n; j++){
-      if (j > i){ html += '<td style="border:0;background:transparent"></td>'; continue; }
-      if (j > k){ html += '<td>' + '\u00b7' + '</td>'; continue; }
-      var cls = (j === k && j > 0) ? 'on fresh' : 'on';
-      if (j === i) cls += ' diag';
-      html += '<td class="' + cls + '">' + fixed(T[i][j], 4) + '</td>';
-    }
-    html += '</tr>';
-  }
-  html += '</tbody></table>';
-  $('dd-tbl').innerHTML = html;
+ var xs = ddIns ? X1I : X1, ys = ddIns ? Y1I : Y1;
+ var T = ddTable(xs, ys), n = xs.length;
+ var k = Math.max(0, Math.min(n - 1, parseInt($('dd-k').value, 10) || 0));
+ var html = '<table class="dd"><thead><tr><th>i</th><th>x<sub>i</sub></th><th>f(x<sub>i</sub>)</th>';
+ var j;
+ for (j = 1; j < n; j++) html += '<th>' + j + ' 阶</th>';
+ html += '</tr></thead><tbody>';
+ var i;
+ for (i = 0; i < n; i++){
+ html += '<tr><td style="border:0;color:#b3ab9b;font-size:11px">' + i + '</td>';
+ html += '<td class="x">' + xs[i].toFixed(1) + '</td>';
+ for (j = 0; j < n; j++){
+ if (j > i){ html += '<td style="border:0;background:transparent"></td>'; continue; }
+ if (j > k){ html += '<td>' + '\u00b7' + '</td>'; continue; }
+ var cls = (j === k && j > 0) ? 'on fresh' : 'on';
+ if (j === i) cls += ' diag';
+ html += '<td class="' + cls + '">' + fixed(T[i][j], 4) + '</td>';
+ }
+ html += '</tr>';
+ }
+ html += '</tbody></table>';
+ $('dd-tbl').innerHTML = html;
 
-  var cells = 0, total = 0, jj;
-  for (jj = 0; jj <= k; jj++) total += (n - jj);
-  cells = n - k;
-  setText('dd-cells', String(cells));
-  setText('dd-total', String(total));
-  setText('dd-coef', fixed(T[k][k], 6));
-  setText('dd-kv', String(k));
-  setText('dd-state', k === 0 ? '已生成到 0 阶（仅函数值）' : '已生成到 ' + k + ' 阶');
+ var cells = 0, total = 0, jj;
+ for (jj = 0; jj <= k; jj++) total += (n - jj);
+ cells = n - k;
+ setText('dd-cells', String(cells));
+ setText('dd-total', String(total));
+ setText('dd-coef', fixed(T[k][k], 6));
+ setText('dd-kv', String(k));
+ setText('dd-state', k === 0 ? '已生成到 0 阶（仅函数值）' : '已生成到 ' + k + ' 阶');
 
-  /* N_k 的区间最大误差 */
-  var c = newtonCoef(xs, ys).slice(0, k + 1);
-  var mx = 0, t, e;
-  for (t = 0; t <= 4000; t++){
-    var xx = 2 * t / 4000;
-    e = Math.abs(F1(xx) - newtonEval(xs.slice(0, k + 1), c, xx));
-    if (e > mx) mx = e;
-  }
-  setText('dd-err', k === 0 ? num(mx) : exs(mx, 3));
-  return T;
+ /* N_k 的区间最大误差 */
+ var c = newtonCoef(xs, ys).slice(0, k + 1);
+ var mx = 0, t, e;
+ for (t = 0; t <= 4000; t++){
+ var xx = 2 * t / 4000;
+ e = Math.abs(F1(xx) - newtonEval(xs.slice(0, k + 1), c, xx));
+ if (e > mx) mx = e;
+ }
+ setText('dd-err', k === 0 ? num(mx) : exs(mx, 3));
+ return T;
 }
 
 /* ============================================================
-   实验 02 · 增量修正
-   ============================================================ */
+ 实验 02 · 增量修正
+ ============================================================ */
 var C1 = newtonCoef(X1, Y1);
 var INC_MAX = [];
 (function(){ var k, t;
-  for (k = 0; k <= 5; k++){
-    var c = C1.slice(0, k + 1), mx = 0;
-    for (t = 0; t <= 4000; t++){
-      var x = 2 * t / 4000;
-      var e = Math.abs(F1(x) - newtonEval(X1.slice(0, k + 1), c, x));
-      if (e > mx) mx = e;
-    }
-    INC_MAX.push(mx);
-  }
+ for (k = 0; k <= 5; k++){
+ var c = C1.slice(0, k + 1), mx = 0;
+ for (t = 0; t <= 4000; t++){
+ var x = 2 * t / 4000;
+ var e = Math.abs(F1(x) - newtonEval(X1.slice(0, k + 1), c, x));
+ if (e > mx) mx = e;
+ }
+ INC_MAX.push(mx);
+ }
 })();
 
 function incDraw(){
-  var k = Math.max(0, Math.min(5, parseInt($('inc-k').value, 10) || 0));
-  var cv = $('cv-inc'), F = fit(cv), g = F.g, w = F.w, h = F.h;
-  var pad = { l: 46, r: 14, t: 14, b: 30 };
-  var M = mkMap(w, h, pad, [0, 2], [-0.7, 3.2]);
-  grid(g, M, 8, 6);
-  frame(g, M);
+ var k = Math.max(0, Math.min(5, parseInt($('inc-k').value, 10) || 0));
+ var cv = $('cv-inc'), F = fit(cv), g = F.g, w = F.w, h = F.h;
+ var pad = { l: 46, r: 14, t: 14, b: 30 };
+ var M = mkMap(w, h, pad, [0, 2], [-0.7, 3.2]);
+ grid(g, M, 8, 6);
+ frame(g, M);
 
-  /* 轴标 */
-  var t;
-  for (t = 0; t <= 2.001; t += 0.4) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
-  for (t = -0.5; t <= 3.001; t += 1) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
-  label(g, 'x', M.pad.l + M.iw - 4, M.pad.t + M.ih + 22, '#6d665a', 'right', 11);
+ /* 轴标 */
+ var t;
+ for (t = 0; t <= 2.001; t += 0.4) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
+ for (t = -0.5; t <= 3.001; t += 1) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
+ label(g, 'x', M.pad.l + M.iw - 4, M.pad.t + M.ih + 22, '#6d665a', 'right', 11);
 
-  clipPlot(g, M);
-  /* f(x) */
-  g.strokeStyle = '#b8b0a0'; g.lineWidth = 1.4; g.setLineDash([5, 4]);
-  g.beginPath();
-  for (t = 0; t <= 600; t++){
-    var x = 2 * t / 600;
-    if (t === 0) g.moveTo(M.X(x), M.Y(F1(x))); else g.lineTo(M.X(x), M.Y(F1(x)));
-  }
-  g.stroke(); g.setLineDash([]);
+ clipPlot(g, M);
+ /* f(x) */
+ g.strokeStyle = '#b8b0a0'; g.lineWidth = 1.4; g.setLineDash([5, 4]);
+ g.beginPath();
+ for (t = 0; t <= 600; t++){
+ var x = 2 * t / 600;
+ if (t === 0) g.moveTo(M.X(x), M.Y(F1(x))); else g.lineTo(M.X(x), M.Y(F1(x)));
+ }
+ g.stroke(); g.setLineDash([]);
 
-  /* N_{k-1} */
-  if (k >= 1){
-    g.strokeStyle = '#0d6b5d'; g.lineWidth = 1.6;
-    g.beginPath();
-    for (t = 0; t <= 600; t++){
-      var x2 = 2 * t / 600;
-      var y2 = newtonEval(X1.slice(0, k), C1.slice(0, k), x2);
-      if (t === 0) g.moveTo(M.X(x2), M.Y(y2)); else g.lineTo(M.X(x2), M.Y(y2));
-    }
-    g.stroke();
-  }
-  /* N_k */
-  g.strokeStyle = '#c2531f'; g.lineWidth = 2.4;
-  g.beginPath();
-  for (t = 0; t <= 600; t++){
-    var x3 = 2 * t / 600;
-    var y3 = newtonEval(X1.slice(0, k + 1), C1.slice(0, k + 1), x3);
-    if (t === 0) g.moveTo(M.X(x3), M.Y(y3)); else g.lineTo(M.X(x3), M.Y(y3));
-  }
-  g.stroke();
-  unclip(g);
+ /* N_{k-1} */
+ if (k >= 1){
+ g.strokeStyle = '#0d6b5d'; g.lineWidth = 1.6;
+ g.beginPath();
+ for (t = 0; t <= 600; t++){
+ var x2 = 2 * t / 600;
+ var y2 = newtonEval(X1.slice(0, k), C1.slice(0, k), x2);
+ if (t === 0) g.moveTo(M.X(x2), M.Y(y2)); else g.lineTo(M.X(x2), M.Y(y2));
+ }
+ g.stroke();
+ }
+ /* N_k */
+ g.strokeStyle = '#c2531f'; g.lineWidth = 2.4;
+ g.beginPath();
+ for (t = 0; t <= 600; t++){
+ var x3 = 2 * t / 600;
+ var y3 = newtonEval(X1.slice(0, k + 1), C1.slice(0, k + 1), x3);
+ if (t === 0) g.moveTo(M.X(x3), M.Y(y3)); else g.lineTo(M.X(x3), M.Y(y3));
+ }
+ g.stroke();
+ unclip(g);
 
-  /* 节点 */
-  var i;
-  for (i = 0; i < 6; i++){
-    g.beginPath();
-    g.arc(M.X(X1[i]), M.Y(Y1[i]), 3.4, 0, Math.PI * 2);
-    g.fillStyle = (i <= k) ? '#c2531f' : '#fff';
-    g.fill();
-    g.strokeStyle = '#c2531f'; g.lineWidth = 1.2; g.stroke();
-  }
+ /* 节点 */
+ var i;
+ for (i = 0; i < 6; i++){
+ g.beginPath();
+ g.arc(M.X(X1[i]), M.Y(Y1[i]), 3.4, 0, Math.PI * 2);
+ g.fillStyle = (i <= k) ? '#c2531f' : '#fff';
+ g.fill();
+ g.strokeStyle = '#c2531f'; g.lineWidth = 1.2; g.stroke();
+ }
 
-  /* 读数 */
-  var c = C1.slice(0, k + 1);
-  setText('inc-kv', String(k));
-  setText('inc-state', 'k = ' + k + '（' + (k + 1) + ' 个节点，' + (k + 1) + ' 项）');
-  setText('inc-a', fixed(C1[k], 6));
-  var tmax = 0;
-  for (t = 0; t <= 4000; t++){
-    var xw = 2 * t / 4000, wv = 1, q;
-    for (q = 0; q < k; q++) wv *= (xw - X1[q]);
-    var val = Math.abs(C1[k] * wv);
-    if (val > tmax) tmax = val;
-  }
-  setText('inc-term', k === 0 ? fixed(tmax, 4) : num(tmax));
-  setText('inc-max', num(INC_MAX[k]));
-  var nres = 0;
-  for (i = 0; i <= k; i++) nres = Math.max(nres, Math.abs(F1(X1[i]) - newtonEval(X1.slice(0, k + 1), c, X1[i])));
-  setText('inc-node', exs(nres, 2));
-  return k;
+ /* 读数 */
+ var c = C1.slice(0, k + 1);
+ setText('inc-kv', String(k));
+ setText('inc-state', 'k = ' + k + '（' + (k + 1) + ' 个节点，' + (k + 1) + ' 项）');
+ setText('inc-a', fixed(C1[k], 6));
+ var tmax = 0;
+ for (t = 0; t <= 4000; t++){
+ var xw = 2 * t / 4000, wv = 1, q;
+ for (q = 0; q < k; q++) wv *= (xw - X1[q]);
+ var val = Math.abs(C1[k] * wv);
+ if (val > tmax) tmax = val;
+ }
+ setText('inc-term', k === 0 ? fixed(tmax, 4) : num(tmax));
+ setText('inc-max', num(INC_MAX[k]));
+ var nres = 0;
+ for (i = 0; i <= k; i++) nres = Math.max(nres, Math.abs(F1(X1[i]) - newtonEval(X1.slice(0, k + 1), c, X1[i])));
+ setText('inc-node', exs(nres, 2));
+ return k;
 }
 
 /* ============================================================
-   实验 03 · 例 1 的误差与余项界
-   ============================================================ */
+ 实验 03 · 例 1 的误差与余项界
+ ============================================================ */
 function erfAt(xs){
-  var n3 = newtonEval(X2, C2, xs);
-  var tr = erf(xs);
-  var w4 = 1, i;
-  for (i = 0; i < 4; i++) w4 *= (xs - X2[i]);
-  var bound = M4 / 24 * Math.abs(w4);
-  return { n3: n3, true: tr, err: Math.abs(n3 - tr), bound: bound,
-           ratio: bound > 1e-20 ? Math.abs(n3 - tr) / bound : NaN };
+ var n3 = newtonEval(X2, C2, xs);
+ var tr = erf(xs);
+ var w4 = 1, i;
+ for (i = 0; i < 4; i++) w4 *= (xs - X2[i]);
+ var bound = M4 / 24 * Math.abs(w4);
+ return { n3: n3, true: tr, err: Math.abs(n3 - tr), bound: bound,
+ ratio: bound > 1e-20 ? Math.abs(n3 - tr) / bound : NaN };
 }
 function erfDraw(){
-  var xs = parseFloat($('erf-xs').value);
-  if (!isFinite(xs)) xs = 0.485;
-  xs = Math.max(0.4605, Math.min(0.4895, xs));
-  var cv = $('cv-erf'), F = fit(cv), g = F.g, w = F.w, h = F.h;
-  var pad = { l: 56, r: 14, t: 16, b: 32 };
-  var M = mkMap(w, h, pad, [0.46, 0.49], [0, 2.2e-9]);
-  grid(g, M, 6, 5);
-  frame(g, M);
+ var xs = parseFloat($('erf-xs').value);
+ if (!isFinite(xs)) xs = 0.485;
+ xs = Math.max(0.4605, Math.min(0.4895, xs));
+ var cv = $('cv-erf'), F = fit(cv), g = F.g, w = F.w, h = F.h;
+ var pad = { l: 56, r: 14, t: 16, b: 32 };
+ var M = mkMap(w, h, pad, [0.46, 0.49], [0, 2.2e-9]);
+ grid(g, M, 6, 5);
+ frame(g, M);
 
-  var t;
-  for (t = 0.46; t <= 0.4901; t += 0.005) label(g, t.toFixed(3), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
-  for (t = 0; t <= 2.0001e-9; t += 5e-10) label(g, (t / 1e-9).toFixed(1), M.pad.l - 8, M.Y(t), '#6d665a', 'right');
-  label(g, '误差 ×10⁻⁹', M.pad.l - 8, M.pad.t - 4, '#6d665a', 'left', 10.5);
+ var t;
+ for (t = 0.46; t <= 0.4901; t += 0.005) label(g, t.toFixed(3), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
+ for (t = 0; t <= 2.0001e-9; t += 5e-10) label(g, (t / 1e-9).toFixed(1), M.pad.l - 8, M.Y(t), '#6d665a', 'right');
+ label(g, '误差 ×10⁻⁹', M.pad.l - 8, M.pad.t - 4, '#6d665a', 'left', 10.5);
 
-  clipPlot(g, M);
-  /* 余项界（画粗一点垫在下面，误差曲线几乎贴着它，太细会被完全盖住） */
-  g.strokeStyle = '#0d6b5d'; g.lineWidth = 3.4;
-  g.beginPath();
-  for (t = 0; t <= 500; t++){
-    var x = 0.46 + 0.03 * t / 500, w4 = 1, i;
-    for (i = 0; i < 4; i++) w4 *= (x - X2[i]);
-    var bd = M4 / 24 * Math.abs(w4);
-    if (t === 0) g.moveTo(M.X(x), M.Y(bd)); else g.lineTo(M.X(x), M.Y(bd));
-  }
-  g.stroke();
-  /* 实测误差 */
-  g.strokeStyle = '#35507f'; g.lineWidth = 1.5;
-  g.beginPath();
-  for (t = 0; t <= 500; t++){
-    var x2 = 0.46 + 0.03 * t / 500;
-    var er = Math.abs(newtonEval(X2, C2, x2) - erf(x2));
-    if (t === 0) g.moveTo(M.X(x2), M.Y(er)); else g.lineTo(M.X(x2), M.Y(er));
-  }
-  g.stroke();
-  unclip(g);
+ clipPlot(g, M);
+ /* 余项界（画粗一点垫在下面，误差曲线几乎贴着它，太细会被完全盖住） */
+ g.strokeStyle = '#0d6b5d'; g.lineWidth = 3.4;
+ g.beginPath();
+ for (t = 0; t <= 500; t++){
+ var x = 0.46 + 0.03 * t / 500, w4 = 1, i;
+ for (i = 0; i < 4; i++) w4 *= (x - X2[i]);
+ var bd = M4 / 24 * Math.abs(w4);
+ if (t === 0) g.moveTo(M.X(x), M.Y(bd)); else g.lineTo(M.X(x), M.Y(bd));
+ }
+ g.stroke();
+ /* 实测误差 */
+ g.strokeStyle = '#35507f'; g.lineWidth = 1.5;
+ g.beginPath();
+ for (t = 0; t <= 500; t++){
+ var x2 = 0.46 + 0.03 * t / 500;
+ var er = Math.abs(newtonEval(X2, C2, x2) - erf(x2));
+ if (t === 0) g.moveTo(M.X(x2), M.Y(er)); else g.lineTo(M.X(x2), M.Y(er));
+ }
+ g.stroke();
+ unclip(g);
 
-  /* 节点竖线与当前点 */
-  var i2;
-  for (i2 = 0; i2 < 4; i2++){
-    g.strokeStyle = 'rgba(35,32,26,.35)'; g.lineWidth = 1; g.setLineDash([4, 4]);
-    g.beginPath(); g.moveTo(M.X(X2[i2]), M.pad.t); g.lineTo(M.X(X2[i2]), M.pad.t + M.ih); g.stroke();
-    g.setLineDash([]);
-    label(g, X2[i2].toFixed(2), M.X(X2[i2]), M.pad.t + 8, 'rgba(35,32,26,.5)', 'center', 10);
-  }
-  var r = erfAt(xs);
-  g.strokeStyle = '#c2531f'; g.lineWidth = 1.4;
-  g.beginPath(); g.moveTo(M.X(xs), M.pad.t); g.lineTo(M.X(xs), M.pad.t + M.ih); g.stroke();
-  g.beginPath(); g.arc(M.X(xs), M.Y(r.err), 4, 0, Math.PI * 2);
-  g.fillStyle = '#c2531f'; g.fill();
+ /* 节点竖线与当前点 */
+ var i2;
+ for (i2 = 0; i2 < 4; i2++){
+ g.strokeStyle = 'rgba(35,32,26,.35)'; g.lineWidth = 1; g.setLineDash([4, 4]);
+ g.beginPath(); g.moveTo(M.X(X2[i2]), M.pad.t); g.lineTo(M.X(X2[i2]), M.pad.t + M.ih); g.stroke();
+ g.setLineDash([]);
+ label(g, X2[i2].toFixed(2), M.X(X2[i2]), M.pad.t + 8, 'rgba(35,32,26,.5)', 'center', 10);
+ }
+ var r = erfAt(xs);
+ g.strokeStyle = '#c2531f'; g.lineWidth = 1.4;
+ g.beginPath(); g.moveTo(M.X(xs), M.pad.t); g.lineTo(M.X(xs), M.pad.t + M.ih); g.stroke();
+ g.beginPath(); g.arc(M.X(xs), M.Y(r.err), 4, 0, Math.PI * 2);
+ g.fillStyle = '#c2531f'; g.fill();
 
-  setText('erf-xv', xs.toFixed(4));
-  setText('erf-state', 'x* = ' + xs.toFixed(4));
-  setText('erf-n3', r.n3.toFixed(10));
-  setText('erf-true', r.true.toFixed(10));
-  setText('erf-err', exs(r.err, 3));
-  setText('erf-ratio', isFinite(r.ratio) ? fixed(r.ratio, 3) : '—');
-  return r;
+ setText('erf-xv', xs.toFixed(4));
+ setText('erf-state', 'x* = ' + xs.toFixed(4));
+ setText('erf-n3', r.n3.toFixed(10));
+ setText('erf-true', r.true.toFixed(10));
+ setText('erf-err', exs(r.err, 3));
+ setText('erf-ratio', isFinite(r.ratio) ? fixed(r.ratio, 3) : '—');
+ return r;
 }
 
 /* ============================================================
-   实验 04 · 差商与导数
-   ============================================================ */
+ 实验 04 · 差商与导数
+ ============================================================ */
 var dvFn = 'exp';
 var DV = { exp: [], runge: [] };
 /* eˣ 在等距节点 i/m 上的 m 阶差商有闭式：Δᵐeˣ/(m!hᵐ) = (e^h−1)^m/(m!hᵐ)，h=1/m。
-   直接用差商表算会在 m≥10 时被相消吃掉（中间量 O(1)、结果 1e−11），故走闭式。
-   1/(1+x²) 在 [−5,5] 上没有闭式，用差商表（双精度下与双倍精度复算一致到 1e−15 相对）。
-   注意它关于原点对称，奇数阶差商恰为 0 —— 这不是算错，是结构。 */
+ 直接用差商表算会在 m≥10 时被相消吃掉（中间量 O(1)、结果 1e−11），故走闭式。
+ 1/(1+x²) 在 [−5,5] 上没有闭式，用差商表（双精度下与双倍精度复算一致到 1e−15 相对）。
+ 注意它关于原点对称，奇数阶差商恰为 0 —— 这不是算错，是结构。 */
 var DV_ZERO = 1e-13;
 (function(){
-  var k, i;
-  for (k = 2; k <= 14; k++){
-    var h = 1 / k;
-    var ddExp = Math.pow(Math.exp(h) - 1, k) / (fact(k) * Math.pow(h, k));
-    var xr = [];
-    for (i = 0; i <= k; i++) xr.push(-5 + 10 * i / k);
-    var ddRunge = newtonCoef(xr, xr.map(function(v){ return 1/(1+v*v); }))[k];
-    DV.exp.push({ m: k, dd: Math.abs(ddExp) });
-    DV.runge.push({ m: k, dd: Math.abs(ddRunge) });
-  }
+ var k, i;
+ for (k = 2; k <= 14; k++){
+ var h = 1 / k;
+ var ddExp = Math.pow(Math.exp(h) - 1, k) / (fact(k) * Math.pow(h, k));
+ var xr = [];
+ for (i = 0; i <= k; i++) xr.push(-5 + 10 * i / k);
+ var ddRunge = newtonCoef(xr, xr.map(function(v){ return 1/(1+v*v); }))[k];
+ DV.exp.push({ m: k, dd: Math.abs(ddExp) });
+ DV.runge.push({ m: k, dd: Math.abs(ddRunge) });
+ }
 })();
 function dvAt(m, fn){
-  var arr = DV[fn || dvFn], o = null, i;
-  for (i = 0; i < arr.length; i++) if (arr[i].m === m) o = arr[i];
-  if (!o) return null;
-  var prev = null;
-  for (i = 0; i < arr.length; i++) if (arr[i].m === m - 2) prev = arr[i];
-  return { dd: o.dd, scaled: o.dd * fact(m), ref: 1 / fact(m),
-           ratio: (prev && prev.dd > DV_ZERO) ? o.dd / prev.dd : NaN };
+ var arr = DV[fn || dvFn], o = null, i;
+ for (i = 0; i < arr.length; i++) if (arr[i].m === m) o = arr[i];
+ if (!o) return null;
+ var prev = null;
+ for (i = 0; i < arr.length; i++) if (arr[i].m === m - 2) prev = arr[i];
+ return { dd: o.dd, scaled: o.dd * fact(m), ref: 1 / fact(m),
+ ratio: (prev && prev.dd > DV_ZERO) ? o.dd / prev.dd : NaN };
 }
 function dvDraw(){
-  var m = parseInt($('dv-m').value, 10) || 6;
-  m = Math.max(2, Math.min(14, m));
-  var cv = $('cv-deriv'), F = fit(cv), g = F.g, w = F.w, h = F.h;
-  var pad = { l: 52, r: 16, t: 16, b: 32 };
-  var M = mkMap(w, h, pad, [2, 14], [-14, 1]);
-  grid(g, M, 6, 5);
-  frame(g, M);
-  var t;
-  for (t = 2; t <= 14; t += 2) label(g, String(t), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
-  for (t = 0; t >= -14; t -= 2) label(g, '10' + (t === 0 ? '⁰' : '^' + t), M.pad.l - 8, M.Y(t), '#6d665a', 'right', 10.5);
-  label(g, '|差商|（对数）', M.pad.l - 8, M.pad.t - 4, '#6d665a', 'left', 10.5);
-  label(g, '阶数 m', M.pad.l + M.iw, M.pad.t + M.ih + 26, '#6d665a', 'right', 10.5);
+ var m = parseInt($('dv-m').value, 10) || 6;
+ m = Math.max(2, Math.min(14, m));
+ var cv = $('cv-deriv'), F = fit(cv), g = F.g, w = F.w, h = F.h;
+ var pad = { l: 52, r: 16, t: 16, b: 32 };
+ var M = mkMap(w, h, pad, [2, 14], [-14, 1]);
+ grid(g, M, 6, 5);
+ frame(g, M);
+ var t;
+ for (t = 2; t <= 14; t += 2) label(g, String(t), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
+ for (t = 0; t >= -14; t -= 2) label(g, '10' + (t === 0 ? '⁰' : '^' + t), M.pad.l - 8, M.Y(t), '#6d665a', 'right', 10.5);
+ label(g, '|差商|（对数）', M.pad.l - 8, M.pad.t - 4, '#6d665a', 'left', 10.5);
+ label(g, '阶数 m', M.pad.l + M.iw, M.pad.t + M.ih + 26, '#6d665a', 'right', 10.5);
 
-  clipPlot(g, M);
-  /* 1/m! 参考线 */
-  g.strokeStyle = '#0d6b5d'; g.lineWidth = 1.6; g.setLineDash([5, 4]);
-  g.beginPath();
-  for (t = 2; t <= 14; t += 0.25){
-    var y = Math.log10(1 / fact(Math.round(t)));
-    if (t === 2) g.moveTo(M.X(t), M.Y(y)); else g.lineTo(M.X(t), M.Y(y));
-  }
-  g.stroke(); g.setLineDash([]);
-  /* 实测差商 */
-  var arr = DV[dvFn], i;
-  var lg = function(v){ return Math.log10(Math.max(v, DV_ZERO)); };
-  g.strokeStyle = '#35507f'; g.lineWidth = 2.2;
-  g.beginPath();
-  for (i = 0; i < arr.length; i++){
-    var yy = lg(arr[i].dd);
-    if (i === 0) g.moveTo(M.X(arr[i].m), M.Y(yy)); else g.lineTo(M.X(arr[i].m), M.Y(yy));
-  }
-  g.stroke();
-  for (i = 0; i < arr.length; i++){
-    var zero = arr[i].dd <= DV_ZERO;
-    g.beginPath();
-    g.arc(M.X(arr[i].m), M.Y(lg(arr[i].dd)), arr[i].m === m ? 5 : 3, 0, Math.PI * 2);
-    if (zero){ g.fillStyle = '#fff'; g.fill(); g.strokeStyle = '#35507f'; g.lineWidth = 1.4; g.stroke(); }
-    else { g.fillStyle = arr[i].m === m ? '#c2531f' : '#35507f'; g.fill(); }
-  }
-  unclip(g);
-  if (dvFn === 'runge') label(g, '○ 处 |差商| ≤ 10⁻¹³（偶函数在对称节点上的奇数阶差商恰为 0）',
-    M.pad.l + 6, M.pad.t + 10, '#6d665a', 'left', 10);
-  g.strokeStyle = '#c2531f'; g.lineWidth = 1.2;
-  g.beginPath(); g.moveTo(M.X(m), M.pad.t); g.lineTo(M.X(m), M.pad.t + M.ih); g.stroke();
+ clipPlot(g, M);
+ /* 1/m! 参考线 */
+ g.strokeStyle = '#0d6b5d'; g.lineWidth = 1.6; g.setLineDash([5, 4]);
+ g.beginPath();
+ for (t = 2; t <= 14; t += 0.25){
+ var y = Math.log10(1 / fact(Math.round(t)));
+ if (t === 2) g.moveTo(M.X(t), M.Y(y)); else g.lineTo(M.X(t), M.Y(y));
+ }
+ g.stroke(); g.setLineDash([]);
+ /* 实测差商 */
+ var arr = DV[dvFn], i;
+ var lg = function(v){ return Math.log10(Math.max(v, DV_ZERO)); };
+ g.strokeStyle = '#35507f'; g.lineWidth = 2.2;
+ g.beginPath();
+ for (i = 0; i < arr.length; i++){
+ var yy = lg(arr[i].dd);
+ if (i === 0) g.moveTo(M.X(arr[i].m), M.Y(yy)); else g.lineTo(M.X(arr[i].m), M.Y(yy));
+ }
+ g.stroke();
+ for (i = 0; i < arr.length; i++){
+ var zero = arr[i].dd <= DV_ZERO;
+ g.beginPath();
+ g.arc(M.X(arr[i].m), M.Y(lg(arr[i].dd)), arr[i].m === m ? 5 : 3, 0, Math.PI * 2);
+ if (zero){ g.fillStyle = '#fff'; g.fill(); g.strokeStyle = '#35507f'; g.lineWidth = 1.4; g.stroke(); }
+ else { g.fillStyle = arr[i].m === m ? '#c2531f' : '#35507f'; g.fill(); }
+ }
+ unclip(g);
+ if (dvFn === 'runge') label(g, '○ 处 |差商| ≤ 10⁻¹³（偶函数在对称节点上的奇数阶差商恰为 0）',
+ M.pad.l + 6, M.pad.t + 10, '#6d665a', 'left', 10);
+ g.strokeStyle = '#c2531f'; g.lineWidth = 1.2;
+ g.beginPath(); g.moveTo(M.X(m), M.pad.t); g.lineTo(M.X(m), M.pad.t + M.ih); g.stroke();
 
-  var o = dvAt(m, dvFn);
-  setText('dv-mv', String(m));
-  setText('dv-state', 'f = ' + (dvFn === 'exp' ? 'eˣ，[0,1]' : '1/(1+x²)，[−5,5]') + '，m = ' + m);
-  setText('dv-dd', o.dd <= DV_ZERO ? '\u2264 1e\u221213' : exs(o.dd, 3));
-  setText('dv-scaled', num(o.scaled));
-  setText('dv-fact', exs(o.ref, 3));
-  setText('dv-ratio', isFinite(o.ratio) ? fixed(o.ratio, 4) : (o.dd <= DV_ZERO ? '0' : '—'));
-  return o;
+ var o = dvAt(m, dvFn);
+ setText('dv-mv', String(m));
+ setText('dv-state', 'f = ' + (dvFn === 'exp' ? 'eˣ，[0,1]' : '1/(1+x²)，[−5,5]') + '，m = ' + m);
+ setText('dv-dd', o.dd <= DV_ZERO ? '\u2264 1e\u221213' : exs(o.dd, 3));
+ setText('dv-scaled', num(o.scaled));
+ setText('dv-fact', exs(o.ref, 3));
+ setText('dv-ratio', isFinite(o.ratio) ? fixed(o.ratio, 4) : (o.dd <= DV_ZERO ? '0' : '—'));
+ return o;
 }
 
 /* ============================================================
-   实验 05 · 舍入误差传播
-   ============================================================ */
-var TRUE5 = 243 / 120;                       // 243cos(3ξ)/120，h ≤ 1e-2 时 cos ≈ 1
+ 实验 05 · 舍入误差传播
+ ============================================================ */
+var TRUE5 = 243 / 120; // 243cos(3ξ)/120，h ≤ 1e-2 时 cos ≈ 1
 var EPS = Math.pow(2, -52);
 function rdD5(h){
-  var xs = [], i;
-  for (i = 0; i <= 5; i++) xs.push(i * h);
-  return ddTable(xs, xs.map(F1))[5][5];
+ var xs = [], i;
+ for (i = 0; i <= 5; i++) xs.push(i * h);
+ return ddTable(xs, xs.map(F1))[5][5];
 }
 function rdAt(v){
-  var h = Math.pow(10, v);
-  var d5 = rdD5(h);
-  var err = Math.abs(d5 - TRUE5);
-  var digits = err > 0 ? Math.log10(TRUE5 / err) : 16;
-  if (!isFinite(digits)) digits = 16;
-  digits = Math.max(0, Math.min(16, digits));
-  return { h: h, d5: d5, true5: TRUE5, floor: EPS / (120 * Math.pow(h, 5)), digits: digits };
+ var h = Math.pow(10, v);
+ var d5 = rdD5(h);
+ var err = Math.abs(d5 - TRUE5);
+ var digits = err > 0 ? Math.log10(TRUE5 / err) : 16;
+ if (!isFinite(digits)) digits = 16;
+ digits = Math.max(0, Math.min(16, digits));
+ return { h: h, d5: d5, true5: TRUE5, floor: EPS / (120 * Math.pow(h, 5)), digits: digits };
 }
 function rdDraw(){
-  var v = parseFloat($('rd-h').value);
-  if (!isFinite(v)) v = -1;
-  v = Math.max(-6, Math.min(-2, v));
-  var cv = $('cv-round'), F = fit(cv), g = F.g, w = F.w, h = F.h;
-  var pad = { l: 54, r: 16, t: 16, b: 32 };
-  var M = mkMap(w, h, pad, [-2, -6], [-1, 13]);
-  grid(g, M, 4, 7);
-  frame(g, M);
-  var t;
-  for (t = -6; t <= -2; t += 1) label(g, '10^' + t, M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
-  for (t = 0; t <= 12; t += 3) label(g, '10^' + t, M.pad.l - 8, M.Y(t), '#6d665a', 'right', 10.5);
-  label(g, 'log₁₀ h', M.pad.l + M.iw, M.pad.t + M.ih + 26, '#6d665a', 'right', 10.5);
-  label(g, '|D₅|（对数）', M.pad.l - 8, M.pad.t - 4, '#6d665a', 'left', 10.5);
+ var v = parseFloat($('rd-h').value);
+ if (!isFinite(v)) v = -1;
+ v = Math.max(-6, Math.min(-2, v));
+ var cv = $('cv-round'), F = fit(cv), g = F.g, w = F.w, h = F.h;
+ var pad = { l: 54, r: 16, t: 16, b: 32 };
+ var M = mkMap(w, h, pad, [-2, -6], [-1, 13]);
+ grid(g, M, 4, 7);
+ frame(g, M);
+ var t;
+ for (t = -6; t <= -2; t += 1) label(g, '10^' + t, M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
+ for (t = 0; t <= 12; t += 3) label(g, '10^' + t, M.pad.l - 8, M.Y(t), '#6d665a', 'right', 10.5);
+ label(g, 'log₁₀ h', M.pad.l + M.iw, M.pad.t + M.ih + 26, '#6d665a', 'right', 10.5);
+ label(g, '|D₅|（对数）', M.pad.l - 8, M.pad.t - 4, '#6d665a', 'left', 10.5);
 
-  clipPlot(g, M);
-  /* 真值 */
-  g.strokeStyle = '#0d6b5d'; g.lineWidth = 1.6; g.setLineDash([6, 4]);
-  g.beginPath(); g.moveTo(M.X(-6), M.Y(Math.log10(TRUE5))); g.lineTo(M.X(-2), M.Y(Math.log10(TRUE5))); g.stroke();
-  g.setLineDash([]);
-  /* 噪声地板 */
-  g.strokeStyle = '#b8b0a0'; g.lineWidth = 1.4;
-  g.beginPath();
-  for (t = -6; t <= -2; t += 0.05){
-    var yy = Math.log10(EPS / (120 * Math.pow(Math.pow(10, t), 5)));
-    if (t === -6) g.moveTo(M.X(t), M.Y(yy)); else g.lineTo(M.X(t), M.Y(yy));
-  }
-  g.stroke();
-  /* 实测 */
-  g.strokeStyle = '#35507f'; g.lineWidth = 2.2;
-  g.beginPath();
-  for (t = -6; t <= -2; t += 0.02){
-    var d = Math.abs(rdD5(Math.pow(10, t)));
-    var y2 = Math.log10(Math.max(d, 1e-30));
-    if (t === -6) g.moveTo(M.X(t), M.Y(y2)); else g.lineTo(M.X(t), M.Y(y2));
-  }
-  g.stroke();
-  unclip(g);
-  var r = rdAt(v);
-  g.strokeStyle = '#c2531f'; g.lineWidth = 1.4;
-  g.beginPath(); g.moveTo(M.X(v), M.pad.t); g.lineTo(M.X(v), M.pad.t + M.ih); g.stroke();
-  g.beginPath(); g.arc(M.X(v), M.Y(Math.log10(Math.max(Math.abs(r.d5), 1e-30))), 4.5, 0, Math.PI * 2);
-  g.fillStyle = '#c2531f'; g.fill();
+ clipPlot(g, M);
+ /* 真值 */
+ g.strokeStyle = '#0d6b5d'; g.lineWidth = 1.6; g.setLineDash([6, 4]);
+ g.beginPath(); g.moveTo(M.X(-6), M.Y(Math.log10(TRUE5))); g.lineTo(M.X(-2), M.Y(Math.log10(TRUE5))); g.stroke();
+ g.setLineDash([]);
+ /* 噪声地板 */
+ g.strokeStyle = '#b8b0a0'; g.lineWidth = 1.4;
+ g.beginPath();
+ for (t = -6; t <= -2; t += 0.05){
+ var yy = Math.log10(EPS / (120 * Math.pow(Math.pow(10, t), 5)));
+ if (t === -6) g.moveTo(M.X(t), M.Y(yy)); else g.lineTo(M.X(t), M.Y(yy));
+ }
+ g.stroke();
+ /* 实测 */
+ g.strokeStyle = '#35507f'; g.lineWidth = 2.2;
+ g.beginPath();
+ for (t = -6; t <= -2; t += 0.02){
+ var d = Math.abs(rdD5(Math.pow(10, t)));
+ var y2 = Math.log10(Math.max(d, 1e-30));
+ if (t === -6) g.moveTo(M.X(t), M.Y(y2)); else g.lineTo(M.X(t), M.Y(y2));
+ }
+ g.stroke();
+ unclip(g);
+ var r = rdAt(v);
+ g.strokeStyle = '#c2531f'; g.lineWidth = 1.4;
+ g.beginPath(); g.moveTo(M.X(v), M.pad.t); g.lineTo(M.X(v), M.pad.t + M.ih); g.stroke();
+ g.beginPath(); g.arc(M.X(v), M.Y(Math.log10(Math.max(Math.abs(r.d5), 1e-30))), 4.5, 0, Math.PI * 2);
+ g.fillStyle = '#c2531f'; g.fill();
 
-  setText('rd-hv', fixed(v, 2));
-  setText('rd-state', 'h = ' + exs(r.h, 2));
-  setText('rd-hval', exs(r.h, 3));
-  setText('rd-d5', Math.abs(r.d5) < 1e4 ? fixed(r.d5, 3) : exs(r.d5, 3));
-  setText('rd-true', fixed(r.true5, 3));
-  setText('rd-digits', fixed(r.digits, 1));
-  return r;
+ setText('rd-hv', fixed(v, 2));
+ setText('rd-state', 'h = ' + exs(r.h, 2));
+ setText('rd-hval', exs(r.h, 3));
+ setText('rd-d5', Math.abs(r.d5) < 1e4 ? fixed(r.d5, 3) : exs(r.d5, 3));
+ setText('rd-true', fixed(r.true5, 3));
+ setText('rd-digits', fixed(r.digits, 1));
+ return r;
 }
 
 /* ============================================================
-   实验 06 · 结点顺序
-   ============================================================ */
+ 实验 06 · 结点顺序
+ ============================================================ */
 var XF = [0.07585, 0.05395, 0.53079, 0.77916, 0.93401, 0.12990, 0.56882, 0.46939, 0.01190, 0.33712];
 var YF = [0.07578, 0.05392, 0.50622, 0.70268, 0.80401, 0.12954, 0.53864, 0.45234, 0.01190, 0.33077];
 var FMEAN = XF.reduce(function(a, b){ return a + b; }, 0) / XF.length;
 var ORDER = {
-  a: { name: '原始顺序', idx: XF.map(function(_, i){ return i; }) },
-  b: { name: '按 x 升序', idx: XF.map(function(_, i){ return i; }).sort(function(p, q){ return XF[p] - XF[q]; }) },
-  c: { name: '按距均值升序', idx: XF.map(function(_, i){ return i; }).sort(function(p, q){
-        return Math.abs(XF[p] - FMEAN) - Math.abs(XF[q] - FMEAN); }) }
+ a: { name: '原始顺序', idx: XF.map(function(_, i){ return i; }) },
+ b: { name: '按 x 升序', idx: XF.map(function(_, i){ return i; }).sort(function(p, q){ return XF[p] - XF[q]; }) },
+ c: { name: '按距均值升序', idx: XF.map(function(_, i){ return i; }).sort(function(p, q){
+ return Math.abs(XF[p] - FMEAN) - Math.abs(XF[q] - FMEAN); }) }
 };
 var ORSTATE = {};
 (function(){
-  var refA9 = null;
-  ['a', 'b', 'c'].forEach(function(key){
-    var o = ORDER[key].idx;
-    var xs = o.map(function(i){ return XF[i]; });
-    var ys = o.map(function(i){ return YF[i]; });
-    var c = newtonCoef(xs, ys);
-    var diag = [], k, i;
-    for (k = 0; k < xs.length; k++){
-      var p = 1;
-      for (i = 0; i < k; i++) p *= (xs[k] - xs[i]);
-      diag.push(p);
-    }
-    var mn = Infinity;
-    for (k = 1; k < diag.length; k++) mn = Math.min(mn, Math.abs(diag[k]));
-    var mx = 0;
-    for (k = 0; k < c.length; k++) mx = Math.max(mx, Math.abs(c[k]));
-    ORSTATE[key] = { name: ORDER[key].name, diag: diag, min: mn, inv: 1 / mn, maxa: mx, a9: c[c.length - 1], xs: xs };
-    if (key === 'b') refA9 = c[c.length - 1];
-  });
-  ['a', 'b', 'c'].forEach(function(key){
-    ORSTATE[key].a9rel = (ORSTATE[key].a9 - refA9) / refA9;
-  });
+ var refA9 = null;
+ ['a', 'b', 'c'].forEach(function(key){
+ var o = ORDER[key].idx;
+ var xs = o.map(function(i){ return XF[i]; });
+ var ys = o.map(function(i){ return YF[i]; });
+ var c = newtonCoef(xs, ys);
+ var diag = [], k, i;
+ for (k = 0; k < xs.length; k++){
+ var p = 1;
+ for (i = 0; i < k; i++) p *= (xs[k] - xs[i]);
+ diag.push(p);
+ }
+ var mn = Infinity;
+ for (k = 1; k < diag.length; k++) mn = Math.min(mn, Math.abs(diag[k]));
+ var mx = 0;
+ for (k = 0; k < c.length; k++) mx = Math.max(mx, Math.abs(c[k]));
+ ORSTATE[key] = { name: ORDER[key].name, diag: diag, min: mn, inv: 1 / mn, maxa: mx, a9: c[c.length - 1], xs: xs };
+ if (key === 'b') refA9 = c[c.length - 1];
+ });
+ ['a', 'b', 'c'].forEach(function(key){
+ ORSTATE[key].a9rel = (ORSTATE[key].a9 - refA9) / refA9;
+ });
 })();
 var orKey = 'a';
 function orDraw(){
-  var st = ORSTATE[orKey];
-  var cv = $('cv-order'), F = fit(cv), g = F.g, w = F.w, h = F.h;
-  var pad = { l: 54, r: 16, t: 16, b: 34 };
-  var M = mkMap(w, h, pad, [0, 10], [-6.2, 0.6]);
-  grid(g, M, 5, 6);
-  frame(g, M);
-  var t;
-  for (t = -6; t <= 0; t += 1) label(g, '10^' + t, M.pad.l - 8, M.Y(t), '#6d665a', 'right', 10.5);
-  label(g, 'k（差商阶）', M.pad.l + M.iw, M.pad.t + M.ih + 28, '#6d665a', 'right', 10.5);
-  label(g, '|ω_k(x_k)|', M.pad.l - 8, M.pad.t - 4, '#6d665a', 'left', 10.5);
+ var st = ORSTATE[orKey];
+ var cv = $('cv-order'), F = fit(cv), g = F.g, w = F.w, h = F.h;
+ var pad = { l: 54, r: 16, t: 16, b: 34 };
+ var M = mkMap(w, h, pad, [0, 10], [-6.2, 0.6]);
+ grid(g, M, 5, 6);
+ frame(g, M);
+ var t;
+ for (t = -6; t <= 0; t += 1) label(g, '10^' + t, M.pad.l - 8, M.Y(t), '#6d665a', 'right', 10.5);
+ label(g, 'k（差商阶）', M.pad.l + M.iw, M.pad.t + M.ih + 28, '#6d665a', 'right', 10.5);
+ label(g, '|ω_k(x_k)|', M.pad.l - 8, M.pad.t - 4, '#6d665a', 'left', 10.5);
 
-  var bw = M.iw / 10 * 0.62, i;
-  for (i = 1; i <= 9; i++){
-    var val = Math.abs(st.diag[i]);
-    var lg = Math.log10(Math.max(val, 1e-12));
-    var x0 = M.X(i - 0.5) - bw / 2;
-    var yTop = M.Y(lg), yBot = M.Y(-6.2);
-    var isMin = Math.abs(val - st.min) < st.min * 1e-9;
-    g.fillStyle = isMin ? '#c2531f' : '#35507f';
-    g.globalAlpha = isMin ? 0.95 : 0.55;
-    g.fillRect(x0, yTop, bw, Math.max(1, yBot - yTop));
-    g.globalAlpha = 1;
-    label(g, String(i), M.X(i - 0.5), M.pad.t + M.ih + 14, '#6d665a', 'center', 10.5);
-    if (isMin) label(g, exs(val, 2), M.X(i - 0.5), yTop - 8, '#c2531f', 'center', 10);
-  }
+ var bw = M.iw / 10 * 0.62, i;
+ for (i = 1; i <= 9; i++){
+ var val = Math.abs(st.diag[i]);
+ var lg = Math.log10(Math.max(val, 1e-12));
+ var x0 = M.X(i - 0.5) - bw / 2;
+ var yTop = M.Y(lg), yBot = M.Y(-6.2);
+ var isMin = Math.abs(val - st.min) < st.min * 1e-9;
+ g.fillStyle = isMin ? '#c2531f' : '#35507f';
+ g.globalAlpha = isMin ? 0.95 : 0.55;
+ g.fillRect(x0, yTop, bw, Math.max(1, yBot - yTop));
+ g.globalAlpha = 1;
+ label(g, String(i), M.X(i - 0.5), M.pad.t + M.ih + 14, '#6d665a', 'center', 10.5);
+ if (isMin) label(g, exs(val, 2), M.X(i - 0.5), yTop - 8, '#c2531f', 'center', 10);
+ }
 
-  setText('or-state', st.name);
-  setText('or-min', exs(st.min, 3));
-  setText('or-inv', exs(st.inv, 3));
-  setText('or-maxa', fixed(st.maxa, 3));
-  setText('or-a9', exs(st.a9rel, 2));
-  return st;
+ setText('or-state', st.name);
+ setText('or-min', exs(st.min, 3));
+ setText('or-inv', exs(st.inv, 3));
+ setText('or-maxa', fixed(st.maxa, 3));
+ setText('or-a9', exs(st.a9rel, 2));
+ return st;
 }
 
 /* ============================================================
-   事件与初始化
-   ============================================================ */
+ 事件与初始化
+ ============================================================ */
 function bind(id, ev, fn){ var el = $(id); if (el && el.addEventListener) el.addEventListener(ev, fn); }
 function press(ids, cur){
-  ids.forEach(function(id){ var el = $(id); if (el && el.setAttribute) el.setAttribute('aria-pressed', String(id === cur)); });
+ ids.forEach(function(id){ var el = $(id); if (el && el.setAttribute) el.setAttribute('aria-pressed', String(id === cur)); });
 }
 
 bind('dd-k', 'input', function(){ ddRender(); });
 bind('dd-plain', 'click', function(){
-  ddIns = false; press(['dd-plain', 'dd-ins'], 'dd-plain');
-  var s = $('dd-k'); if (s) s.max = 5;
-  ddRender();
+ ddIns = false; press(['dd-plain', 'dd-ins'], 'dd-plain');
+ var s = $('dd-k'); if (s) s.max = 5;
+ ddRender();
 });
 bind('dd-ins', 'click', function(){
-  ddIns = true; press(['dd-plain', 'dd-ins'], 'dd-ins');
-  var s = $('dd-k'); if (s) s.max = 6;
-  ddRender();
+ ddIns = true; press(['dd-plain', 'dd-ins'], 'dd-ins');
+ var s = $('dd-k'); if (s) s.max = 6;
+ ddRender();
 });
 bind('inc-k', 'input', function(){ incDraw(); });
 bind('inc-prev', 'click', function(){
-  var s = $('inc-k'); var v = Math.max(0, parseInt(s.value, 10) - 1);
-  s.value = String(v); incDraw();
+ var s = $('inc-k'); var v = Math.max(0, parseInt(s.value, 10) - 1);
+ s.value = String(v); incDraw();
 });
 bind('inc-next', 'click', function(){
-  var s = $('inc-k'); var v = Math.min(5, parseInt(s.value, 10) + 1);
-  s.value = String(v); incDraw();
+ var s = $('inc-k'); var v = Math.min(5, parseInt(s.value, 10) + 1);
+ s.value = String(v); incDraw();
 });
 bind('erf-xs', 'input', function(){ erfDraw(); });
 bind('dv-m', 'input', function(){ dvDraw(); });
@@ -1234,12 +1207,12 @@ bind('dv-exp', 'click', function(){ dvFn = 'exp'; press(['dv-exp', 'dv-runge'], 
 bind('dv-runge', 'click', function(){ dvFn = 'runge'; press(['dv-exp', 'dv-runge'], 'dv-runge'); dvDraw(); });
 bind('rd-h', 'input', function(){ rdDraw(); });
 ['or-a', 'or-b', 'or-c'].forEach(function(id){
-  bind(id, 'click', function(){
-    orKey = id.slice(3); press(['or-a', 'or-b', 'or-c'], id); orDraw();
-  });
+ bind(id, 'click', function(){
+ orKey = id.slice(3); press(['or-a', 'or-b', 'or-c'], id); orDraw();
+ });
 });
 bind(window, 'resize', function(){
-  ddRender(); incDraw(); erfDraw(); dvDraw(); rdDraw(); orDraw();
+ ddRender(); incDraw(); erfDraw(); dvDraw(); rdDraw(); orDraw();
 });
 
 ddRender();
@@ -1250,15 +1223,15 @@ rdDraw();
 orDraw();
 
 window.NA23 = {
-  ddTable: ddTable, newtonCoef: newtonCoef, newtonEval: newtonEval, erf: erf, f4: f4,
-  fact: fact, F1: F1, X1: X1, Y1: Y1, X1I: X1I, Y1I: Y1I, X2: X2, Y2: Y2, C2: C2, C1: C1,
-  M4: M4, INC_MAX: INC_MAX, TRUE5: TRUE5, EPS: EPS,
-  XF: XF, YF: YF, ORDER: ORDER, ORSTATE: ORSTATE,
-  incMax: function(k){ return INC_MAX[k]; },
-  erfAt: erfAt, dvAt: dvAt, rdAt: rdAt, rdD5: rdD5,
-  orAt: function(k){ return ORSTATE[k]; },
-  ddRender: ddRender, incDraw: incDraw, erfDraw: erfDraw, dvDraw: dvDraw, rdDraw: rdDraw, orDraw: orDraw,
-  get: function(){ return { ddIns: ddIns, dvFn: dvFn, orKey: orKey }; }
+ ddTable: ddTable, newtonCoef: newtonCoef, newtonEval: newtonEval, erf: erf, f4: f4,
+ fact: fact, F1: F1, X1: X1, Y1: Y1, X1I: X1I, Y1I: Y1I, X2: X2, Y2: Y2, C2: C2, C1: C1,
+ M4: M4, INC_MAX: INC_MAX, TRUE5: TRUE5, EPS: EPS,
+ XF: XF, YF: YF, ORDER: ORDER, ORSTATE: ORSTATE,
+ incMax: function(k){ return INC_MAX[k]; },
+ erfAt: erfAt, dvAt: dvAt, rdAt: rdAt, rdD5: rdD5,
+ orAt: function(k){ return ORSTATE[k]; },
+ ddRender: ddRender, incDraw: incDraw, erfDraw: erfDraw, dvDraw: dvDraw, rdDraw: rdDraw, orDraw: orDraw,
+ get: function(){ return { ddIns: ddIns, dvFn: dvFn, orKey: orKey }; }
 };
 })();
 </script>

@@ -5,40 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>期中复习 · 数值线性代数（截至最小二乘）</title>
 <!--
-  维护说明（给未来的自己）：
-  1. 本页 = 复习材料，图号 NLA-R1。不是可视化页，配套的可视化在 NLA-07…NLA-09。
-  2. 范围：只到最小二乘。原 PDF 指南覆盖 5 次作业 33 题，含「浮点与大 O」「条件数与敏感性」两章；
-     按老师口径（只考到最小二乘、条件数不在范围）这两章整块删除，相关交叉引用已同步修正：
-       00 考点地图第⑤行 · 00 配比预测 · 01 主线链条（五环→四环）· 07 八大题型（删第7、8条）
-       08 速查表（删条件数、IEEE 两块）· 09 易错点（删第11–15条）· 10 重点分级（删两行）· 11 冲刺（D6 作废）
-  3. 原 PDF 的公式是 Type1 数学字体，转 HTML 时全部丢失，本页公式是重新录入的。
-     数值已由工作区根的 verify_midterm.js 实测核对（HW2-5 的 SVD、顶点、面积、det、范数、逆；
-     HW3-4 的棋盘结构；HW3-5 的交线；HW4-4 的最小二乘解；CGS 的 flop 计数）。
-  4. 打印：浏览器「打印 → 另存为 PDF」，@media print 已隐藏导航与页脚。
+ 维护说明（给未来的自己）：
+ 1. 本页 = 复习材料，图号 NLA-R1。不是可视化页，配套的可视化在 NLA-07…NLA-09。
+ 按老师口径（只考到最小二乘、条件数不在范围）这两章整块删除，相关交叉引用已同步修正：
+ 00 考点地图第⑤行 · 00 配比预测 · 01 主线链条（五环→四环）· 07 八大题型（删第7、8条）
+ 08 速查表（删条件数、IEEE 两块）· 09 易错点（删第11–15条）· 10 重点分级（删两行）· 11 冲刺（D6 作废）
+ 数值已由工作区根的 verify_midterm.js 实测核对（HW2-5 的 SVD、顶点、面积、det、范数、逆；
+ HW3-4 的棋盘结构；HW3-5 的交线；HW4-4 的最小二乘解；CGS 的 flop 计数）。
 -->
 <script>
 window.MathJax = {
-  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
-  svg: { fontCache: "local" },
-  options: { enableMenu: false }
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "local" },
+ options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
-  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
-  --line:#CBD5DF; --grid:#E6EBF1;
-  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+ --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+ --line:#CBD5DF; --grid:#E6EBF1;
+ --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
-  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--steel);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
-  overflow:hidden;margin:0 0 14px;background:var(--card)}
+ overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -47,10 +44,10 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:72ch}
 .tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
-  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
-  background:#EEF3F8;color:var(--steel)}
+ border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+ background:#EEF3F8;color:var(--steel)}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
-  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+ border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
 h3{font-size:15px;font-weight:680;margin:26px 0 8px;color:var(--ink)}
 p{margin:10px 0}
@@ -58,9 +55,9 @@ ul,ol{margin:10px 0;padding-left:24px}
 li{margin:4px 0}
 .mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
 .eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
-  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+ border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
-  border-radius:0 8px 8px 0;font-size:14px}
+ border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--steel);background:#EFF4F9}
 .note.g{border-left-color:var(--green);background:#EDF6F1}
 .note.a{border-left-color:var(--amber);background:#FBF6E7}
@@ -74,7 +71,7 @@ table.tb td.c{text-align:center}
 table.tb.small{font-size:13px}
 table.tb tr.hi td{background:#FBF1ED}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
-  font-size:13px;color:var(--ink2)}
+ font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:22px 0 0;flex-wrap:wrap}
 .pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
@@ -85,12 +82,12 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 .ladder .st .t{font-weight:680;font-size:14.5px;margin:3px 0 4px}
 .ladder .st .d{font-size:12.5px;color:var(--ink2);line-height:1.6}
 @media print{
-  body{background:#fff;font-size:12px}
-  .wrap{max-width:none;padding:0 6mm}
-  .crumb,.pager,footer,.noprint{display:none}
-  h2{page-break-after:avoid;margin-top:20px}
-  .lab,.note,table.tb,.eq{page-break-inside:avoid}
-  a{color:var(--ink);text-decoration:none}
+ body{background:#fff;font-size:12px}
+ .wrap{max-width:none;padding:0 6mm}
+ .crumb,.pager,footer,.noprint{display:none}
+ h2{page-break-after:avoid;margin-top:20px}
+ .lab,.note,table.tb,.eq{page-break-inside:avoid}
+ a{color:var(--ink);text-decoration:none}
 }
 </style>
 </head>
@@ -100,10 +97,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb noprint"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
 
 <div class="sheet">
-  <div class="cell"><p class="k">图号</p><p class="v no">NLA-R1</p></div>
-  <div class="cell" style="flex:2 1 240px"><p class="k">主题</p><p class="v">期中复习 · 知识点与考点</p></div>
-  <div class="cell"><p class="k">依据</p><p class="v">四次课后测试 · 27 题</p></div>
-  <div class="cell"><p class="k">范围</p><p class="v">范数 → SVD → QR → 最小二乘</p></div>
+ <div class="cell"><p class="k">图号</p><p class="v no">NLA-R1</p></div>
+ <div class="cell" style="flex:2 1 240px"><p class="k">主题</p><p class="v">期中复习 · 知识点与考点</p></div>
+ <div class="cell"><p class="k">依据</p><p class="v">四次课后测试 · 27 题</p></div>
+ <div class="cell"><p class="k">范围</p><p class="v">范数 → SVD → QR → 最小二乘</p></div>
 </div>
 
 <h1>期中复习：一条从「看懂」到「算准」的链条</h1>
@@ -115,24 +112,24 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <table class="tb">
 <tr><th>次序</th><th>主题</th><th>题量</th><th>具体考点</th><th>难度</th></tr>
 <tr>
-  <td class="c">①</td><td>矩阵代数<br>＋范数</td><td class="c">11</td>
-  <td>1 初等变换的左/右乘表示与复合顺序；2 求值矩阵可逆性与 \(A^{-1}_{ij}\) 的含义；3 三角酉阵必为对角阵；4 对角阵的 2-范数与 p-范数；5 行向量的 2-范数；6 秩一矩阵 \(uv^*\) 的 2-范数；7 正交向量勾股定理；8 Hermitian 特征值实、特征向量正交；9 \(\rho(A)\le\|A\|\)；10 \(\|\cdot\|_1\) 与 \(\|\cdot\|_2\) 的等价及常数最优性；11 秩一矩阵的 Frobenius 范数</td>
-  <td class="c">★★★</td>
+ <td class="c">①</td><td>矩阵代数<br>＋范数</td><td class="c">11</td>
+ <td>1 初等变换的左/右乘表示与复合顺序；2 求值矩阵可逆性与 \(A^{-1}_{ij}\) 的含义；3 三角酉阵必为对角阵；4 对角阵的 2-范数与 p-范数；5 行向量的 2-范数；6 秩一矩阵 \(uv^*\) 的 2-范数；7 正交向量勾股定理；8 Hermitian 特征值实、特征向量正交；9 \(\rho(A)\le\|A\|\)；10 \(\|\cdot\|_1\) 与 \(\|\cdot\|_2\) 的等价及常数最优性；11 秩一矩阵的 Frobenius 范数</td>
+ <td class="c">★★★</td>
 </tr>
 <tr>
-  <td class="c">②</td><td>奇异值<br>分解 SVD</td><td class="c">6</td>
-  <td>1 三类小矩阵手算 SVD；2 旋转 90° 奇异值不变（正交相似）；3 实矩阵必有实 SVD；4 \(\|A\|_2\) 与 \(\sigma_{\min}\) 的精确值；5 综合大题：最少负号 SVD、奇异向量、超椭圆顶点、四种范数、SVD 求逆、特征值、\(\det\)、椭圆面积；6 分块矩阵 \(\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\) 的谱</td>
-  <td class="c">★★★★</td>
+ <td class="c">②</td><td>奇异值<br>分解 SVD</td><td class="c">6</td>
+ <td>1 三类小矩阵手算 SVD；2 旋转 90° 奇异值不变（正交相似）；3 实矩阵必有实 SVD；4 \(\|A\|_2\) 与 \(\sigma_{\min}\) 的精确值；5 综合大题：最少负号 SVD、奇异向量、超椭圆顶点、四种范数、SVD 求逆、特征值、\(\det\)、椭圆面积；6 分块矩阵 \(\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\) 的谱</td>
+ <td class="c">★★★★</td>
 </tr>
 <tr>
-  <td class="c">③</td><td>投影与<br>正交化</td><td class="c">6</td>
-  <td>1 正交投影 \(P\) 下 \(I-2P\) 是酉阵＋几何解释；2 \(A^*A\) 非奇异 \(\iff\) \(A\) 列满秩；3 非零投影 \(\|P\|_2\ge1\)，等号 \(\iff\) 正交投影；4 列奇偶交替正交时 \(\hat R\) 的棋盘稀疏结构；5 用完全 QR 求两平面交线；6 经典 Gram–Schmidt 的 flop 计数</td>
-  <td class="c">★★★★</td>
+ <td class="c">③</td><td>投影与<br>正交化</td><td class="c">6</td>
+ <td>1 正交投影 \(P\) 下 \(I-2P\) 是酉阵＋几何解释；2 \(A^*A\) 非奇异 \(\iff\) \(A\) 列满秩；3 非零投影 \(\|P\|_2\ge1\)，等号 \(\iff\) 正交投影；4 列奇偶交替正交时 \(\hat R\) 的棋盘稀疏结构；5 用完全 QR 求两平面交线；6 经典 Gram–Schmidt 的 flop 计数</td>
+ <td class="c">★★★★</td>
 </tr>
 <tr class="hi">
-  <td class="c">④</td><td>Householder<br>Givens·最小二乘</td><td class="c">4</td>
-  <td>1 Householder 的特征值/行列式/奇异值（几何＋代数双证）；2 \(F\)（反射）与 \(J\)（Givens 旋转）的几何效果、基于 Givens 的 QR、6 flops vs 4 flops（大 50%）；3 设 \(A\) 由 \(A_1,A_2\) 上下拼接，证 \(\|A^+\|_2\le\|A_1^{-1}\|_2\)；4 \(5\times3\) 矩阵分别用 MGS 与 Householder 做 QR，再解最小二乘</td>
-  <td class="c">★★★★</td>
+ <td class="c">④</td><td>Householder<br>Givens·最小二乘</td><td class="c">4</td>
+ <td>1 Householder 的特征值/行列式/奇异值（几何＋代数双证）；2 \(F\)（反射）与 \(J\)（Givens 旋转）的几何效果、基于 Givens 的 QR、6 flops vs 4 flops（大 50%）；3 设 \(A\) 由 \(A_1,A_2\) 上下拼接，证 \(\|A^+\|_2\le\|A_1^{-1}\|_2\)；4 \(5\times3\) 矩阵分别用 MGS 与 Householder 做 QR，再解最小二乘</td>
+ <td class="c">★★★★</td>
 </tr>
 </table>
 
@@ -144,18 +141,18 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>把零散知识点挂到这条链上，考场调取会快很多：</p>
 
 <div class="ladder">
-  <div class="st"><p class="n">环 1</p><p class="t">矩阵 = 算子</p><p class="d">\(Ax\) 是列的线性组合；左乘改行、右乘改列</p></div>
-  <div class="st"><p class="n">环 2</p><p class="t">范数 = 度量</p><p class="d">向量多大、算子放缩多少，才有「误差」可言</p></div>
-  <div class="st"><p class="n">环 3</p><p class="t">SVD = 显微镜</p><p class="d">\(A=U\Sigma V^*\)，一切范数、秩、逆都现形</p></div>
-  <div class="st"><p class="n">环 4</p><p class="t">QR = 手术刀</p><p class="d">三种算法把 \(A\) 正交三角化，解最小二乘</p></div>
+ <div class="st"><p class="n">环 1</p><p class="t">矩阵 = 算子</p><p class="d">\(Ax\) 是列的线性组合；左乘改行、右乘改列</p></div>
+ <div class="st"><p class="n">环 2</p><p class="t">范数 = 度量</p><p class="d">向量多大、算子放缩多少，才有「误差」可言</p></div>
+ <div class="st"><p class="n">环 3</p><p class="t">SVD = 显微镜</p><p class="d">\(A=U\Sigma V^*\)，一切范数、秩、逆都现形</p></div>
+ <div class="st"><p class="n">环 4</p><p class="t">QR = 手术刀</p><p class="d">三种算法把 \(A\) 正交三角化，解最小二乘</p></div>
 </div>
 
 <p>终点是最小二乘：\(A\) 列满秩、\(m>n\) 时，用 \(A=\hat Q\hat R\) 把超定方程变成上三角方程。你会发现很多题其实是同一个问题换了张脸：</p>
 <ul>
-  <li><strong>「这个量怎么算」</strong> → 用奇异值表示（②③的题都在做这件事）；</li>
-  <li><strong>「这个变换是什么」</strong> → 验证它是酉/投影/反射，看 \(P^2=P\)、\(P^*=P\)、\(H^*H=I\)；</li>
-  <li><strong>「这个界能不能更紧」</strong> → 先证 \(\le\)（用次乘性/Cauchy–Schwarz），再构造向量取等；</li>
-  <li><strong>「这个方程怎么解」</strong> → 先想 QR，不要想正规方程。</li>
+ <li><strong>「这个量怎么算」</strong> → 用奇异值表示（②③的题都在做这件事）；</li>
+ <li><strong>「这个变换是什么」</strong> → 验证它是酉/投影/反射，看 \(P^2=P\)、\(P^*=P\)、\(H^*H=I\)；</li>
+ <li><strong>「这个界能不能更紧」</strong> → 先证 \(\le\)（用次乘性/Cauchy–Schwarz），再构造向量取等；</li>
+ <li><strong>「这个方程怎么解」</strong> → 先想 QR，不要想正规方程。</li>
 </ul>
 
 <h2><span class="no">02</span>模块一：矩阵代数与算子视角</h2>
@@ -207,8 +204,8 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <div class="eq">$$\mathcal{C}(A)^\perp=\mathcal{N}(A^*),\qquad \mathcal{N}(A)^\perp=\mathcal{C}(A^*). \tag{第三次第 2 题}$$</div>
 <p>两个方向都要写：</p>
 <ul>
-  <li>「\(\subset\)」：取 \(y\in\mathcal{C}(A)^\perp\)，则对任意 \(x\) 有 \(0=\langle Ax,y\rangle=\langle x,A^*y\rangle\)，故 \(A^*y=0\)；</li>
-  <li>「\(\supset\)」：取 \(y\in\mathcal{N}(A^*)\)，则 \(A^*y=0\)，于是 \(\langle Ax,y\rangle=\langle x,A^*y\rangle=0\)。</li>
+ <li>「\(\subset\)」：取 \(y\in\mathcal{C}(A)^\perp\)，则对任意 \(x\) 有 \(0=\langle Ax,y\rangle=\langle x,A^*y\rangle\)，故 \(A^*y=0\)；</li>
+ <li>「\(\supset\)」：取 \(y\in\mathcal{N}(A^*)\)，则 \(A^*y=0\)，于是 \(\langle Ax,y\rangle=\langle x,A^*y\rangle=0\)。</li>
 </ul>
 <div class="note g">
 <span class="h">推论（要会顺手写出来）</span>
@@ -222,7 +219,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p><strong>不同特征值的特征向量正交</strong>：比较 \(\langle Ax,y\rangle\) 与 \(\langle x,Ay\rangle\)（此处用到 \(A=A^*\) 使两者相等），得 \(\lambda x^*y=\mu x^*y\)，即 \((\lambda-\mu)x^*y=0\)。若 \(\lambda\ne\mu\)，则 \(x^*y=0\)。</p>
 <div class="note a">
 <span class="h">延伸（很可能变形考）</span>
-同样手法可证：斜 Hermitian（\(A^*=-A\)）特征值为纯虚数；酉阵特征值模为 1；正规矩阵（\(A^*A=AA^*\)）可酉对角化，且此时 \(\|A\|_2=\rho(A)\)。反例：\(A^*A\ne AA^*\) 时 \(\rho(A)<\|A\|\)，如二阶幂零矩阵 \(\begin{bmatrix}0&1\\0&0\end{bmatrix}\) 即为非正规矩阵（\(\rho=0\)，\(\|A\|_2=1\)）。
+同样手法可证：斜 Hermitian（\(A^*=-A\)）特征值为纯虚数；酉阵特征值模为 1；正规矩阵（\(A^*A=AA^*\)）可酉对角化，且此时 \(\|A\|_2=\rho(A)\)。反例：\(A^*A\ne AA^*\) 时 \(\rho(A)&lt;\|A\|\)，如二阶幂零矩阵 \(\begin{bmatrix}0&1\\0&0\end{bmatrix}\) 即为非正规矩阵（\(\rho=0\)，\(\|A\|_2=1\)）。
 </div>
 
 <h2><span class="no">03</span>模块二：向量范数与矩阵范数</h2>
@@ -263,10 +260,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <strong>1. 证 \(\le\)</strong>：把大范数拆成小范数的项，逐项放缩。例：\(\|A\|_1=\max_j\sum_i|a_{ij}|\le\max_j\sqrt{m}\,\|a_j\|_2\le\sqrt{m}\,\|A\|_2\)，再取上确界。<br>
 <strong>2. 证常数不可改进</strong>：造一个矩阵/向量让等号成立。
 <ul style="margin:6px 0 0">
-  <li>\(\|x\|_2\le\|x\|_1\) 取 \(x=e_1\)：比值恰为 1；</li>
-  <li>\(\|x\|_1\le\sqrt{m}\|x\|_2\) 取 \(x=\mathbf{1}\)：比值恰为 \(\sqrt{m}\)；</li>
-  <li>\(\|A\|_1\le\sqrt{m}\|A\|_2\) 取 \(A=\mathbf{1}\)（全 1 矩阵）：\(\|A\|_1=m\)，\(\|A\|_2=\sqrt{mn}\)，比值 \(\sqrt{m}\)；</li>
-  <li>\(\|A\|_2\le\sqrt{n}\|A\|_1\) 取 \(A=[1,\dots,1]\)（单行）：\(\|A\|_1=1\)，\(\|A\|_2=\sqrt{n}\)。</li>
+ <li>\(\|x\|_2\le\|x\|_1\) 取 \(x=e_1\)：比值恰为 1；</li>
+ <li>\(\|x\|_1\le\sqrt{m}\|x\|_2\) 取 \(x=\mathbf{1}\)：比值恰为 \(\sqrt{m}\)；</li>
+ <li>\(\|A\|_1\le\sqrt{m}\|A\|_2\) 取 \(A=\mathbf{1}\)（全 1 矩阵）：\(\|A\|_1=m\)，\(\|A\|_2=\sqrt{mn}\)，比值 \(\sqrt{m}\)；</li>
+ <li>\(\|A\|_2\le\sqrt{n}\|A\|_1\) 取 \(A=[1,\dots,1]\)（单行）：\(\|A\|_1=1\)，\(\|A\|_2=\sqrt{n}\)。</li>
 </ul>
 </div>
 <p><strong>一句话：上界靠放缩，紧性靠「单项非零」的秩一矩阵。</strong>考场上想不出例子，就试 \(e_1\)、\(\mathbf{1}\) 和全 1 矩阵这三个。</p>
@@ -315,10 +312,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <div class="note b">
 <span class="h">模板：给定 \(A\)，求 SVD</span>
 <ol style="margin:6px 0 0">
-  <li>算 \(A^*A\)（\(m\gg n\) 时用它；\(m\ll n\) 时改用 \(AA^*\)）。求特征值 \(\lambda_1\ge\cdots\ge\lambda_n\ge0\)，取 \(\sigma_j=\sqrt{\lambda_j}\) 并降序排列。</li>
-  <li>求 \(A^*A\) 的单位特征向量 \(v_j\)（不同特征值的自动正交；重特征值要自己正交化）。\(\sigma_j=0\) 的那些 \(v_j\) 取 \(\mathcal{N}(A)\) 的任一标准正交基即可。</li>
-  <li>算 \(u_j=Av_j/\sigma_j\)（仅对 \(\sigma_j>0\)）。剩下的 \(u_j\) 用 Gram–Schmidt 补成 \(\mathbb{C}^m\) 的标准正交基（补什么都行，只要正交）。</li>
-  <li>拼装并验证：\(U=[u_1,\dots,u_m]\)，\(V=[v_1,\dots,v_n]\)，\(\Sigma\) 是 \(m\times n\) 的「对角 + 补零」矩阵。最后<strong>务必回代验算 \(U\Sigma V^*=A\)</strong>——这是唯一能自己抓出符号错误的方法。</li>
+ <li>算 \(A^*A\)（\(m\gg n\) 时用它；\(m\ll n\) 时改用 \(AA^*\)）。求特征值 \(\lambda_1\ge\cdots\ge\lambda_n\ge0\)，取 \(\sigma_j=\sqrt{\lambda_j}\) 并降序排列。</li>
+ <li>求 \(A^*A\) 的单位特征向量 \(v_j\)（不同特征值的自动正交；重特征值要自己正交化）。\(\sigma_j=0\) 的那些 \(v_j\) 取 \(\mathcal{N}(A)\) 的任一标准正交基即可。</li>
+ <li>算 \(u_j=Av_j/\sigma_j\)（仅对 \(\sigma_j>0\)）。剩下的 \(u_j\) 用 Gram–Schmidt 补成 \(\mathbb{C}^m\) 的标准正交基（补什么都行，只要正交）。</li>
+ <li>拼装并验证：\(U=[u_1,\dots,u_m]\)，\(V=[v_1,\dots,v_n]\)，\(\Sigma\) 是 \(m\times n\) 的「对角 + 补零」矩阵。最后<strong>务必回代验算 \(U\Sigma V^*=A\)</strong>——这是唯一能自己抓出符号错误的方法。</li>
 </ol>
 </div>
 
@@ -349,9 +346,9 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 
 <h3>4.4 不变性：换衣服不换奇异值</h3>
 <ul>
-  <li><strong>酉不变</strong>：\(UAV\) 与 \(A\) 奇异值相同。因为 \((UAV)^*(UAV)=V^*A^*AV\)，与 \(A^*A\) 酉相似。</li>
-  <li><strong>转置/共轭</strong>：\(\sigma(A^*)=\sigma(A)\)。因为 \(AA^*\) 与 \(A^*A\) 的非零特征值相同。</li>
-  <li><strong>旋转 90°</strong>（第二次第 2 题）：顺时针旋转 = 转置 + 列序颠倒 = \(P\,A^{\mathrm{T}}\)，其中 \(P\) 是反对角置换阵。\(P\) 正交，故 \(PA^{\mathrm{T}}\) 与 \(A\) 奇异值不变。</li>
+ <li><strong>酉不变</strong>：\(UAV\) 与 \(A\) 奇异值相同。因为 \((UAV)^*(UAV)=V^*A^*AV\)，与 \(A^*A\) 酉相似。</li>
+ <li><strong>转置/共轭</strong>：\(\sigma(A^*)=\sigma(A)\)。因为 \(AA^*\) 与 \(A^*A\) 的非零特征值相同。</li>
+ <li><strong>旋转 90°</strong>（第二次第 2 题）：顺时针旋转 = 转置 + 列序颠倒 = \(P\,A^{\mathrm{T}}\)，其中 \(P\) 是反对角置换阵。\(P\) 正交，故 \(PA^{\mathrm{T}}\) 与 \(A\) 奇异值不变。</li>
 </ul>
 
 <div class="note a">
@@ -427,9 +424,9 @@ $$r_{ij}=q_i^*a_j\ne0\ \Rightarrow\ i,j\ \text{同奇偶},$$
 
 <p><strong>第三次第 6 题的精确计数</strong>（CGS，\(m\times n\)，记 \(j\) 为列循环变量）。每列 \(j\) 有：</p>
 <ul>
-  <li>内积 \(r_{ij}=q_i^*a_j\)，\(i=1,\dots,j-1\)：每次 \(m\) 乘 \(+\) \((m-1)\) 加 \(=2m\) flops；</li>
-  <li>更新 \(a_j\leftarrow a_j-r_{ij}q_i\)：每次 \(m\) 乘 \(+\) \(m\) 减 \(=2m\) flops；</li>
-  <li>归一化 \(r_{jj}=\|a_j\|_2\)、\(q_j=a_j/r_{jj}\)：\(2m\)（乘加）\(+m\)（除）\(=3m\) flops（另加 1 次开方）。</li>
+ <li>内积 \(r_{ij}=q_i^*a_j\)，\(i=1,\dots,j-1\)：每次 \(m\) 乘 \(+\) \((m-1)\) 加 \(=2m\) flops；</li>
+ <li>更新 \(a_j\leftarrow a_j-r_{ij}q_i\)：每次 \(m\) 乘 \(+\) \(m\) 减 \(=2m\) flops；</li>
+ <li>归一化 \(r_{jj}=\|a_j\|_2\)、\(q_j=a_j/r_{jj}\)：\(2m\)（乘加）\(+m\)（除）\(=3m\) flops（另加 1 次开方）。</li>
 </ul>
 <p>合计</p>
 <div class="eq">$$\sum_{j=1}^{n}\Big[4m(j-1)+3m\Big]=\frac{4m\cdot n(n-1)}{2}+3mn=2mn^2+mn\ \approx\ 2mn^2.$$</div>
@@ -460,8 +457,8 @@ $$r_{ij}=q_i^*a_j\ne0\ \Rightarrow\ i,j\ \text{同奇偶},$$
 <div class="eq">$$F=\begin{bmatrix}c&s\\s&-c\end{bmatrix}\ (\det F=-1,\ \text{反射}),\qquad J=\begin{bmatrix}c&s\\-s&c\end{bmatrix}\ (\det J=1,\ \text{旋转}),$$</div>
 <p>其中 \(s=\sin\theta\)，\(c=\cos\theta\)。</p>
 <ul>
-  <li>\(F\) 是 Householder 在 2 维的特例：关于与 \(e_1\) 夹 \(\theta/2\) 角的直线反射（由 \(F\) 反解反射轴方向）。</li>
-  <li>\(J\) 把平面<strong>顺时针</strong>旋转 \(\theta\)。验证：\(Je_1=(c,-s)^{\mathrm{T}}\)，\(s>0\) 时 \(y\) 分量为负，即从 \((1,0)\) 往下方走。按标准写法 \(J=\begin{bmatrix}c&-s\\s&c\end{bmatrix}\) 才是逆时针；本题把负号放在第二行第一列，方向就反了。</li>
+ <li>\(F\) 是 Householder 在 2 维的特例：关于与 \(e_1\) 夹 \(\theta/2\) 角的直线反射（由 \(F\) 反解反射轴方向）。</li>
+ <li>\(J\) 把平面<strong>顺时针</strong>旋转 \(\theta\)。验证：\(Je_1=(c,-s)^{\mathrm{T}}\)，\(s>0\) 时 \(y\) 分量为负，即从 \((1,0)\) 往下方走。按标准写法 \(J=\begin{bmatrix}c&-s\\s&c\end{bmatrix}\) 才是逆时针；本题把负号放在第二行第一列，方向就反了。</li>
 </ul>
 <div class="note">
 <span class="h">这一条必须自己算一遍，不要背结论</span>
@@ -472,11 +469,11 @@ $$r_{ij}=q_i^*a_j\ne0\ \Rightarrow\ i,j\ \text{同奇偶},$$
 <div class="note g">
 <span class="h">模板：基于 Givens 的 QR 分解（第四次第 2 题）</span>
 <ol style="margin:6px 0 0">
-  <li>外层按列 \(k=1,\dots,n\)；内层从下往上 \(i=m,m-1,\dots,k+1\)，用第 \(i-1\) 行消去 \(a_{ik}\)。</li>
-  <li>取 \(r=\sqrt{a_{i-1,k}^2+a_{ik}^2}\)，\(c=a_{i-1,k}/r\)，\(s=-a_{ik}/r\)（符号约定要写清）。</li>
-  <li>对第 \(k\) 列起的每个元素更新两行：先存临时量
-  <div class="eq" style="margin:8px 0;font-size:14px">\(t=c\,a_{i-1,k}+s\,a_{ik};\quad a_{ik}=-s\,a_{i-1,k}+c\,a_{ik};\quad a_{i-1,k}=t\)</div>
-  （<strong>必须先存 \(t\)</strong>，否则第二个式子用不到原值）。</li>
+ <li>外层按列 \(k=1,\dots,n\)；内层从下往上 \(i=m,m-1,\dots,k+1\)，用第 \(i-1\) 行消去 \(a_{ik}\)。</li>
+ <li>取 \(r=\sqrt{a_{i-1,k}^2+a_{ik}^2}\)，\(c=a_{i-1,k}/r\)，\(s=-a_{ik}/r\)（符号约定要写清）。</li>
+ <li>对第 \(k\) 列起的每个元素更新两行：先存临时量
+ <div class="eq" style="margin:8px 0;font-size:14px">\(t=c\,a_{i-1,k}+s\,a_{ik};\quad a_{ik}=-s\,a_{i-1,k}+c\,a_{ik};\quad a_{i-1,k}=t\)</div>
+ （<strong>必须先存 \(t\)</strong>，否则第二个式子用不到原值）。</li>
 </ol>
 </div>
 
@@ -492,9 +489,9 @@ $$r_{ij}=q_i^*a_j\ne0\ \Rightarrow\ i,j\ \text{同奇偶},$$
 <div class="eq">$$\|Ax-b\|_2^2=\|\hat Q\hat Rx-b\|_2^2=\|\hat Rx-\hat Q^*b\|_2^2+\|(I-\hat Q\hat Q^*)b\|_2^2.$$</div>
 <p>第二项与 \(x\) 无关，故解 \(\hat Rx=\hat Q^*b\)。\(\hat R\) 上三角，用后向替换从下往前解。要点：</p>
 <ul>
-  <li><strong>正交变换不改变 2-范数</strong>，所以「乘 \(Q^*\) 不改变残差」是全部推导的唯一依据；</li>
-  <li>正规方程 \(A^*Ax=A^*b\) 的解相同，但 \(\kappa(A^*A)=\kappa(A)^2\)，数值上差得多——问「为什么用 QR」就答这句；</li>
-  <li>残差最小值 \(\|(I-\hat Q\hat Q^*)b\|_2\)，即 \(b\) 到列空间的距离。</li>
+ <li><strong>正交变换不改变 2-范数</strong>，所以「乘 \(Q^*\) 不改变残差」是全部推导的唯一依据；</li>
+ <li>正规方程 \(A^*Ax=A^*b\) 的解相同，但 \(\kappa(A^*A)=\kappa(A)^2\)，数值上差得多——问「为什么用 QR」就答这句；</li>
+ <li>残差最小值 \(\|(I-\hat Q\hat Q^*)b\|_2\)，即 \(b\) 到列空间的距离。</li>
 </ul>
 
 <div class="note b">
@@ -519,40 +516,40 @@ $$A^*A=A_1^*A_1+A_2^*A_2\succeq A_1^*A_1\ \Longrightarrow\ (A^*A)^{-1}\preceq(A_
 <table class="tb small">
 <tr><th>#</th><th>题面信号</th><th>固定套路</th><th>出处</th></tr>
 <tr>
-  <td class="c">1</td>
-  <td>「求 \(\|A\|_p\)」「证明 \(\|A\|_1\le\sqrt{m}\|A\|_2\) 且常数最优」</td>
-  <td>① 判断用哪个公式（1/2/\(\infty\)/F）；② 证上界：展开成元素或分量逐项放缩；③ 证紧：造 \(uv^*\) 型秩一矩阵或 \(e_1\)、\(\mathbf{1}\) 型向量取等。</td>
-  <td>① 4,5,6,10,11</td>
+ <td class="c">1</td>
+ <td>「求 \(\|A\|_p\)」「证明 \(\|A\|_1\le\sqrt{m}\|A\|_2\) 且常数最优」</td>
+ <td>① 判断用哪个公式（1/2/\(\infty\)/F）；② 证上界：展开成元素或分量逐项放缩；③ 证紧：造 \(uv^*\) 型秩一矩阵或 \(e_1\)、\(\mathbf{1}\) 型向量取等。</td>
+ <td>① 4,5,6,10,11</td>
 </tr>
 <tr>
-  <td class="c">2</td>
-  <td>「证明 \(Q\) 是酉阵 / 投影 / 反射」「几何意义是什么」</td>
-  <td>① 写出代数刻画（\(Q^*Q=I\)、\(P^2=P\)、\(H=I-2P\)）；② 代入硬算；③ 几何：把 \(x\) 拆成 \(Px+(I-P)x\) 看各分量怎么动。</td>
-  <td>③ 1、④ 1</td>
+ <td class="c">2</td>
+ <td>「证明 \(Q\) 是酉阵 / 投影 / 反射」「几何意义是什么」</td>
+ <td>① 写出代数刻画（\(Q^*Q=I\)、\(P^2=P\)、\(H=I-2P\)）；② 代入硬算；③ 几何：把 \(x\) 拆成 \(Px+(I-P)x\) 看各分量怎么动。</td>
+ <td>③ 1、④ 1</td>
 </tr>
 <tr>
-  <td class="c">3</td>
-  <td>「求 \(A\) 的 SVD / 最少负号的 SVD」</td>
-  <td>① \(A^*A\) 特征值 \(\to\sigma_j\)；② 特征向量 \(\to v_j\)；③ \(u_j=Av_j/\sigma_j\)；④ 补齐正交基、拼装、回代验算；⑤ 负号题用 \(u_j,v_j\) 同时变号调优。</td>
-  <td>② 1、2–5(a)</td>
+ <td class="c">3</td>
+ <td>「求 \(A\) 的 SVD / 最少负号的 SVD」</td>
+ <td>① \(A^*A\) 特征值 \(\to\sigma_j\)；② 特征向量 \(\to v_j\)；③ \(u_j=Av_j/\sigma_j\)；④ 补齐正交基、拼装、回代验算；⑤ 负号题用 \(u_j,v_j\) 同时变号调优。</td>
+ <td>② 1、2–5(a)</td>
 </tr>
 <tr>
-  <td class="c">4</td>
-  <td>「求 \(\|A\|_2\)」「超椭圆面积 / 顶点」「\(\det A\) 与 \(\sigma_j\) 的关系」</td>
-  <td>全部换成 \(\sigma_j\) 再说：\(\|A\|_2=\sigma_1\)，\(\|A\|_F=\sqrt{\sum\sigma_j^2}\)，\(\|A^{-1}\|_2=1/\sigma_n\)，\(|\det A|=\prod\sigma_j\)；几何量用 \(\pi\sigma_1\sigma_2\)（2 维）与顶点 \(\sigma_ju_j\)。</td>
-  <td>② 4,5</td>
+ <td class="c">4</td>
+ <td>「求 \(\|A\|_2\)」「超椭圆面积 / 顶点」「\(\det A\) 与 \(\sigma_j\) 的关系」</td>
+ <td>全部换成 \(\sigma_j\) 再说：\(\|A\|_2=\sigma_1\)，\(\|A\|_F=\sqrt{\sum\sigma_j^2}\)，\(\|A^{-1}\|_2=1/\sigma_n\)，\(|\det A|=\prod\sigma_j\)；几何量用 \(\pi\sigma_1\sigma_2\)（2 维）与顶点 \(\sigma_ju_j\)。</td>
+ <td>② 4,5</td>
 </tr>
 <tr>
-  <td class="c">5</td>
-  <td>「用 MGS / Householder / Givens 做 QR」</td>
-  <td>① 选定算法；② MGS 逐列「投影-减去-归一」；Householder 构造 \(H_k\)；Givens 从下往上消；③ 约定 \(r_{jj}>0\)；④ 用 \(\hat Q\hat R=A\) 验算。</td>
-  <td>④ 2,4(a)(b)</td>
+ <td class="c">5</td>
+ <td>「用 MGS / Householder / Givens 做 QR」</td>
+ <td>① 选定算法；② MGS 逐列「投影-减去-归一」；Householder 构造 \(H_k\)；Givens 从下往上消；③ 约定 \(r_{jj}>0\)；④ 用 \(\hat Q\hat R=A\) 验算。</td>
+ <td>④ 2,4(a)(b)</td>
 </tr>
 <tr>
-  <td class="c">6</td>
-  <td>「解最小二乘 \(\min\|Ax-b\|\)」</td>
-  <td>① \(A=\hat Q\hat R\)（约化）；② \(\hat Rx=\hat Q^*b\)；③ 解上三角 \(\hat R\)（后向替换）；④ 需要残差就补 \(\|(I-\hat Q\hat Q^*)b\|_2\)。</td>
-  <td>④ 4(c)</td>
+ <td class="c">6</td>
+ <td>「解最小二乘 \(\min\|Ax-b\|\)」</td>
+ <td>① \(A=\hat Q\hat R\)（约化）；② \(\hat Rx=\hat Q^*b\)；③ 解上三角 \(\hat R\)（后向替换）；④ 需要残差就补 \(\|(I-\hat Q\hat Q^*)b\|_2\)。</td>
+ <td>④ 4(c)</td>
 </tr>
 </table>
 
@@ -586,16 +583,16 @@ $$A^*A=A_1^*A_1+A_2^*A_2\succeq A_1^*A_1\ \Longrightarrow\ (A^*A)^{-1}\preceq(A_
 <h2><span class="no">09</span>易错点清单</h2>
 <p>这些是批改时最常见的扣分处，逐条对一遍。</p>
 <ol>
-  <li>\(\|A\|_2\ne\rho(A)\)，也 \(\ne\|A\|_\infty\)。正确：\(\|A\|_2=\sqrt{\rho(A^*A)}=\sigma_1\)。只有正规矩阵才等于 \(\rho(A)\)。</li>
-  <li>\(\|A\|_2\le\|A\|_F\)；但对秩一矩阵 \(A=uv^*\) 两者恰好都等于 \(\|u\|_2\|v\|_2\)（第一次第 6、11 题就是在考这个巧合）。</li>
-  <li>左乘改行、右乘改列；且 \(E=I+e_ie_j^*\) 中 \(i,j\) 到底谁是行谁是列，写之前先检查一个 \(2\times2\) 小例子。</li>
-  <li>复合顺序：\(T_k\cdots T_1A\)，先做的在右边。合并左侧/右侧因子时不能交换顺序。</li>
-  <li>\(v_j\) 不是 \(A\) 的特征向量（只对正规矩阵成立）。例：\(\begin{bmatrix}0&1\\0&0\end{bmatrix}\) 的奇异值是 \(1,0\)，特征值全为 \(0\)。</li>
-  <li>SVD 里 \(\Sigma\) 要补零，阶数分别为 \(m\times n\)；约化形式只取前 \(n\) 个对角元。</li>
-  <li>\(u_j=Av_j/\sigma_j\) 只对 \(\sigma_j>0\)；零奇异值对应的 \(u_j\) 只能靠「补正交基」得到，不能除。</li>
-  <li>投影与反射别混：\(P\) 是投影（幂等，谱 \(\{0,1\}\)）；\(I-2P\) 是反射（对合，谱 \(\{1,-1\}\)，\(\det=-1\)）。题目问「\(I-2P\) 是什么」要答<strong>反射</strong>，不是投影。</li>
-  <li>\(\|P\|_2\ge1\) 对一般投影成立，等号只有正交投影才能取到；证明等号方向要用「取 \(t\) 足够小」的反证法，不能说「显然」。</li>
-  <li>最小二乘不要写正规方程：\(\hat Rx=\hat Q^*b\) 才对；题目要求「用 QR」时必须写 \(\hat Q\hat R\)，且别忘了 \(\kappa(A^*A)=\kappa(A)^2\) 这句理由。</li>
+ <li>\(\|A\|_2\ne\rho(A)\)，也 \(\ne\|A\|_\infty\)。正确：\(\|A\|_2=\sqrt{\rho(A^*A)}=\sigma_1\)。只有正规矩阵才等于 \(\rho(A)\)。</li>
+ <li>\(\|A\|_2\le\|A\|_F\)；但对秩一矩阵 \(A=uv^*\) 两者恰好都等于 \(\|u\|_2\|v\|_2\)（第一次第 6、11 题就是在考这个巧合）。</li>
+ <li>左乘改行、右乘改列；且 \(E=I+e_ie_j^*\) 中 \(i,j\) 到底谁是行谁是列，写之前先检查一个 \(2\times2\) 小例子。</li>
+ <li>复合顺序：\(T_k\cdots T_1A\)，先做的在右边。合并左侧/右侧因子时不能交换顺序。</li>
+ <li>\(v_j\) 不是 \(A\) 的特征向量（只对正规矩阵成立）。例：\(\begin{bmatrix}0&1\\0&0\end{bmatrix}\) 的奇异值是 \(1,0\)，特征值全为 \(0\)。</li>
+ <li>SVD 里 \(\Sigma\) 要补零，阶数分别为 \(m\times n\)；约化形式只取前 \(n\) 个对角元。</li>
+ <li>\(u_j=Av_j/\sigma_j\) 只对 \(\sigma_j>0\)；零奇异值对应的 \(u_j\) 只能靠「补正交基」得到，不能除。</li>
+ <li>投影与反射别混：\(P\) 是投影（幂等，谱 \(\{0,1\}\)）；\(I-2P\) 是反射（对合，谱 \(\{1,-1\}\)，\(\det=-1\)）。题目问「\(I-2P\) 是什么」要答<strong>反射</strong>，不是投影。</li>
+ <li>\(\|P\|_2\ge1\) 对一般投影成立，等号只有正交投影才能取到；证明等号方向要用「取 \(t\) 足够小」的反证法，不能说「显然」。</li>
+ <li>最小二乘不要写正规方程：\(\hat Rx=\hat Q^*b\) 才对；题目要求「用 QR」时必须写 \(\hat Q\hat R\)，且别忘了 \(\kappa(A^*A)=\kappa(A)^2\) 这句理由。</li>
 </ol>
 
 <h2><span class="no">10</span>重点分级与考题预测</h2>
@@ -631,34 +628,34 @@ $$A^*A=A_1^*A_1+A_2^*A_2\succeq A_1^*A_1\ \Longrightarrow\ (A^*A)^{-1}\preceq(A_
 
 <h3>考前自测 11 问（能脱口而出就稳了）</h3>
 <ol>
-  <li>\(\|\cdot\|_1\)、\(\|\cdot\|_2\)、\(\|\cdot\|_\infty\)、\(\|\cdot\|_F\) 各自的定义式？</li>
-  <li>\(\|A\|_1\le\sqrt{m}\|A\|_2\) 为什么成立？常数能改进吗？用什么矩阵取等？</li>
-  <li>\(\rho(A)\le\|A\|\) 的三行证明？举一个严格不等的例子。</li>
-  <li>秩一矩阵 \(uv^*\) 的四个子空间、奇异值、F 范数分别是什么？</li>
-  <li>SVD 手算的四步？\(\Sigma\) 什么时候补零？</li>
-  <li>\(\|A\|_2\)、\(\|A\|_F\)、\(\|A^{-1}\|_2\)、\(|\det A|\) 用 \(\sigma_j\) 怎么写？</li>
-  <li>为什么 \(A\) 与 \(A^{\mathrm{T}}\) 的奇异值相同？和 \(A^*A\) 与 \(AA^*\) 有什么关系？</li>
-  <li>分块矩阵 \(\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\) 的特征值与特征向量？</li>
-  <li>\(I-2P\) 为什么是酉阵？几何上是什么？行列式是多少？</li>
-  <li>\(\|P\|_2\ge1\) 怎么证？等号成立的充要条件？</li>
-  <li>MGS、Householder、Givens 的 flop 数各是多少？为什么 Givens 比 MGS 多 50%？</li>
+ <li>\(\|\cdot\|_1\)、\(\|\cdot\|_2\)、\(\|\cdot\|_\infty\)、\(\|\cdot\|_F\) 各自的定义式？</li>
+ <li>\(\|A\|_1\le\sqrt{m}\|A\|_2\) 为什么成立？常数能改进吗？用什么矩阵取等？</li>
+ <li>\(\rho(A)\le\|A\|\) 的三行证明？举一个严格不等的例子。</li>
+ <li>秩一矩阵 \(uv^*\) 的四个子空间、奇异值、F 范数分别是什么？</li>
+ <li>SVD 手算的四步？\(\Sigma\) 什么时候补零？</li>
+ <li>\(\|A\|_2\)、\(\|A\|_F\)、\(\|A^{-1}\|_2\)、\(|\det A|\) 用 \(\sigma_j\) 怎么写？</li>
+ <li>为什么 \(A\) 与 \(A^{\mathrm{T}}\) 的奇异值相同？和 \(A^*A\) 与 \(AA^*\) 有什么关系？</li>
+ <li>分块矩阵 \(\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\) 的特征值与特征向量？</li>
+ <li>\(I-2P\) 为什么是酉阵？几何上是什么？行列式是多少？</li>
+ <li>\(\|P\|_2\ge1\) 怎么证？等号成立的充要条件？</li>
+ <li>MGS、Householder、Givens 的 flop 数各是多少？为什么 Givens 比 MGS 多 50%？</li>
 </ol>
 <p>再加三问（新增，原指南没有）：</p>
 <ol start="12">
-  <li>Householder 构造 \(v\) 时为什么取 \(x+\mathrm{sign}(x_1)\|x\|_2e_1\)？</li>
-  <li>用 QR 解最小二乘的三步？为什么不直接用正规方程？</li>
-  <li>奇偶列正交时 \(\hat R\) 为什么是棋盘格？完全 QR 的第 3 列为什么是法向量？</li>
+ <li>Householder 构造 \(v\) 时为什么取 \(x+\mathrm{sign}(x_1)\|x\|_2e_1\)？</li>
+ <li>用 QR 解最小二乘的三步？为什么不直接用正规方程？</li>
+ <li>奇偶列正交时 \(\hat R\) 为什么是棋盘格？完全 QR 的第 3 列为什么是法向量？</li>
 </ol>
 
 <div class="pager noprint">
-  <a href="./SVD手算-超椭圆与最少负号.html">NLA-07 SVD 手算与超椭圆 →</a>
-  <a href="./期中模拟卷-两套.html">NLA-R2 期中模拟卷两套 →</a>
-  <a href="./index.html">返回章节导航</a>
+ <a href="./SVD手算-超椭圆与最少负号.html">NLA-07 SVD 手算与超椭圆 →</a>
+ <a href="./期中模拟卷-两套.html">NLA-R2 期中模拟卷两套 →</a>
+ <a href="./index.html">返回章节导航</a>
 </div>
 
 <footer>
 <p>范围：范数 → SVD → QR → 最小二乘（四次测试 27 题）。浮点数、条件数、对偶范数已按考试范围删除。</p>
-<p>公式为重新录入（原 PDF 的 Type1 数学字体在转换中丢失）。数值结论由 <span class="mono">verify_midterm.js</span> 实测核对。打印请用浏览器「打印 → 另存为 PDF」，已做分页处理。</p>
+<p>公式为重新录入（原文的数学字体在转换中丢失）。数值结论由 <span class="mono">verify_midterm.js</span> 实测核对。打印请用浏览器「打印 → 另存为 PDF」，已做分页处理。</p>
 </footer>
 
 </div>

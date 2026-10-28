@@ -5,44 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Runge 现象与 Chebyshev 节点 · 数值分析 §2.5.1</title>
 <!--
-  维护说明（给未来的自己）：
-  1. 本页对应教材：张平文、李铁军《数值分析》（北大出版社 2007）第 2 章
-     §2.5.1 等距节点上高次插值多项式的 Runge 现象（书页 35–36 / PDF 51–52），
-     §2.6 Chebyshev 定理与最小零偏差多项式（书页 57 / PDF 73），§2.5.2 分段线性（书页 36–38）。
-     书页 = PDF 页 − 16。
-  2. 页内所有数字来自工作区根目录 verify_runge.js（node 直跑），改公式或改网格后必须重跑。
-  3. 公式改动后跑 `node verify_formulas.js 插值-Runge现象与切比雪夫节点.html`（要求 0 failed）。
-     公式内的 < 必须写成 &lt;。
-  4. 交互零依赖：原生 JS + Canvas，可离线打开；公式渲染需联网（离线降级为 LaTeX 源码）。
+ 维护说明（给未来的自己）：
+ 1. 本页对应教材：教材第 2 章
+ 2. 页内所有数字来自工作区根目录 verify_runge.js（node 直跑），改公式或改网格后必须重跑。
+ 3. 公式改动后跑 `node verify_formulas.js 插值-Runge现象与切比雪夫节点.html`（要求 0 failed）。
+ 公式内的 < 必须写成 &lt;。
+ 4. 交互零依赖：原生 JS + Canvas，可离线打开；公式渲染需联网（离线降级为 LaTeX 源码）。
 -->
 <script>
 window.MathJax = {
-  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
-  svg: { fontCache: "global" },
-  options: { enableMenu: false },
-  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "global" },
+ options: { enableMenu: false },
+ startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
-  --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
-  --line:#e3dccd; --line-2:#cfc6b2;
-  --orange:#c2531f; --orange-soft:#fbeee5;
-  --teal:#0d6b5d; --teal-soft:#e7f3ef;
-  --indigo:#39417e;
-  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
-  --ghost-grid:rgba(160,148,124,.16);
+ --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
+ --line:#e3dccd; --line-2:#cfc6b2;
+ --orange:#c2531f; --orange-soft:#fbeee5;
+ --teal:#0d6b5d; --teal-soft:#e7f3ef;
+ --indigo:#39417e;
+ --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ --ghost-grid:rgba(160,148,124,.16);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
-  margin:0;color:var(--ink);
-  background:
-    linear-gradient(var(--ghost-grid) 1px,transparent 1px) 0 0/100% 28px,
-    linear-gradient(90deg,var(--ghost-grid) 1px,transparent 1px) 0 0/28px 100%,
-    var(--paper);
-  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+ margin:0;color:var(--ink);
+ background:
+ linear-gradient(var(--ghost-grid) 1px,transparent 1px) 0 0/100% 28px,
+ linear-gradient(90deg,var(--ghost-grid) 1px,transparent 1px) 0 0/28px 100%,
+ var(--paper);
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
 }
 .wrap{max-width:900px;margin:0 auto;padding:0 22px 90px}
 a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(13,107,93,.3)}
@@ -50,7 +47,7 @@ a:hover{border-bottom-color:var(--teal)}
 h1{font-size:29px;line-height:1.3;margin:0 0 10px;font-weight:650;letter-spacing:-.01em}
 h2{font-size:21px;margin:66px 0 14px;font-weight:650;display:flex;align-items:baseline;gap:12px}
 h2 .no{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--orange);
-  border:1px solid rgba(194,83,31,.35);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
+ border:1px solid rgba(194,83,31,.35);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
 h3{font-size:16.5px;margin:32px 0 8px;font-weight:650}
 p{margin:12px 0;max-width:74ch}
 small{color:var(--muted)}
@@ -58,12 +55,12 @@ small{color:var(--muted)}
 .hero{padding:58px 0 6px}
 .hero p.lead{font-size:16.5px;color:#4a4438;max-width:74ch}
 #mjx-offline{
-  display:none;margin:0 0 4px;padding:9px 16px;background:#fff4d6;border:1px solid #e8cf92;
-  border-radius:8px;font-size:13.5px;color:#6b5417}
+ display:none;margin:0 0 4px;padding:9px 16px;background:#fff4d6;border:1px solid #e8cf92;
+ border-radius:8px;font-size:13.5px;color:#6b5417}
 body:not(.mjx-ready) #mjx-offline{display:block}
 
 nav{position:sticky;top:0;z-index:20;margin:26px 0 0;
-  background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+ background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 nav .inner{max-width:900px;margin:0 auto;padding:9px 22px;display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
 nav a{color:var(--muted);border:0}
 nav a:hover{color:var(--orange)}
@@ -78,7 +75,7 @@ nav a:hover{color:var(--orange)}
 
 /* ---- 实验台 ---- */
 .lab{background:var(--sheet);border:1px solid var(--line);border-radius:14px;
-  padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
+ padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
 .lab-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .lab-head .t{font-size:13px;font-family:var(--mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
 canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px solid var(--line)}
@@ -88,18 +85,18 @@ canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px sol
 .ctrls{display:flex;gap:22px;flex-wrap:wrap;align-items:center;margin:12px 2px 8px;font-size:13.5px}
 .ctrls .grp{display:flex;align-items:center;gap:9px}
 input[type=range]{-webkit-appearance:none;appearance:none;width:190px;height:3px;border-radius:3px;
-  background:var(--line-2);outline:none}
+ background:var(--line-2);outline:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
-  background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
+ background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
 input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--orange);
-  border:2px solid #fff;cursor:pointer}
+ border:2px solid #fff;cursor:pointer}
 .seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
 .seg button{font:inherit;font-size:13px;padding:5px 13px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .seg button+button{border-left:1px solid var(--line-2)}
 .seg button[aria-pressed=true]{background:var(--orange-soft);color:var(--orange);font-weight:600}
 .swatch{display:inline-block;width:16px;height:2px;vertical-align:3px;margin-right:5px}
 .reads{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
-  border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+ border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
 .reads div{background:#fffdf8;padding:10px 12px}
 .reads .k{font-size:11.5px;color:var(--muted);letter-spacing:.03em}
 .reads .v{font-family:var(--mono);font-size:17px;font-weight:600;letter-spacing:-.01em;margin-top:2px}
@@ -119,13 +116,13 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 mjx-container[jax="SVG"]{max-width:100%}
 mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
 .eq{font-size:17px;text-align:center;margin:18px 0;padding:12px 16px;background:var(--sheet);
-  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+ border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--orange);background:var(--orange-soft);padding:10px 16px;margin:16px 0;
-  border-radius:0 8px 8px 0;font-size:14.5px}
+ border-radius:0 8px 8px 0;font-size:14.5px}
 .note.teal{border-left-color:var(--teal);background:var(--teal-soft)}
 .note p{margin:6px 0}
 .warn{border-left:3px solid #a3341f;background:#fbe9e4;padding:10px 16px;margin:16px 0;
-  border-radius:0 8px 8px 0;font-size:14.5px}
+ border-radius:0 8px 8px 0;font-size:14.5px}
 table{width:100%;border-collapse:collapse;font-size:13.7px;margin:16px 0;background:var(--sheet)}
 th,td{border-bottom:1px solid var(--line);padding:7px 10px;text-align:right}
 th:first-child,td:first-child{text-align:left}
@@ -139,14 +136,14 @@ ul,ol{max-width:74ch}
 li{margin:5px 0}
 footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line-2);font-size:12.8px;color:var(--muted)}
 footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var(--line);
-  border-radius:4px;padding:0 5px;font-size:12px}
+ border-radius:4px;padding:0 5px;font-size:12px}
 @media (max-width:680px){
-  #cv-main{height:300px}
-  table{font-size:12.1px}
-  th,td{padding:6px 6px}
-  .glance{grid-template-columns:1fr}
-  .reads{grid-template-columns:repeat(2,1fr)}
-  h1{font-size:24px}
+ #cv-main{height:300px}
+ table{font-size:12.1px}
+ th,td{padding:6px 6px}
+ .glance{grid-template-columns:1fr}
+ .reads{grid-template-columns:repeat(2,1fr)}
+ h1{font-size:24px}
 }
 </style>
 </head>
@@ -157,7 +154,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 </div>
 
 <div class="hero"><div class="wrap">
-<p class="kicker">数值分析 · 第 2 章 §2.5.1 / §2.6 · 书页 35–36, 57</p>
+<p class="kicker">数值分析 · 第 2 章 §2.5.1 / §2.6 · , 57</p>
 <h1>Runge 现象：为什么节点越多越糟</h1>
 <p class="lead">
 教材用一张图把这件事摆了出来：对 \(R(x)=\dfrac{1}{1+x^2}\) 在 \([-5,5]\) 上做 10 次等距插值，多项式在两端冲到 2 附近，而 \(R\) 自己不超过 1；节点继续加密，误差不是变小，而是冲到几千。
@@ -178,16 +175,16 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <div class="wrap">
 
 <div class="glance">
-  <div class="bad"><b>1.916</b><span>§2.5.1 教材图 2.1 的 n=10 等距插值最大误差（R 本身 ≤ 1）</span></div>
-  <div class="bad"><b>2 388</b><span>n=30 等距插值的最大误差：加密节点，误差反而涨了 1246 倍</span></div>
-  <div class="good"><b>0.0024</b><span>同样 n=30，换成 Chebyshev 节点的误差</span></div>
+ <div class="bad"><b>1.916</b><span>§2.5.1 教材图 2.1 的 n=10 等距插值最大误差（R 本身 ≤ 1）</span></div>
+ <div class="bad"><b>2 388</b><span>n=30 等距插值的最大误差：加密节点，误差反而涨了 1246 倍</span></div>
+ <div class="good"><b>0.0024</b><span>同样 n=30，换成 Chebyshev 节点的误差</span></div>
 </div>
 
 <!-- ========== ① 现象 ========== -->
 <h2 id="lab1"><span class="no">实验 01</span>现象：复现教材图 2.1</h2>
 
 <p>
-教材 §2.5.1 的设定是（式 2.5.2、2.5.3，书页 35）：
+教材 §2.5.1 的设定是（式 2.5.2、2.5.3）：
 $$
 R(x)=\frac{1}{1+x^2},\quad x\in[-5,5];\qquad x_i=-5+\frac{10i}{n},\ i=0,1,\dots,n .
 $$
@@ -195,39 +192,39 @@ $$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">插值实验台 · R(x)=1/(1+x²), [−5,5]</span>
-    <span class="t" id="lab1-state">n = 10 · 等距</span>
-  </div>
-  <canvas id="cv-main" height="380" aria-label="Runge 函数与其插值多项式对比图"></canvas>
-  <div class="legend">
-    <span><i class="ink"></i>R(x) = 1/(1+x²)</span>
-    <span><i></i>当前插值多项式 L<sub>n</sub></span>
-    <span><i class="solid"></i>当前节点（n+1 个）</span>
-    <span><i class="hollow"></i>对照方案的节点位置</span>
-    <span><i class="indigo"></i>分段线性（勾选后显示）</span>
-  </div>
-  <div class="ctrls">
-    <div class="grp">
-      <label for="rn">次数 n</label>
-      <input id="rn" type="range" min="2" max="30" step="1" value="10">
-      <output id="rn-out" class="mono" style="font-family:var(--mono);min-width:2.2em">10</output>
-    </div>
-    <div class="grp seg" role="group" aria-label="节点分布">
-      <button id="b-eq" aria-pressed="true">等距节点</button>
-      <button id="b-ch" aria-pressed="false">Chebyshev 节点</button>
-    </div>
-    <div class="grp">
-      <label><input id="cb-pl" type="checkbox"> 叠加分段线性</label>
-    </div>
-  </div>
-  <div class="reads">
-    <div><div class="k">max |L<sub>n</sub> − R|</div><div class="v bad" id="rd-err">—</div></div>
-    <div><div class="k">误差最大处 x</div><div class="v" id="rd-errx">—</div></div>
-    <div><div class="k">max L<sub>n</sub>（值域应 ≤ 1）</div><div class="v" id="rd-max">—</div></div>
-    <div><div class="k">换另一种节点的误差</div><div class="v" id="rd-alt">—</div></div>
-  </div>
-  <p class="hint">纵轴自适应；当曲线超出 ±60 时自动截断，并在图上标出实际峰值。误差在 4001 个等距采样点上取最大值，采样不落在节点上，避免「节点处误差为 0」污染读数。</p>
+ <div class="lab-head">
+ <span class="t">插值实验台 · R(x)=1/(1+x²), [−5,5]</span>
+ <span class="t" id="lab1-state">n = 10 · 等距</span>
+ </div>
+ <canvas id="cv-main" height="380" aria-label="Runge 函数与其插值多项式对比图"></canvas>
+ <div class="legend">
+ <span><i class="ink"></i>R(x) = 1/(1+x²)</span>
+ <span><i></i>当前插值多项式 L<sub>n</sub></span>
+ <span><i class="solid"></i>当前节点（n+1 个）</span>
+ <span><i class="hollow"></i>对照方案的节点位置</span>
+ <span><i class="indigo"></i>分段线性（勾选后显示）</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp">
+ <label for="rn">次数 n</label>
+ <input id="rn" type="range" min="2" max="30" step="1" value="10">
+ <output id="rn-out" class="mono" style="font-family:var(--mono);min-width:2.2em">10</output>
+ </div>
+ <div class="grp seg" role="group" aria-label="节点分布">
+ <button id="b-eq" aria-pressed="true">等距节点</button>
+ <button id="b-ch" aria-pressed="false">Chebyshev 节点</button>
+ </div>
+ <div class="grp">
+ <label><input id="cb-pl" type="checkbox"> 叠加分段线性</label>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">max |L<sub>n</sub> − R|</div><div class="v bad" id="rd-err">—</div></div>
+ <div><div class="k">误差最大处 x</div><div class="v" id="rd-errx">—</div></div>
+ <div><div class="k">max L<sub>n</sub>（值域应 ≤ 1）</div><div class="v" id="rd-max">—</div></div>
+ <div><div class="k">换另一种节点的误差</div><div class="v" id="rd-alt">—</div></div>
+ </div>
+ <p class="hint">纵轴自适应；当曲线超出 ±60 时自动截断，并在图上标出实际峰值。误差在 4001 个等距采样点上取最大值，采样不落在节点上，避免「节点处误差为 0」污染读数。</p>
 </div>
 
 <p>
@@ -242,7 +239,7 @@ $$
 <h2 id="why"><span class="no">公式 2.3.8</span>误差从哪来：两个因子</h2>
 
 <p>
-教材定理 2.3.1（书页 26）把 Lagrange 插值的余项写成两个因子的乘积：
+教材定理 2.3.1把 Lagrange 插值的余项写成两个因子的乘积：
 $$
 R_n(x)=f(x)-L_n(x)=\frac{f^{(n+1)}(\xi)}{(n+1)!}\,\underbrace{(x-x_0)(x-x_1)\cdots(x-x_n)}_{\omega_{n+1}(x)},\qquad \xi=\xi(x)\in[a,b].
 $$
@@ -261,21 +258,21 @@ $$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">节点因子剖面 log₁₀|ω(x)|</span>
-    <span class="t" id="lab2-state">n = 10</span>
-  </div>
-  <canvas id="cv-omega" height="230" aria-label="节点因子剖面图"></canvas>
-  <div class="legend">
-    <span><i></i>等距节点的 |ω|</span>
-    <span><i class="teal"></i>Chebyshev 节点的 |ω|</span>
-  </div>
-  <div class="reads" style="grid-template-columns:repeat(3,1fr)">
-    <div><div class="k">max|ω| 等距</div><div class="v bad" id="rd-om-eq">—</div></div>
-    <div><div class="k">max|ω| Chebyshev(Lobatto)</div><div class="v good" id="rd-om-ch">—</div></div>
-    <div><div class="k">两者之比</div><div class="v" id="rd-om-ratio">—</div></div>
-  </div>
-  <p class="hint">拖动上面的 n 滑杆时这张图同步更新。实测 n=10：等距 4.17×10⁵，Chebyshev-Lobatto 9.42×10⁴，比值 4.4；n=30 时比值 4 336。</p>
+ <div class="lab-head">
+ <span class="t">节点因子剖面 log₁₀|ω(x)|</span>
+ <span class="t" id="lab2-state">n = 10</span>
+ </div>
+ <canvas id="cv-omega" height="230" aria-label="节点因子剖面图"></canvas>
+ <div class="legend">
+ <span><i></i>等距节点的 |ω|</span>
+ <span><i class="teal"></i>Chebyshev 节点的 |ω|</span>
+ </div>
+ <div class="reads" style="grid-template-columns:repeat(3,1fr)">
+ <div><div class="k">max|ω| 等距</div><div class="v bad" id="rd-om-eq">—</div></div>
+ <div><div class="k">max|ω| Chebyshev(Lobatto)</div><div class="v good" id="rd-om-ch">—</div></div>
+ <div><div class="k">两者之比</div><div class="v" id="rd-om-ratio">—</div></div>
+ </div>
+ <p class="hint">拖动上面的 n 滑杆时这张图同步更新。实测 n=10：等距 4.17×10⁵，Chebyshev-Lobatto 9.42×10⁴，比值 4.4；n=30 时比值 4 336。</p>
 </div>
 
 <p>
@@ -295,21 +292,21 @@ $$
 </p>
 
 <div class="lab">
-  <div class="lab-head">
-    <span class="t">Lebesgue 常数 Λₙ（对数纵轴，n=2…30）</span>
-    <span class="t" id="lab3-state">n = 10</span>
-  </div>
-  <canvas id="cv-leb" height="250" aria-label="Lebesgue 常数随节点数变化"></canvas>
-  <div class="legend">
-    <span><i></i>等距节点的 Λ<sub>n</sub></span>
-    <span><i class="teal"></i>Chebyshev 节点的 Λ<sub>n</sub></span>
-  </div>
-  <div class="reads" style="grid-template-columns:repeat(3,1fr)">
-    <div><div class="k">Λ 等距</div><div class="v bad" id="rd-leb-eq">—</div></div>
-    <div><div class="k">Λ Chebyshev</div><div class="v good" id="rd-leb-ch">—</div></div>
-    <div><div class="k">放大倍数之比</div><div class="v" id="rd-leb-ratio">—</div></div>
-  </div>
-  <p class="hint">等距节点的 Λ 随时间指数爆炸（n=10: 29.9；n=20: 1.1×10⁴；n=30: 6.6×10⁶）；Chebyshev 节点的 Λ 只按 log n 长（2.42 → 2.87 → 3.13）。</p>
+ <div class="lab-head">
+ <span class="t">Lebesgue 常数 Λₙ（对数纵轴，n=2…30）</span>
+ <span class="t" id="lab3-state">n = 10</span>
+ </div>
+ <canvas id="cv-leb" height="250" aria-label="Lebesgue 常数随节点数变化"></canvas>
+ <div class="legend">
+ <span><i></i>等距节点的 Λ<sub>n</sub></span>
+ <span><i class="teal"></i>Chebyshev 节点的 Λ<sub>n</sub></span>
+ </div>
+ <div class="reads" style="grid-template-columns:repeat(3,1fr)">
+ <div><div class="k">Λ 等距</div><div class="v bad" id="rd-leb-eq">—</div></div>
+ <div><div class="k">Λ Chebyshev</div><div class="v good" id="rd-leb-ch">—</div></div>
+ <div><div class="k">放大倍数之比</div><div class="v" id="rd-leb-ratio">—</div></div>
+ </div>
+ <p class="hint">等距节点的 Λ 随时间指数爆炸（n=10: 29.9；n=20: 1.1×10⁴；n=30: 6.6×10⁶）；Chebyshev 节点的 Λ 只按 log n 长（2.42 → 2.87 → 3.13）。</p>
 </div>
 
 <div class="note teal">
@@ -320,7 +317,7 @@ $$
 <h2 id="cheb"><span class="no">§2.6</span>换节点：Chebyshev 与最小零偏差</h2>
 
 <p>
-教材定理 2.6.5（书页 57）给出最小零偏差多项式：在 \([-1,1]\) 上首一的 \(n+1\) 次多项式中，\(\max|\omega|\) 的最小值由 \(2^{-n}T_{n+1}\) 达到，其中
+教材定理 2.6.5给出最小零偏差多项式：在 \([-1,1]\) 上首一的 \(n+1\) 次多项式中，\(\max|\omega|\) 的最小值由 \(2^{-n}T_{n+1}\) 达到，其中
 $$
 T_n(x)=\cos\bigl(n\arccos x\bigr),\qquad T_{n+1}=2xT_n-T_{n-1},\quad T_0=1,\ T_1=x .
 $$
@@ -392,7 +389,7 @@ $$
 <tr><td>节点少（n ≤ 7），区间短</td><td>Lagrange / Newton 等距插值</td><td>误差项里 \(f^{(n+1)}\) 还小，\(\Lambda_n\) 也还在 10 以内（n=6 时 4.55）</td></tr>
 <tr><td>节点可以自己选、需要高精度光滑逼近</td><td>Chebyshev 节点（零点优先，Lobatto 若需含端点）</td><td>取到最小零偏差，\(\Lambda_n\) 只 log 增长，误差几何收敛</td></tr>
 <tr><td>节点是测量数据、不能移动</td><td>分段线性 / 三次样条</td><td>等距高次插值在这里必然重演 Runge</td></tr>
-<tr><td>n ≥ 8 且节点等距</td><td>不要直接插值</td><td>教材书页 36：高次插值数值稳定性差，舍入误差会被迅速放大</td></tr>
+<tr><td>n ≥ 8 且节点等距</td><td>不要直接插值</td><td>教材：高次插值数值稳定性差，舍入误差会被迅速放大</td></tr>
 </tbody>
 </table>
 
@@ -401,7 +398,7 @@ $$
 </p>
 
 <footer>
-<p><strong>口径与核对</strong>——数值：<code>node verify_runge.js</code>（工作区根目录，4001 点采样，n≤30，双精度）；公式位置：《数值分析》张平文、李铁军（北大出版社 2007）§2.3 定理 2.3.1 / §2.5.1 式 (2.5.1)–(2.5.3) 与图 2.1 / 定理 2.6.5；书页 = PDF 页 − 16。</p>
+<p><strong>口径与核对</strong>——数值：<code>node verify_runge.js</code>（工作区根目录，4001 点采样，n≤30，双精度）；公式位置：教材§2.3 定理 2.3.1 / §2.5.1 式 (2.5.1)–(2.5.3) 与图 2.1 / 定理 2.6.5。</p>
 <p>公式编译：<code>node verify_formulas.js 插值-Runge现象与切比雪夫节点.html</code>，要求 0 failed。页面零依赖、可离线打开（仅公式需联网）。</p>
 </footer>
 
@@ -410,457 +407,457 @@ $$
 <script>
 "use strict";
 /* ============================================================
-   数值内核：与 verify_runge.js 同一套公式
-   ============================================================ */
+ 数值内核：与 verify_runge.js 同一套公式
+ ============================================================ */
 const A = -5, B = 5;
 const RF = x => 1 / (1 + x * x);
 
 function nodesEqui(n){
-  const xs = [];
-  for (let i = 0; i <= n; i++) xs.push(A + (B - A) * i / n);
-  return xs;
+ const xs = [];
+ for (let i = 0; i <= n; i++) xs.push(A + (B - A) * i / n);
+ return xs;
 }
 // Chebyshev 极值点（Lobatto）：x_i = 5cos(iπ/n)，升序
 function nodesCheb(n){
-  const xs = [];
-  for (let i = 0; i <= n; i++) xs.push(-5 * Math.cos(i * Math.PI / n));
-  return xs.sort((p, q) => p - q);
+ const xs = [];
+ for (let i = 0; i <= n; i++) xs.push(-5 * Math.cos(i * Math.PI / n));
+ return xs.sort((p, q) => p - q);
 }
 // Chebyshev 零点：x_i = 5cos((2i+1)π/(2n+2))
 function nodesChebZero(n){
-  const xs = [];
-  for (let i = 0; i <= n; i++) xs.push(-5 * Math.cos((2 * i + 1) * Math.PI / (2 * n + 2)));
-  return xs.sort((p, q) => p - q);
+ const xs = [];
+ for (let i = 0; i <= n; i++) xs.push(-5 * Math.cos((2 * i + 1) * Math.PI / (2 * n + 2)));
+ return xs.sort((p, q) => p - q);
 }
 // 重心权（归一化，避免量级溢出）
 function baryWeights(xs){
-  const n = xs.length - 1, w = new Array(n + 1);
-  for (let i = 0; i <= n; i++){
-    let p = 1;
-    for (let j = 0; j <= n; j++) if (j !== i) p *= (xs[i] - xs[j]);
-    w[i] = 1 / p;
-  }
-  let s = 0;
-  for (let i = 0; i <= n; i++) s = Math.max(s, Math.abs(w[i]));
-  for (let i = 0; i <= n; i++) w[i] /= s;
-  return w;
+ const n = xs.length - 1, w = new Array(n + 1);
+ for (let i = 0; i <= n; i++){
+ let p = 1;
+ for (let j = 0; j <= n; j++) if (j !== i) p *= (xs[i] - xs[j]);
+ w[i] = 1 / p;
+ }
+ let s = 0;
+ for (let i = 0; i <= n; i++) s = Math.max(s, Math.abs(w[i]));
+ for (let i = 0; i <= n; i++) w[i] /= s;
+ return w;
 }
 // 返回插值求值器
 function makeInterp(xs){
-  const w = baryWeights(xs), n = xs.length - 1;
-  const ys = xs.map(RF);
-  return function (x){
-    let num = 0, den = 0;
-    for (let i = 0; i <= n; i++){
-      const d = x - xs[i];
-      if (Math.abs(d) < 1e-13) return ys[i];
-      const t = w[i] / d;
-      num += t * ys[i]; den += t;
-    }
-    return num / den;
-  };
+ const w = baryWeights(xs), n = xs.length - 1;
+ const ys = xs.map(RF);
+ return function (x){
+ let num = 0, den = 0;
+ for (let i = 0; i <= n; i++){
+ const d = x - xs[i];
+ if (Math.abs(d) < 1e-13) return ys[i];
+ const t = w[i] / d;
+ num += t * ys[i]; den += t;
+ }
+ return num / den;
+ };
 }
 // 分段线性
 function piecewiseLinear(xs){
-  const ys = xs.map(RF), n = xs.length - 1;
-  return function (x){
-    if (x <= xs[0]) return ys[0];
-    if (x >= xs[n]) return ys[n];
-    let lo = 0, hi = n;
-    while (hi - lo > 1){ const m = (lo + hi) >> 1; if (xs[m] <= x) lo = m; else hi = m; }
-    const t = (x - xs[lo]) / (xs[lo + 1] - xs[lo]);
-    return ys[lo] * (1 - t) + ys[lo + 1] * t;
-  };
+ const ys = xs.map(RF), n = xs.length - 1;
+ return function (x){
+ if (x <= xs[0]) return ys[0];
+ if (x >= xs[n]) return ys[n];
+ let lo = 0, hi = n;
+ while (hi - lo > 1){ const m = (lo + hi) >> 1; if (xs[m] <= x) lo = m; else hi = m; }
+ const t = (x - xs[lo]) / (xs[lo + 1] - xs[lo]);
+ return ys[lo] * (1 - t) + ys[lo + 1] * t;
+ };
 }
 const M = 4001;
 const GRID = new Float64Array(M);
 for (let k = 0; k < M; k++) GRID[k] = A + (B - A) * k / (M - 1);
 
 function maxErrOf(f){
-  let e = 0, xe = A;
-  for (let k = 0; k < M; k++){
-    const d = Math.abs(f(GRID[k]) - RF(GRID[k]));
-    if (d > e){ e = d; xe = GRID[k]; }
-  }
-  return { e, xe };
+ let e = 0, xe = A;
+ for (let k = 0; k < M; k++){
+ const d = Math.abs(f(GRID[k]) - RF(GRID[k]));
+ if (d > e){ e = d; xe = GRID[k]; }
+ }
+ return { e, xe };
 }
 function omegaAt(xs, x){
-  let p = 1;
-  for (let i = 0; i < xs.length; i++) p *= (x - xs[i]);
-  return p;
+ let p = 1;
+ for (let i = 0; i < xs.length; i++) p *= (x - xs[i]);
+ return p;
 }
 function omegaMaxOf(xs){
-  let m = 0, xm = A;
-  for (let k = 0; k < M; k++){
-    const v = Math.abs(omegaAt(xs, GRID[k]));
-    if (v > m){ m = v; xm = GRID[k]; }
-  }
-  return { m, xm };
+ let m = 0, xm = A;
+ for (let k = 0; k < M; k++){
+ const v = Math.abs(omegaAt(xs, GRID[k]));
+ if (v > m){ m = v; xm = GRID[k]; }
+ }
+ return { m, xm };
 }
 function lebesgueOf(xs){
-  const w = baryWeights(xs), n = xs.length - 1, t = new Float64Array(n + 1);
-  let best = 0, xb = A;
-  for (let k = 0; k < M; k++){
-    const x = GRID[k];
-    let hit = -1;
-    for (let i = 0; i <= n; i++) if (Math.abs(x - xs[i]) < 1e-12){ hit = i; break; }
-    if (hit >= 0) continue;
-    let den = 0;
-    for (let i = 0; i <= n; i++){ t[i] = w[i] / (x - xs[i]); den += t[i]; }
-    let s = 0;
-    for (let i = 0; i <= n; i++) s += Math.abs(t[i] / den);
-    if (s > best){ best = s; xb = x; }
-  }
-  return { L: best, xb };
+ const w = baryWeights(xs), n = xs.length - 1, t = new Float64Array(n + 1);
+ let best = 0, xb = A;
+ for (let k = 0; k < M; k++){
+ const x = GRID[k];
+ let hit = -1;
+ for (let i = 0; i <= n; i++) if (Math.abs(x - xs[i]) < 1e-12){ hit = i; break; }
+ if (hit >= 0) continue;
+ let den = 0;
+ for (let i = 0; i <= n; i++){ t[i] = w[i] / (x - xs[i]); den += t[i]; }
+ let s = 0;
+ for (let i = 0; i <= n; i++) s += Math.abs(t[i] / den);
+ if (s > best){ best = s; xb = x; }
+ }
+ return { L: best, xb };
 }
 function fmt(v){
-  if (v === 0) return "0";
-  const a = Math.abs(v);
-  if (a >= 1e4 || a < 1e-3){
-    const e = Math.floor(Math.log10(a));
-    const m = v / Math.pow(10, e);
-    return m.toFixed(2) + "×10" + sup(e);
-  }
-  if (a >= 100) return v.toFixed(0);
-  if (a >= 10) return v.toFixed(2);
-  if (a >= 1) return v.toFixed(3);
-  return v.toFixed(4);
+ if (v === 0) return "0";
+ const a = Math.abs(v);
+ if (a >= 1e4 || a < 1e-3){
+ const e = Math.floor(Math.log10(a));
+ const m = v / Math.pow(10, e);
+ return m.toFixed(2) + "×10" + sup(e);
+ }
+ if (a >= 100) return v.toFixed(0);
+ if (a >= 10) return v.toFixed(2);
+ if (a >= 1) return v.toFixed(3);
+ return v.toFixed(4);
 }
 function fmtRatio(v){
-  if (v < 10) return v.toFixed(1);
-  if (v < 1e4) return v.toFixed(0);
-  return fmt(v);
+ if (v < 10) return v.toFixed(1);
+ if (v < 1e4) return v.toFixed(0);
+ return fmt(v);
 }
 function sup(e){
-  const map = {"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
-  return String(e).split("").map(c => map[c] || c).join("");
+ const map = {"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+ return String(e).split("").map(c => map[c] || c).join("");
 }
 
 /* ============================================================
-   状态
-   ============================================================ */
+ 状态
+ ============================================================ */
 const state = { n: 10, set: "eq", showPL: false };
 const COL = { eq: "#c2531f", ch: "#0d6b5d", ink: "#23201a", grid: "#e6dfd1", muted: "#8a8272" };
 
 /* ============================================================
-   画布工具
-   ============================================================ */
+ 画布工具
+ ============================================================ */
 function fit(cv){
-  const r = cv.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  cv.width = Math.max(1, Math.round(r.width * dpr));
-  cv.height = Math.max(1, Math.round(r.height * dpr));
-  const ctx = cv.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, r.width, r.height);
-  return { ctx, w: r.width, h: r.height };
+ const r = cv.getBoundingClientRect();
+ const dpr = Math.min(window.devicePixelRatio || 1, 2);
+ cv.width = Math.max(1, Math.round(r.width * dpr));
+ cv.height = Math.max(1, Math.round(r.height * dpr));
+ const ctx = cv.getContext("2d");
+ ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+ ctx.clearRect(0, 0, r.width, r.height);
+ return { ctx, w: r.width, h: r.height };
 }
 function tickStep(span, target){
-  const raw = span / target;
-  const p = Math.pow(10, Math.floor(Math.log10(raw)));
-  const c = [1, 2, 5, 10];
-  for (const f of c) if (raw <= f * p) return f * p;
-  return 10 * p;
+ const raw = span / target;
+ const p = Math.pow(10, Math.floor(Math.log10(raw)));
+ const c = [1, 2, 5, 10];
+ for (const f of c) if (raw <= f * p) return f * p;
+ return 10 * p;
 }
 
 /* ============================================================
-   实验 01：主图
-   ============================================================ */
+ 实验 01：主图
+ ============================================================ */
 function drawMain(){
-  const cv = document.getElementById("cv-main");
-  const { ctx, w, h } = fit(cv);
-  const PL = 46, PR = 14, PT = 16, PB = 28;
-  const n = state.n;
-  const curXs = state.set === "eq" ? nodesEqui(n) : nodesCheb(n);
-  const othXs = state.set === "eq" ? nodesCheb(n) : nodesEqui(n);
-  const L = makeInterp(curXs);
+ const cv = document.getElementById("cv-main");
+ const { ctx, w, h } = fit(cv);
+ const PL = 46, PR = 14, PT = 16, PB = 28;
+ const n = state.n;
+ const curXs = state.set === "eq" ? nodesEqui(n) : nodesCheb(n);
+ const othXs = state.set === "eq" ? nodesCheb(n) : nodesEqui(n);
+ const L = makeInterp(curXs);
 
-  // 采样曲线（按像素）
-  const px = w - PL - PR, N = Math.max(400, Math.round(px));
-  const xsArr = new Float64Array(N), ysL = new Float64Array(N), ysR = new Float64Array(N);
-  let maxL = -1e9, minL = 1e9;
-  for (let k = 0; k < N; k++){
-    const x = A + (B - A) * k / (N - 1);
-    xsArr[k] = x;
-    ysR[k] = RF(x);
-    const v = L(x);
-    ysL[k] = v;
-    if (v > maxL) maxL = v;
-    if (v < minL) minL = v;
-  }
-  const CAP = 60;
-  const clipped = (maxL > CAP || minL < -CAP);
-  let yTop = Math.min(CAP, Math.max(1.25, maxL * 1.08));
-  let yBot = Math.max(-CAP, Math.min(-0.15, minL * 1.08));
-  if (yTop <= yBot) { yTop = 1; yBot = -0.2; }
+ // 采样曲线（按像素）
+ const px = w - PL - PR, N = Math.max(400, Math.round(px));
+ const xsArr = new Float64Array(N), ysL = new Float64Array(N), ysR = new Float64Array(N);
+ let maxL = -1e9, minL = 1e9;
+ for (let k = 0; k < N; k++){
+ const x = A + (B - A) * k / (N - 1);
+ xsArr[k] = x;
+ ysR[k] = RF(x);
+ const v = L(x);
+ ysL[k] = v;
+ if (v > maxL) maxL = v;
+ if (v < minL) minL = v;
+ }
+ const CAP = 60;
+ const clipped = (maxL > CAP || minL < -CAP);
+ let yTop = Math.min(CAP, Math.max(1.25, maxL * 1.08));
+ let yBot = Math.max(-CAP, Math.min(-0.15, minL * 1.08));
+ if (yTop <= yBot) { yTop = 1; yBot = -0.2; }
 
-  const X = x => PL + (x - A) / (B - A) * px;
-  const Y = y => PT + (yTop - y) / (yTop - yBot) * (h - PT - PB);
+ const X = x => PL + (x - A) / (B - A) * px;
+ const Y = y => PT + (yTop - y) / (yTop - yBot) * (h - PT - PB);
 
-  // 网格
-  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
-  ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
-  const ys = tickStep(yTop - yBot, 6);
-  for (let v = Math.ceil(yBot / ys) * ys; v <= yTop + 1e-9; v += ys){
-    const yy = Math.round(Y(v)) + .5;
-    ctx.beginPath(); ctx.moveTo(PL, yy); ctx.lineTo(w - PR, yy); ctx.stroke();
-    ctx.textAlign = "right"; ctx.textBaseline = "middle";
-    ctx.fillText(Number(v.toFixed(6)).toString(), PL - 7, yy);
-  }
-  ctx.textAlign = "center"; ctx.textBaseline = "top";
-  for (let v = A; v <= B; v++){
-    const xx = Math.round(X(v)) + .5;
-    ctx.beginPath(); ctx.moveTo(xx, PT); ctx.lineTo(xx, h - PB); ctx.stroke();
-    ctx.fillText(String(v), xx, h - PB + 6);
-  }
-  // 零线
-  if (yBot < 0 && yTop > 0){
-    ctx.strokeStyle = "#b9b0a0"; ctx.beginPath();
-    ctx.moveTo(PL, Y(0) + .5); ctx.lineTo(w - PR, Y(0) + .5); ctx.stroke();
-  }
+ // 网格
+ ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+ ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
+ const ys = tickStep(yTop - yBot, 6);
+ for (let v = Math.ceil(yBot / ys) * ys; v <= yTop + 1e-9; v += ys){
+ const yy = Math.round(Y(v)) + .5;
+ ctx.beginPath(); ctx.moveTo(PL, yy); ctx.lineTo(w - PR, yy); ctx.stroke();
+ ctx.textAlign = "right"; ctx.textBaseline = "middle";
+ ctx.fillText(Number(v.toFixed(6)).toString(), PL - 7, yy);
+ }
+ ctx.textAlign = "center"; ctx.textBaseline = "top";
+ for (let v = A; v <= B; v++){
+ const xx = Math.round(X(v)) + .5;
+ ctx.beginPath(); ctx.moveTo(xx, PT); ctx.lineTo(xx, h - PB); ctx.stroke();
+ ctx.fillText(String(v), xx, h - PB + 6);
+ }
+ // 零线
+ if (yBot < 0 && yTop > 0){
+ ctx.strokeStyle = "#b9b0a0"; ctx.beginPath();
+ ctx.moveTo(PL, Y(0) + .5); ctx.lineTo(w - PR, Y(0) + .5); ctx.stroke();
+ }
 
-  // 误差带（|L-R| 的视觉提示，用浅色填充两条曲线之间）
-  ctx.save();
-  ctx.beginPath(); ctx.moveTo(X(xsArr[0]), Y(ysL[0]));
-  for (let k = 1; k < N; k++) ctx.lineTo(X(xsArr[k]), Y(ysL[k]));
-  for (let k = N - 1; k >= 0; k--) ctx.lineTo(X(xsArr[k]), Y(ysR[k]));
-  ctx.closePath();
-  ctx.fillStyle = "rgba(194,83,31,.10)"; ctx.fill();
-  ctx.restore();
+ // 误差带（|L-R| 的视觉提示，用浅色填充两条曲线之间）
+ ctx.save();
+ ctx.beginPath(); ctx.moveTo(X(xsArr[0]), Y(ysL[0]));
+ for (let k = 1; k < N; k++) ctx.lineTo(X(xsArr[k]), Y(ysL[k]));
+ for (let k = N - 1; k >= 0; k--) ctx.lineTo(X(xsArr[k]), Y(ysR[k]));
+ ctx.closePath();
+ ctx.fillStyle = "rgba(194,83,31,.10)"; ctx.fill();
+ ctx.restore();
 
-  // R(x)
-  ctx.strokeStyle = "rgba(35,32,26,.55)"; ctx.lineWidth = 1.6; ctx.setLineDash([5, 4]);
-  ctx.beginPath();
-  for (let k = 0; k < N; k++){ const p = [X(xsArr[k]), Y(ysR[k])]; k ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }
-  ctx.stroke(); ctx.setLineDash([]);
+ // R(x)
+ ctx.strokeStyle = "rgba(35,32,26,.55)"; ctx.lineWidth = 1.6; ctx.setLineDash([5, 4]);
+ ctx.beginPath();
+ for (let k = 0; k < N; k++){ const p = [X(xsArr[k]), Y(ysR[k])]; k ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }
+ ctx.stroke(); ctx.setLineDash([]);
 
-  // 分段线性
-  if (state.showPL){
-    const pl = piecewiseLinear(nodesEqui(Math.min(n, 40)));
-    ctx.strokeStyle = "#39417e"; ctx.lineWidth = 1.4; ctx.setLineDash([2, 3]);
-    ctx.beginPath();
-    for (let k = 0; k < N; k++){
-      const v = pl(xsArr[k]);
-      const yy = Y(Math.max(yBot, Math.min(yTop, v)));
-      k ? ctx.lineTo(X(xsArr[k]), yy) : ctx.moveTo(X(xsArr[k]), yy);
-    }
-    ctx.stroke(); ctx.setLineDash([]);
-  }
+ // 分段线性
+ if (state.showPL){
+ const pl = piecewiseLinear(nodesEqui(Math.min(n, 40)));
+ ctx.strokeStyle = "#39417e"; ctx.lineWidth = 1.4; ctx.setLineDash([2, 3]);
+ ctx.beginPath();
+ for (let k = 0; k < N; k++){
+ const v = pl(xsArr[k]);
+ const yy = Y(Math.max(yBot, Math.min(yTop, v)));
+ k ? ctx.lineTo(X(xsArr[k]), yy) : ctx.moveTo(X(xsArr[k]), yy);
+ }
+ ctx.stroke(); ctx.setLineDash([]);
+ }
 
-  // L_n(x)
-  ctx.strokeStyle = COL.eq; ctx.lineWidth = 2.2; ctx.lineJoin = "round";
-  ctx.beginPath();
-  let pen = false;
-  for (let k = 0; k < N; k++){
-    const yy = Y(ysL[k]);
-    if (yy < PT - 2000 || yy > h - PB + 2000){ pen = false; continue; }
-    if (!pen){ ctx.moveTo(X(xsArr[k]), yy); pen = true; } else ctx.lineTo(X(xsArr[k]), yy);
-  }
-  ctx.stroke();
+ // L_n(x)
+ ctx.strokeStyle = COL.eq; ctx.lineWidth = 2.2; ctx.lineJoin = "round";
+ ctx.beginPath();
+ let pen = false;
+ for (let k = 0; k < N; k++){
+ const yy = Y(ysL[k]);
+ if (yy < PT - 2000 || yy > h - PB + 2000){ pen = false; continue; }
+ if (!pen){ ctx.moveTo(X(xsArr[k]), yy); pen = true; } else ctx.lineTo(X(xsArr[k]), yy);
+ }
+ ctx.stroke();
 
-  // 另一组节点（空心幽灵点）
-  ctx.strokeStyle = "rgba(13,107,93,.55)"; ctx.lineWidth = 1.2;
-  for (const xi of othXs){
-    ctx.beginPath(); ctx.arc(X(xi), Y(RF(xi)), 2.6, 0, 6.2832); ctx.stroke();
-  }
-  // 当前节点
-  ctx.fillStyle = COL.ink;
-  for (const xi of curXs){
-    ctx.beginPath(); ctx.arc(X(xi), Y(RF(xi)), 3.2, 0, 6.2832); ctx.fill();
-  }
+ // 另一组节点（空心幽灵点）
+ ctx.strokeStyle = "rgba(13,107,93,.55)"; ctx.lineWidth = 1.2;
+ for (const xi of othXs){
+ ctx.beginPath(); ctx.arc(X(xi), Y(RF(xi)), 2.6, 0, 6.2832); ctx.stroke();
+ }
+ // 当前节点
+ ctx.fillStyle = COL.ink;
+ for (const xi of curXs){
+ ctx.beginPath(); ctx.arc(X(xi), Y(RF(xi)), 3.2, 0, 6.2832); ctx.fill();
+ }
 
-  if (clipped){
-    const tx = "纵轴已截断 · 峰值 " + fmt(Math.max(Math.abs(maxL), Math.abs(minL)));
-    ctx.font = "11.5px ui-monospace,monospace"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
-    const tw = ctx.measureText(tx).width;
-    ctx.fillStyle = "rgba(255,253,248,.93)";
-    ctx.fillRect(PL + 6, PT + 4, tw + 12, 18);
-    ctx.fillStyle = "#a3341f";
-    ctx.fillText(tx, PL + 12, PT + 13);
-  }
+ if (clipped){
+ const tx = "纵轴已截断 · 峰值 " + fmt(Math.max(Math.abs(maxL), Math.abs(minL)));
+ ctx.font = "11.5px ui-monospace,monospace"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+ const tw = ctx.measureText(tx).width;
+ ctx.fillStyle = "rgba(255,253,248,.93)";
+ ctx.fillRect(PL + 6, PT + 4, tw + 12, 18);
+ ctx.fillStyle = "#a3341f";
+ ctx.fillText(tx, PL + 12, PT + 13);
+ }
 }
 
 /* ============================================================
-   实验 02：ω 剖面
-   ============================================================ */
+ 实验 02：ω 剖面
+ ============================================================ */
 function drawOmega(){
-  const cv = document.getElementById("cv-omega");
-  const { ctx, w, h } = fit(cv);
-  const PL = 46, PR = 14, PT = 14, PB = 24;
-  const n = state.n;
-  const sets = [
-    { xs: nodesEqui(n), c: COL.eq, lab: "等距" },
-    { xs: nodesCheb(n), c: COL.ch, lab: "Chebyshev" }
-  ];
-  const px = w - PL - PR, N = Math.max(300, Math.round(px));
-  // 先算原始对数值，再由峰值定纵深（只保留 6 个量级，避免整幅图挤在顶部）
-  const raw = sets.map(s => {
-    const a = new Float64Array(N);
-    let top = -1e9;
-    for (let k = 0; k < N; k++){
-      const x = A + (B - A) * k / (N - 1);
-      const v = Math.abs(omegaAt(s.xs, x));
-      const lg = v > 0 ? Math.log10(v) : -1e9;
-      a[k] = lg; if (lg > top) top = lg;
-    }
-    return a;
-  });
-  const peak = Math.max.apply(null, Array.from(raw[0]).concat(Array.from(raw[1])));
-  const yTop = peak + .35;
-  const FLOOR = yTop - 6;
-  const series = raw.map((a, j) => {
-    const b = new Float64Array(N);
-    for (let k = 0; k < N; k++) b[k] = Math.max(FLOOR, a[k]);
-    return { a: b, c: sets[j].c, lab: sets[j].lab };
-  });
-  const X = x => PL + (x - A) / (B - A) * px;
-  const Y = v => PT + (yTop - v) / (yTop - FLOOR) * (h - PT - PB);
+ const cv = document.getElementById("cv-omega");
+ const { ctx, w, h } = fit(cv);
+ const PL = 46, PR = 14, PT = 14, PB = 24;
+ const n = state.n;
+ const sets = [
+ { xs: nodesEqui(n), c: COL.eq, lab: "等距" },
+ { xs: nodesCheb(n), c: COL.ch, lab: "Chebyshev" }
+ ];
+ const px = w - PL - PR, N = Math.max(300, Math.round(px));
+ // 先算原始对数值，再由峰值定纵深（只保留 6 个量级，避免整幅图挤在顶部）
+ const raw = sets.map(s => {
+ const a = new Float64Array(N);
+ let top = -1e9;
+ for (let k = 0; k < N; k++){
+ const x = A + (B - A) * k / (N - 1);
+ const v = Math.abs(omegaAt(s.xs, x));
+ const lg = v > 0 ? Math.log10(v) : -1e9;
+ a[k] = lg; if (lg > top) top = lg;
+ }
+ return a;
+ });
+ const peak = Math.max.apply(null, Array.from(raw[0]).concat(Array.from(raw[1])));
+ const yTop = peak + .35;
+ const FLOOR = yTop - 6;
+ const series = raw.map((a, j) => {
+ const b = new Float64Array(N);
+ for (let k = 0; k < N; k++) b[k] = Math.max(FLOOR, a[k]);
+ return { a: b, c: sets[j].c, lab: sets[j].lab };
+ });
+ const X = x => PL + (x - A) / (B - A) * px;
+ const Y = v => PT + (yTop - v) / (yTop - FLOOR) * (h - PT - PB);
 
-  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
-  ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
-  const step = Math.max(1, Math.ceil((yTop - FLOOR) / 6));
-  for (let v = Math.ceil(FLOOR); v <= yTop; v += step){
-    const yy = Math.round(Y(v)) + .5;
-    ctx.beginPath(); ctx.moveTo(PL, yy); ctx.lineTo(w - PR, yy); ctx.stroke();
-    ctx.textAlign = "right"; ctx.textBaseline = "middle";
-    ctx.fillText("10" + sup(v), PL - 7, yy);
-  }
-  ctx.textAlign = "center"; ctx.textBaseline = "top";
-  for (let v = A; v <= B; v++){
-    const xx = Math.round(X(v)) + .5;
-    ctx.fillText(String(v), xx, h - PB + 5);
-  }
-  for (const s of series){
-    ctx.strokeStyle = s.c; ctx.lineWidth = 1.7; ctx.beginPath();
-    for (let k = 0; k < N; k++){
-      const x = A + (B - A) * k / (N - 1);
-      const yy = Y(s.a[k]);
-      k ? ctx.lineTo(X(x), yy) : ctx.moveTo(X(x), yy);
-    }
-    ctx.stroke();
-  }
+ ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+ ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
+ const step = Math.max(1, Math.ceil((yTop - FLOOR) / 6));
+ for (let v = Math.ceil(FLOOR); v <= yTop; v += step){
+ const yy = Math.round(Y(v)) + .5;
+ ctx.beginPath(); ctx.moveTo(PL, yy); ctx.lineTo(w - PR, yy); ctx.stroke();
+ ctx.textAlign = "right"; ctx.textBaseline = "middle";
+ ctx.fillText("10" + sup(v), PL - 7, yy);
+ }
+ ctx.textAlign = "center"; ctx.textBaseline = "top";
+ for (let v = A; v <= B; v++){
+ const xx = Math.round(X(v)) + .5;
+ ctx.fillText(String(v), xx, h - PB + 5);
+ }
+ for (const s of series){
+ ctx.strokeStyle = s.c; ctx.lineWidth = 1.7; ctx.beginPath();
+ for (let k = 0; k < N; k++){
+ const x = A + (B - A) * k / (N - 1);
+ const yy = Y(s.a[k]);
+ k ? ctx.lineTo(X(x), yy) : ctx.moveTo(X(x), yy);
+ }
+ ctx.stroke();
+ }
 }
 
 /* ============================================================
-   实验 03：Lebesgue 常数曲线（预计算 n=2..30）
-   ============================================================ */
+ 实验 03：Lebesgue 常数曲线（预计算 n=2..30）
+ ============================================================ */
 const LEB = { eq: [], ch: [], ns: [] };
 (function precomputeLeb(){
-  for (let n = 2; n <= 30; n++){
-    LEB.ns.push(n);
-    LEB.eq.push(lebesgueOf(nodesEqui(n)).L);
-    LEB.ch.push(lebesgueOf(nodesCheb(n)).L);
-  }
+ for (let n = 2; n <= 30; n++){
+ LEB.ns.push(n);
+ LEB.eq.push(lebesgueOf(nodesEqui(n)).L);
+ LEB.ch.push(lebesgueOf(nodesCheb(n)).L);
+ }
 })();
 
 function drawLeb(){
-  const cv = document.getElementById("cv-leb");
-  const { ctx, w, h } = fit(cv);
-  const PL = 52, PR = 14, PT = 14, PB = 26;
-  const ns = LEB.ns;
-  const all = LEB.eq.concat(LEB.ch);
-  const yTop = Math.ceil(Math.log10(Math.max(...all))) + .15;
-  const yBot = 0;
-  const px = w - PL - PR;
-  const X = n => PL + (n - ns[0]) / (ns[ns.length - 1] - ns[0]) * px;
-  const Y = v => PT + (yTop - v) / (yTop - yBot) * (h - PT - PB);
+ const cv = document.getElementById("cv-leb");
+ const { ctx, w, h } = fit(cv);
+ const PL = 52, PR = 14, PT = 14, PB = 26;
+ const ns = LEB.ns;
+ const all = LEB.eq.concat(LEB.ch);
+ const yTop = Math.ceil(Math.log10(Math.max(...all))) + .15;
+ const yBot = 0;
+ const px = w - PL - PR;
+ const X = n => PL + (n - ns[0]) / (ns[ns.length - 1] - ns[0]) * px;
+ const Y = v => PT + (yTop - v) / (yTop - yBot) * (h - PT - PB);
 
-  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
-  ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
-  for (let v = yBot; v <= yTop; v++){
-    const yy = Math.round(Y(v)) + .5;
-    ctx.beginPath(); ctx.moveTo(PL, yy); ctx.lineTo(w - PR, yy); ctx.stroke();
-    ctx.textAlign = "right"; ctx.textBaseline = "middle";
-    ctx.fillText("10" + sup(v), PL - 7, yy);
-  }
-  ctx.textAlign = "center"; ctx.textBaseline = "top";
-  for (let n = 2; n <= 30; n += 4){
-    ctx.fillText(String(n), X(n), h - PB + 5);
-  }
-  const line = (arr, c) => {
-    ctx.strokeStyle = c; ctx.lineWidth = 1.9; ctx.beginPath();
-    arr.forEach((v, i) => {
-      const yy = Y(Math.log10(v));
-      i ? ctx.lineTo(X(ns[i]), yy) : ctx.moveTo(X(ns[i]), yy);
-    });
-    ctx.stroke();
-  };
-  line(LEB.ch, COL.ch);
-  line(LEB.eq, COL.eq);
+ ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+ ctx.font = "11px ui-monospace,Consolas,monospace"; ctx.fillStyle = COL.muted;
+ for (let v = yBot; v <= yTop; v++){
+ const yy = Math.round(Y(v)) + .5;
+ ctx.beginPath(); ctx.moveTo(PL, yy); ctx.lineTo(w - PR, yy); ctx.stroke();
+ ctx.textAlign = "right"; ctx.textBaseline = "middle";
+ ctx.fillText("10" + sup(v), PL - 7, yy);
+ }
+ ctx.textAlign = "center"; ctx.textBaseline = "top";
+ for (let n = 2; n <= 30; n += 4){
+ ctx.fillText(String(n), X(n), h - PB + 5);
+ }
+ const line = (arr, c) => {
+ ctx.strokeStyle = c; ctx.lineWidth = 1.9; ctx.beginPath();
+ arr.forEach((v, i) => {
+ const yy = Y(Math.log10(v));
+ i ? ctx.lineTo(X(ns[i]), yy) : ctx.moveTo(X(ns[i]), yy);
+ });
+ ctx.stroke();
+ };
+ line(LEB.ch, COL.ch);
+ line(LEB.eq, COL.eq);
 
-  // 当前 n 竖线
-  const i = ns.indexOf(state.n);
-  if (i >= 0){
-    ctx.strokeStyle = "rgba(35,32,26,.28)"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
-    ctx.beginPath(); ctx.moveTo(X(state.n), PT); ctx.lineTo(X(state.n), h - PB); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = COL.eq;
-    ctx.beginPath(); ctx.arc(X(state.n), Y(Math.log10(LEB.eq[i])), 3.6, 0, 6.2832); ctx.fill();
-    ctx.fillStyle = COL.ch;
-    ctx.beginPath(); ctx.arc(X(state.n), Y(Math.log10(LEB.ch[i])), 3.6, 0, 6.2832); ctx.fill();
-  }
+ // 当前 n 竖线
+ const i = ns.indexOf(state.n);
+ if (i >= 0){
+ ctx.strokeStyle = "rgba(35,32,26,.28)"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+ ctx.beginPath(); ctx.moveTo(X(state.n), PT); ctx.lineTo(X(state.n), h - PB); ctx.stroke();
+ ctx.setLineDash([]);
+ ctx.fillStyle = COL.eq;
+ ctx.beginPath(); ctx.arc(X(state.n), Y(Math.log10(LEB.eq[i])), 3.6, 0, 6.2832); ctx.fill();
+ ctx.fillStyle = COL.ch;
+ ctx.beginPath(); ctx.arc(X(state.n), Y(Math.log10(LEB.ch[i])), 3.6, 0, 6.2832); ctx.fill();
+ }
 
 }
 
 /* ============================================================
-   读数与联动
-   ============================================================ */
+ 读数与联动
+ ============================================================ */
 function update(){
-  const n = state.n;
-  const cur = state.set === "eq" ? nodesEqui(n) : nodesCheb(n);
-  const oth = state.set === "eq" ? nodesCheb(n) : nodesEqui(n);
+ const n = state.n;
+ const cur = state.set === "eq" ? nodesEqui(n) : nodesCheb(n);
+ const oth = state.set === "eq" ? nodesCheb(n) : nodesEqui(n);
 
-  const eCur = maxErrOf(makeInterp(cur));
-  const eOth = maxErrOf(makeInterp(oth));
-  const L = makeInterp(cur);
-  let maxL = -1e9;
-  for (let k = 0; k < M; k++) maxL = Math.max(maxL, L(GRID[k]));
+ const eCur = maxErrOf(makeInterp(cur));
+ const eOth = maxErrOf(makeInterp(oth));
+ const L = makeInterp(cur);
+ let maxL = -1e9;
+ for (let k = 0; k < M; k++) maxL = Math.max(maxL, L(GRID[k]));
 
-  const setLabel = state.set === "eq" ? "等距" : "Chebyshev";
-  document.getElementById("lab1-state").textContent = "n = " + n + " · " + setLabel;
-  document.getElementById("lab2-state").textContent = "n = " + n;
-  document.getElementById("lab3-state").textContent = "n = " + n;
+ const setLabel = state.set === "eq" ? "等距" : "Chebyshev";
+ document.getElementById("lab1-state").textContent = "n = " + n + " · " + setLabel;
+ document.getElementById("lab2-state").textContent = "n = " + n;
+ document.getElementById("lab3-state").textContent = "n = " + n;
 
-  const rdErr = document.getElementById("rd-err");
-  rdErr.textContent = fmt(eCur.e);
-  rdErr.className = "v " + (eCur.e > 0.5 ? "bad" : "good");
-  document.getElementById("rd-errx").textContent = eCur.xe.toFixed(2);
-  document.getElementById("rd-max").textContent = fmt(maxL);
-  const rdAlt = document.getElementById("rd-alt");
-  rdAlt.textContent = fmt(eOth.e) + " · " + (state.set === "eq" ? "Cheb" : "等距");
-  rdAlt.className = "v " + (eOth.e > eCur.e ? "bad" : "good");
+ const rdErr = document.getElementById("rd-err");
+ rdErr.textContent = fmt(eCur.e);
+ rdErr.className = "v " + (eCur.e > 0.5 ? "bad" : "good");
+ document.getElementById("rd-errx").textContent = eCur.xe.toFixed(2);
+ document.getElementById("rd-max").textContent = fmt(maxL);
+ const rdAlt = document.getElementById("rd-alt");
+ rdAlt.textContent = fmt(eOth.e) + " · " + (state.set === "eq" ? "Cheb" : "等距");
+ rdAlt.className = "v " + (eOth.e > eCur.e ? "bad" : "good");
 
-  const omE = omegaMaxOf(nodesEqui(n)).m, omC = omegaMaxOf(nodesCheb(n)).m;
-  document.getElementById("rd-om-eq").textContent = fmt(omE);
-  document.getElementById("rd-om-ch").textContent = fmt(omC);
-  document.getElementById("rd-om-ratio").textContent = fmtRatio(omE / omC) + "×";
+ const omE = omegaMaxOf(nodesEqui(n)).m, omC = omegaMaxOf(nodesCheb(n)).m;
+ document.getElementById("rd-om-eq").textContent = fmt(omE);
+ document.getElementById("rd-om-ch").textContent = fmt(omC);
+ document.getElementById("rd-om-ratio").textContent = fmtRatio(omE / omC) + "×";
 
-  const i = LEB.ns.indexOf(n);
-  const le = LEB.eq[i], lc = LEB.ch[i];
-  document.getElementById("rd-leb-eq").textContent = fmt(le);
-  document.getElementById("rd-leb-ch").textContent = fmt(lc);
-  document.getElementById("rd-leb-ratio").textContent = fmtRatio(le / lc) + "×";
+ const i = LEB.ns.indexOf(n);
+ const le = LEB.eq[i], lc = LEB.ch[i];
+ document.getElementById("rd-leb-eq").textContent = fmt(le);
+ document.getElementById("rd-leb-ch").textContent = fmt(lc);
+ document.getElementById("rd-leb-ratio").textContent = fmtRatio(le / lc) + "×";
 
-  document.getElementById("rn").value = String(n);
-  document.getElementById("rn-out").textContent = String(n);
-  document.getElementById("b-eq").setAttribute("aria-pressed", state.set === "eq" ? "true" : "false");
-  document.getElementById("b-ch").setAttribute("aria-pressed", state.set === "ch" ? "true" : "false");
+ document.getElementById("rn").value = String(n);
+ document.getElementById("rn-out").textContent = String(n);
+ document.getElementById("b-eq").setAttribute("aria-pressed", state.set === "eq" ? "true" : "false");
+ document.getElementById("b-ch").setAttribute("aria-pressed", state.set === "ch" ? "true" : "false");
 
-  drawMain(); drawOmega(); drawLeb();
+ drawMain(); drawOmega(); drawLeb();
 }
 
 /* ============================================================
-   事件
-   ============================================================ */
+ 事件
+ ============================================================ */
 document.getElementById("rn").addEventListener("input", e => {
-  state.n = +e.target.value; update();
+ state.n = +e.target.value; update();
 });
 document.getElementById("b-eq").addEventListener("click", () => { state.set = "eq"; update(); });
 document.getElementById("b-ch").addEventListener("click", () => { state.set = "ch"; update(); });
 document.getElementById("cb-pl").addEventListener("change", e => { state.showPL = e.target.checked; update(); });
 let rt = 0;
 window.addEventListener("resize", () => {
-  clearTimeout(rt); rt = setTimeout(update, 120);
+ clearTimeout(rt); rt = setTimeout(update, 120);
 });
 update();
 </script>

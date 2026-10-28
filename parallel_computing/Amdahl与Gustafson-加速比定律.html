@@ -5,46 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Amdahl 与 Gustafson 加速比 · 并行算法</title>
 <!--
-  维护说明（给未来的自己）：
-  1. 本页 = 并行算法系列第 1 页（图号 PC-01），Quinn《Parallel Programming in C with MPI and OpenMP》
-     第 7 章性能分析 §7.2–7.6（中文版书页 129–139，PDF 141–152）。
-  2. 版式身份「时间线」：浅灰纸 #F5F7F8 + 墨 #17252E + 钢青 #0F6E7A（主）+ 橙 #B45F06（强调）
-     + 等宽读数；Gantt 时间轴是本科目特色（实验 02）。实验台结构 .lab/.lab-head/.lab-sub/
-     canvas/.ctrls/.readouts 沿用全站约定。
-  3. 四个实验台：01 Amdahl 曲线台（固定 f / 例3 模型双模式）、02 Gantt 时间轴与拐点
-     （σ/φ/p/κ 四段式 + Fig 7.2 复现）、03 Gustafson-Barsis 比例加速比台、04 Karp-Flatt 诊断台
-     （教材两道例题数据集 + 自定义反推）。
-  4. 本机实测：_measure_pc01.js（工作区根，worker_threads 规约计时），数字硬编码进第 06 节，
-     闸门 verify_readout_pc01.js 复核表内自洽性（ψ=T1/Tp、ε=ψ/p）。
-  5. OCR 重组处（均在页内注明）：① 7.3.1 通信模型切片破损为「[logn] 个通信点 / 14(10 000log p+1 000)」，
-     按加速比分母 42 000=28 000+14×1 000 与 140 000 log p=14×10 000 log p 重组为
-     「14 个通信点、每点 10 000·log₂p+n/10 μs」；② Gustafson 的 s 定义式 σ/(σ+φ/p) 按推导链重组。
+ 维护说明（给未来的自己）：
+ 1. 本页 = 并行算法系列第 1 页（图号 PC-01），教材
+ 2. 版式身份「时间线」：浅灰纸 #F5F7F8 + 墨 #17252E + 钢青 #0F6E7A（主）+ 橙 #B45F06（强调）
+ + 等宽读数；Gantt 时间轴是本科目特色（实验 02）。实验台结构 .lab/.lab-head/.lab-sub/
+ canvas/.ctrls/.readouts 沿用全站约定。
+ 3. 四个实验台：01 Amdahl 曲线台（固定 f / 例3 模型双模式）、02 Gantt 时间轴与拐点
+ （σ/φ/p/κ 四段式 + Fig 7.2 复现）、03 Gustafson-Barsis 比例加速比台、04 Karp-Flatt 诊断台
+ （教材两道例题数据集 + 自定义反推）。
+ 4. 本机实测：_measure_pc01.js（工作区根，worker_threads 规约计时），数字硬编码进第 06 节，
+ 闸门 verify_readout_pc01.js 复核表内自洽性（ψ=T1/Tp、ε=ψ/p）。
+ 按加速比分母 42 000=28 000+14×1 000 与 140 000 log p=14×10 000 log p 重组为
+ 「14 个通信点、每点 10 000·log₂p+n/10 μs」；② Gustafson 的 s 定义式 σ/(σ+φ/p) 按推导链重组。
 -->
 <script>
 window.MathJax = {
-  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
-  svg: { fontCache: "local" },
-  options: { enableMenu: false }
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "local" },
+ options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
-  --paper:#f5f7f8; --card:#ffffff; --ink:#17252e; --ink2:#546570;
-  --line:#d5dde2; --line2:#aebdc6; --grid:#e6ecef;
-  --teal:#0f6e7a; --teal-soft:#e4f2f3;
-  --amber:#b45f06; --amber-soft:#faeede;
-  --mono:ui-monospace,"Cascadia Mono",SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ --paper:#f5f7f8; --card:#ffffff; --ink:#17252e; --ink2:#546570;
+ --line:#d5dde2; --line2:#aebdc6; --grid:#e6ecef;
+ --teal:#0f6e7a; --teal-soft:#e4f2f3;
+ --amber:#b45f06; --amber-soft:#faeede;
+ --mono:ui-monospace,"Cascadia Mono",SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 body{margin:0;color:var(--ink);background:var(--paper);
-  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--teal);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
-  overflow:hidden;margin:0 0 14px;background:var(--card)}
+ overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -53,45 +51,45 @@ body{margin:0;color:var(--ink);background:var(--paper);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:#31424c;font-size:15px;margin:0 0 8px;max-width:70ch}
 .tag{display:inline-block;font-size:11.5px;font-family:var(--mono);
-  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
-  background:var(--teal-soft);color:var(--teal)}
+ border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+ background:var(--teal-soft);color:var(--teal)}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
-  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+ border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:var(--mono);font-size:12.5px;color:var(--teal);font-weight:600}
 p{margin:10px 0}
 ul,ol{margin:10px 0;padding-left:24px}
 li{margin:4px 0}
 .mono{font-family:var(--mono)}
 .lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
-  margin:22px 0;padding:18px 20px 20px}
+ margin:22px 0;padding:18px 20px 20px}
 .lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
 .lab-head .t{font-size:15.5px;font-weight:680}
 .lab-head .no{font-family:var(--mono);font-size:12px;color:#fff;
-  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+ background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
 .lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
 canvas{display:block;width:100%;height:auto;background:var(--card);
-  border:1px solid var(--line);border-radius:8px;touch-action:none}
+ border:1px solid var(--line);border-radius:8px;touch-action:none}
 .ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
 .ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
 .ctrl label{color:var(--ink2);white-space:nowrap}
 .ctrl .nm{font-family:var(--mono);color:var(--ink)}
 input[type=range]{width:110px;accent-color:var(--teal)}
 button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
-  border-radius:7px;padding:5px 13px;cursor:pointer}
+ border-radius:7px;padding:5px 13px;cursor:pointer}
 button:hover{border-color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{border:none;border-radius:0;padding:5px 12px}
 .seg button.on{background:var(--teal);color:#fff}
 .readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:4px 18px}
+ display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:4px 18px}
 .ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
-  border-bottom:1px dotted var(--grid);padding:3px 0}
+ border-bottom:1px dotted var(--grid);padding:3px 0}
 .ro .k{color:var(--ink2)}
 .ro .v{font-family:var(--mono);font-weight:600}
 .eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
-  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+ border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--amber);background:var(--amber-soft);padding:10px 16px;margin:16px 0;
-  border-radius:0 8px 8px 0;font-size:14px}
+ border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--teal);background:var(--teal-soft)}
 mjx-container[kax="SVG"]{max-width:100%}
 mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
@@ -101,15 +99,15 @@ table.tb th{background:var(--card);font-weight:600}
 table.tb tr.hi td{background:var(--teal-soft)}
 table.tb td.l{text-align:left}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
-  font-size:13px;color:var(--ink2)}
+ font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
 .pager a{color:var(--teal);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
 .hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
 @media print{
-  .noprint{display:none}
-  h2{page-break-after:avoid}
-  .lab,table.tb,.eq{page-break-inside:avoid}
+ .noprint{display:none}
+ h2{page-break-after:avoid}
+ .lab,table.tb,.eq{page-break-inside:avoid}
 }
 </style>
 </head>
@@ -119,15 +117,15 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">并行算法</a></p>
 
 <div class="sheet">
-  <div class="cell"><p class="k">图号</p><p class="v no">PC-01</p></div>
-  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">Amdahl 定律与 Gustafson-Barsis 定律</p></div>
-  <div class="cell"><p class="k">教材</p><p class="v">第 7 章 §7.2–7.6 · 书页 129–139</p></div>
-  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+ <div class="cell"><p class="k">图号</p><p class="v no">PC-01</p></div>
+ <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">Amdahl 定律与 Gustafson-Barsis 定律</p></div>
+ <div class="cell"><p class="k">教材</p><p class="v">第 7 章 §7.2–7.6</p></div>
+ <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
 </div>
 
 <h1>加速比的天花板与另一条路：Amdahl 与 Gustafson-Barsis</h1>
 <p class="lead">并行程序为什么常常只快两三倍？第 7 章把一个并行程序的执行时间拆成三件套：<strong>必须串行的 σ</strong>、<strong>可并行的 φ</strong>、<strong>并行开销 κ</strong>（通信与冗余计算）。加速比的一切故事都从 \(\psi=(\sigma+\varphi)\,/\,(\sigma+\varphi/p+\kappa)\) 这个不等式开始：Amdahl 定律固定问题规模看天花板上限 \(1/f\)，Gustafson-Barsis 定律固定时间看问题规模放大后的比例加速比，Karp-Flatt 量度则从实测加速比反推「有效串行比例」来诊断瓶颈。这一页把四条公式全部做成可拖动的实验台，所有数字由工作区脚本实测。</p>
-<p class="hint">约定：\(p\) = 处理器数，\(n\) = 问题规模；\(\psi\) = 加速比，\(\varepsilon\) = 效率（=\(\psi/p\)）；时间为微秒（μs）除非另注。公式编号（7.2）式等按中译本第七章；切片 OCR 打散的公式均已重组，重组依据在页内注明。全部读数由工作区脚本 <span class="mono">verify_readout_pc01.js</span> 实测，计时数字由 <span class="mono">_measure_pc01.js</span> 在本机实测。</p>
+<p class="hint">约定：\(p\) = 处理器数，\(n\) = 问题规模；\(\psi\) = 加速比，\(\varepsilon\) = 效率（=\(\psi/p\)）；时间为微秒（μs）除非另注。公式编号（7.2）式等按中译本第七章；全部读数由工作区脚本 <span class="mono">verify_readout_pc01.js</span> 实测，计时数字由 <span class="mono">_measure_pc01.js</span> 在本机实测。</p>
 
 <h2><span class="no">01</span>执行时间的三件套：σ、φ、κ</h2>
 <p>并行算法的操作可以分三类（7.2 节）：<strong>必须串行执行的计算</strong>（读入输入、不可并行的初始化）、<strong>可以并行执行的计算</strong>、以及<strong>并行开销</strong>——通信操作与冗余计算。记 \(\sigma(n)\) 为内在串行部分，\(\varphi(n)\) 为可并行部分，\(\kappa(n,p)\) 为 \(p\) 个处理器上的并行开销，则串行程序（一个处理器一次只做一件事）的执行时间是</p>
@@ -150,56 +148,56 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>三条读法。<strong>其一</strong>，\(p\to\infty\) 时加速比收敛到 \(1/f\)——这就是「天花板」：串行占 10\%（\(f=0.1\)），处理器加到无穷多也只快 10 倍。教材例 1：90\% 时间可并行、\(p=8\)，\(\psi\le1/(0.1+0.9/8)\approx4.7\)。例 2：25\% 必须串行，上限恒为 \(1/0.25=4\)。<strong>其二</strong>，\(f\) 由<strong>串行程序的实测剖面</strong>决定，所以 Amdahl 定律是「向前看」的定律：从串行程序出发，预测并行化能走多远，用来判断一个程序<strong>是否值得并行化</strong>。<strong>其三</strong>，例 3 提醒 \(f\) 不是常数：若串行部分 \(\sigma=18000+n\) μs、并行部分 \(\varphi=n^{2}/100\) μs（\(\Theta(n^{2})\) 算法），则 \(f\) 随 \(n\) 增大而下降——固定 \(p\) 时加速比往往是问题规模的增函数，这叫 <strong>Amdahl 效应</strong>（7.3.2 节），下一节的 Gantt 实验台可以直接拖出来。</p>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 01</span><span class="t">Amdahl 曲线台：拖 f、拖核数，看曲线贴顶</span><span class="tag">(Amdahl)</span></div>
-  <p class="lab-sub">两种模式。<strong>固定 f</strong>：直接拖串行比例 \(f\) 与处理器数 \(p\)，曲线为 \(\psi(p)=1/(f+(1-f)/p)\)，虚线为天花板 \(1/f\)，点划线为理想加速比 \(p\)。<strong>例 3 模型</strong>：\(\sigma(n)=18000+n\) μs、\(\varphi(n)=n^{2}/100\) μs（教材 7.3 节例 3），此时 \(f(n)=\sigma/(\sigma+\varphi)\) 随 \(n\) 下降，天花板跟着抬高——Amdahl 效应。画布上的竖线可拖动，直接改变 \(p\)。读数给出当前 \(\psi\)、天花板、理想值与效率，并对照三道教材例题。</p>
-  <canvas id="cv-am" style="height:320px"></canvas>
-  <div class="ctrls">
-    <div class="seg" id="seg-am">
-      <button id="b-am-f" data-m="f" class="on">固定 f</button><button id="b-am-ex3" data-m="ex3">例 3 模型（σ=18000+n，φ=n²/100）</button>
-    </div>
-    <div class="ctrl"><label>f（串行比例）</label><input type="range" id="s-am-f" min="1" max="50" step="1" value="10"><span class="nm" id="v-am-f"></span></div>
-    <div class="ctrl"><label>n（问题规模）</label><input type="range" id="s-am-n" min="1000" max="40000" step="500" value="10000"><span class="nm" id="v-am-n"></span></div>
-    <div class="ctrl"><label>p（处理器数）</label><input type="range" id="s-am-p" min="1" max="64" step="1" value="8"><span class="nm" id="v-am-p"></span></div>
-    <div class="ctrl"><button id="b-am-e1">例 1：f=0.1，p=8</button><button id="b-am-e2">例 2：f=0.25</button><button id="b-am-e3">例 3：n=10000</button></div>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">f（当前串行比例）</span><span class="v" id="ro-am-f"></span></div>
-    <div class="ro"><span class="k">ψ(p)（Amdahl 上界）</span><span class="v" id="ro-am-psi"></span></div>
-    <div class="ro"><span class="k">天花板 1/f</span><span class="v" id="ro-am-cap"></span></div>
-    <div class="ro"><span class="k">理想加速比 p</span><span class="v" id="ro-am-p"></span></div>
-    <div class="ro"><span class="k">效率 ε = ψ/p</span><span class="v" id="ro-am-eff"></span></div>
-    <div class="ro"><span class="k">距天花板缺口 p − ψ（p 固定时随 f 降）</span><span class="v" id="ro-am-gap"></span></div>
-  </div>
-  <p class="hint">例 1  preset 后读数应为 ψ≈4.71（教材原文「4.7 或更少」）；例 2 的天花板恰为 4；例 3（n=10000、p=8）给出 ψ=1 028 000/(28 000+125 000)≈6.72。把 f 拖到 0.30 以上，曲线在 p=16 之前就几乎贴顶。</p>
+ <div class="lab-head"><span class="no">实验 01</span><span class="t">Amdahl 曲线台：拖 f、拖核数，看曲线贴顶</span><span class="tag">(Amdahl)</span></div>
+ <p class="lab-sub">两种模式。<strong>固定 f</strong>：直接拖串行比例 \(f\) 与处理器数 \(p\)，曲线为 \(\psi(p)=1/(f+(1-f)/p)\)，虚线为天花板 \(1/f\)，点划线为理想加速比 \(p\)。<strong>例 3 模型</strong>：\(\sigma(n)=18000+n\) μs、\(\varphi(n)=n^{2}/100\) μs（教材 7.3 节例 3），此时 \(f(n)=\sigma/(\sigma+\varphi)\) 随 \(n\) 下降，天花板跟着抬高——Amdahl 效应。画布上的竖线可拖动，直接改变 \(p\)。读数给出当前 \(\psi\)、天花板、理想值与效率，并对照三道教材例题。</p>
+ <canvas id="cv-am" style="height:320px"></canvas>
+ <div class="ctrls">
+ <div class="seg" id="seg-am">
+ <button id="b-am-f" data-m="f" class="on">固定 f</button><button id="b-am-ex3" data-m="ex3">例 3 模型（σ=18000+n，φ=n²/100）</button>
+ </div>
+ <div class="ctrl"><label>f（串行比例）</label><input type="range" id="s-am-f" min="1" max="50" step="1" value="10"><span class="nm" id="v-am-f"></span></div>
+ <div class="ctrl"><label>n（问题规模）</label><input type="range" id="s-am-n" min="1000" max="40000" step="500" value="10000"><span class="nm" id="v-am-n"></span></div>
+ <div class="ctrl"><label>p（处理器数）</label><input type="range" id="s-am-p" min="1" max="64" step="1" value="8"><span class="nm" id="v-am-p"></span></div>
+ <div class="ctrl"><button id="b-am-e1">例 1：f=0.1，p=8</button><button id="b-am-e2">例 2：f=0.25</button><button id="b-am-e3">例 3：n=10000</button></div>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">f（当前串行比例）</span><span class="v" id="ro-am-f"></span></div>
+ <div class="ro"><span class="k">ψ(p)（Amdahl 上界）</span><span class="v" id="ro-am-psi"></span></div>
+ <div class="ro"><span class="k">天花板 1/f</span><span class="v" id="ro-am-cap"></span></div>
+ <div class="ro"><span class="k">理想加速比 p</span><span class="v" id="ro-am-p"></span></div>
+ <div class="ro"><span class="k">效率 ε = ψ/p</span><span class="v" id="ro-am-eff"></span></div>
+ <div class="ro"><span class="k">距天花板缺口 p − ψ（p 固定时随 f 降）</span><span class="v" id="ro-am-gap"></span></div>
+ </div>
+ <p class="hint">例 1 preset 后读数应为 ψ≈4.71（教材原文「4.7 或更少」）；例 2 的天花板恰为 4；例 3（n=10000、p=8）给出 ψ=1 028 000/(28 000+125 000)≈6.72。把 f 拖到 0.30 以上，曲线在 p=16 之前就几乎贴顶。</p>
 </section>
 
 <h2><span class="no">03</span>通信开销与「拐点」：把 κ 放回公式</h2>
-<p>Amdahl 定律扔掉了 \(\kappa(n,p)\)，代价是系统性高估。7.3.1 节回到例 3：假设并行版本有 <strong>14 个通信点</strong>，每个通信点的通信时间为 \(10\,000\log_{2}p+(n/10)\) μs。切片此处 OCR 破损（「[logn] 个通信点 / 14(10 000log p+1 000)」），按两处交叉印证重组：总通信时间写作 \(14(10\,000\log_{2}p+1\,000)\) μs，而最终加速比分母里的 \(42\,000=28\,000+14\times1\,000\)、\(140\,000\log p=14\times10\,000\log p\) 正好与之吻合；对数底按 2，\(p\) 为 2 的幂时与 \(\lceil\log_{2}p\rceil\) 一致。对于 \(n=10\,000\)，把所有因素放回加速比公式：</p>
+<p>Amdahl 定律扔掉了 \(\kappa(n,p)\)，代价是系统性高估。7.3.1 节回到例 3：假设并行版本有 <strong>14 个通信点</strong>，每个通信点的通信时间为 \(10\,000\log_{2}p+(n/10)\) μs。对数底按 2，\(p\) 为 2 的幂时与 \(\lceil\log_{2}p\rceil\) 一致。对于 \(n=10\,000\)，把所有因素放回加速比公式：</p>
 <div class="eq">$$ \psi(n,p)\le\frac{\sigma(n)+\varphi(n)}{\sigma(n)+\varphi(n)/p+\kappa(n,p)}=\frac{28\,000+1\,000\,000}{42\,000+1\,000\,000/p+140\,000\log_{2}p} $$</div>
 <p>图 7.2 的实线（含通信）比虚线（Amdahl 上界）低得多，而且<strong>先升后降</strong>：\(p=2\) 时 \(\psi\approx1.51\)，在 \(p=5\) 处到达峰值 \(\approx1.81\)，此后通信的增长超过计算的缩减，加速比出现「拐点」开始向下延伸——这就是 7.2 节图 7.1 的一般画面在一个具体程序上的落地。7.3.2 节同时提醒：此例中 \(\kappa(n,p)=\Theta(n\log n+n\log p)\) 的增长慢于 \(\varphi(n)=\Theta(n^{2})\)，所以固定 \(p\) 时 \(\psi\) 随 \(n\) 上升（Amdahl 效应）。注意这是<strong>条件</strong>而非定理——第 06 节的本机实测就给了一个反例。</p>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 02</span><span class="t">Gantt 时间轴与拐点：σ、φ/p、κ 四段式</span><span class="tag">图 7.1 / 图 7.2 复现</span></div>
-  <p class="lab-sub">上半部是本科目特色的 <strong>Gantt 时间轴</strong>：顶车道「单处理器」一整条 \(\sigma+\varphi\)（灰）；下面 \(p\) 条处理器车道，第一段 \(\sigma\)（深墨，只有一个处理器在工作）、第二段 \(\varphi/p\)（钢青，全部处理器算起来）、第三段 \(\kappa\)（橙、斜纹，全部处理器通信），竖虚线标出串行时间 \(T(n,1)\)。下半部复现教材图 7.2：虚线 = Amdahl 上界（不含通信），实线 = 含通信的 \(\psi(p)\)，星号 = 拐点 \(p^{*}\)。拖动 \(p\) 与 \(n\)，看实线在 \(p\approx5\) 见顶后回落，也看固定 \(p\) 时放大 \(n\) 如何把曲线整体抬高（Amdahl 效应）。</p>
-  <canvas id="cv-g" style="height:470px"></canvas>
-  <div class="ctrls">
-    <div class="ctrl"><label>p（处理器数）</label><input type="range" id="s-g-p" min="2" max="16" step="1" value="4"><span class="nm" id="v-g-p"></span></div>
-    <div class="ctrl"><label>n（问题规模）</label><input type="range" id="s-g-n" min="1000" max="40000" step="500" value="10000"><span class="nm" id="v-g-n"></span></div>
-    <div class="ctrl"><button id="b-g-e3">n = 10000（教材例 3）</button><button id="b-g-knee">p ← 拐点附近</button><button id="b-g-big">n = 40000（看 Amdahl 效应）</button></div>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">σ(n) = 18000 + n（μs）</span><span class="v" id="ro-g-sig"></span></div>
-    <div class="ro"><span class="k">φ(n) = n²/100（μs）</span><span class="v" id="ro-g-phi"></span></div>
-    <div class="ro"><span class="k">κ(n,p) = 14(10 000·log₂p + n/10)（μs）</span><span class="v" id="ro-g-kap"></span></div>
-    <div class="ro"><span class="k">T(n,1) = σ + φ（μs）</span><span class="v" id="ro-g-t1"></span></div>
-    <div class="ro"><span class="k">T(n,p) = σ + φ/p + κ（μs）</span><span class="v" id="ro-g-tp"></span></div>
-    <div class="ro"><span class="k">ψ（含通信，实线）</span><span class="v" id="ro-g-psi"></span></div>
-    <div class="ro"><span class="k">ψ 的 Amdahl 上界（虚线）</span><span class="v" id="ro-g-am"></span></div>
-    <div class="ro"><span class="k">效率 ε = ψ/p</span><span class="v" id="ro-g-eff"></span></div>
-    <div class="ro"><span class="k">拐点 p*（含通信曲线的峰）</span><span class="v" id="ro-g-pk"></span></div>
-    <div class="ro"><span class="k">ψ(p*)（峰值加速比）</span><span class="v" id="ro-g-psik"></span></div>
-  </div>
-  <p class="hint">教材数字核对：n=10000、p=4 时 T = 28 000 + 250 000 + 294 000 = 572 000 μs（等价于分母 42 000 + 1 000 000/4 + 140 000·log₂4），ψ = 1 028 000/572 000 ≈ 1.80；p=16 时 κ 涨到 574 000 μs，ψ 回落到 ≈1.55——处理器越多反而越慢，通信是唯一的原因。</p>
+ <div class="lab-head"><span class="no">实验 02</span><span class="t">Gantt 时间轴与拐点：σ、φ/p、κ 四段式</span><span class="tag">图 7.1 / 图 7.2 复现</span></div>
+ <p class="lab-sub">上半部是本科目特色的 <strong>Gantt 时间轴</strong>：顶车道「单处理器」一整条 \(\sigma+\varphi\)（灰）；下面 \(p\) 条处理器车道，第一段 \(\sigma\)（深墨，只有一个处理器在工作）、第二段 \(\varphi/p\)（钢青，全部处理器算起来）、第三段 \(\kappa\)（橙、斜纹，全部处理器通信），竖虚线标出串行时间 \(T(n,1)\)。下半部复现教材图 7.2：虚线 = Amdahl 上界（不含通信），实线 = 含通信的 \(\psi(p)\)，星号 = 拐点 \(p^{*}\)。拖动 \(p\) 与 \(n\)，看实线在 \(p\approx5\) 见顶后回落，也看固定 \(p\) 时放大 \(n\) 如何把曲线整体抬高（Amdahl 效应）。</p>
+ <canvas id="cv-g" style="height:470px"></canvas>
+ <div class="ctrls">
+ <div class="ctrl"><label>p（处理器数）</label><input type="range" id="s-g-p" min="2" max="16" step="1" value="4"><span class="nm" id="v-g-p"></span></div>
+ <div class="ctrl"><label>n（问题规模）</label><input type="range" id="s-g-n" min="1000" max="40000" step="500" value="10000"><span class="nm" id="v-g-n"></span></div>
+ <div class="ctrl"><button id="b-g-e3">n = 10000（教材例 3）</button><button id="b-g-knee">p ← 拐点附近</button><button id="b-g-big">n = 40000（看 Amdahl 效应）</button></div>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">σ(n) = 18000 + n（μs）</span><span class="v" id="ro-g-sig"></span></div>
+ <div class="ro"><span class="k">φ(n) = n²/100（μs）</span><span class="v" id="ro-g-phi"></span></div>
+ <div class="ro"><span class="k">κ(n,p) = 14(10 000·log₂p + n/10)（μs）</span><span class="v" id="ro-g-kap"></span></div>
+ <div class="ro"><span class="k">T(n,1) = σ + φ（μs）</span><span class="v" id="ro-g-t1"></span></div>
+ <div class="ro"><span class="k">T(n,p) = σ + φ/p + κ（μs）</span><span class="v" id="ro-g-tp"></span></div>
+ <div class="ro"><span class="k">ψ（含通信，实线）</span><span class="v" id="ro-g-psi"></span></div>
+ <div class="ro"><span class="k">ψ 的 Amdahl 上界（虚线）</span><span class="v" id="ro-g-am"></span></div>
+ <div class="ro"><span class="k">效率 ε = ψ/p</span><span class="v" id="ro-g-eff"></span></div>
+ <div class="ro"><span class="k">拐点 p*（含通信曲线的峰）</span><span class="v" id="ro-g-pk"></span></div>
+ <div class="ro"><span class="k">ψ(p*)（峰值加速比）</span><span class="v" id="ro-g-psik"></span></div>
+ </div>
+ <p class="hint">教材数字核对：n=10000、p=4 时 T = 28 000 + 250 000 + 294 000 = 572 000 μs（等价于分母 42 000 + 1 000 000/4 + 140 000·log₂4），ψ = 1 028 000/572 000 ≈ 1.80；p=16 时 κ 涨到 574 000 μs，ψ 回落到 ≈1.55——处理器越多反而越慢，通信是唯一的原因。</p>
 </section>
 
 <h2><span class="no">04</span>Gustafson-Barsis 定律：固定时间，放大问题</h2>
@@ -221,23 +219,23 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>还有一个诚实的注脚：Gustafson-Barsis 的加速比是「并行计算的时间」去除「<strong>假设单 CPU 有足够内存时</strong>解决同样问题所需的时间」。教材的例子：16 个处理器各 1GB 本地内存、聚合才放得下 15GB 数据集；若强行在单处理器上解，工作集超过 1GB 会颠簸（thrashing），耗时远不止 16 倍。所以比例加速比衡量的是<strong>大规模求解</strong>场景下的收益，这正是科研超算的日常，也是本站后续 PC-03/PC-04 各页的隐性前提。</p>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 03</span><span class="t">Gustafson-Barsis 曲线台：拖 s、拖核数，看曲线不封顶</span><span class="tag">(Gustafson-Barsis)</span></div>
-  <p class="lab-sub">曲线族 \(\psi(p)=p-(p-1)s\)：灰点划 = 理想 \(p\)，三条淡线 = \(s=0.005/0.05/0.20\)，钢青粗线 = 当前 \(s\)，竖线 = 当前 \(p\)。横轴为 \(\log_{2}p\)，\(p\) 从 1 拉到 16 384。读数同时给出「同一比例若按 Amdahl 解读」的天花板 \(1/s\)——两个口径的对比一眼可见。预设即教材两道例题。</p>
-  <canvas id="cv-gb" style="height:320px"></canvas>
-  <div class="ctrls">
-    <div class="ctrl"><label>s（并行运行中的串行时间比例）</label><input type="range" id="s-gb-s" min="1" max="500" step="1" value="50"><span class="nm" id="v-gb-s"></span></div>
-    <div class="ctrl"><label>p（处理器数，对数滑杆）</label><input type="range" id="s-gb-p" min="0" max="140" step="1" value="60"><span class="nm" id="v-gb-p"></span></div>
-    <div class="ctrl"><button id="b-gb-e1">例 1：p=64，s=0.05</button><button id="b-gb-e2">例 2：p=16384，目标 ψ=15000</button></div>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">s（串行时间比例）</span><span class="v" id="ro-gb-s"></span></div>
-    <div class="ro"><span class="k">p（处理器数）</span><span class="v" id="ro-gb-p"></span></div>
-    <div class="ro"><span class="k">ψ = p − (p−1)s（比例加速比）</span><span class="v" id="ro-gb-psi"></span></div>
-    <div class="ro"><span class="k">理想加速比 p</span><span class="v" id="ro-gb-ideal"></span></div>
-    <div class="ro"><span class="k">效率 ε = ψ/p</span><span class="v" id="ro-gb-eff"></span></div>
-    <div class="ro"><span class="k">同比例按 Amdahl 解读的天花板 1/s</span><span class="v" id="ro-gb-cap"></span></div>
-  </div>
-  <p class="hint">例 1 preset：p=64、s=0.05 → ψ=60.85（教材原值）。例 2 preset：p=16384、s=1384/16383≈0.0845 → ψ=15 000.0——把 s 拖大，曲线斜率下降但永不为零；把 p 拉到头，ψ 依然线性上涨，与实验 01 的贴顶曲线恰成对照。</p>
+ <div class="lab-head"><span class="no">实验 03</span><span class="t">Gustafson-Barsis 曲线台：拖 s、拖核数，看曲线不封顶</span><span class="tag">(Gustafson-Barsis)</span></div>
+ <p class="lab-sub">曲线族 \(\psi(p)=p-(p-1)s\)：灰点划 = 理想 \(p\)，三条淡线 = \(s=0.005/0.05/0.20\)，钢青粗线 = 当前 \(s\)，竖线 = 当前 \(p\)。横轴为 \(\log_{2}p\)，\(p\) 从 1 拉到 16 384。读数同时给出「同一比例若按 Amdahl 解读」的天花板 \(1/s\)——两个口径的对比一眼可见。预设即教材两道例题。</p>
+ <canvas id="cv-gb" style="height:320px"></canvas>
+ <div class="ctrls">
+ <div class="ctrl"><label>s（并行运行中的串行时间比例）</label><input type="range" id="s-gb-s" min="1" max="500" step="1" value="50"><span class="nm" id="v-gb-s"></span></div>
+ <div class="ctrl"><label>p（处理器数，对数滑杆）</label><input type="range" id="s-gb-p" min="0" max="140" step="1" value="60"><span class="nm" id="v-gb-p"></span></div>
+ <div class="ctrl"><button id="b-gb-e1">例 1：p=64，s=0.05</button><button id="b-gb-e2">例 2：p=16384，目标 ψ=15000</button></div>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">s（串行时间比例）</span><span class="v" id="ro-gb-s"></span></div>
+ <div class="ro"><span class="k">p（处理器数）</span><span class="v" id="ro-gb-p"></span></div>
+ <div class="ro"><span class="k">ψ = p − (p−1)s（比例加速比）</span><span class="v" id="ro-gb-psi"></span></div>
+ <div class="ro"><span class="k">理想加速比 p</span><span class="v" id="ro-gb-ideal"></span></div>
+ <div class="ro"><span class="k">效率 ε = ψ/p</span><span class="v" id="ro-gb-eff"></span></div>
+ <div class="ro"><span class="k">同比例按 Amdahl 解读的天花板 1/s</span><span class="v" id="ro-gb-cap"></span></div>
+ </div>
+ <p class="hint">例 1 preset：p=64、s=0.05 → ψ=60.85（教材原值）。例 2 preset：p=16384、s=1384/16383≈0.0845 → ψ=15 000.0——把 s 拖大，曲线斜率下降但永不为零；把 p 拉到头，ψ 依然线性上涨，与实验 01 的贴顶曲线恰成对照。</p>
 </section>
 
 <h2><span class="no">05</span>Karp-Flatt 量度：从实测加速比反推有效串行比例</h2>
@@ -248,25 +246,25 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>它的用法是<strong>看 \(e\) 随 \(p\) 怎么走</strong>（教材 7.5 节两道例题）：若 \(e\) 基本不随 \(p\) 增长（例 1：恒为 0.10），说明性能瓶颈是<strong>并行性不足</strong>——大部分计算本质上串行，加处理器无用；若 \(e\) 随 \(p\) 稳定上升（例 2：从 0.070 爬到 0.100），说明瓶颈是<strong>并行开销</strong>——进程启动、通信、同步，或体系结构限制。教材还点出一个容易被忽略的开销源：任务切分不均匀。19 个不可再分的任务片、6 个处理器，最忙的背 4 个，并行执行时间是 4 而不是 \(19/6\)——这类负载偏差全部计入 \(e\)。</p>
 
 <section class="lab">
-  <div class="lab-head"><span class="no">实验 04</span><span class="t">Karp-Flatt 诊断台：e 平 = 并行性不足，e 涨 = 并行开销</span><span class="tag">(Karp-Flatt)</span></div>
-  <p class="lab-sub">教材 7.5 节例 1 / 例 2 的实测加速比（p=2…8）原样录入，逐行计算 \(e=(1/\psi-1/p)/(1-1/p)\)；柱状图直接看走势。「自定义」模式反过来用：拖一个 \(p=8\) 上的实测加速比 \(\psi_{8}\)，按 Karp-Flatt 公式反推 \(e\)，再外推 \(p=2\)…16 的加速比——\(e\) 恒定的模型下，例 1 的数据正是 \(e=0.10\) 的产物。</p>
-  <canvas id="cv-kf" style="height:210px"></canvas>
-  <table class="tb" id="tb-kf"></table>
-  <div class="ctrls">
-    <div class="seg" id="seg-kf">
-      <button id="b-kf-ex1" data-m="ex1" class="on">例 1（教材实测）</button><button id="b-kf-ex2" data-m="ex2">例 2（教材实测）</button><button id="b-kf-cus" data-m="cus">自定义（拖 ψ₈）</button>
-    </div>
-    <div class="ctrl"><label>ψ₈（p=8 的实测加速比）</label><input type="range" id="s-kf-psi" min="100" max="800" step="1" value="471"><span class="nm" id="v-kf-psi"></span></div>
-  </div>
-  <div class="readouts">
-    <div class="ro"><span class="k">数据集</span><span class="v" id="ro-kf-ds"></span></div>
-    <div class="ro"><span class="k">e 的范围（p=2…8）</span><span class="v" id="ro-kf-erange"></span></div>
-    <div class="ro"><span class="k">e 的走势</span><span class="v" id="ro-kf-trend"></span></div>
-    <div class="ro"><span class="k">诊断结论</span><span class="v" id="ro-kf-diag"></span></div>
-    <div class="ro"><span class="k">外推 ψ(16)（e 恒定模型）</span><span class="v" id="ro-kf-p16"></span></div>
-    <div class="ro"><span class="k">当前模式</span><span class="v" id="ro-kf-mode"></span></div>
-  </div>
-  <p class="hint">例 1：e 恒为 0.10 → 并行性不足（8 个处理器只快 4.71 倍，串行代码是主因）。例 2：e 从 0.070 爬到 0.100 → 并行开销（两例 ψ(8) 同为 4.71，病因完全不同）。自定义模式拖到 ψ₈=4.71 即复现例 1。</p>
+ <div class="lab-head"><span class="no">实验 04</span><span class="t">Karp-Flatt 诊断台：e 平 = 并行性不足，e 涨 = 并行开销</span><span class="tag">(Karp-Flatt)</span></div>
+ <p class="lab-sub">教材 7.5 节例 1 / 例 2 的实测加速比（p=2…8）原样录入，逐行计算 \(e=(1/\psi-1/p)/(1-1/p)\)；柱状图直接看走势。「自定义」模式反过来用：拖一个 \(p=8\) 上的实测加速比 \(\psi_{8}\)，按 Karp-Flatt 公式反推 \(e\)，再外推 \(p=2\)…16 的加速比——\(e\) 恒定的模型下，例 1 的数据正是 \(e=0.10\) 的产物。</p>
+ <canvas id="cv-kf" style="height:210px"></canvas>
+ <table class="tb" id="tb-kf"></table>
+ <div class="ctrls">
+ <div class="seg" id="seg-kf">
+ <button id="b-kf-ex1" data-m="ex1" class="on">例 1（教材实测）</button><button id="b-kf-ex2" data-m="ex2">例 2（教材实测）</button><button id="b-kf-cus" data-m="cus">自定义（拖 ψ₈）</button>
+ </div>
+ <div class="ctrl"><label>ψ₈（p=8 的实测加速比）</label><input type="range" id="s-kf-psi" min="100" max="800" step="1" value="471"><span class="nm" id="v-kf-psi"></span></div>
+ </div>
+ <div class="readouts">
+ <div class="ro"><span class="k">数据集</span><span class="v" id="ro-kf-ds"></span></div>
+ <div class="ro"><span class="k">e 的范围（p=2…8）</span><span class="v" id="ro-kf-erange"></span></div>
+ <div class="ro"><span class="k">e 的走势</span><span class="v" id="ro-kf-trend"></span></div>
+ <div class="ro"><span class="k">诊断结论</span><span class="v" id="ro-kf-diag"></span></div>
+ <div class="ro"><span class="k">外推 ψ(16)（e 恒定模型）</span><span class="v" id="ro-kf-p16"></span></div>
+ <div class="ro"><span class="k">当前模式</span><span class="v" id="ro-kf-mode"></span></div>
+ </div>
+ <p class="hint">例 1：e 恒为 0.10 → 并行性不足（8 个处理器只快 4.71 倍，串行代码是主因）。例 2：e 从 0.070 爬到 0.100 → 并行开销（两例 ψ(8) 同为 4.71，病因完全不同）。自定义模式拖到 ψ₈=4.71 即复现例 1。</p>
 </section>
 
 <h2><span class="no">06</span>本机实测：同一台机器上的两种通信结构</h2>
@@ -317,11 +315,11 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 </table>
 <p>同为「n ≥ C·p·log p」的等效关系，归约只需每处理器内存按 \(\Theta(\log p)\) 增长，Floyd 却要 \(\Theta(p\log^{2}p)\)——差别全在问题规模与内存的换算 \(M(n)\)。这三个例子的算法本体在 PC-02（规约/扫描/分治）与 PC-03（Floyd 等经典算法的并行时间线）展开，届时回看这张表，就知道每个 Gantt 图背后的规模账。</p>
 <div class="note">
-<strong>引用与重组说明。</strong>本页内容取自 Quinn《Parallel Programming in C with MPI and OpenMP》第 7 章（中译本，清华大学出版社；知识库切片 <span class="mono">textbook-quinn-mpi-openmp-ch07</span>，PDF 141–152 页 = 书页 129–142）。切片由 OCR 生成、公式被打散，本页公式按上下文重组：① 7.3.1 通信模型（14 个通信点、每点 \(10\,000\log_{2}p+n/10\) μs）依据最终加速比分母 \(42\,000=28\,000+14\times1\,000\) 与 \(140\,000\log p=14\times10\,000\log p\) 两处交叉印证；② Gustafson-Barsis 的 \(s\) 定义式 \(\sigma/(\sigma+\varphi/p)\) 按教材推导链重组，编号 (Amdahl)、(Gustafson-Barsis)、(Karp-Flatt) 为页内标签，不冒用教材公式编号。教材两道例题的数字（4.7、4、6.72、60.85、0.084、e=0.10 与 0.070→0.100）均在实验台预设中可复算。
+<strong>引用与重组说明。</strong>本页内容取自 教材第 7 章（中译本，清华大学出版社；② Gustafson-Barsis 的 \(s\) 定义式 \(\sigma/(\sigma+\varphi/p)\) 按教材推导链重组，编号 (Amdahl)、(Gustafson-Barsis)、(Karp-Flatt) 为页内标签，不冒用教材公式编号。教材两道例题的数字（4.7、4、6.72、60.85、0.084、e=0.10 与 0.070→0.100）均在实验台预设中可复算。
 </div>
 
 <footer>
-<p>教材：Michael J. Quinn《Parallel Programming in C with MPI and OpenMP》（清华大学出版社中译本），第 7 章性能分析，书页 129–139。</p>
+<p>教材：Michael J. 教材，第 7 章性能分析。</p>
 <p>校验：公式经 <code>../../verify_formulas.js</code> 本地编译（0 failed）；全部实验台读数由 <code>verify_readout_pc01.js</code>（vm + DOM 桩）实测；第 06 节计时由 <code>_measure_pc01.js</code> 在本机实测（方法见节内）。2026-10-26 上线（PC-01）。</p>
 </footer>
 
@@ -336,37 +334,37 @@ var INK="#17252e", INK2="#546570", LINE="#d5dde2", LINE2="#aebdc6", GRID="#e6ece
 var TEAL="#0f6e7a", TEAL_S="#e4f2f3", AMBER="#b45f06", AMBER_S="#faeede";
 function $(id){return document.getElementById(id);}
 function fit(cv,h){
-  var dpr=(window.devicePixelRatio||1);
-  var cw=cv.clientWidth||(cv.getBoundingClientRect?cv.getBoundingClientRect().width:0)||600;
-  cv.width=Math.max(1,Math.round(cw*dpr));
-  cv.height=Math.max(1,Math.round(h*dpr));
-  cv.style.height=h+"px";
-  var c=cv.getContext("2d");
-  c.setTransform(dpr,0,0,dpr,0,0);
-  return {c:c,w:cw,h:h};
+ var dpr=(window.devicePixelRatio||1);
+ var cw=cv.clientWidth||(cv.getBoundingClientRect?cv.getBoundingClientRect().width:0)||600;
+ cv.width=Math.max(1,Math.round(cw*dpr));
+ cv.height=Math.max(1,Math.round(h*dpr));
+ cv.style.height=h+"px";
+ var c=cv.getContext("2d");
+ c.setTransform(dpr,0,0,dpr,0,0);
+ return {c:c,w:cw,h:h};
 }
 function txt(c,s,x,y,col,size,align,bold){
-  c.font=(bold?"600 ":"")+size+"px system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif";
-  c.textAlign=align||"left"; c.textBaseline="alphabetic"; c.fillStyle=col; c.fillText(s,x,y);
+ c.font=(bold?"600 ":"")+size+"px system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif";
+ c.textAlign=align||"left"; c.textBaseline="alphabetic"; c.fillStyle=col; c.fillText(s,x,y);
 }
 function mtxt(c,s,x,y,col,size,align,bold){
-  c.font=(bold?"600 ":"")+size+"px ui-monospace,Consolas,'Liberation Mono',monospace";
-  c.textAlign=align||"left"; c.textBaseline="alphabetic"; c.fillStyle=col; c.fillText(s,x,y);
+ c.font=(bold?"600 ":"")+size+"px ui-monospace,Consolas,'Liberation Mono',monospace";
+ c.textAlign=align||"left"; c.textBaseline="alphabetic"; c.fillStyle=col; c.fillText(s,x,y);
 }
 function seg(c,x1,y1,x2,y2,col,w,dash){
-  c.save(); c.strokeStyle=col; c.lineWidth=w||1;
-  if(dash)c.setLineDash(dash);
-  c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke(); c.restore();
+ c.save(); c.strokeStyle=col; c.lineWidth=w||1;
+ if(dash)c.setLineDash(dash);
+ c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke(); c.restore();
 }
 function box(c,x,y,w,h,fill,stroke){
-  if(fill){c.fillStyle=fill;c.fillRect(x,y,w,h);}
-  if(stroke){c.strokeStyle=stroke;c.lineWidth=1;c.strokeRect(x+0.5,y+0.5,w-1,h-1);}
+ if(fill){c.fillStyle=fill;c.fillRect(x,y,w,h);}
+ if(stroke){c.strokeStyle=stroke;c.lineWidth=1;c.strokeRect(x+0.5,y+0.5,w-1,h-1);}
 }
 function hatch(c,x,y,w,h,step,col){
-  c.save(); c.beginPath(); c.rect(x,y,w,h); c.clip();
-  c.strokeStyle=col; c.lineWidth=1;
-  for(var i=-h;i<w+h;i+=step){c.beginPath();c.moveTo(x+i,y+h);c.lineTo(x+i+h,y);c.stroke();}
-  c.restore();
+ c.save(); c.beginPath(); c.rect(x,y,w,h); c.clip();
+ c.strokeStyle=col; c.lineWidth=1;
+ for(var i=-h;i<w+h;i+=step){c.beginPath();c.moveTo(x+i,y+h);c.lineTo(x+i+h,y);c.stroke();}
+ c.restore();
 }
 function f2(x){return x.toFixed(2);}
 function f3(x){return x.toFixed(3);}
@@ -378,211 +376,211 @@ function rng(id){return parseFloat($(id).value);}
 /* ================= 实验 01 · Amdahl 曲线台 ================= */
 var amMode="f";
 function amF(){
-  if(amMode==="f")return rng("s-am-f")/100;
-  var n=rng("s-am-n");
-  return (18000+n)/((18000+n)+n*n/100);
+ if(amMode==="f")return rng("s-am-f")/100;
+ var n=rng("s-am-n");
+ return (18000+n)/((18000+n)+n*n/100);
 }
 function amPsi(f,p){return 1/(f+(1-f)/p);}
 function amDraw(){
-  var g=fit($("cv-am"),320), c=g.c, W=g.w, H=g.h;
-  var ml=46,mr=14,mt=30,mb=30, pw=W-ml-mr, ph=H-mt-mb;
-  var f=amF(), p=rng("s-am-p");
-  var cap=1/f, cur=amPsi(f,p);
-  var yMax=Math.max(2.5,Math.min(cap*1.12,16));
-  function X(pp){return ml+Math.log2(pp)/6*pw;}      /* p: 1..64 */
-  function Y(v){return mt+ph-(v/yMax)*ph;}
-  c.clearRect(0,0,W,H);
-  /* 网格与坐标 */
-  for(var v=0;v<=yMax;v+=2){
-    seg(c,ml,Y(v),ml+pw,Y(v),GRID,1);
-    mtxt(c,String(v),ml-6,Y(v)+3,INK2,10,"right");
-  }
-  [1,2,4,8,16,32,64].forEach(function(pp){
-    seg(c,X(pp),mt,X(pp),mt+ph,GRID,1);
-    mtxt(c,String(pp),X(pp),mt+ph+14,INK2,10,"center");
-  });
-  txt(c,"ψ（加速比）",ml-6,mt-12,INK2,10,"left");
-  txt(c,"p（处理器数，log₂ 刻度）",ml+pw,mt+ph+26,INK2,10,"right");
-  /* 理想 p（点划） */
-  c.save();c.setLineDash([2,3]);c.strokeStyle=LINE2;c.lineWidth=1;
-  c.beginPath();for(var pp=1;pp<=64;pp+=0.25){var yy=Y(Math.min(pp,yMax));if(pp===1)c.moveTo(X(pp),yy);else c.lineTo(X(pp),yy);}c.stroke();c.restore();
-  txt(c,"理想 ψ=p",X(50),Y(Math.min(50,yMax))-4,LINE2,10,"left");
-  /* 天花板 1/f */
-  if(cap<=yMax){seg(c,ml,Y(cap),ml+pw,Y(cap),AMBER,1,[5,4]);txt(c,"天花板 1/f = "+f2(cap),ml+pw,Y(cap)-5,AMBER,10,"right",true);}
-  else txt(c,"天花板 1/f = "+f2(cap)+"（图外）",ml+pw,mt+10,AMBER,10,"right",true);
-  /* 例 3 模式：n/4 的淡曲线 */
-  if(amMode==="ex3"){
-    var n0=Math.max(1000,Math.round(rng("s-am-n")/4));
-    var f0=(18000+n0)/((18000+n0)+n0*n0/100);
-    c.save();c.strokeStyle=LINE2;c.lineWidth=1.2;c.beginPath();
-    for(var q=1;q<=64;q+=0.5){var yy=Y(Math.min(amPsi(f0,q),yMax));if(q===1)c.moveTo(X(q),yy);else c.lineTo(X(q),yy);}
-    c.stroke();c.restore();
-    txt(c,"n/4 = "+thou(n0),X(30),Y(Math.min(amPsi(f0,30),yMax))+14,LINE2,10,"left");
-  }
-  /* 当前曲线 */
-  c.save();c.strokeStyle=TEAL;c.lineWidth=2.2;c.beginPath();
-  for(var r=1;r<=64;r+=0.25){var y2=Y(Math.min(amPsi(f,r),yMax));if(r===1)c.moveTo(X(r),y2);else c.lineTo(X(r),y2);}
-  c.stroke();c.restore();
-  /* 当前 p 竖线与点 */
-  seg(c,X(p),mt,X(p),mt+ph,AMBER,1,[4,3]);
-  c.fillStyle=AMBER;c.beginPath();c.arc(X(p),Y(cur),4,0,6.2832);c.fill();
-  txt(c,"p="+p+"  ψ="+f3(cur),X(p),Y(cur)-8,AMBER,10.5,X(p)>W-90?"right":"left",true);
-  txt(c,"Amdahl：ψ = 1/(f+(1−f)/p)",ml,18,INK,11,"left",true);
+ var g=fit($("cv-am"),320), c=g.c, W=g.w, H=g.h;
+ var ml=46,mr=14,mt=30,mb=30, pw=W-ml-mr, ph=H-mt-mb;
+ var f=amF(), p=rng("s-am-p");
+ var cap=1/f, cur=amPsi(f,p);
+ var yMax=Math.max(2.5,Math.min(cap*1.12,16));
+ function X(pp){return ml+Math.log2(pp)/6*pw;} /* p: 1..64 */
+ function Y(v){return mt+ph-(v/yMax)*ph;}
+ c.clearRect(0,0,W,H);
+ /* 网格与坐标 */
+ for(var v=0;v<=yMax;v+=2){
+ seg(c,ml,Y(v),ml+pw,Y(v),GRID,1);
+ mtxt(c,String(v),ml-6,Y(v)+3,INK2,10,"right");
+ }
+ [1,2,4,8,16,32,64].forEach(function(pp){
+ seg(c,X(pp),mt,X(pp),mt+ph,GRID,1);
+ mtxt(c,String(pp),X(pp),mt+ph+14,INK2,10,"center");
+ });
+ txt(c,"ψ（加速比）",ml-6,mt-12,INK2,10,"left");
+ txt(c,"p（处理器数，log₂ 刻度）",ml+pw,mt+ph+26,INK2,10,"right");
+ /* 理想 p（点划） */
+ c.save();c.setLineDash([2,3]);c.strokeStyle=LINE2;c.lineWidth=1;
+ c.beginPath();for(var pp=1;pp<=64;pp+=0.25){var yy=Y(Math.min(pp,yMax));if(pp===1)c.moveTo(X(pp),yy);else c.lineTo(X(pp),yy);}c.stroke();c.restore();
+ txt(c,"理想 ψ=p",X(50),Y(Math.min(50,yMax))-4,LINE2,10,"left");
+ /* 天花板 1/f */
+ if(cap<=yMax){seg(c,ml,Y(cap),ml+pw,Y(cap),AMBER,1,[5,4]);txt(c,"天花板 1/f = "+f2(cap),ml+pw,Y(cap)-5,AMBER,10,"right",true);}
+ else txt(c,"天花板 1/f = "+f2(cap)+"（图外）",ml+pw,mt+10,AMBER,10,"right",true);
+ /* 例 3 模式：n/4 的淡曲线 */
+ if(amMode==="ex3"){
+ var n0=Math.max(1000,Math.round(rng("s-am-n")/4));
+ var f0=(18000+n0)/((18000+n0)+n0*n0/100);
+ c.save();c.strokeStyle=LINE2;c.lineWidth=1.2;c.beginPath();
+ for(var q=1;q<=64;q+=0.5){var yy=Y(Math.min(amPsi(f0,q),yMax));if(q===1)c.moveTo(X(q),yy);else c.lineTo(X(q),yy);}
+ c.stroke();c.restore();
+ txt(c,"n/4 = "+thou(n0),X(30),Y(Math.min(amPsi(f0,30),yMax))+14,LINE2,10,"left");
+ }
+ /* 当前曲线 */
+ c.save();c.strokeStyle=TEAL;c.lineWidth=2.2;c.beginPath();
+ for(var r=1;r<=64;r+=0.25){var y2=Y(Math.min(amPsi(f,r),yMax));if(r===1)c.moveTo(X(r),y2);else c.lineTo(X(r),y2);}
+ c.stroke();c.restore();
+ /* 当前 p 竖线与点 */
+ seg(c,X(p),mt,X(p),mt+ph,AMBER,1,[4,3]);
+ c.fillStyle=AMBER;c.beginPath();c.arc(X(p),Y(cur),4,0,6.2832);c.fill();
+ txt(c,"p="+p+" ψ="+f3(cur),X(p),Y(cur)-8,AMBER,10.5,X(p)>W-90?"right":"left",true);
+ txt(c,"Amdahl：ψ = 1/(f+(1−f)/p)",ml,18,INK,11,"left",true);
 }
 function amUpdate(){
-  var f=amF(), p=rng("s-am-p"), psi=amPsi(f,p), cap=1/f;
-  $("s-am-f").disabled=(amMode==="ex3");
-  $("s-am-n").disabled=(amMode==="f");
-  setV("v-am-f",(rng("s-am-f")/100).toFixed(2)+(amMode==="f"?"":"（例 3 模式下由 n 决定）"));
-  setV("v-am-n",thou(rng("s-am-n")));
-  setV("v-am-p",String(p));
-  setV("ro-am-f",(f*100).toFixed(2)+"%");
-  setV("ro-am-psi",f3(psi));
-  setV("ro-am-cap",f2(cap));
-  setV("ro-am-p",String(p));
-  setV("ro-am-eff",f3(psi/p));
-  setV("ro-am-gap",f3(p-psi));
-  amDraw();
+ var f=amF(), p=rng("s-am-p"), psi=amPsi(f,p), cap=1/f;
+ $("s-am-f").disabled=(amMode==="ex3");
+ $("s-am-n").disabled=(amMode==="f");
+ setV("v-am-f",(rng("s-am-f")/100).toFixed(2)+(amMode==="f"?"":"（例 3 模式下由 n 决定）"));
+ setV("v-am-n",thou(rng("s-am-n")));
+ setV("v-am-p",String(p));
+ setV("ro-am-f",(f*100).toFixed(2)+"%");
+ setV("ro-am-psi",f3(psi));
+ setV("ro-am-cap",f2(cap));
+ setV("ro-am-p",String(p));
+ setV("ro-am-eff",f3(psi/p));
+ setV("ro-am-gap",f3(p-psi));
+ amDraw();
 }
 /* 画布拖动改 p */
 (function(){
-  var cv=$("cv-am"), drag=false;
-  function setP(ev){
-    var r=cv.getBoundingClientRect?cv.getBoundingClientRect():{left:0,width:600};
-    var x=(ev.clientX||0)-r.left, W=(r.width||600);
-    var ml=46,mr=14, pw=W-ml-mr;
-    var t=(x-ml)/pw; if(t<0)t=0; if(t>1)t=1;
-    var p=Math.round(Math.pow(2,t*6)); if(p<1)p=1; if(p>64)p=64;
-    $("s-am-p").value=String(p); amUpdate();
-  }
-  cv.addEventListener("pointerdown",function(ev){drag=true;setP(ev);});
-  cv.addEventListener("pointermove",function(ev){if(drag)setP(ev);});
-  if(window.addEventListener)window.addEventListener("pointerup",function(){drag=false;});
+ var cv=$("cv-am"), drag=false;
+ function setP(ev){
+ var r=cv.getBoundingClientRect?cv.getBoundingClientRect():{left:0,width:600};
+ var x=(ev.clientX||0)-r.left, W=(r.width||600);
+ var ml=46,mr=14, pw=W-ml-mr;
+ var t=(x-ml)/pw; if(t<0)t=0; if(t>1)t=1;
+ var p=Math.round(Math.pow(2,t*6)); if(p<1)p=1; if(p>64)p=64;
+ $("s-am-p").value=String(p); amUpdate();
+ }
+ cv.addEventListener("pointerdown",function(ev){drag=true;setP(ev);});
+ cv.addEventListener("pointermove",function(ev){if(drag)setP(ev);});
+ if(window.addEventListener)window.addEventListener("pointerup",function(){drag=false;});
 })();
 $("s-am-f").addEventListener("input",amUpdate);
 $("s-am-n").addEventListener("input",amUpdate);
 $("s-am-p").addEventListener("input",amUpdate);
 Array.prototype.forEach.call($("seg-am").querySelectorAll("button"),function(b){
-  b.onclick=function(){amMode=b.getAttribute("data-m");
-    Array.prototype.forEach.call($("seg-am").querySelectorAll("button"),function(x){x.classList.toggle("on",x===b);});
-    amUpdate();};
+ b.onclick=function(){amMode=b.getAttribute("data-m");
+ Array.prototype.forEach.call($("seg-am").querySelectorAll("button"),function(x){x.classList.toggle("on",x===b);});
+ amUpdate();};
 });
 $("b-am-e1").onclick=function(){amMode="f";$("s-am-f").value="10";$("s-am-p").value="8";
-  Array.prototype.forEach.call($("seg-am").querySelectorAll("button"),function(x){x.classList.toggle("on",x.getAttribute("data-m")==="f");});amUpdate();};
+ Array.prototype.forEach.call($("seg-am").querySelectorAll("button"),function(x){x.classList.toggle("on",x.getAttribute("data-m")==="f");});amUpdate();};
 $("b-am-e2").onclick=function(){amMode="f";$("s-am-f").value="25";$("s-am-p").value="64";
-  Array.prototype.forEach.call($("seg-am").querySelectorAll("button"),function(x){x.classList.toggle("on",x.getAttribute("data-m")==="f");});amUpdate();};
+ Array.prototype.forEach.call($("seg-am").querySelectorAll("button"),function(x){x.classList.toggle("on",x.getAttribute("data-m")==="f");});amUpdate();};
 $("b-am-e3").onclick=function(){amMode="ex3";$("s-am-n").value="10000";$("s-am-p").value="8";
-  Array.prototype.forEach.call($("seg-am").querySelectorAll("button"),function(x){x.classList.toggle("on",x.getAttribute("data-m")==="ex3");});amUpdate();};
+ Array.prototype.forEach.call($("seg-am").querySelectorAll("button"),function(x){x.classList.toggle("on",x.getAttribute("data-m")==="ex3");});amUpdate();};
 
 /* ================= 实验 02 · Gantt 时间轴与拐点 ================= */
 function gTimes(){
-  var p=Math.round(rng("s-g-p")), n=rng("s-g-n");
-  var sig=18000+n, phi=n*n/100, kap=14*(10000*Math.log2(p)+n/10);
-  var t1=sig+phi, tp=sig+phi/p+kap;
-  var f=sig/t1, psi=t1/tp, psiAm=1/(f+(1-f)/p);
-  return {p:p,n:n,sig:sig,phi:phi,kap:kap,t1:t1,tp:tp,psi:psi,psiAm:psiAm,eff:psi/p,f:f};
+ var p=Math.round(rng("s-g-p")), n=rng("s-g-n");
+ var sig=18000+n, phi=n*n/100, kap=14*(10000*Math.log2(p)+n/10);
+ var t1=sig+phi, tp=sig+phi/p+kap;
+ var f=sig/t1, psi=t1/tp, psiAm=1/(f+(1-f)/p);
+ return {p:p,n:n,sig:sig,phi:phi,kap:kap,t1:t1,tp:tp,psi:psi,psiAm:psiAm,eff:psi/p,f:f};
 }
 function gPeak(n){
-  var best=0,bp=2;
-  for(var p=2;p<=64;p++){
-    var sig=18000+n, phi=n*n/100, kap=14*(10000*Math.log2(p)+n/10);
-    var v=(sig+phi)/(sig+phi/p+kap);
-    if(v>best){best=v;bp=p;}
-  }
-  return {p:bp,psi:best};
+ var best=0,bp=2;
+ for(var p=2;p<=64;p++){
+ var sig=18000+n, phi=n*n/100, kap=14*(10000*Math.log2(p)+n/10);
+ var v=(sig+phi)/(sig+phi/p+kap);
+ if(v>best){best=v;bp=p;}
+ }
+ return {p:bp,psi:best};
 }
 function gDraw(){
-  var g=fit($("cv-g"),470), c=g.c, W=g.w, H=g.h;
-  var t=gTimes(), pk=gPeak(t.n);
-  var ml=86,mr=14;
-  /* ---- 上：Gantt ---- */
-  var gt=34, gb=238, gh=gb-gt;
-  var laneH=Math.max(7,Math.min(15,gh/t.p));
-  function GX(v){return ml+(v/t.t1)*(W-ml-mr);}
-  txt(c,"Gantt：σ（深墨，单处理器）→ φ/p（钢青，全部算）→ κ（橙纹，全部通信）",ml,20,INK,11.5,"left",true);
-  /* 单处理器车道 */
-  var y0=gt;
-  box(c,GX(0),y0,GX(t.t1)-GX(0),laneH-2,"#c7cfd6",null);
-  txt(c,"单处理器",ml-8,y0+laneH-5,INK2,10.5,"right");
-  /* 处理器车道 */
-  for(var i=0;i<t.p;i++){
-    var ly=gt+laneH*(i+1);
-    txt(c,"P"+(i+1),ml-8,ly+laneH-5,INK2,10,"right");
-    if(i===0)box(c,GX(0),ly,GX(t.sig)-GX(0),laneH-2,INK,null);
-    box(c,GX(t.sig),ly,GX(t.sig+t.phi/t.p)-GX(t.sig),laneH-2,TEAL,null);
-    var kx=GX(t.sig+t.phi/t.p), kw=GX(t.tp)-kx;
-    if(kw>0.5){box(c,kx,ly,kw,laneH-2,"rgba(180,95,6,0.16)",AMBER);hatch(c,kx,ly,kw,laneH-2,7,AMBER);}
-  }
-  /* 串行时间竖线 */
-  seg(c,GX(t.t1),gt-6,GX(t.t1),gt+laneH*(t.p+1),INK2,1,[4,3]);
-  txt(c,"T(n,1)="+thou(t.t1)+" μs",GX(t.t1),gt-10,INK2,10,GX(t.t1)>W-120?"right":"left");
-  /* 时间轴 */
-  seg(c,ml,gt+laneH*(t.p+1)+4,W-mr,gt+laneH*(t.p+1)+4,LINE2,1);
-  var step=Math.pow(10,Math.floor(Math.log10(t.t1/4)));
-  for(var v=0;v<=t.t1;v+=step){
-    var xx=GX(v); seg(c,xx,gt+laneH*(t.p+1)+4,xx,gt+laneH*(t.p+1)+8,LINE2,1);
-    var lab=v>=1e6?f2(v/1e6)+"M":(v>=1e3?Math.round(v/1e3)+"k":String(Math.round(v)));
-    mtxt(c,lab,xx,gt+laneH*(t.p+1)+20,INK2,9.5,"center");
-  }
-  txt(c,"时间（μs）",W-mr,gt+laneH*(t.p+1)+20,INK2,9.5,"right");
-  /* ---- 下：ψ(p) 曲线（复现图 7.2） ---- */
-  var ct=gb+34, cb=H-18, ch=cb-ct;
-  var yMax2=Math.max(2,Math.min(16,pk.psi*1.3));
-  function CX(pp){return ml+Math.log2(pp/2)/5*(W-ml-mr);}   /* p: 2..64 */
-  function CY(v){return ct+ch-(v/yMax2)*ch;}
-  txt(c,"复现教材图 7.2：虚线 = Amdahl 上界（不含通信），实线 = 含通信",ml,ct-8,INK,11,"left",true);
-  for(var g2=0;g2<=yMax2;g2+=2){
-    seg(c,ml,CY(g2),W-mr,CY(g2),GRID,1);
-    mtxt(c,String(g2),ml-6,CY(g2)+3,INK2,9.5,"right");
-  }
-  [2,4,8,16,32,64].forEach(function(pp){
-    seg(c,CX(pp),ct,CX(pp),cb,GRID,1);
-    mtxt(c,String(pp),CX(pp),cb+12,INK2,9.5,"center");
-  });
-  c.save();c.setLineDash([5,4]);c.strokeStyle=LINE2;c.lineWidth=1.4;c.beginPath();
-  for(var q2=2;q2<=64;q2+=0.5){
-    var f=t.sig/t.t1, va=1/(f+(1-f)/q2);
-    var ya=CY(Math.min(va,yMax2));
-    if(q2===2)c.moveTo(CX(q2),ya);else c.lineTo(CX(q2),ya);
-  }
-  c.stroke();c.restore();
-  c.save();c.strokeStyle=TEAL;c.lineWidth=2.2;c.beginPath();
-  for(var q3=2;q3<=64;q3+=0.5){
-    var n=t.n,sig=18000+n,phi=n*n/100,kap=14*(10000*Math.log2(q3)+n/10);
-    var vs=(sig+phi)/(sig+phi/q3+kap);
-    var yb=CY(Math.min(vs,yMax2));
-    if(q3===2)c.moveTo(CX(q3),yb);else c.lineTo(CX(q3),yb);
-  }
-  c.stroke();c.restore();
-  /* 拐点星号 */
-  c.fillStyle=AMBER;c.beginPath();
-  var sx=CX(pk.p),sy=CY(pk.psi);
-  for(var k=0;k<5;k++){
-    var a1=-Math.PI/2+k*2*Math.PI/5, a2=a1+Math.PI/5;
-    c.lineTo(sx+Math.cos(a1)*5,sy+Math.sin(a1)*5);
-    c.lineTo(sx+Math.cos(a2)*2.2,sy+Math.sin(a2)*2.2);
-  }
-  c.closePath();c.fill();
-  txt(c,"拐点 p*="+pk.p+"，ψ="+f3(pk.psi),sx+8,sy-6,AMBER,10,"left",true);
-  /* 当前 p */
-  c.fillStyle=TEAL;c.beginPath();c.arc(CX(t.p),CY(t.psi),4,0,6.2832);c.fill();
-  txt(c,"p="+t.p,CX(t.p),CY(t.psi)+15,TEAL,10,"center",true);
+ var g=fit($("cv-g"),470), c=g.c, W=g.w, H=g.h;
+ var t=gTimes(), pk=gPeak(t.n);
+ var ml=86,mr=14;
+ /* ---- 上：Gantt ---- */
+ var gt=34, gb=238, gh=gb-gt;
+ var laneH=Math.max(7,Math.min(15,gh/t.p));
+ function GX(v){return ml+(v/t.t1)*(W-ml-mr);}
+ txt(c,"Gantt：σ（深墨，单处理器）→ φ/p（钢青，全部算）→ κ（橙纹，全部通信）",ml,20,INK,11.5,"left",true);
+ /* 单处理器车道 */
+ var y0=gt;
+ box(c,GX(0),y0,GX(t.t1)-GX(0),laneH-2,"#c7cfd6",null);
+ txt(c,"单处理器",ml-8,y0+laneH-5,INK2,10.5,"right");
+ /* 处理器车道 */
+ for(var i=0;i<t.p;i++){
+ var ly=gt+laneH*(i+1);
+ txt(c,"P"+(i+1),ml-8,ly+laneH-5,INK2,10,"right");
+ if(i===0)box(c,GX(0),ly,GX(t.sig)-GX(0),laneH-2,INK,null);
+ box(c,GX(t.sig),ly,GX(t.sig+t.phi/t.p)-GX(t.sig),laneH-2,TEAL,null);
+ var kx=GX(t.sig+t.phi/t.p), kw=GX(t.tp)-kx;
+ if(kw>0.5){box(c,kx,ly,kw,laneH-2,"rgba(180,95,6,0.16)",AMBER);hatch(c,kx,ly,kw,laneH-2,7,AMBER);}
+ }
+ /* 串行时间竖线 */
+ seg(c,GX(t.t1),gt-6,GX(t.t1),gt+laneH*(t.p+1),INK2,1,[4,3]);
+ txt(c,"T(n,1)="+thou(t.t1)+" μs",GX(t.t1),gt-10,INK2,10,GX(t.t1)>W-120?"right":"left");
+ /* 时间轴 */
+ seg(c,ml,gt+laneH*(t.p+1)+4,W-mr,gt+laneH*(t.p+1)+4,LINE2,1);
+ var step=Math.pow(10,Math.floor(Math.log10(t.t1/4)));
+ for(var v=0;v<=t.t1;v+=step){
+ var xx=GX(v); seg(c,xx,gt+laneH*(t.p+1)+4,xx,gt+laneH*(t.p+1)+8,LINE2,1);
+ var lab=v>=1e6?f2(v/1e6)+"M":(v>=1e3?Math.round(v/1e3)+"k":String(Math.round(v)));
+ mtxt(c,lab,xx,gt+laneH*(t.p+1)+20,INK2,9.5,"center");
+ }
+ txt(c,"时间（μs）",W-mr,gt+laneH*(t.p+1)+20,INK2,9.5,"right");
+ /* ---- 下：ψ(p) 曲线（复现图 7.2） ---- */
+ var ct=gb+34, cb=H-18, ch=cb-ct;
+ var yMax2=Math.max(2,Math.min(16,pk.psi*1.3));
+ function CX(pp){return ml+Math.log2(pp/2)/5*(W-ml-mr);} /* p: 2..64 */
+ function CY(v){return ct+ch-(v/yMax2)*ch;}
+ txt(c,"复现教材图 7.2：虚线 = Amdahl 上界（不含通信），实线 = 含通信",ml,ct-8,INK,11,"left",true);
+ for(var g2=0;g2<=yMax2;g2+=2){
+ seg(c,ml,CY(g2),W-mr,CY(g2),GRID,1);
+ mtxt(c,String(g2),ml-6,CY(g2)+3,INK2,9.5,"right");
+ }
+ [2,4,8,16,32,64].forEach(function(pp){
+ seg(c,CX(pp),ct,CX(pp),cb,GRID,1);
+ mtxt(c,String(pp),CX(pp),cb+12,INK2,9.5,"center");
+ });
+ c.save();c.setLineDash([5,4]);c.strokeStyle=LINE2;c.lineWidth=1.4;c.beginPath();
+ for(var q2=2;q2<=64;q2+=0.5){
+ var f=t.sig/t.t1, va=1/(f+(1-f)/q2);
+ var ya=CY(Math.min(va,yMax2));
+ if(q2===2)c.moveTo(CX(q2),ya);else c.lineTo(CX(q2),ya);
+ }
+ c.stroke();c.restore();
+ c.save();c.strokeStyle=TEAL;c.lineWidth=2.2;c.beginPath();
+ for(var q3=2;q3<=64;q3+=0.5){
+ var n=t.n,sig=18000+n,phi=n*n/100,kap=14*(10000*Math.log2(q3)+n/10);
+ var vs=(sig+phi)/(sig+phi/q3+kap);
+ var yb=CY(Math.min(vs,yMax2));
+ if(q3===2)c.moveTo(CX(q3),yb);else c.lineTo(CX(q3),yb);
+ }
+ c.stroke();c.restore();
+ /* 拐点星号 */
+ c.fillStyle=AMBER;c.beginPath();
+ var sx=CX(pk.p),sy=CY(pk.psi);
+ for(var k=0;k<5;k++){
+ var a1=-Math.PI/2+k*2*Math.PI/5, a2=a1+Math.PI/5;
+ c.lineTo(sx+Math.cos(a1)*5,sy+Math.sin(a1)*5);
+ c.lineTo(sx+Math.cos(a2)*2.2,sy+Math.sin(a2)*2.2);
+ }
+ c.closePath();c.fill();
+ txt(c,"拐点 p*="+pk.p+"，ψ="+f3(pk.psi),sx+8,sy-6,AMBER,10,"left",true);
+ /* 当前 p */
+ c.fillStyle=TEAL;c.beginPath();c.arc(CX(t.p),CY(t.psi),4,0,6.2832);c.fill();
+ txt(c,"p="+t.p,CX(t.p),CY(t.psi)+15,TEAL,10,"center",true);
 }
 function gUpdate(){
-  var t=gTimes(), pk=gPeak(t.n);
-  setV("v-g-p",String(t.p));
-  setV("v-g-n",thou(t.n));
-  setV("ro-g-sig",thou(t.sig));
-  setV("ro-g-phi",thou(t.phi));
-  setV("ro-g-kap",thou(Math.round(t.kap)));
-  setV("ro-g-t1",thou(t.t1));
-  setV("ro-g-tp",thou(Math.round(t.tp)));
-  setV("ro-g-psi",f3(t.psi));
-  setV("ro-g-am",f3(t.psiAm));
-  setV("ro-g-eff",f3(t.eff));
-  setV("ro-g-pk",String(pk.p));
-  setV("ro-g-psik",f3(pk.psi));
-  gDraw();
+ var t=gTimes(), pk=gPeak(t.n);
+ setV("v-g-p",String(t.p));
+ setV("v-g-n",thou(t.n));
+ setV("ro-g-sig",thou(t.sig));
+ setV("ro-g-phi",thou(t.phi));
+ setV("ro-g-kap",thou(Math.round(t.kap)));
+ setV("ro-g-t1",thou(t.t1));
+ setV("ro-g-tp",thou(Math.round(t.tp)));
+ setV("ro-g-psi",f3(t.psi));
+ setV("ro-g-am",f3(t.psiAm));
+ setV("ro-g-eff",f3(t.eff));
+ setV("ro-g-pk",String(pk.p));
+ setV("ro-g-psik",f3(pk.psi));
+ gDraw();
 }
 $("s-g-p").addEventListener("input",gUpdate);
 $("s-g-n").addEventListener("input",gUpdate);
@@ -590,67 +588,67 @@ $("b-g-e3").onclick=function(){$("s-g-n").value="10000";$("s-g-p").value="4";gUp
 $("b-g-knee").onclick=function(){var pk=gPeak(rng("s-g-n"));$("s-g-p").value=String(Math.max(2,Math.min(16,pk.p)));gUpdate();};
 $("b-g-big").onclick=function(){$("s-g-n").value="40000";$("s-g-p").value="8";gUpdate();};
 /* ================= 实验 03 · Gustafson-Barsis 曲线台 ================= */
-var gbSOv=null;                      /* 预设例 2 的精确 s = 1384/16383 */
+var gbSOv=null; /* 预设例 2 的精确 s = 1384/16383 */
 function gbS(){return gbSOv!==null?gbSOv:rng("s-gb-s")/1000;}
 function gbP(){return Math.max(1,Math.round(Math.pow(2,rng("s-gb-p")/10)));}
 function gbPsi(s,p){return p-(p-1)*s;}
 function gbFmt(v){return v>=1000?v.toFixed(1):(v>=100?v.toFixed(2):v.toFixed(3));}
 function gbDraw(){
-  var g=fit($("cv-gb"),320), c=g.c, W=g.w, H=g.h;
-  var ml=46,mr=14,mt=30,mb=30, pw=W-ml-mr, ph=H-mt-mb;
-  var s=gbS(), p=gbP(), cur=gbPsi(s,p);
-  var xMax=Math.pow(2,Math.ceil(Math.log2(Math.max(64,p))));
-  var yMax=Math.max(4,Math.min(64,cur*1.15));
-  function X(pp){return ml+Math.log2(pp)/Math.log2(xMax)*pw;}
-  function Y(v){return mt+ph-(v/yMax)*ph;}
-  c.clearRect(0,0,W,H);
-  var yStep=yMax<=8?2:(yMax<=20?5:(yMax<=40?10:20));
-  for(var v=0;v<=yMax+1e-9;v+=yStep){
-    seg(c,ml,Y(v),ml+pw,Y(v),GRID,1);
-    mtxt(c,String(v),ml-6,Y(v)+3,INK2,10,"right");
-  }
-  for(var e=0;e<=14;e++){
-    var pp=Math.pow(2,e); if(pp>xMax)break;
-    seg(c,X(pp),mt,X(pp),mt+ph,GRID,1);
-    mtxt(c,pp>=1000?String(pp):String(pp),X(pp),mt+ph+14,INK2,10,"center");
-  }
-  txt(c,"ψ（比例加速比）",ml-6,mt-12,INK2,10,"left");
-  txt(c,"p（log₂ 刻度）",ml+pw,mt+ph+26,INK2,10,"right");
-  function curve(sv,col,w,dash,lab){
-    c.save();c.strokeStyle=col;c.lineWidth=w;if(dash)c.setLineDash(dash);
-    c.beginPath();
-    for(var q=1;q<=xMax;q*=1.02){
-      var yv=Y(Math.min(gbPsi(sv,q),yMax));
-      if(q===1)c.moveTo(X(q),yv);else c.lineTo(X(q),yv);
-    }
-    c.stroke();c.restore();
-    if(lab){var lx=Math.min(xMax,Math.pow(2,Math.log2(xMax)*0.62));
-      txt(c,lab,X(lx),Y(Math.min(gbPsi(sv,lx),yMax))-5,col,9.5,"left");}
-  }
-  curve(0,LINE2,1,[2,3],"理想 ψ=p");
-  curve(0.005,LINE2,1,null,"s=0.005");
-  curve(0.05,INK2,1,[5,4],"s=0.05");
-  curve(0.2,LINE2,1.4,null,"s=0.20");
-  curve(s,TEAL,2.4,null,"当前 s="+f4(s));
-  var my=Math.min(cur,yMax);
-  seg(c,X(p),mt,X(p),my,AMBER,1,[4,3]);
-  c.fillStyle=TEAL;c.beginPath();c.arc(X(p),Y(my),4.5,0,6.2832);c.fill();
-  var lab2="p="+p+"  ψ="+gbFmt(cur);
-  if(cur>yMax)lab2+="（超出画布）";
-  txt(c,lab2,X(p),Math.max(mt+10,Y(my)-9),TEAL,10.5,X(p)>W-110?"right":"left",true);
-  txt(c,"Gustafson-Barsis：ψ = p − (p−1)s，无天花板",ml,18,INK,11,"left",true);
+ var g=fit($("cv-gb"),320), c=g.c, W=g.w, H=g.h;
+ var ml=46,mr=14,mt=30,mb=30, pw=W-ml-mr, ph=H-mt-mb;
+ var s=gbS(), p=gbP(), cur=gbPsi(s,p);
+ var xMax=Math.pow(2,Math.ceil(Math.log2(Math.max(64,p))));
+ var yMax=Math.max(4,Math.min(64,cur*1.15));
+ function X(pp){return ml+Math.log2(pp)/Math.log2(xMax)*pw;}
+ function Y(v){return mt+ph-(v/yMax)*ph;}
+ c.clearRect(0,0,W,H);
+ var yStep=yMax<=8?2:(yMax<=20?5:(yMax<=40?10:20));
+ for(var v=0;v<=yMax+1e-9;v+=yStep){
+ seg(c,ml,Y(v),ml+pw,Y(v),GRID,1);
+ mtxt(c,String(v),ml-6,Y(v)+3,INK2,10,"right");
+ }
+ for(var e=0;e<=14;e++){
+ var pp=Math.pow(2,e); if(pp>xMax)break;
+ seg(c,X(pp),mt,X(pp),mt+ph,GRID,1);
+ mtxt(c,pp>=1000?String(pp):String(pp),X(pp),mt+ph+14,INK2,10,"center");
+ }
+ txt(c,"ψ（比例加速比）",ml-6,mt-12,INK2,10,"left");
+ txt(c,"p（log₂ 刻度）",ml+pw,mt+ph+26,INK2,10,"right");
+ function curve(sv,col,w,dash,lab){
+ c.save();c.strokeStyle=col;c.lineWidth=w;if(dash)c.setLineDash(dash);
+ c.beginPath();
+ for(var q=1;q<=xMax;q*=1.02){
+ var yv=Y(Math.min(gbPsi(sv,q),yMax));
+ if(q===1)c.moveTo(X(q),yv);else c.lineTo(X(q),yv);
+ }
+ c.stroke();c.restore();
+ if(lab){var lx=Math.min(xMax,Math.pow(2,Math.log2(xMax)*0.62));
+ txt(c,lab,X(lx),Y(Math.min(gbPsi(sv,lx),yMax))-5,col,9.5,"left");}
+ }
+ curve(0,LINE2,1,[2,3],"理想 ψ=p");
+ curve(0.005,LINE2,1,null,"s=0.005");
+ curve(0.05,INK2,1,[5,4],"s=0.05");
+ curve(0.2,LINE2,1.4,null,"s=0.20");
+ curve(s,TEAL,2.4,null,"当前 s="+f4(s));
+ var my=Math.min(cur,yMax);
+ seg(c,X(p),mt,X(p),my,AMBER,1,[4,3]);
+ c.fillStyle=TEAL;c.beginPath();c.arc(X(p),Y(my),4.5,0,6.2832);c.fill();
+ var lab2="p="+p+" ψ="+gbFmt(cur);
+ if(cur>yMax)lab2+="（超出画布）";
+ txt(c,lab2,X(p),Math.max(mt+10,Y(my)-9),TEAL,10.5,X(p)>W-110?"right":"left",true);
+ txt(c,"Gustafson-Barsis：ψ = p − (p−1)s，无天花板",ml,18,INK,11,"left",true);
 }
 function gbUpdate(){
-  var s=gbS(), p=gbP(), cur=gbPsi(s,p);
-  setV("v-gb-s",f4(s)+(gbSOv!==null?"（精确值 1384/16383）":""));
-  setV("v-gb-p",String(p));
-  setV("ro-gb-s",f4(s));
-  setV("ro-gb-p",String(p));
-  setV("ro-gb-psi",gbFmt(cur));
-  setV("ro-gb-ideal",String(p));
-  setV("ro-gb-eff",f4(cur/p));
-  setV("ro-gb-cap",f2(1/s));
-  gbDraw();
+ var s=gbS(), p=gbP(), cur=gbPsi(s,p);
+ setV("v-gb-s",f4(s)+(gbSOv!==null?"（精确值 1384/16383）":""));
+ setV("v-gb-p",String(p));
+ setV("ro-gb-s",f4(s));
+ setV("ro-gb-p",String(p));
+ setV("ro-gb-psi",gbFmt(cur));
+ setV("ro-gb-ideal",String(p));
+ setV("ro-gb-eff",f4(cur/p));
+ setV("ro-gb-cap",f2(1/s));
+ gbDraw();
 }
 $("s-gb-s").addEventListener("input",function(){gbSOv=null;gbUpdate();});
 $("s-gb-p").addEventListener("input",gbUpdate);
@@ -662,126 +660,126 @@ var KF={ex1:[1.82,2.50,3.08,3.57,4.00,4.38,4.71],ex2:[1.87,2.61,3.23,3.73,4.14,4
 var kfMode="ex1";
 function kfE(psi,p){return (1/psi-1/p)/(1-1/p);}
 function kfSeries(){
-  var ps=[],es=[];
-  if(kfMode==="cus"){
-    var psi8=rng("s-kf-psi")/100, e=kfE(psi8,8);
-    for(var p=2;p<=8;p++){ps.push(1/(e+(1-e)/p));es.push(e);}
-    return {ps:ps,es:es,e8:e};
-  }
-  var arr=KF[kfMode];
-  for(var i=0;i<7;i++){ps.push(arr[i]);es.push(kfE(arr[i],i+2));}
-  return {ps:ps,es:es,e8:kfE(arr[6],8)};
+ var ps=[],es=[];
+ if(kfMode==="cus"){
+ var psi8=rng("s-kf-psi")/100, e=kfE(psi8,8);
+ for(var p=2;p<=8;p++){ps.push(1/(e+(1-e)/p));es.push(e);}
+ return {ps:ps,es:es,e8:e};
+ }
+ var arr=KF[kfMode];
+ for(var i=0;i<7;i++){ps.push(arr[i]);es.push(kfE(arr[i],i+2));}
+ return {ps:ps,es:es,e8:kfE(arr[6],8)};
 }
 function kfDraw(sr){
-  var g=fit($("cv-kf"),210), c=g.c, W=g.w, H=g.h;
-  var ml=40,mr=12,mt=26,mb=26, pw=W-ml-mr, ph=H-mt-mb;
-  var mx=0; for(var i=0;i<7;i++)mx=Math.max(mx,sr.es[i]);
-  var yMax=Math.max(0.12,mx*1.25);
-  if(!isFinite(yMax))yMax=1;   /* 防御：ψ₈=0 时 e=∞，网格步进不能失控 */
-  function Y(v){return mt+ph-(v/yMax)*ph;}
-  c.clearRect(0,0,W,H);
-  for(var v=0;v<=yMax+1e-9;v+=0.04){
-    seg(c,ml,Y(v),ml+pw,Y(v),GRID,1);
-    mtxt(c,v.toFixed(2),ml-6,Y(v)+3,INK2,9.5,"right");
-  }
-  seg(c,ml,Y(0.1),ml+pw,Y(0.1),AMBER,1,[5,4]);
-  txt(c,"例 1 的 e = 0.10",ml+pw,Y(0.1)-5,AMBER,9.5,"right");
-  var bw=pw/7;
-  for(var k=0;k<7;k++){
-    var x=ml+bw*k+bw*0.18, w=bw*0.64, y=Y(sr.es[k]);
-    box(c,x,y,w,mt+ph-y,TEAL,null);
-    mtxt(c,f4(sr.es[k]),x+w/2,y-5,TEAL,9,"center",true);
-    mtxt(c,"p="+(k+2),x+w/2,mt+ph+13,INK2,9.5,"center");
-  }
-  txt(c,"e(p) = (1/ψ − 1/p)/(1 − 1/p)，柱高 = 有效串行比例",ml,16,INK,10.5,"left",true);
+ var g=fit($("cv-kf"),210), c=g.c, W=g.w, H=g.h;
+ var ml=40,mr=12,mt=26,mb=26, pw=W-ml-mr, ph=H-mt-mb;
+ var mx=0; for(var i=0;i<7;i++)mx=Math.max(mx,sr.es[i]);
+ var yMax=Math.max(0.12,mx*1.25);
+ if(!isFinite(yMax))yMax=1; /* 防御：ψ₈=0 时 e=∞，网格步进不能失控 */
+ function Y(v){return mt+ph-(v/yMax)*ph;}
+ c.clearRect(0,0,W,H);
+ for(var v=0;v<=yMax+1e-9;v+=0.04){
+ seg(c,ml,Y(v),ml+pw,Y(v),GRID,1);
+ mtxt(c,v.toFixed(2),ml-6,Y(v)+3,INK2,9.5,"right");
+ }
+ seg(c,ml,Y(0.1),ml+pw,Y(0.1),AMBER,1,[5,4]);
+ txt(c,"例 1 的 e = 0.10",ml+pw,Y(0.1)-5,AMBER,9.5,"right");
+ var bw=pw/7;
+ for(var k=0;k<7;k++){
+ var x=ml+bw*k+bw*0.18, w=bw*0.64, y=Y(sr.es[k]);
+ box(c,x,y,w,mt+ph-y,TEAL,null);
+ mtxt(c,f4(sr.es[k]),x+w/2,y-5,TEAL,9,"center",true);
+ mtxt(c,"p="+(k+2),x+w/2,mt+ph+13,INK2,9.5,"center");
+ }
+ txt(c,"e(p) = (1/ψ − 1/p)/(1 − 1/p)，柱高 = 有效串行比例",ml,16,INK,10.5,"left",true);
 }
 function kfTable(sr){
-  var h="<tr><th>p</th><th>ψ"+(kfMode==="cus"?"（模型）":"（教材实测）")+"</th><th>e</th></tr>";
-  for(var i=0;i<7;i++){
-    h+="<tr"+(i===6?" class=\"hi\"":"")+"><td class=\"mono\">"+(i+2)+"</td><td class=\"mono\">"+f3(sr.ps[i])+
-       "</td><td class=\"mono\">"+f4(sr.es[i])+"</td></tr>";
-  }
-  $("tb-kf").innerHTML=h;
+ var h="<tr><th>p</th><th>ψ"+(kfMode==="cus"?"（模型）":"（教材实测）")+"</th><th>e</th></tr>";
+ for(var i=0;i<7;i++){
+ h+="<tr"+(i===6?" class=\"hi\"":"")+"><td class=\"mono\">"+(i+2)+"</td><td class=\"mono\">"+f3(sr.ps[i])+
+ "</td><td class=\"mono\">"+f4(sr.es[i])+"</td></tr>";
+ }
+ $("tb-kf").innerHTML=h;
 }
 function kfUpdate(){
-  var sr=kfSeries();
-  var mn=sr.es[0],mx=sr.es[0];
-  for(var i=1;i<7;i++){mn=Math.min(mn,sr.es[i]);mx=Math.max(mx,sr.es[i]);}
-  var d=sr.es[6]-sr.es[0];
-  var trend=d>0.008?"稳定上升":(d>-0.002?"基本平坦":"下降");
-  var diag=d>0.008?"并行开销：通信/同步/启动或负载不均随 p 恶化":"并行性不足：大部分计算本质上串行";
-  setV("v-kf-psi",(rng("s-kf-psi")/100).toFixed(2));
-  setV("ro-kf-ds",kfMode==="ex1"?"教材 7.5 例 1":(kfMode==="ex2"?"教材 7.5 例 2":"自定义（由 ψ₈ 反推）"));
-  setV("ro-kf-erange",f4(mn)+" – "+f4(mx));
-  setV("ro-kf-trend",trend);
-  setV("ro-kf-diag",diag);
-  setV("ro-kf-p16",f3(1/(sr.e8+(1-sr.e8)/16)));
-  setV("ro-kf-mode",(kfMode==="ex1"?"例 1":(kfMode==="ex2"?"例 2":"自定义"))+" · e(8)="+f4(sr.e8));
-  $("s-kf-psi").disabled=(kfMode!=="cus");
-  kfDraw(sr); kfTable(sr);
+ var sr=kfSeries();
+ var mn=sr.es[0],mx=sr.es[0];
+ for(var i=1;i<7;i++){mn=Math.min(mn,sr.es[i]);mx=Math.max(mx,sr.es[i]);}
+ var d=sr.es[6]-sr.es[0];
+ var trend=d>0.008?"稳定上升":(d>-0.002?"基本平坦":"下降");
+ var diag=d>0.008?"并行开销：通信/同步/启动或负载不均随 p 恶化":"并行性不足：大部分计算本质上串行";
+ setV("v-kf-psi",(rng("s-kf-psi")/100).toFixed(2));
+ setV("ro-kf-ds",kfMode==="ex1"?"教材 7.5 例 1":(kfMode==="ex2"?"教材 7.5 例 2":"自定义（由 ψ₈ 反推）"));
+ setV("ro-kf-erange",f4(mn)+" – "+f4(mx));
+ setV("ro-kf-trend",trend);
+ setV("ro-kf-diag",diag);
+ setV("ro-kf-p16",f3(1/(sr.e8+(1-sr.e8)/16)));
+ setV("ro-kf-mode",(kfMode==="ex1"?"例 1":(kfMode==="ex2"?"例 2":"自定义"))+" · e(8)="+f4(sr.e8));
+ $("s-kf-psi").disabled=(kfMode!=="cus");
+ kfDraw(sr); kfTable(sr);
 }
 Array.prototype.forEach.call($("seg-kf").querySelectorAll("button"),function(b){
-  b.onclick=function(){kfMode=b.getAttribute("data-m");
-    Array.prototype.forEach.call($("seg-kf").querySelectorAll("button"),function(x){x.classList.toggle("on",x===b);});
-    kfUpdate();};
+ b.onclick=function(){kfMode=b.getAttribute("data-m");
+ Array.prototype.forEach.call($("seg-kf").querySelectorAll("button"),function(x){x.classList.toggle("on",x===b);});
+ kfUpdate();};
 });
 $("s-kf-psi").addEventListener("input",kfUpdate);
 /* ================= 第 06 节 · 本机实测对照图 ================= */
 var M_T1={s22:25.88,s24:80.48};
 var M_TP={msg:{s22:[32.70,27.46,23.74,20.03],s24:[138.79,97.74,99.33,88.02]},
-          shm:{s22:[16.43,9.80,7.00,4.78],s24:[62.04,43.55,21.95,15.82]}};
+ shm:{s22:[16.43,9.80,7.00,4.78],s24:[62.04,43.55,21.95,15.82]}};
 var M_P=[2,4,8,16];
 function measDraw(){
-  var g=fit($("cv-meas"),360), c=g.c, W=g.w, H=g.h;
-  var ml=40,mr=12, pw=W-ml-mr;
-  var t1y=32,b1y=214,ph1=b1y-t1y, t2y=252,b2y=H-14,ph2=b2y-t2y;
-  function X(p){return ml+Math.log2(p/2)/3*pw;}
-  function Y1(v){return t1y+ph1-(v/6)*ph1;}
-  function Y2(v){return t2y+ph2-v*ph2;}
-  function series(Y,t1,arr,scales,col,w,dash){
-    c.save();c.strokeStyle=col;c.lineWidth=w;if(dash)c.setLineDash(dash);
-    c.beginPath();
-    for(var i=0;i<4;i++){var sc=(typeof scales==="number")?scales:scales[i];
-      var v=sc*t1/arr[i];var x=X(M_P[i]),y=Y(v);
-      if(i===0)c.moveTo(x,y);else c.lineTo(x,y);}
-    c.stroke();c.restore();
-    c.fillStyle=col;
-    for(var j=0;j<4;j++){var sc2=(typeof scales==="number")?scales:scales[j];
-      c.beginPath();c.arc(X(M_P[j]),Y(sc2*t1/arr[j]),3,0,6.2832);c.fill();}
-  }
-  c.clearRect(0,0,W,H);
-  /* ---- 上：ψ ---- */
-  txt(c,"实测加速比 ψ(p)（Ryzen 7 7745HX，8C/16T；轮次中位数）",ml,16,INK,11,"left",true);
-  for(var v=0;v<=6;v++){seg(c,ml,Y1(v),ml+pw,Y1(v),GRID,1);mtxt(c,String(v),ml-6,Y1(v)+3,INK2,9.5,"right");}
-  [2,4,8,16].forEach(function(p){seg(c,X(p),t1y,X(p),b1y,GRID,1);mtxt(c,String(p),X(p),b1y+12,INK2,9.5,"center");});
-  txt(c,"p（log₂ 刻度）",ml+pw,b1y+24,INK2,9.5,"right");
-  c.save();c.setLineDash([2,3]);c.strokeStyle=LINE2;c.lineWidth=1;
-  c.beginPath();for(var q=2;q<=16;q*=1.05){var yv=Y1(Math.min(q,6));if(q===2)c.moveTo(X(q),yv);else c.lineTo(X(q),yv);}c.stroke();c.restore();
-  series(Y1,M_T1.s22,M_TP.shm.s22,1,TEAL,2.2,null);
-  series(Y1,M_T1.s24,M_TP.shm.s24,1,TEAL,1.6,[5,4]);
-  series(Y1,M_T1.s22,M_TP.msg.s22,1,AMBER,2.2,null);
-  series(Y1,M_T1.s24,M_TP.msg.s24,1,AMBER,1.6,[5,4]);
-  var lx=ml+pw-6;
-  function leg(s,y,col,dash){seg(c,lx-112,y,lx-94,y,col,2,dash);txt(c,s,lx-88,y+3,INK2,9.5,"left");}
-  leg("shm 32 MiB",t1y+14,TEAL,null); leg("shm 128 MiB",t1y+28,TEAL,[5,4]);
-  leg("msg 32 MiB",t1y+42,AMBER,null); leg("msg 128 MiB",t1y+56,AMBER,[5,4]);
-  leg("理想 ψ=p",t1y+70,LINE2,[2,3]);
-  /* ---- 下：ε ---- */
-  txt(c,"实测效率 ε(p) = ψ/p（配色同上）",ml,t2y-8,INK,11,"left",true);
-  for(var e2=0;e2<=1.0001;e2+=0.2){seg(c,ml,Y2(e2),ml+pw,Y2(e2),GRID,1);mtxt(c,e2.toFixed(1),ml-6,Y2(e2)+3,INK2,9.5,"right");}
-  [2,4,8,16].forEach(function(p){seg(c,X(p),t2y,X(p),b2y,GRID,1);mtxt(c,String(p),X(p),b2y+12,INK2,9.5,"center");});
-  c.save();c.setLineDash([2,3]);c.strokeStyle=LINE2;c.lineWidth=1;
-  c.beginPath();c.moveTo(X(2),Y2(1));c.lineTo(X(16),Y2(1));c.stroke();c.restore();
-  series(Y2,M_T1.s22,M_TP.shm.s22,[1/2,1/4,1/8,1/16],TEAL,2.2,null);
-  series(Y2,M_T1.s24,M_TP.shm.s24,[1/2,1/4,1/8,1/16],TEAL,1.6,[5,4]);
-  series(Y2,M_T1.s22,M_TP.msg.s22,[1/2,1/4,1/8,1/16],AMBER,2.2,null);
-  series(Y2,M_T1.s24,M_TP.msg.s24,[1/2,1/4,1/8,1/16],AMBER,1.6,[5,4]);
+ var g=fit($("cv-meas"),360), c=g.c, W=g.w, H=g.h;
+ var ml=40,mr=12, pw=W-ml-mr;
+ var t1y=32,b1y=214,ph1=b1y-t1y, t2y=252,b2y=H-14,ph2=b2y-t2y;
+ function X(p){return ml+Math.log2(p/2)/3*pw;}
+ function Y1(v){return t1y+ph1-(v/6)*ph1;}
+ function Y2(v){return t2y+ph2-v*ph2;}
+ function series(Y,t1,arr,scales,col,w,dash){
+ c.save();c.strokeStyle=col;c.lineWidth=w;if(dash)c.setLineDash(dash);
+ c.beginPath();
+ for(var i=0;i<4;i++){var sc=(typeof scales==="number")?scales:scales[i];
+ var v=sc*t1/arr[i];var x=X(M_P[i]),y=Y(v);
+ if(i===0)c.moveTo(x,y);else c.lineTo(x,y);}
+ c.stroke();c.restore();
+ c.fillStyle=col;
+ for(var j=0;j<4;j++){var sc2=(typeof scales==="number")?scales:scales[j];
+ c.beginPath();c.arc(X(M_P[j]),Y(sc2*t1/arr[j]),3,0,6.2832);c.fill();}
+ }
+ c.clearRect(0,0,W,H);
+ /* ---- 上：ψ ---- */
+ txt(c,"实测加速比 ψ(p)（Ryzen 7 7745HX，8C/16T；轮次中位数）",ml,16,INK,11,"left",true);
+ for(var v=0;v<=6;v++){seg(c,ml,Y1(v),ml+pw,Y1(v),GRID,1);mtxt(c,String(v),ml-6,Y1(v)+3,INK2,9.5,"right");}
+ [2,4,8,16].forEach(function(p){seg(c,X(p),t1y,X(p),b1y,GRID,1);mtxt(c,String(p),X(p),b1y+12,INK2,9.5,"center");});
+ txt(c,"p（log₂ 刻度）",ml+pw,b1y+24,INK2,9.5,"right");
+ c.save();c.setLineDash([2,3]);c.strokeStyle=LINE2;c.lineWidth=1;
+ c.beginPath();for(var q=2;q<=16;q*=1.05){var yv=Y1(Math.min(q,6));if(q===2)c.moveTo(X(q),yv);else c.lineTo(X(q),yv);}c.stroke();c.restore();
+ series(Y1,M_T1.s22,M_TP.shm.s22,1,TEAL,2.2,null);
+ series(Y1,M_T1.s24,M_TP.shm.s24,1,TEAL,1.6,[5,4]);
+ series(Y1,M_T1.s22,M_TP.msg.s22,1,AMBER,2.2,null);
+ series(Y1,M_T1.s24,M_TP.msg.s24,1,AMBER,1.6,[5,4]);
+ var lx=ml+pw-6;
+ function leg(s,y,col,dash){seg(c,lx-112,y,lx-94,y,col,2,dash);txt(c,s,lx-88,y+3,INK2,9.5,"left");}
+ leg("shm 32 MiB",t1y+14,TEAL,null); leg("shm 128 MiB",t1y+28,TEAL,[5,4]);
+ leg("msg 32 MiB",t1y+42,AMBER,null); leg("msg 128 MiB",t1y+56,AMBER,[5,4]);
+ leg("理想 ψ=p",t1y+70,LINE2,[2,3]);
+ /* ---- 下：ε ---- */
+ txt(c,"实测效率 ε(p) = ψ/p（配色同上）",ml,t2y-8,INK,11,"left",true);
+ for(var e2=0;e2<=1.0001;e2+=0.2){seg(c,ml,Y2(e2),ml+pw,Y2(e2),GRID,1);mtxt(c,e2.toFixed(1),ml-6,Y2(e2)+3,INK2,9.5,"right");}
+ [2,4,8,16].forEach(function(p){seg(c,X(p),t2y,X(p),b2y,GRID,1);mtxt(c,String(p),X(p),b2y+12,INK2,9.5,"center");});
+ c.save();c.setLineDash([2,3]);c.strokeStyle=LINE2;c.lineWidth=1;
+ c.beginPath();c.moveTo(X(2),Y2(1));c.lineTo(X(16),Y2(1));c.stroke();c.restore();
+ series(Y2,M_T1.s22,M_TP.shm.s22,[1/2,1/4,1/8,1/16],TEAL,2.2,null);
+ series(Y2,M_T1.s24,M_TP.shm.s24,[1/2,1/4,1/8,1/16],TEAL,1.6,[5,4]);
+ series(Y2,M_T1.s22,M_TP.msg.s22,[1/2,1/4,1/8,1/16],AMBER,2.2,null);
+ series(Y2,M_T1.s24,M_TP.msg.s24,[1/2,1/4,1/8,1/16],AMBER,1.6,[5,4]);
 }
 
 /* ================= 初始化 ================= */
 amUpdate(); gUpdate(); gbUpdate(); kfUpdate(); measDraw();
 if(window.addEventListener){
-  window.addEventListener("resize",function(){amDraw();gDraw();gbDraw();kfDraw(kfSeries());measDraw();});
+ window.addEventListener("resize",function(){amDraw();gDraw();gbDraw();kfDraw(kfSeries());measDraw();});
 }
 })();
 </script>

@@ -4,16 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>数学可视化 · 交互教学门户</title>
+<meta name="description" content="六门计算数学课程的概念实验台：SVD、QR、投影、最小二乘、条件数、共轭梯度、插值、数值积分、δ 函数、波方程、算子范数，每页一个可拖动的实验台，零依赖、可离线打开。">
 <!--
   维护说明（给未来的自己）：
-  1. 本页 = 全站总导航，发布目录是 math_visualization/site/（app：数学可视化，
-     域名 math-visualization.app.workbuddy.host）。结构：site/index.html（总导航）
+  1. 本页 = 全站总导航。结构：site/index.html（总导航）
      → site/<学科>/index.html（学科章节导航）→ site/<学科>/<页面>.html（教学页）。
   2. 新增学科：在 site/ 下建目录（英文名），写它的 index.html，然后在下面加一张卡片。
-  3. 更新线上：对整个 math_visualization/site/ 目录重新发布（app 已存在，链接不变，内容覆盖）。
+  3. 更新线上：改完文件后 git add -A && git commit && git push，约 30 秒生效。
+     线上地址 https://cotigo-cmd.github.io/math-visualization/
   4. 验证脚本在 math_visualization/ 根（verify_formulas.js 等），学科页改完公式后跑一遍再发布。
-  5. 域名历史：本站前身是单学科的 pde-visualization.app.workbuddy.host（仅 PDE），
-     2026-10-18 重组为全学科门户并换域名，旧链接已失效，不要再引用。
+     排版闸门 python audit_layout.py（要求溢出 0），规则见 排版与目录规范.md。
+  5. 「先按问题找」区块是给外人的入口：只放指向现有页的链接，不新增页面，
+     加页时不必维护它（除非那页正好是某概念的唯一入口）。
 -->
 <style>
 :root{
@@ -27,7 +29,12 @@ body{margin:0;background:#fff;color:var(--text);
 .wrap{max-width:860px;margin:0 auto;padding:64px 22px 60px}
 h1{font-size:28px;margin:0 0 10px;font-weight:650;letter-spacing:-.01em}
 p.lead{color:var(--muted);font-size:15.5px;margin:0 0 6px;max-width:66ch}
-p.meta{color:var(--muted);font-size:13px;margin:0 0 40px}
+p.meta{color:var(--muted);font-size:13px;margin:0 0 28px}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
+.quick a{font-size:13.5px;color:var(--accent-dark);text-decoration:none;
+  border:1px solid var(--border);border-radius:999px;padding:4px 13px;background:#fff;line-height:1.5}
+.quick a:hover{border-color:var(--accent);background:var(--accent-soft)}
+.hint{font-size:12.5px;color:var(--muted);margin:0 0 34px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 40px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
 a.card{display:block;background:var(--card);border:1px solid var(--border);
@@ -52,8 +59,26 @@ footer code{font-family:ui-monospace,monospace;background:var(--card);
 <div class="wrap">
 
 <h1>数学可视化</h1>
-<p class="lead">计算数学系列课程的配套交互教学页。每页一个可拖动的实验台：零依赖、可离线打开（公式渲染需联网），页内所有数值结论都由本地脚本实测得出，不做「看起来合理」的填充。</p>
-<p class="meta">六个学科 · 40 个交互页 · 2026-10-18 建站，最近更新 2026-10-27</p>
+<p class="lead">六门计算数学课的概念实验台。每页一个可拖动的实验台：零依赖、可离线打开（公式渲染需联网），页内所有数值结论都由本地脚本实测得出，不做「看起来合理」的填充。不必先读完教材——打开一页，拖一下滑杆，图会告诉你这句话在说什么。</p>
+<p class="meta">六个学科 · 40 个交互页 · 不需要账号、不需要本校身份，任何在学数值类课程的人都能直接看 · 若你用的是谷超豪 / 江泽坚 / Trefethen / Quinn，页内标了页码与节号对照</p>
+
+<h2>先按问题找</h2>
+<div class="quick">
+  <a href="./numerical_linear_algebra/SVD-几何与低秩近似.html">SVD 到底在做什么</a>
+  <a href="./numerical_linear_algebra/QR分解-Gram-Schmidt与Householder.html">QR 和正规方程谁更稳</a>
+  <a href="./numerical_linear_algebra/最小二乘-几何与三种解法.html">最小二乘三种解法差在哪</a>
+  <a href="./numerical_linear_algebra/条件数-几何与误差放大.html">误差怎么被放大</a>
+  <a href="./numerical_linear_algebra/共轭梯度-Krylov几何与预条件.html">CG 凭什么几十步就收敛</a>
+  <a href="./numerical_analysis/插值-Runge现象与切比雪夫节点.html">插值为什么会在两端炸掉</a>
+  <a href="./numerical_analysis/数值积分-面积-代数精度-Romberg.html">数值积分精确到什么程度</a>
+  <a href="./numerical_analysis/绪论-误差-浮点数与稳定性.html">浮点数为什么会吃掉有效数字</a>
+  <a href="./pde/广义函数与基本解-弱导数与卷积法.html">δ 函数怎么「算」</a>
+  <a href="./pde/高维波动方程-球平均法与泊松公式.html">为什么 3 维的波才有清晰波前</a>
+  <a href="./functional_analysis/算子范数与共轭空间.html">算子范数在量什么</a>
+  <a href="./cpp_programming/pointers.html">指针到底指向哪块内存</a>
+  <a href="./parallel_computing/Amdahl与Gustafson-加速比定律.html">多开 8 个核能快几倍</a>
+</div>
+<p class="hint">不知道属于哪门课就点上面；想按课程顺序读，就往下选学科。</p>
 
 <h2>学科</h2>
 <div class="grid">
@@ -66,7 +91,7 @@ footer code{font-family:ui-monospace,monospace;background:var(--card);
 
 <a class="card" href="./numerical_analysis/index.html">
 <p class="t"><span class="tag live">已上线</span>数值分析</p>
-<p class="d">四川大学 2026 年数值分析课件（朱瑞）：误差与浮点稳定性、Lagrange 插值与 Runge 现象、Newton 差商表、Hermite 重结点差商、分段插值（分段线性与分段三次 Hermite）、Newton-Cotes 与 Romberg 外推、非线性方程迭代法与收敛阶。7 个交互页，课件 5 章 20 讲的规划已按讲序铺满（2026-10-25 起由课本目录切换为课件目录，张平文教材降为参考书目）。</p>
+<p class="d">误差与浮点稳定性 · Lagrange 插值与 Runge 现象 · Newton 差商表 · Hermite 重结点差商 · 分段插值 · Newton-Cotes 与 Romberg 外推 · 非线性方程迭代法与收敛阶。7 个交互页（按四川大学 2026 课件讲序排；其他教材可按概念名对应）。</p>
 <p class="b">numerical_analysis/ · 第 1、2.1–2.5、4.1–4.2、5.5 讲已上线</p>
 </a>
 
@@ -99,8 +124,8 @@ footer code{font-family:ui-monospace,monospace;background:var(--card);
 <h2>使用说明</h2>
 <a class="card" href="./pde/index.html">
 <p class="t">从哪开始</p>
-<p class="d">点上方任意学科卡片进入该学科的章节导航。每个页面顶部/底部都有前后页链接，可以按教材顺序读，也可以从索引跳读。</p>
-<p class="b">页面均可离线打开 · 公式首次渲染需联网加载 MathJax</p>
+<p class="d">三类入口：① 知道要查什么概念 → 点上面的问题标签直接落到那一页；② 按课程顺序读 → 点学科卡片进取章节导航；③ 随便逛逛 → 学科卡片里的每页摘要就是目录。每个页面顶部/底部都有前后页链接。</p>
+<p class="b">页面均可离线打开（公式首次渲染需联网加载 MathJax） · 无需登录</p>
 </a>
 
 <footer>

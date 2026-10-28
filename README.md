@@ -29,7 +29,7 @@
 | --- | --- | --- | --- |
 | `numerical_linear_algebra/` | 数值线性代数 | Trefethen & Bau | 13 |
 | `pde/` | 数学物理方程 | 谷超豪（第四版） | 13 |
-| `numerical_analysis/` | 数值分析 | 按四川大学 2026 课件讲序（其他教材可按概念对应） | 7 |
+| `numerical_analysis/` | 数值分析 | 按常见课程讲序编排（其他教材可按概念名对应） | 7 |
 | `cpp_programming/` | C++ 程序设计 | 谭浩强 | 3 |
 | `functional_analysis/` | 泛函分析 | 江泽坚、孙善利 | 3 |
 | `parallel_computing/` | 并行算法 | Quinn（MPI/OpenMP） | 1 |

@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>最佳一致逼近 · 数值分析 第 3.1 讲</title>
+<!--
+ 维护说明（给未来的自己）：
+ 1. 内容骨架：L∞/L1/Lp 三种范数 → 最佳一致逼近的定义（偏差 Δ(P)、最小偏差 Eₙ）· 存在性（紧集引理、有限维子空间定理、
+    无限维反例）· 唯一性（严格凸 → 唯一；但 L1 与 L∞ 都不严格凸，各给一个平底反例）·
+    Chebyshev 交错定理（n+2 个等幅交替点 ⟺ 最优）· Vallee-Poussin 下界 · 定理 4.5（f⁽ⁿ⁺¹⁾ 保号 ⟹ 恰 n+2 个且端点在列）·
+    Remez 交换算法 · 最小零偏差多项式 2^(1-n)Tₙ、推论 5.1 与 5.2（Chebyshev 零点作插值节点）。
+ 2. 页内数字全部由 _probe_na31.js 实测；闸门 verify_na31.js 换一条路复核
+    （解析解：a=sinh1、b=(e−a−a·ln a)/2、Δ=e−a−b；√x 用 17/48 与 1/48 的闭式；Remez 只做一致性检查）。
+ 3. 一个容易被跳过、本页单独讲清的点：L∞ 不严格凸（§05 的平底反例），所以「唯一性」不能从范数凸性推，
+    必须靠交错定理 + Haar 子空间。课件把严格凸的引理与 Chebyshev 定理分在两处讲，中间这一步没人补。
+ 4. 公式改动后跑 `node ../../verify_formulas.js 最佳一致逼近-交错定理与Remez.html`（要求 0 failed）；
+    行间公式只能用 $$，正文与公式里的 < 写成 &lt;。
+ 5. 与邻页分工：「Lagrange 插值」页讲插值与 Runge，「样条」页讲 C² 与三弯矩；本页只讲「不插值、只贴函数」这条线。
+    Chebyshev 节点在插值页已有 Lebesgue 常数视角，本页从「首一多项式 min-max」这个反向视角重讲一次并给推论 5.2。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+ --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
+ --line:#e3dccd; --line-2:#cfc6b2;
+ --orange:#c2531f; --orange-soft:#fbeee5;
+ --teal:#0d6b5d; --teal-soft:#e7f3ef;
+ --ch:#7d5a24; --ch-soft:#f4ecda;
+ --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ --ghost:rgba(160,148,124,.16);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);
+ background:
+ linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
+ linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
+ var(--paper);
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px 90px}
+a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(13,107,93,.3)}
+a:hover{border-bottom-color:var(--teal)}
+h1{font-size:29px;line-height:1.32;margin:0 0 10px;font-weight:650;letter-spacing:-.01em}
+h2{font-size:21px;margin:66px 0 14px;font-weight:650;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2 .no{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ch);
+ border:1px solid rgba(125,90,36,.36);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
+h3{font-size:16.5px;margin:32px 0 8px;font-weight:650}
+p{margin:12px 0;max-width:74ch}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.hero{padding:58px 0 6px}
+.hero p.lead{font-size:16.5px;color:#4a4438;max-width:74ch}
+#mjx-offline{display:none;margin:0 0 4px;padding:9px 16px;background:#fff4d6;border:1px solid #e8cf92;
+ border-radius:8px;font-size:13.5px;color:#6b5417}
+body:not(.mjx-ready) #mjx-offline{display:block}
+nav{position:sticky;top:0;z-index:20;margin:26px 0 0;
+ background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .inner{max-width:900px;margin:0 auto;padding:9px 22px;display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
+nav a{color:var(--muted);border:0}
+nav a:hover{color:var(--ch)}
+
+.glance{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0 6px}
+.glance div{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.glance b{display:block;font-family:var(--mono);font-size:21px;font-weight:600;line-height:1.25;letter-spacing:-.02em}
+.glance span{font-size:12.5px;color:var(--muted);display:block;margin-top:3px}
+.glance .a b{color:var(--orange)}
+.glance .b b{color:var(--teal)}
+.glance .c b{color:var(--ch)}
+
+.lab{background:var(--sheet);border:1px solid var(--line);border-radius:14px;
+ padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
+.lab-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.lab-head .t{font-size:12.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted)}
+canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px solid var(--line)}
+#cv-a{height:300px}
+#cv-a2{height:190px}
+#cv-b{height:270px}
+#cv-b2{height:200px}
+#cv-c{height:300px}
+#cv-d{height:290px}
+#cv-e{height:320px}
+#cv-f{height:300px}
+#cv-f2{height:250px}
+.ctrls{display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin:12px 2px 8px;font-size:13.5px}
+.ctrls .grp{display:flex;align-items:center;gap:9px}
+.ctrls .grp .lbl{color:var(--muted);font-size:12.5px;font-family:var(--mono)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:150px;height:3px;border-radius:3px;
+ background:var(--line-2);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+ background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--orange);
+ border:2px solid #fff;cursor:pointer}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;padding:5px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line-2)}
+.seg button[aria-pressed=true]{background:var(--ch-soft);color:var(--ch);font-weight:600}
+.btn{font:inherit;font-size:13px;padding:5px 14px;border:1px solid var(--line-2);border-radius:8px;
+ background:#fff;color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ch);color:var(--ch)}
+.reads{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+ border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+.reads div{background:#fffdf8;padding:10px 12px}
+.reads .k{font-size:11.5px;color:var(--muted)}
+.reads .v{font-family:var(--mono);font-size:15.5px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+.reads .v.orange{color:var(--orange)}
+.reads .v.teal{color:var(--teal)}
+.reads .v.ch{color:var(--ch)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:9px 2px 0}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:20px;height:0;border-top:2.2px solid var(--orange);border-radius:2px}
+.legend i.teal{border-color:var(--teal)}
+.legend i.ch{border-color:var(--ch)}
+.legend i.gray{border-top:1.6px solid rgba(109,102,90,.45)}
+.legend i.graydash{border-top:1.4px dashed rgba(109,102,90,.45)}
+.legend i.dot{border-top:0;border-radius:50%;width:8px;height:8px;background:var(--orange)}
+.hint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{min-width:0!important;max-width:100%!important;
+ overflow-x:auto;overflow-y:hidden;padding:2px 0;text-align:center}
+mjx-container[jax="SVG"]:not([display="true"]){max-width:100%}
+mjx-container[jax="SVG"]:not([display="true"]) svg{max-width:100%;height:auto}
+mjx-assistive-mml{position:absolute!important;width:1px;height:1px;overflow:hidden!important;clip:rect(1px,1px,1px,1px)}
+.note{border-left:3px solid var(--orange);background:var(--orange-soft);padding:10px 16px;margin:16px 0;
+ border-radius:0 8px 8px 0;font-size:14.5px}
+.note.teal{border-left-color:var(--teal);background:var(--teal-soft)}
+.note.ch{border-left-color:var(--ch);background:var(--ch-soft)}
+.note p{margin:6px 0}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0}
+table{width:100%;border-collapse:collapse;font-size:13.7px;margin:16px 0;background:var(--sheet)}
+th,td{border-bottom:1px solid var(--line);padding:7px 10px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:12.5px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line-2)}
+td.mono,th.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.hi td{background:var(--ch-soft)}
+ul,ol{max-width:74ch}
+li{margin:5px 0}
+footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line-2);font-size:12.8px;color:var(--muted)}
+footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var(--line);
+ border-radius:4px;padding:0 5px;font-size:12px}
+@media (max-width:680px){
+ #cv-a{height:250px} #cv-a2{height:165px} #cv-b{height:230px} #cv-b2{height:175px}
+ #cv-c{height:250px} #cv-d{height:240px} #cv-e{height:270px} #cv-f{height:250px} #cv-f2{height:210px}
+ .glance{grid-template-columns:1fr}
+ .reads{grid-template-columns:repeat(2,1fr)}
+ h1{font-size:24px}
+ table{font-size:12.1px}
+ th,td{padding:6px 6px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+<p class="crumb" style="font-size:13px;margin:0 0 18px"><a href="./index.html">← 数值分析 · 全部讲次</a></p>
+<p class="kicker">数值分析 · 第 3.1 讲 · 最佳一致逼近</p>
+<h1>最佳一致逼近：让误差「一样大」地振荡</h1>
+<p class="lead">插值要求曲线<strong>穿过</strong>每一个点；逼近只要求<strong>贴得近</strong>。换一个度量，问题就变了：不再有一串逐点的误差，只剩一个数 \(\max\lvert f-P\rvert\)。这个数被一条很硬的定理锁住——<strong>误差必须在 \(n+2\) 个点上等幅、交替地取到最大值</strong>，这才叫最优。本页从三条直线的对比开始：对 \(e^x\) 在 \([-1,1]\) 上做一次逼近，插值给出 \(0.5576\)，最小二乘给出 \(0.4393\)，最佳一致给出 \(0.2788\)——前两个答案都没错，只是它们回答的不是这个问题。最后回答一个常被跳过的环节：\(L^\infty\) <strong>不是</strong>严格凸的（本页有平底反例），那唯一性到底从哪来。</p>
+<div id="mjx-offline">公式渲染脚本未加载（离线打开时 MathJax 需要联网）。本页正文与读数不受影响。</div>
+
+<div class="glance">
+ <div class="a"><b>0.2788</b><span>\(e^x\) 在 \([-1,1]\) 上一次逼近的最小偏差 \(E_1\)；插值的偏差恰是它的 2 倍</span></div>
+ <div class="b"><b>n + 2</b><span>最优的必要充分条件：等幅交替偏离点的个数</span></div>
+ <div class="c"><b>245 倍</b><span>\(n=20\) 时等距节点的 \(\max\lvert\omega\rvert\) 是 Chebyshev 零点的倍数</span></div>
+</div>
+
+<nav><div class="inner">
+<a href="#s1">01 换范数</a>
+<a href="#s2">02 交错定理</a>
+<a href="#s3">03 Remez</a>
+<a href="#s4">04 例：√x</a>
+<a href="#s5">05 唯一性</a>
+<a href="#s6">06 最小零偏差</a>
+</div></nav>
+</div>
+
+<!-- ================= 01 ================= -->
+<h2 id="s1"><span class="no">01</span>换一个范数，换一个答案</h2>
+
+<p>
+先把「逼近」和「插值」分开。插值是一个<strong>约束</strong>问题：\(P(x_i)=y_i\)，解存在且唯一（只要节点互异）。逼近是一个<strong>优化</strong>问题：在 \(P_n\) 里挑一个 \(P\) 让某个范数最小。范数怎么选，答案就怎么变。三种常用的：
+</p>
+$$
+\begin{aligned}
+\lVert f\rVert_\infty&=\max_{x\in[a,b]}\lvert f(x)\rvert,\\
+\lVert f\rVert_1&=\int_a^b\lvert f(x)\rvert\,dx,\\
+\lVert f\rVert_p&=\Bigl(\int_a^b\lvert f(x)\rvert^p\,dx\Bigr)^{1/p}.
+\end{aligned}
+$$
+<p>
+用 \(L^\infty\) 就是<strong>最佳一致逼近</strong>（best uniform approximation），用 \(L^2\) 就是最佳平方逼近（下一讲）。定义两个量：
+</p>
+$$\begin{aligned}
+\Delta(P)&=\max_{x\in[a,b]}\lvert f(x)-P(x)\rvert,\\
+E_n&=\inf_{P\in P_n}\Delta(P).
+\end{aligned}$$
+<p>
+\(\Delta(P)\) 叫<strong>偏差</strong>，\(E_n\) 叫<strong>最小偏差</strong>。问题变成两句话：\(E_n\) 有没有被某个 \(P^*\) 取到（存在性），取到的话是不是只有一个（唯一性）。第 05 节会说，这两件事的难度完全不同。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 01 · 同一组数据，三种「最优」：插值 / 最小二乘 / 最佳一致</span>
+ <span class="t" id="a-state">eˣ on [−1,1] · 一次</span>
+ </div>
+ <canvas id="cv-a" aria-label="e^x 在 [-1,1] 上的三条一次逼近直线"></canvas>
+ <canvas id="cv-a2" aria-label="三条直线的误差曲线" style="margin-top:8px"></canvas>
+ <div class="legend">
+ <span><i class="graydash"></i>f(x) = eˣ</span>
+ <span><i class="ch"></i>插值（过两端点）</span>
+ <span><i class="teal"></i>最小二乘（L² 投影）</span>
+ <span><i></i>最佳一致（L∞）</span>
+ </div>
+ <div class="reads">
+ <div><div class="k">Δ（插值）</div><div class="v ch" id="a-di">0.5576</div></div>
+ <div><div class="k">Δ（最小二乘）</div><div class="v teal" id="a-dl">0.4393</div></div>
+ <div><div class="k">Δ（最佳一致）= E₁</div><div class="v orange" id="a-du">0.2788</div></div>
+ <div><div class="k">插值 / 最优</div><div class="v ch" id="a-ratio">2.0000</div></div>
+ </div>
+ <p class="hint">三条直线的<strong>斜率完全一样</strong>（\(a=\sinh 1=1.175201\)），只有截距不同：插值 \(b=1.543081\)、最小二乘 \(1.175293\)、最佳一致 \(1.264279\)。斜率的对齐不是巧合——对称区间上 \(e^x\) 的三条最优直线都满足「中点导数相等」，而截距由各自的判据定。紧挨着的那张图是误差 \(f-P\)：插值的误差两端为零、中间塌到 \(-0.5576\)；最佳一致的误差<strong>三处等幅</strong>（\(+0.2788,\,-0.2788,\,+0.2788\)），两端和内部那个极值点一样高。</p>
+</div>
+
+<p>
+「插值偏差恰好是最优的 2 倍」不是巧合，也不只对 \(e^x\) 成立。对称区间上若插值误差 \(e(x)=f-P_{\text{int}}\) 满足 \(e(a)=e(b)=0\) 且只有一个内部极值 \(-\Delta_{\mathrm{int}}\)，那么把整条直线下移 \(\Delta_{\mathrm{int}}/2\)，两端的误差升到 \(+\Delta_{\mathrm{int}}/2\)，内部降到 \(-\Delta_{\mathrm{int}}/2\)——正好三个等幅点。实测 \(0.5576031716/2=0.2788015858\) 与 \(E_1=0.2788015847\) 差 \(1.1\times10^{-9}\)（就是 Remez 的收敛残差）。同样的现象在 §04 的 \(\sqrt{x}\) 上再次出现：割线的偏差 \(1/24\) 也恰好是 \(1/48\) 的两倍。
+</p>
+
+<h3>存在性：闭区间上不会「取不到」</h3>
+<p>
+\(P_n\) 是有限维空间，单位球紧，所以极小化序列必有收敛子列——这就是 Borel 存在定理的全部内容，技术上一点不难。难的是<strong>唯一性</strong>，因为范数一般不够「圆」。第 05 节专门处理这件事。这里先记住一个容易忽略的对照：存在性只需要「有限维 + 紧」，唯一性需要「几何形状」，两者是完全不同的条件。
+</p>
+
+<!-- ================= 02 ================= -->
+<h2 id="s2"><span class="no">02</span>交错定理：最优的误差一定「一样大」</h2>
+
+<p>
+先看一条只靠平移就能证明的必要条件。<strong>若 \(P\) 是最优，则正偏离点与负偏离点必须都存在。</strong>否则（比如只有正偏离点，\(\min\varepsilon>-\Delta\)）取 \(h=(\Delta+\min\varepsilon)/2>0\)，把 \(P\) 改成 \(P-h\)，偏差立刻降到 \((\Delta-\min\varepsilon)/2&lt;\Delta\)——矛盾。几何上：<strong>误差不能偏在一边，否则整体挪一下就更好了。</strong>
+</p>
+
+<p>
+这条只说明「两头都得顶到」，还不足以保证最优。真正锁住答案的是交错：设 \(\varepsilon=P-f\) 在 \(x_1&lt;\dots&lt;x_N\) 上取非零的值 \(\lambda_1,-\lambda_2,\dots,(-1)^{N-1}\lambda_N\)（\(\lambda_j>0\)），且 \(N\ge n+2\)，则对任何 \(Q\in P_n\)
+</p>
+$$
+\Delta(Q)\ \ge\ \min_{1\le i\le N}\lambda_i .
+$$
+<p>
+证明只有三行：若有 \(\Delta(Q)&lt;\min\lambda_i\)，则 \(\eta=P-Q=[P-f]-[Q-f]\in P_n\) 在 \(N\) 个点上符号交替取 \(\pm\)，由介值性至少有 \(N-1\ge n+1\) 个零点，\(n\) 次多项式不可能有 \(n+1\) 个零点，除非 \(\eta\equiv0\)。这就是 <strong>Vallee-Poussin 下界</strong>：任意 \(n+2\) 个交替点都给出 \(E_n\) 的一个下界，取到等号就说明当前 \(P\) 已经最优。
+</p>
+
+<p>由此得到本讲的主定理（Chebyshev）：</p>
+<div class="note ch">
+<p><strong>定理（Chebyshev 交错定理）.</strong>\(P\in P_n\) 是 \(f\) 在 \(P_n\) 中的最佳一致逼近，<strong>当且仅当</strong>误差 \(\varepsilon=P-f\) 在至少 \(n+2\) 个点上等幅交替地取到 \(\pm\Delta(P)\)。并且这样的 \(P\) 存在且唯一。</p>
+</div>
+
+<p>
+充分性就是上面那段 VP 论证；必要性是对着「交错点不够多」造一个反例：交错点 \(N'\le n+1\) 时，用这些点作根造 \(\varphi(x)=\prod_{i=1}^{N'-1}(x-\xi_i)\in P_n\)，给 \(P\) 加一个小扰动 \(\omega\varphi\)，可以让所有极值同时往里收——偏差变小，矛盾。下面这台实验把「等幅交替」这个判据做成可拖的：你把截距拖到任何不是最优的位置，误差曲线都会一边高一边低；只有拖到最优，三个峰才一样高。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 02 · 手动搜索：拖 a、b，看误差曲线什么时候三个峰一样高</span>
+ <span class="t" id="b-state">a = 1.1752 · b = 1.2643</span>
+ </div>
+ <canvas id="cv-b" aria-label="直线与 e^x，以及误差曲线"></canvas>
+ <canvas id="cv-b2" aria-label="误差曲线与等幅线" style="margin-top:8px"></canvas>
+ <div class="legend">
+ <span><i class="graydash"></i>f(x) = eˣ</span>
+ <span><i></i>当前直线 ax + b</span>
+ <span><i class="ch"></i>误差 ε = f − P（下图）</span>
+ <span><i class="teal"></i>±Δ 等幅线</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">斜率 a</span>
+ <input type="range" id="b-a" min="0.80" max="1.55" step="0.005" value="1.1752" aria-label="斜率">
+ <span class="lbl" id="b-av">1.1752</span>
+ </div>
+ <div class="grp">
+ <span class="lbl">截距 b</span>
+ <input type="range" id="b-b" min="0.90" max="1.85" step="0.005" value="1.2643" aria-label="截距">
+ <span class="lbl" id="b-bv">1.2643</span>
+ </div>
+ <button class="btn" id="b-best">跳到最优</button>
+ </div>
+ <div class="reads">
+ <div><div class="k">Δ(P) = max |ε|</div><div class="v orange" id="b-d">0.2788</div></div>
+ <div><div class="k">min ε（最负处）</div><div class="v teal" id="b-mn">−0.2788</div></div>
+ <div><div class="k">Δ / E₁</div><div class="v ch" id="b-r">1.0000</div></div>
+ <div><div class="k">等幅交替偏离点数</div><div class="v teal" id="b-n">3</div></div>
+ </div>
+ <p class="hint">「等幅交替偏离点数」的算法：在网格上找 \(\lvert\varepsilon\rvert\) 的局部极大，筛掉小于 \(0.98\Delta\) 的，再看它们能否排成符号交替的序列。<strong>最优时这个数恰好是 \(n+2=3\)</strong>；偏离最优时通常只剩 2 个甚至 1 个。注意 \(\Delta/E_1\) 和点数是一起动的：只要点数到 3，比值必然是 1.0000——这不是数值巧合，是交错定理的充要性。</p>
+</div>
+
+<p>
+还有一条更细的结论，专门管「交错点到底有几个」：<strong>若 \(f^{(n+1)}\) 在 \((a,b)\) 上存在且保号，那么最优逼近的偏离点恰好 \(n+2\) 个，且 \(a\)、\(b\) 都在其中。</strong>理由是如果多一个（或端点是偏离点），由 Rolle 定理反复求导会在内部找到 \(n+1\) 个点使 \(f^{(n+1)}-P^{(n+1)}=f^{(n+1)}=0\)，与保号矛盾。\(e^x\) 的任意阶导数都为正，所以它的 \(P_1\) 最优解必须两个端点都顶到——实验里拖 a 时如果让端点松掉，无论 b 怎么调都到不了 \(E_1\)。
+</p>
+
+<!-- ================= 03 ================= -->
+<h2 id="s3"><span class="no">03</span>Remez 交换算法：从 n+2 个猜测点出发</h2>
+
+<p>
+交错定理给了一个可执行的算法。既然最优解由 \(n+2\) 个等幅交替点唯一决定，那就<strong>先猜这 \(n+2\) 个点，解一个线性方程组，再看误差在哪里最大，把点换过去</strong>。设猜测点为 \(x_0&lt;\dots&lt;x_{n+1}\)，解
+</p>
+$$
+\sum_{j=0}^{n}a_jx_i^{\,j}+(-1)^{i}h=f(x_i)
+$$
+<p>
+这是 \(n+2\) 个未知量（\(a_0,\dots,a_n\) 和 \(h\)）、\(n+2\) 个方程的线性系统，有唯一解。解完在整段上扫 \(\lvert f-P\rvert\) 的局部极值，取幅值最大的 \(n+2\) 个<strong>符号交替</strong>的点作为新一轮的 \(x_i\)。每一步 \(h\) 单调不减、收敛到 \(E_n\)，而收敛是二次的——实测 \(e^x\) 的一次逼近<strong>两步就到</strong>：\(h\) 从 \(0.2715\) 跳到 \(0.27880158\)，之后 10 位不变。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 03 · Remez 迭代：步进看 h 怎么跳、交错点怎么挪</span>
+ <span class="t" id="c-state">n = 1 · 第 0 步</span>
+ </div>
+ <canvas id="cv-c" aria-label="Remez 迭代的误差曲线与交错点"></canvas>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">阶数 n</span>
+ <input type="range" id="c-n" min="1" max="8" step="1" value="1" aria-label="阶数">
+ <span class="lbl" id="c-nv">1</span>
+ </div>
+ <div class="grp">
+ <span class="lbl">迭代步</span>
+ <input type="range" id="c-k" min="0" max="8" step="1" value="2" aria-label="迭代步">
+ <span class="lbl" id="c-kv">2</span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">当前 h（下界）</div><div class="v orange" id="c-h">0.278802</div></div>
+ <div><div class="k">真实 Δ(P)</div><div class="v teal" id="c-d">0.278802</div></div>
+ <div><div class="k">h / Eₙ</div><div class="v ch" id="c-r">1.000000</div></div>
+ <div><div class="k">交替点数（应 n+2）</div><div class="v teal" id="c-cnt">3</div></div>
+ </div>
+ <p class="hint">拖「迭代步」：第 0 步用 Chebyshev 极值点作初值，\(h\) 就已经很接近 \(E_n\) 了（这是初值选得好的功劳）；第 1 步之后基本到位。<strong>注意 h 永远是下界</strong>（Vallee–Poussin），所以 h/ Eₙ 从下方逼近 1。拖「阶数」看竖直的粗线——它们是偏离点，个数恒为 \(n+2\)，且随 \(n\) 增大向两端挤压（端点永远是偏离点，这是 \(e^x\) 导数处处为正的后果）。</p>
+</div>
+
+<p>
+\(n\) 到 8 时 \(E_8=1.106\times10^{-8}\)，比 \(E_1\) 小了 8 个数量级。衰减速度见下表（每加一阶，误差约除以 \(2(n+1)\)）：
+</p>
+
+<div class="tw"><table>
+<thead><tr><th>\(n\)</th><th class="mono">0</th><th class="mono">1</th><th class="mono">2</th><th class="mono">3</th><th class="mono">4</th><th class="mono">5</th><th class="mono">6</th><th class="mono">7</th><th class="mono">8</th></tr></thead>
+<tbody>
+<tr><td>\(E_n\)（实测）</td><td class="mono">1.175</td><td class="mono">0.2788</td><td class="mono">0.04502</td><td class="mono">5.528e−3</td><td class="mono">5.467e−4</td><td class="mono">4.521e−5</td><td class="mono">3.211e−6</td><td class="mono">1.998e−7</td><td class="mono">1.106e−8</td></tr>
+<tr><td>\(E_{n-1}/E_n\)</td><td class="mono">—</td><td class="mono">4.215</td><td class="mono">6.193</td><td class="mono">8.143</td><td class="mono">10.11</td><td class="mono">12.09</td><td class="mono">14.08</td><td class="mono">16.07</td><td class="mono">18.06</td></tr>
+</tbody>
+</table></div>
+
+<p>
+第三行的比值逼近 \(2(n+1)\)，说明 \(E_n\) 与 \(1/(2^n n!)\) 同阶——这是解析函数才有的「超收敛」。换成 \(C^4\) 但非解析的函数（比如 \(|x|^3\)），衰减就退化成多项式速率。这个对照留给下一讲做平方逼近时再用。
+</p>
+
+<!-- ================= 04 ================= -->
+<h2 id="s4"><span class="no">04</span>手算一个：\(\sqrt{x}\) 在 \([\tfrac14,1]\) 上的一次逼近</h2>
+
+<p>
+\(f''(x)=-(1/4)\,x^{-3/2}&lt;0\) 在区间上保号，所以由定理 4.5，偏离点恰好 3 个：\(a\)、\(x_1\)、\(b\)，且 \(a=1/4\)、\(b=1\) 都在列。三个条件写成
+</p>
+$$
+\begin{aligned}
+f(a)-(\alpha+\beta a)&=f(b)-(\alpha+\beta b),\\
+f(b)-(\alpha+\beta b)&=-\bigl[f(x_1)-(\alpha+\beta x_1)\bigr],\\
+f'(x_1)&=\beta .
+\end{aligned}
+$$
+<p>
+第二条是内部极值的必要条件（导数相等），前两条是等幅。解出来是三式联立，不用迭代。下面这台实验让你直接核对这些数字，并用 \(\alpha\) 上的一个滑杆看「偏一点点就立刻不正交错」。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 04 · √x 的三交错点：α = 17/48、β = 2/3、x₁ = 9/16</span>
+ <span class="t" id="d-state">α = 0.3542 · β = 0.6667</span>
+ </div>
+ <canvas id="cv-d" aria-label="sqrt(x) 与其最佳一次逼近，以及误差曲线"></canvas>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">截距 α</span>
+ <input type="range" id="d-al" min="0.30" max="0.42" step="any" value="0.3541667" aria-label="截距 α">
+ <span class="lbl" id="d-av">0.35417</span>
+ </div>
+ <button class="btn" id="d-best">17/48</button>
+ </div>
+ <div class="reads">
+ <div><div class="k">ε(a) 与 ε(b)（应相等）</div><div class="v teal" id="d-e1">−0.020833</div></div>
+ <div><div class="k">ε(x₁)（应为 −ε(a)）</div><div class="v orange" id="d-e2">0.020833</div></div>
+ <div><div class="k">Δ 实测</div><div class="v orange" id="d-d">0.020833</div></div>
+ <div><div class="k">Δ / (1/48)</div><div class="v ch" id="d-r">1.0000</div></div>
+ </div>
+ <p class="hint">左边读数给的是 \(\varepsilon(1/4)\) 与 \(\varepsilon(1)\)——它们恒相等（这两端由 \(\beta\) 的取法自动等幅，\(f'(x_1)=\beta\) 一并决定了这一点），所以真正的「等幅」检验只看右边那一格：\(\varepsilon(9/16)\) 是否等于 \(-\varepsilon(1/4)\)。<strong>把 α 拖离 \(17/48\) 时，右格与左格立刻不等</strong>，同时 \(\Delta/(1/48)\) 涨上去——这就是交错定理在数值上的样子。</p>
+</div>
+
+<p>
+顺便把「插值 vs 最优」的 2 倍关系再验一次：端点割线的偏差是 \(1/24=0.0416667\)，恰是最优 \(1/48=0.0208333\) 的两倍。这次的原因和 §01 不同——割线的误差在内部取到 \(-1/24\)、两端为 0，平移 \(1/48\) 后变成三个 \(\pm1/48\)，而平移量正好是误差的一半。两次「减半」都来自同一个机制：<strong>对称的误差形状 + 只平移不旋转</strong>。
+</p>
+
+<div class="note">
+<p><strong>为什么不用导数信息做插值？</strong>如果知道 \(f'\)，用 Hermite 插值能一次消掉两个条件，误差降到 \(O(h^4)\) 量级（第 2.4 讲）。但最佳一致逼近<strong>不需要任何导数信息</strong>，只要函数值和区间——它的「聪明」在于选点而不是选阶数。这是 Remez 类方法在滤波器设计里活到今天的原因：设计者只有频响要求，没有导数。</p>
+</div>
+
+<!-- ================= 05 ================= -->
+<h2 id="s5"><span class="no">05</span>唯一性从哪来：两个「平底」反例</h2>
+
+<p>
+一般泛函分析的路子是：范数<strong>严格凸</strong>（\(\lVert x\rVert=\lVert y\rVert=1,\ x\ne y\Rightarrow\lVert (x+y)/2\rVert&lt;1\)）\(\Rightarrow\) 最佳逼近唯一。这个引理本身很干净，Hilbert 空间（内积导出的范数）是严格凸的，\(L^p\) 对 \(1&lt;p&lt;\infty\) 也是。但这条路对 \(L^\infty\) <strong>走不通</strong>，因为 \(L^\infty\) 不严格凸。两个反例都是「平底」：一整段参数给出同一个最小偏差。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 05 · 两个平底：L¹ 与 L∞ 的最佳逼近都不唯一</span>
+ <span class="t" id="e-state">α = 0.00</span>
+ </div>
+ <canvas id="cv-e" aria-label="左：L1 范数下 f=sgn x 用常数逼近；右：L∞ 范数下 g=1 用 αx 逼近"></canvas>
+ <div class="legend">
+ <span><i class="teal"></i>范数随参数 α 的变化</span>
+ <span><i></i>最小偏差的平台（一整段 α 都给同一个最小值）</span>
+ <span><i class="graydash"></i>当前 α</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">参数 α</span>
+ <input type="range" id="e-al" min="-1.5" max="3.0" step="0.02" value="0" aria-label="参数 α">
+ <span class="lbl" id="e-av">0.00</span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">左：‖f − α‖₁（f = sgn x）</div><div class="v teal" id="e-l1">2.0000</div></div>
+ <div><div class="k">右：Δ(αx)（g = 1）</div><div class="v orange" id="e-li">1.0000</div></div>
+ <div><div class="k">两个范数是否严格凸</div><div class="v ch" id="e-cv">否 / 否</div></div>
+ <div><div class="k">Pₙ 中最佳逼近唯一点数</div><div class="v teal" id="e-un">1</div></div>
+ </div>
+ <p class="hint">左图：\(f=\operatorname{sgn}x\)、用常数 \(\alpha\) 逼近，\(\lVert f-\alpha\rVert_1=\lvert 1+\alpha\rvert+\lvert 1-\alpha\rvert\)，在 \(\alpha\in[-1,1]\) 上<strong>恒等于 2</strong>——整段平台。右图：\(g=1\)、用 \(\alpha x\) 逼近 \([0,1]\)，\(\Delta(\alpha)=\max(\lvert1\rvert,\lvert 1-\alpha\rvert)\)，在 \(\alpha\in[0,2]\) 上恒为 1——又一个平台。（右例也是 \(L^\infty\) 不严格凸的直接证据，因为目标 \(g=1\) 在 \(P_1\) 里的最佳逼近不唯一。）</p>
+</div>
+
+<div class="note teal">
+<p><strong>那么 \(P_n\) 里为什么唯一？</strong>因为 \(P_n\) 是<strong>Haar 子空间</strong>——任意非零 \(n\) 次多项式在 \((a,b)\) 内最多 \(n\) 个零点，这条「不多不少」的性质让交错定理的必要性证明能跑通（造 \(\varphi\)、扰动、矛盾）。唯一性来自<strong>子空间的几何</strong>，不来自范数的凸性。课件把「严格凸 \(\Rightarrow\) 唯一」和「Chebyshev 定理 \(\Rightarrow\) 唯一」分在两处讲，中间这一步是空档：读完容易以为后者是前者的推论，其实 \(L^\infty\) 根本不严格凸，两条路是<strong>并列</strong>的。这也是为什么 \(L^1\) 里即使子空间是 Haar 的，最佳逼近也可能不唯一（Krein 1938）。</p>
+</div>
+
+<p>
+还有一层：右图的平台是 \(P_1\) 的<strong>子空间</strong> span\(\{x\}\) 上的现象，而不是 \(P_1\) 本身。若把常数项加回来（用 \(P_1\) 逼近 \(g=1\)），最优解是 \(\alpha x+\gamma\) 连常数一起调，答案变成唯一的那一个 \(P\equiv1\)。所以「不唯一」不只依赖范数，也依赖子空间是否<strong>含得下平移</strong>——定理 4.2（正负偏离点都存在）的证明就用了平移，一旦子空间不含常数，那一步直接失效。
+</p>
+
+<!-- ================= 06 ================= -->
+<h2 id="s6"><span class="no">06</span>最小零偏差：等幅振荡的极限就是 Chebyshev</h2>
+
+<p>
+把问题反过来问：\(f=0\)，要在一个<strong>首项系数为 1</strong> 的 \(n\) 次多项式里挑一个，让 \(\max\lvert P\rvert\) 最小。这叫最小零偏差多项式问题，等价于求 \(x^n\) 在 \(P_{n-1}\) 中的最佳一致逼近。答案出奇地干净：
+</p>
+$$
+\begin{aligned}
+P^*(x)&=2^{\,1-n}\,T_n(x),\\
+T_n(x)&=\cos(n\arccos x),\\
+\max_{[-1,1]}\lvert P^*\rvert&=2^{\,1-n}.
+\end{aligned}
+$$
+<p>
+理由只需一句话：\(T_n\) 在 \(x_k=\cos(k\pi/n)\)（\(k=0,\dots,n\)）上取 \(\pm1\)，\(n+1\) 个等幅交替点正好是最优的判据；而 \(2^{1-n}T_n\) 的首项系数是 \(2^{1-n}\cdot2^{n-1}=1\)。于是<strong>推论</strong>：任何首一 \(n\) 次多项式都满足 \(\max_{[-1,1]}\lvert P_n\rvert\ge 2^{1-n}\)，等号只被 \(2^{1-n}T_n\) 取到。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 06 · 首一多项式的下界：拖一个系数，看 max 怎么涨；右边是 Chebyshev 节点为什么该这么选</span>
+ <span class="t" id="f-state">n = 5 · c = 0.00</span>
+ </div>
+ <canvas id="cv-f" aria-label="首一多项式 2^(1-n)T_n + c T_{n-1} 在 [-1,1] 上的图像"></canvas>
+ <canvas id="cv-f2" aria-label="等距与 Chebyshev 零点的 max|ω| 对比（对数）" style="margin-top:8px"></canvas>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">阶数 n</span>
+ <input type="range" id="f-n" min="2" max="8" step="1" value="5" aria-label="阶数">
+ <span class="lbl" id="f-nv">5</span>
+ </div>
+ <div class="grp">
+ <span class="lbl">扰动系数 c</span>
+ <input type="range" id="f-c" min="-0.3" max="0.3" step="0.01" value="0" aria-label="扰动系数">
+ <span class="lbl" id="f-cv">0.00</span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">max |P|（当前）</div><div class="v orange" id="f-mx">0.0625</div></div>
+ <div><div class="k">下界 2<sup>1−n</sup></div><div class="v teal" id="f-bd">0.0625</div></div>
+ <div><div class="k">max / 下界</div><div class="v ch" id="f-r">1.0000</div></div>
+ <div><div class="k">n=12 时等距 / Chebyshev（右图）</div><div class="v ch" id="f-ratio">16.42</div></div>
+ </div>
+ <p class="hint">上图画的是 \(2^{1-n}T_n+c\,T_{n-1}\)——首项系数恒为 1，只有低次项在动。\(c=0\) 时是 \(2^{1-n}T_n\)，\(\max\) 恰好等于下界；任意 \(c\ne0\) 都会把 \(\max\) 抬高。<strong>实测 \(\max=2^{1-n}+\lvert c\rvert\) 是精确相等</strong>（\(n=3,5,7\) 都验过），因为 \(T_n\) 与 \(T_{n-1}\) 的极值点错开、两个峰的贡献直接相加。下图是插值余项里的 \(\omega(x)=\prod(x-x_i)\)：把节点取成 \(T_{n+1}\) 的零点，\(\max\lvert\omega\rvert=2^{-n}\) 就到底了；等距节点则随 \(n\) 指数级变差，\(n=20\) 时差 245 倍。</p>
+</div>
+
+<p>
+下图那条「等距 vs Chebyshev」的线，正是第 2.1–2.2 讲 Runge 现象的另一面：那边说等距节点让 Lebesgue 常数爆掉，这边说等距节点让余项里的 \(\omega\) 爆掉，两个视角指向同一件事。推论 5.2 把它写成可用的公式：区间 \([a,b]\) 上的插值节点取
+</p>
+$$
+\begin{aligned}
+x_{k-1}&=\frac{b+a}{2}+\frac{b-a}{2}\cos\theta_k,\\
+\theta_k&=\frac{(2k-1)\pi}{2(n+1)},\qquad k=1,\dots,n+1 .
+\end{aligned}
+$$
+<p>
+就使余项上界从「等距的 \(\sim 2^{-n}(b-a)^{n+1}/(n+1)!\) 乘一个大常数」降到「Chebyshev 的 \(2^{-n}\) 乘」，这是复现 Runge 实验时必须要做的一步。
+</p>
+
+<div class="tw"><table>
+<thead><tr><th>\(n\)（节点数 \(n{+}1\)）</th><th class="mono">4</th><th class="mono">8</th><th class="mono">12</th><th class="mono">16</th><th class="mono">20</th></tr></thead>
+<tbody>
+<tr><td>等距：\(\max\lvert\omega\rvert\)</td><td class="mono">0.1135</td><td class="mono">0.01880</td><td class="mono">4.008e−3</td><td class="mono">9.427e−4</td><td class="mono">2.337e−4</td></tr>
+<tr><td>Chebyshev 零点：\(\max\lvert\omega\rvert=2^{-n}\)</td><td class="mono">0.0625</td><td class="mono">3.906e−3</td><td class="mono">2.441e−4</td><td class="mono">1.526e−5</td><td class="mono">9.537e−7</td></tr>
+<tr class="hi"><td>等距 / Chebyshev</td><td class="mono">1.816</td><td class="mono">4.814</td><td class="mono">16.42</td><td class="mono">61.78</td><td class="mono">245.0</td></tr>
+</tbody>
+</table></div>
+
+<h2><span class="no">附</span>本页数字的出处</h2>
+<p>
+全部读数由 <code>_probe_na31.js</code> 实测，<code>verify_na31.js</code> 用<strong>另一条路</strong>复核（解析闭式：\(a=\sinh1\)、\(b=(e-a-a\ln a)/2\)、\(\Delta=e-a-b\)；\(\sqrt{x}\) 用 \(17/48\)、\(1/48\)；Remez 只做一致性检查，不复用页面的交换算法）。锚点：三条直线的偏差 \(0.5576031716/0.4392966761/0.2788015847\)，比值 \(2.000000008\)；\(\sqrt{x}\) 的 \(\Delta=1/48=0.0208333\)、割线 \(1/24\)；\(L^1\) 平台 \([{-1},1]\to2\)、\(L^\infty\) 平台 \([0,2]\to1\)；\(E_0..E_8\) 与比值列；\(n=20\) 的 245 倍。
+</p>
+
+<footer>
+<p>上一讲：<a href="./样条插值-三弯矩方程与保形性.html">第 2.6 讲 · 三次样条</a>　｜　全部讲次：<a href="./index.html">数值分析索引</a></p>
+<p>校验：<code>node ../../verify_na31.js</code>（读数闸门，0 = 通过）· <code>node ../../verify_formulas.js 最佳一致逼近-交错定理与Remez.html</code>（公式，要求 0 failed）。</p>
+</footer>
+
+</div>
+<script>
+(function(){
+'use strict';
+var $ = function(id){ return document.getElementById(id); };
+
+/* ============================================================
+ 格式
+ ============================================================ */
+var MINUS = '\u2212', PI = Math.PI;
+function fixed(v, d){
+ if (!isFinite(v)) return '\u2014';
+ var s = Math.abs(v).toFixed(d);
+ return (v < 0 ? MINUS : '') + s;
+}
+function exs(v, d){
+ if (!isFinite(v)) return '\u2014';
+ if (v === 0) return '0';
+ d = (d === undefined) ? 3 : d;
+ var e = Math.floor(Math.log10(Math.abs(v)));
+ var m = v / Math.pow(10, e);
+ if (Math.abs(m) >= 10){ m /= 10; e += 1; }
+ if (Math.abs(m) < 1){ m *= 10; e -= 1; }
+ return (m < 0 ? MINUS : '') + Math.abs(m).toFixed(d) + 'e' + (e < 0 ? MINUS : '') + Math.abs(e);
+}
+function num(v){
+ if (!isFinite(v)) return '\u2014';
+ var a = Math.abs(v);
+ if (a !== 0 && (a < 1e-3 || a >= 1e5)) return exs(v, 3);
+ return fixed(v, 4);
+}
+function setText(id, s){ var el = $(id); if (el) el.textContent = s; }
+function clamp(v, a, b){ return v < a ? a : (v > b ? b : v); }
+
+/* ============================================================
+ 画布工具
+ ============================================================ */
+function fit(cv){
+ var dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+ var r = cv.getBoundingClientRect();
+ var w = Math.round(r.width) || 600, h = Math.round(r.height) || 300;
+ cv.width = w * dpr; cv.height = h * dpr;
+ var g = cv.getContext('2d');
+ g.setTransform(dpr, 0, 0, dpr, 0, 0);
+ g.clearRect(0, 0, w, h);
+ return { g: g, w: w, h: h };
+}
+function mkMap(w, h, pad, xr, yr){
+ var iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+ return {
+ X: function(x){ return pad.l + (x - xr[0]) / (xr[1] - xr[0]) * iw; },
+ Y: function(y){ return pad.t + (yr[1] - y) / (yr[1] - yr[0]) * ih; },
+ xr: xr, yr: yr, pad: pad, iw: iw, ih: ih
+ };
+}
+function grid(g, M, nx, ny, col){
+ g.strokeStyle = col || '#eee7d8'; g.lineWidth = 1;
+ var i, x, y;
+ for (i = 0; i <= nx; i++){
+ x = M.pad.l + M.iw * i / nx;
+ g.beginPath(); g.moveTo(x, M.pad.t); g.lineTo(x, M.pad.t + M.ih); g.stroke();
+ }
+ for (i = 0; i <= ny; i++){
+ y = M.pad.t + M.ih * i / ny;
+ g.beginPath(); g.moveTo(M.pad.l, y); g.lineTo(M.pad.l + M.iw, y); g.stroke();
+ }
+}
+function frame(g, M){
+ g.strokeStyle = '#cfc6b2'; g.lineWidth = 1;
+ g.strokeRect(M.pad.l, M.pad.t, M.iw, M.ih);
+}
+function label(g, s, x, y, col, align, size){
+ g.fillStyle = col || '#6d665a';
+ g.font = (size || 11) + 'px ui-monospace,SFMono-Regular,Consolas,monospace';
+ g.textAlign = align || 'left';
+ g.textBaseline = 'middle';
+ g.fillText(s, x, y);
+}
+function clipPlot(g, M){
+ g.save();
+ g.beginPath(); g.rect(M.pad.l, M.pad.t, M.iw, M.ih); g.clip();
+}
+function unclip(g){ g.restore(); }
+function curve(g, M, f, a, b, col, width, dash, n){
+ var i, N = n || 400;
+ g.strokeStyle = col; g.lineWidth = width || 2;
+ g.setLineDash(dash || []);
+ g.beginPath();
+ for (i = 0; i <= N; i++){
+ var x = a + (b - a) * i / N, y = f(x);
+ if (!isFinite(y)) continue;
+ if (i === 0) g.moveTo(M.X(x), M.Y(y)); else g.lineTo(M.X(x), M.Y(y));
+ }
+ g.stroke(); g.setLineDash([]);
+}
+function dot(g, M, x, y, r, fill){
+ g.beginPath(); g.arc(M.X(x), M.Y(y), r || 3.2, 0, PI * 2);
+ g.fillStyle = fill || '#c2531f'; g.fill();
+ g.strokeStyle = '#fff'; g.lineWidth = 1.2; g.stroke();
+}
+function hline(g, M, y, col, dash){
+ g.strokeStyle = col; g.lineWidth = 1.1; g.setLineDash(dash || []);
+ g.beginPath(); g.moveTo(M.pad.l, M.Y(y)); g.lineTo(M.pad.l + M.iw, M.Y(y)); g.stroke();
+ g.setLineDash([]);
+}
+function vline(g, M, x, col, dash, wd){
+ g.strokeStyle = col; g.lineWidth = wd || 1; g.setLineDash(dash || []);
+ g.beginPath(); g.moveTo(M.X(x), M.pad.t); g.lineTo(M.X(x), M.pad.t + M.ih); g.stroke();
+ g.setLineDash([]);
+}
+
+/* ============================================================
+ 数值核心
+ 闸门 verify_na31.js 用解析式独立复核，不复用这里的实现
+ ============================================================ */
+function solve(A, b){
+ var n = b.length, M = [], i, j, k, p, t, f, piv, s, row;
+ for (i = 0; i < n; i++){ row = A[i].slice(); row.push(b[i]); M.push(row); }
+ for (k = 0; k < n; k++){
+ p = k;
+ for (i = k + 1; i < n; i++) if (Math.abs(M[i][k]) > Math.abs(M[p][k])) p = i;
+ if (p !== k){ t = M[p]; M[p] = M[k]; M[k] = t; }
+ piv = M[k][k];
+ for (i = k + 1; i < n; i++){
+ f = M[i][k] / piv;
+ if (f === 0) continue;
+ for (j = k; j <= n; j++) M[i][j] -= f * M[k][j];
+ }
+ }
+ var x = [];
+ for (i = 0; i < n; i++) x.push(0);
+ for (i = n - 1; i >= 0; i--){
+ s = M[i][n];
+ for (j = i + 1; j < n; j++) s -= M[i][j] * x[j];
+ x[i] = s / M[i][i];
+ }
+ return x;
+}
+function peval(c, x){
+ var s = 0, j;
+ for (j = c.length - 1; j >= 0; j--) s = s * x + c[j];
+ return s;
+}
+function maxErr(f, g, a, b, N){
+ var e = 0, at = a, k, x, v;
+ for (k = 0; k <= N; k++){
+ x = a + (b - a) * k / N; v = Math.abs(f(x) - g(x));
+ if (v > e){ e = v; at = x; }
+ }
+ return { e: e, at: at };
+}
+function chebT(n, x){
+ if (n === 0) return 1;
+ if (n === 1) return x;
+ var a = 1, b = x, c = 0, k;
+ for (k = 2; k <= n; k++){ c = 2 * x * b - a; a = b; b = c; }
+ return b;
+}
+/* 多项式最小二乘（在稠密网格上做，等价于 L² 投影的离散版） */
+function lsPoly(a, b, f, n, N){
+ N = N || 4000;
+ var A = [], rhs = [], j, k, q, x, pw;
+ for (j = 0; j <= n; j++){ var row = []; for (k = 0; k <= n; k++) row.push(0); A.push(row); rhs.push(0); }
+ for (q = 0; q <= N; q++){
+ x = a + (b - a) * q / N;
+ pw = [];
+ for (j = 0; j <= n; j++) pw.push(Math.pow(x, j));
+ for (j = 0; j <= n; j++){
+ for (k = 0; k <= n; k++) A[j][k] += pw[j] * pw[k];
+ rhs[j] += pw[j] * f(x);
+ }
+ }
+ var sol = solve(A, rhs);
+ /* 对称化，避免极小的数值不对称 */
+ return sol;
+}
+/* 离散 Remez（交换算法）。返回 hist，每步 { h, c, alt } */
+function remez(f, a, b, n, iters, gridN){
+ var N = gridN || 4000, i, k, xs = [], hist = [], c = null, h = 0, it;
+ for (k = 0; k <= n + 1; k++) xs.push((a + b) / 2 + (b - a) / 2 * Math.cos(PI * k / (n + 1)));
+ xs.sort(function(p, q){ return p - q; });
+ for (it = 0; it < iters; it++){
+ var A = [], r = [], row, j;
+ for (k = 0; k <= n + 1; k++){
+ row = [];
+ for (j = 0; j <= n; j++) row.push(Math.pow(xs[k], j));
+ row.push(k % 2 === 0 ? 1 : -1);
+ A.push(row); r.push(f(xs[k]));
+ }
+ var sol = solve(A, r);
+ h = sol[n + 1];
+ c = sol.slice(0, n + 1);
+ var P = function(x){ return peval(c, x); };
+ hist.push({ h: Math.abs(h), c: c.slice(), alt: xs.slice() });
+ /* 网格找 |ε| 的局部极大 */
+ var gr = [], es = [], q, x;
+ for (q = 0; q <= N; q++){ x = a + (b - a) * q / N; gr.push(x); es.push(f(x) - P(x)); }
+ var cand = [];
+ for (q = 0; q <= N; q++){
+ var up = (q === 0) || Math.abs(es[q]) >= Math.abs(es[q - 1]);
+ var dn = (q === N) || Math.abs(es[q]) >= Math.abs(es[q + 1]);
+ if (up && dn && Math.abs(es[q]) > 1e-15) cand.push({ x: gr[q], v: es[q] });
+ }
+ /* 交换：筛掉幅值太小的噪声极值，按 x 排序后找符号交替的 n+2 个点。
+    不能「先取最大幅值」——两个同号的端点都是极值，取了一个就凑不满交替串。 */
+ var amax = 0;
+ for (i = 0; i < cand.length; i++) amax = Math.max(amax, Math.abs(cand[i].v));
+ var kept = [];
+ for (i = 0; i < cand.length; i++) if (Math.abs(cand[i].v) >= 0.25 * amax) kept.push(cand[i]);
+ kept.sort(function(p, q2){ return p.x - q2.x; });
+ var best = null, bestMin = -1, st, t, seq, mn;
+ for (st = 0; st < kept.length; st++){
+ seq = [kept[st]];
+ for (t = st + 1; t < kept.length && seq.length < n + 2; t++){
+ if ((kept[t].v > 0) !== (seq[seq.length - 1].v > 0)) seq.push(kept[t]);
+ }
+ if (seq.length === n + 2){
+ mn = Infinity;
+ for (i = 0; i < seq.length; i++) mn = Math.min(mn, Math.abs(seq[i].v));
+ if (mn > bestMin){ bestMin = mn; best = seq; }
+ }
+ }
+ if (!best) break;
+ xs = [];
+ for (i = 0; i < best.length; i++) xs.push(best[i].x);
+ }
+ return { c: c, h: Math.abs(h), hist: hist };
+}
+/* 交错偏离点数：|ε| 的局部极大里，能排成符号交替、且幅值都接近 Δ 的最长序列 */
+function altCount(f, c, a, b, N){
+ N = N || 3000;
+ var gr = [], es = [], q, x, i;
+ for (q = 0; q <= N; q++){ x = a + (b - a) * q / N; gr.push(x); es.push(f(x) - peval(c, x)); }
+ var cand = [];
+ for (q = 0; q <= N; q++){
+ var up = (q === 0) || Math.abs(es[q]) >= Math.abs(es[q - 1]);
+ var dn = (q === N) || Math.abs(es[q]) >= Math.abs(es[q + 1]);
+ if (up && dn) cand.push({ x: gr[q], v: es[q] });
+ }
+ var mx = 0, mnv = 0;
+ for (i = 0; i < cand.length; i++){
+ mx = Math.max(mx, Math.abs(cand[i].v));
+ mnv = Math.min(mnv, cand[i].v);
+ }
+ var kept = [];
+ for (i = 0; i < cand.length; i++) if (Math.abs(cand[i].v) >= 0.98 * mx) kept.push(cand[i]);
+ kept.sort(function(p, r){ return p.x - r.x; });
+ /* 最长符号交替子序列（kept 通常只有几个点，直接枚举起点贪心） */
+ var bestN = 0, bestSeq = [], seq, st, t;
+ for (st = 0; st < kept.length; st++){
+ seq = [kept[st]];
+ for (t = st + 1; t < kept.length; t++){
+ if ((kept[t].v > 0) !== (seq[seq.length - 1].v > 0)) seq.push(kept[t]);
+ }
+ if (seq.length > bestN){ bestN = seq.length; bestSeq = seq; }
+ }
+ return { count: bestN, seq: bestSeq, max: mx, min: mnv };
+}
+
+/* ============================================================
+ 公共数据
+ ============================================================ */
+var FE = function(x){ return Math.exp(x); };
+var A1 = -1, B1 = 1;
+var OPT1 = remez(FE, A1, B1, 1, 30);                 /* [b, a] */
+var E1 = OPT1.h;
+var INT1 = [Math.cosh(1), Math.sinh(1)];             /* 插值直线：[b, a] */
+var LS1 = lsPoly(A1, B1, FE, 1, 3000);
+var P0 = (Math.exp(1) + Math.exp(-1)) / 2;
+var E0 = (Math.exp(1) - Math.exp(-1)) / 2;
+var REMC = {};
+function remFor(n){
+ if (!REMC[n]) REMC[n] = remez(FE, A1, B1, n, 9, 3000);
+ return REMC[n];
+}
+function pan(M, dx){
+ return { X: function(x){ return M.X(x) + dx; }, Y: M.Y, xr: M.xr, yr: M.yr,
+ pad: { l: M.pad.l + dx, r: M.pad.r, t: M.pad.t, b: M.pad.b }, iw: M.iw, ih: M.ih };
+}
+
+/* ============================================================
+ 实验 01 · 三条一次逼近
+ ============================================================ */
+function aDraw(){
+ var cv = $('cv-a'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var M = mkMap(w, h, { l: 52, r: 18, t: 16, b: 28 }, [A1, B1], [0.26, 2.80]);
+ grid(g, M, 8, 6); frame(g, M);
+ var t;
+ for (t = -1; t <= 1.001; t += 0.5) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 13, '#6d665a', 'center', 10);
+ for (t = 0.5; t <= 2.8; t += 0.5) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right', 10);
+ clipPlot(g, M);
+ curve(g, M, FE, A1, B1, '#b8b0a0', 1.5, [5, 4], 500);
+ curve(g, M, function(x){ return LS1[1] * x + LS1[0]; }, A1, B1, '#0d6b5d', 1.9, [], 200);
+ curve(g, M, function(x){ return INT1[1] * x + INT1[0]; }, A1, B1, '#7d5a24', 1.9, [], 200);
+ curve(g, M, function(x){ return OPT1.c[1] * x + OPT1.c[0]; }, A1, B1, '#c2531f', 2.5, [], 200);
+ unclip(g);
+ dot(g, M, -1, Math.exp(-1), 3.0); dot(g, M, 1, Math.exp(1), 3.0);
+
+ /* 误差曲线 */
+ var cv2 = $('cv-a2'), Z2 = fit(cv2), g2 = Z2.g, w2 = Z2.w, h2 = Z2.h;
+ var M2 = mkMap(w2, h2, { l: 52, r: 18, t: 14, b: 26 }, [A1, B1], [-0.62, 0.62]);
+ grid(g2, M2, 8, 4); frame(g2, M2);
+ for (t = -1; t <= 1.001; t += 0.5) label(g2, t.toFixed(1), M2.X(t), M2.pad.t + M2.ih + 12, '#6d665a', 'center', 10);
+ for (t = -0.4; t <= 0.401; t += 0.4) label(g2, t.toFixed(1), M2.pad.l - 7, M2.Y(t), '#6d665a', 'right', 10);
+ clipPlot(g2, M2);
+ hline(g2, M2, 0, 'rgba(109,102,90,.4)', [4, 4]);
+ hline(g2, M2, E1, 'rgba(194,83,31,.45)', [5, 4]);
+ hline(g2, M2, -E1, 'rgba(194,83,31,.45)', [5, 4]);
+ curve(g2, M2, function(x){ return FE(x) - (INT1[1] * x + INT1[0]); }, A1, B1, '#7d5a24', 1.8, [], 500);
+ curve(g2, M2, function(x){ return FE(x) - (LS1[1] * x + LS1[0]); }, A1, B1, '#0d6b5d', 1.8, [], 500);
+ curve(g2, M2, function(x){ return FE(x) - (OPT1.c[1] * x + OPT1.c[0]); }, A1, B1, '#c2531f', 2.4, [], 500);
+ unclip(g2);
+ var pInt = maxErr(FE, function(x){ return INT1[1] * x + INT1[0]; }, A1, B1, 40000);
+ var pLs = maxErr(FE, function(x){ return LS1[1] * x + LS1[0]; }, A1, B1, 40000);
+ var pOpt = maxErr(FE, function(x){ return OPT1.c[1] * x + OPT1.c[0]; }, A1, B1, 40000);
+
+ setText('a-di', fixed(pInt.e, 4));
+ setText('a-dl', fixed(pLs.e, 4));
+ setText('a-du', fixed(pOpt.e, 4));
+ setText('a-ratio', fixed(pInt.e / pOpt.e, 4));
+ return { int: pInt.e, ls: pLs.e, opt: pOpt.e, ratio: pInt.e / pOpt.e,
+ a: OPT1.c[1], bInt: INT1[0], bLs: LS1[0], bOpt: OPT1.c[0], E1: E1, E0: E0, P0: P0 };
+}
+
+/* ============================================================
+ 实验 02 · 手动搜最优
+ ============================================================ */
+function bDraw(){
+ var a = clamp(parseFloat($('b-a').value), 0.8, 1.55);
+ var b = clamp(parseFloat($('b-b').value), 0.9, 1.85);
+ if (!isFinite(a)) a = OPT1.c[1];
+ if (!isFinite(b)) b = OPT1.c[0];
+ var P = function(x){ return a * x + b; };
+ var er = maxErr(FE, P, A1, B1, 20000);
+ var alt = altCount(FE, [b, a], A1, B1, 3000);
+
+ var cv = $('cv-b'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var M = mkMap(w, h, { l: 52, r: 18, t: 16, b: 26 }, [A1, B1], [0.26, 2.80]);
+ grid(g, M, 8, 6); frame(g, M);
+ var t;
+ for (t = -1; t <= 1.001; t += 0.5) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 12, '#6d665a', 'center', 10);
+ for (t = 0.5; t <= 2.8; t += 0.5) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right', 10);
+ clipPlot(g, M);
+ curve(g, M, FE, A1, B1, '#b8b0a0', 1.5, [5, 4], 500);
+ curve(g, M, P, A1, B1, '#c2531f', 2.4, [], 200);
+ unclip(g);
+ dot(g, M, -1, Math.exp(-1), 3.0); dot(g, M, 1, Math.exp(1), 3.0);
+
+ var cv2 = $('cv-b2'), Z2 = fit(cv2), g2 = Z2.g, w2 = Z2.w, h2 = Z2.h;
+ var ymax = Math.max(0.62, er.e * 1.15);
+ var M2 = mkMap(w2, h2, { l: 52, r: 18, t: 14, b: 24 }, [A1, B1], [-ymax, ymax]);
+ grid(g2, M2, 8, 4); frame(g2, M2);
+ for (t = -1; t <= 1.001; t += 0.5) label(g2, t.toFixed(1), M2.X(t), M2.pad.t + M2.ih + 11, '#6d665a', 'center', 10);
+ label(g2, fixed(er.e, 3), M2.pad.l - 7, M2.Y(er.e), '#c2531f', 'right', 10);
+ label(g2, fixed(-er.e, 3), M2.pad.l - 7, M2.Y(-er.e), '#c2531f', 'right', 10);
+ clipPlot(g2, M2);
+ hline(g2, M2, 0, 'rgba(109,102,90,.4)', [4, 4]);
+ hline(g2, M2, er.e, 'rgba(194,83,31,.5)', [5, 4]);
+ hline(g2, M2, -er.e, 'rgba(194,83,31,.5)', [5, 4]);
+ curve(g2, M2, function(x){ return FE(x) - P(x); }, A1, B1, '#7d5a24', 2.2, [], 500);
+ var i;
+ for (i = 0; i < alt.seq.length; i++) vline(g2, M2, alt.seq[i].x, 'rgba(194,83,31,.55)', [2, 3], 1.2);
+ unclip(g2);
+
+ setText('b-av', fixed(a, 4));
+ setText('b-bv', fixed(b, 4));
+ setText('b-state', 'a = ' + fixed(a, 4) + ' \u00b7 b = ' + fixed(b, 4));
+ setText('b-d', fixed(er.e, 4));
+ setText('b-mn', fixed(alt.min, 4));
+ setText('b-r', fixed(er.e / E1, 4));
+ setText('b-n', String(alt.count));
+ return { a: a, b: b, delta: er.e, min: alt.min, ratio: er.e / E1, count: alt.count, alts: alt.seq };
+}
+function setBBest(){
+ var el1 = $('b-a'), el2 = $('b-b');
+ if (el1) el1.value = String(OPT1.c[1].toFixed(4));
+ if (el2) el2.value = String(OPT1.c[0].toFixed(4));
+ bDraw();
+}
+
+/* ============================================================
+ 实验 03 · Remez 迭代
+ ============================================================ */
+function cDraw(){
+ var n = clamp(parseInt($('c-n').value, 10) || 1, 1, 8);
+ var k = clamp(parseInt($('c-k').value, 10) || 0, 0, 8);
+ var R = remFor(n);
+ var idx = Math.min(k, R.hist.length - 1);
+ var step = R.hist[idx];
+ var c = step.c, hh = step.h;
+ var P = function(x){ return peval(c, x); };
+ var er = maxErr(FE, P, A1, B1, 20000);
+ var alt = altCount(FE, c, A1, B1, 3000);
+
+ var cv = $('cv-c'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var ymax = Math.max(er.e * 1.2, 1e-12);
+ var M = mkMap(w, h, { l: 58, r: 18, t: 16, b: 28 }, [A1, B1], [-ymax, ymax]);
+ grid(g, M, 8, 4); frame(g, M);
+ var t;
+ for (t = -1; t <= 1.001; t += 0.5) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 13, '#6d665a', 'center', 10);
+ label(g, '+' + fixed(er.e, 4), M.pad.l - 7, M.Y(er.e), '#c2531f', 'right', 10);
+ label(g, MINUS + fixed(er.e, 4), M.pad.l - 7, M.Y(-er.e), '#c2531f', 'right', 10);
+ clipPlot(g, M);
+ hline(g, M, 0, 'rgba(109,102,90,.4)', [4, 4]);
+ hline(g, M, er.e, 'rgba(194,83,31,.55)', [5, 4]);
+ hline(g, M, -er.e, 'rgba(194,83,31,.55)', [5, 4]);
+ curve(g, M, function(x){ return FE(x) - P(x); }, A1, B1, '#7d5a24', 2.2, [], 900);
+ var i;
+ for (i = 0; i < step.alt.length; i++) vline(g, M, step.alt[i], 'rgba(35,32,26,.55)', [3, 3], 1.3);
+ unclip(g);
+ for (i = 0; i < alt.seq.length; i++) dot(g, M, alt.seq[i].x, alt.seq[i].v, 3.2);
+ label(g, 'n = ' + n + ' \u00b7 ' + step.alt.length + ' \u4e2a\u4ea4\u9519\u70b9', M.pad.l + 6, M.pad.t + 10, '#6d665a', 'left', 10);
+
+ setText('c-nv', String(n));
+ setText('c-kv', String(k));
+ setText('c-state', 'n = ' + n + ' \u00b7 \u7b2c ' + k + ' \u6b65');
+ setText('c-h', fixed(hh, 6));
+ setText('c-d', fixed(er.e, 6));
+ setText('c-r', fixed(hh / R.h, 6));
+ setText('c-cnt', String(alt.count));
+ return { n: n, k: k, h: hh, delta: er.e, Ec: R.h, ratio: hh / R.h, count: alt.count,
+ hist: R.hist, alt: step.alt };
+}
+
+/* ============================================================
+ 实验 04 · √x 的三交错点
+ ============================================================ */
+var SQ = function(x){ return Math.sqrt(x); };
+var SQ_A = 0.25, SQ_B = 1, SQ_BETA = 2 / 3, SQ_ALPHA = 17 / 48, SQ_X1 = 9 / 16;
+function dDraw(){
+ var al = clamp(parseFloat($('d-al').value), 0.30, 0.42);
+ if (!isFinite(al)) al = SQ_ALPHA;
+ var be = SQ_BETA;
+ var P = function(x){ return al + be * x; };
+ var er = maxErr(SQ, P, SQ_A, SQ_B, 20000);
+ var e1 = SQ(SQ_A) - P(SQ_A), e2 = SQ(SQ_B) - P(SQ_B), e3 = SQ(SQ_X1) - P(SQ_X1);
+
+ var cv = $('cv-d'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var hTop = Math.round(h * 0.62);
+ var M = mkMap(w, hTop, { l: 52, r: 18, t: 16, b: 24 }, [SQ_A, SQ_B], [0.44, 1.06]);
+ grid(g, M, 6, 4); frame(g, M);
+ var t;
+ for (t = 0.25; t <= 1.001; t += 0.25) label(g, t.toFixed(2), M.X(t), M.pad.t + M.ih + 12, '#6d665a', 'center', 10);
+ for (t = 0.5; t <= 1.001; t += 0.25) label(g, t.toFixed(2), M.pad.l - 7, M.Y(t), '#6d665a', 'right', 10);
+ clipPlot(g, M);
+ curve(g, M, SQ, SQ_A, SQ_B, '#b8b0a0', 1.8, [5, 4], 500);
+ curve(g, M, P, SQ_A, SQ_B, '#c2531f', 2.4, [], 200);
+ unclip(g);
+ dot(g, M, SQ_A, SQ(SQ_A), 3.2, '#c2531f');
+ dot(g, M, SQ_X1, SQ(SQ_X1), 3.2, '#c2531f');
+ dot(g, M, SQ_B, SQ(SQ_B), 3.2, '#c2531f');
+ label(g, 'x\u2081 = 9/16', M.X(SQ_X1) + 6, M.Y(SQ(SQ_X1)) - 14, '#c2531f', 'left', 10);
+
+ var hBot = h - hTop - 8;
+ var ymax = 0.026;
+ var M2 = mkMap(w, hBot, { l: 52, r: 18, t: 12, b: 22 }, [SQ_A, SQ_B], [-ymax, ymax]);
+ var off = { X: M2.X, Y: function(y){ return M2.Y(y) + hTop + 8; }, pad: { l: M2.pad.l, r: M2.pad.r, t: M2.pad.t + hTop + 8, b: M2.pad.b },
+ iw: M2.iw, ih: M2.ih };
+ grid(g, off, 6, 2); frame(g, off);
+ var i48 = 1 / 48;
+ label(g, '+1/48', off.pad.l - 7, off.Y(i48), '#c2531f', 'right', 9);
+ label(g, MINUS + '1/48', off.pad.l - 7, off.Y(-i48), '#c2531f', 'right', 9);
+ clipPlot(g, off);
+ hline(g, off, 0, 'rgba(109,102,90,.4)', [4, 4]);
+ hline(g, off, i48, 'rgba(194,83,31,.45)', [5, 4]);
+ hline(g, off, -i48, 'rgba(194,83,31,.45)', [5, 4]);
+ curve(g, off, function(x){ return SQ(x) - P(x); }, SQ_A, SQ_B, '#7d5a24', 2.2, [], 500);
+ unclip(g);
+ dot(g, off, SQ_A, e1, 3.0); dot(g, off, SQ_X1, e3, 3.0); dot(g, off, SQ_B, e2, 3.0);
+
+ setText('d-av', fixed(al, 5));
+ setText('d-state', '\u03b1 = ' + fixed(al, 4) + ' \u00b7 \u03b2 = 0.6667');
+ setText('d-e1', fixed(e1, 6));
+ setText('d-e2', fixed(e3, 6));
+ setText('d-d', fixed(er.e, 6));
+ setText('d-r', fixed(er.e / i48, 4));
+ return { alpha: al, beta: be, e1: e1, e2: e2, e3: e3, delta: er.e, ratio: er.e / i48, x1: SQ_X1 };
+}
+
+/* ============================================================
+ 实验 05 · L¹ 与 L∞ 的两个平底
+ ============================================================ */
+/* 左：f = sgn x 在 [-1,1]，用常数 α 逼近；‖f−α‖₁ = |1+α| + |1−α| */
+function l1Norm(al){
+ var N = 6000, s = 0, k, x;
+ for (k = 0; k < N; k++){
+ x = -1 + 2 * (k + 0.5) / N;
+ s += Math.abs((x > 0 ? 1 : (x < 0 ? -1 : 0)) - al);
+ }
+ return s * 2 / N;
+}
+/* 右：g = 1 在 [0,1]，用 αx 逼近；Δ = max(1, |1−α|) */
+function linfNorm(al){
+ var N = 4000, m = 0, k, x, v;
+ for (k = 0; k <= N; k++){
+ x = k / N; v = Math.abs(1 - al * x);
+ if (v > m) m = v;
+ }
+ return m;
+}
+function eDraw(){
+ var al = clamp(parseFloat($('e-al').value), -1.5, 3.0);
+ if (!isFinite(al)) al = 0;
+ var v1 = l1Norm(al), v2 = linfNorm(al);
+
+ var cv = $('cv-e'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var half = Math.floor(w / 2);
+ var ML = mkMap(half, h, { l: 46, r: 14, t: 36, b: 30 }, [-1.6, 3.1], [1.60, 6.35]);
+ var MR = pan(mkMap(half, h, { l: 50, r: 14, t: 36, b: 30 }, [-1.6, 3.1], [0.75, 2.65]), half);
+ grid(g, ML, 4, 4); frame(g, ML);
+ grid(g, MR, 4, 4); frame(g, MR);
+ label(g, '\u5de6\uff1a\u2016f \u2212 \u03b1\u2016\u2081\uff0cf = sgn x', ML.pad.l + 2, 14, '#6d665a', 'left', 10);
+ label(g, '\u53f3\uff1a\u0394(\u03b1x)\uff0cg = 1', MR.pad.l + 2, 14, '#6d665a', 'left', 10);
+ var t;
+ for (t = -1; t <= 3.001; t += 1) label(g, t.toFixed(0), ML.X(t), ML.pad.t + ML.ih + 13, '#6d665a', 'center', 10);
+ for (t = -1; t <= 3.001; t += 1) label(g, t.toFixed(0), MR.X(t), MR.pad.t + MR.ih + 13, '#6d665a', 'center', 10);
+ for (t = 2; t <= 6.201; t += 1) label(g, t.toFixed(0), ML.pad.l - 7, ML.Y(t), '#6d665a', 'right', 10);
+ for (t = 1; t <= 2.601; t += 0.5) label(g, t.toFixed(1), MR.pad.l - 7, MR.Y(t), '#6d665a', 'right', 10);
+
+ clipPlot(g, ML);
+ /* 平台：α ∈ [−1,1] 上恒为 2 */
+ g.fillStyle = 'rgba(13,107,93,.10)';
+ g.fillRect(ML.X(-1), ML.pad.t, ML.X(1) - ML.X(-1), ML.ih);
+ curve(g, ML, l1Norm, -1.6, 3.1, '#0d6b5d', 2.4, [], 400);
+ curve(g, ML, function(x){ return 2; }, -1, 1, '#c2531f', 3.6, [], 40);
+ vline(g, ML, al, 'rgba(35,32,26,.6)', [3, 3], 1.3);
+ unclip(g);
+ label(g, '\u5e73\u53f0 \u03b1\u2208[\u22121,1]', ML.X(0), ML.Y(2) - 13, '#c2531f', 'center', 10);
+
+ clipPlot(g, MR);
+ g.fillStyle = 'rgba(13,107,93,.10)';
+ g.fillRect(MR.X(0), MR.pad.t, MR.X(2) - MR.X(0), MR.ih);
+ curve(g, MR, linfNorm, -1.6, 3.1, '#0d6b5d', 2.4, [], 400);
+ curve(g, MR, function(x){ return 1; }, 0, 2, '#c2531f', 3.6, [], 40);
+ vline(g, MR, al, 'rgba(35,32,26,.6)', [3, 3], 1.3);
+ unclip(g);
+ label(g, '\u5e73\u53f0 \u03b1\u2208[0,2]', MR.X(1), MR.Y(1) - 13, '#c2531f', 'center', 10);
+
+ setText('e-av', fixed(al, 2));
+ setText('e-state', '\u03b1 = ' + fixed(al, 2));
+ setText('e-l1', fixed(v1, 4));
+ setText('e-li', fixed(v2, 4));
+ setText('e-cv', '\u5426 / \u5426');
+ setText('e-un', '1');
+ return { alpha: al, l1: v1, linf: v2, l1Plateau: [l1Norm(-1), l1Norm(0), l1Norm(1)],
+ linfPlateau: [linfNorm(0), linfNorm(1), linfNorm(2)], l1Out: l1Norm(1.5), linfOut: linfNorm(2.5) };
+}
+
+/* ============================================================
+ 实验 06 · 最小零偏差与 Chebyshev 节点
+ ============================================================ */
+var CH_N = [4, 6, 8, 10, 12, 14, 16, 18, 20];
+function omegaMax(pts){
+ var N = 40000, m = 0, k, x, i, v;
+ for (k = 0; k <= N; k++){
+ x = -1 + 2 * k / N; v = 1;
+ for (i = 0; i < pts.length; i++) v *= (x - pts[i]);
+ if (Math.abs(v) > m) m = Math.abs(v);
+ }
+ return m;
+}
+var OMCACHE = null;
+function omData(){
+ if (OMCACHE) return OMCACHE;
+ var out = [], i, m, eq, ch;
+ for (i = 0; i < CH_N.length; i++){
+ m = CH_N[i];
+ eq = []; ch = [];
+ for (var k = 0; k <= m; k++) eq.push(-1 + 2 * k / m);
+ for (k = 1; k <= m + 1; k++) ch.push(Math.cos((2 * k - 1) * PI / (2 * (m + 1))));
+ out.push({ m: m, eq: omegaMax(eq), ch: omegaMax(ch), ratio: omegaMax(eq) / omegaMax(ch) });
+ }
+ OMCACHE = out;
+ return out;
+}
+function fDraw(){
+ var n = clamp(parseInt($('f-n').value, 10) || 5, 2, 8);
+ var cc = clamp(parseFloat($('f-c').value), -0.3, 0.3);
+ if (!isFinite(cc)) cc = 0;
+ var bd = Math.pow(2, 1 - n);
+ var P = function(x){ return bd * chebT(n, x) + cc * chebT(n - 1, x); };
+ var mx = maxErr(P, function(){ return 0; }, -1, 1, 20000).e;
+
+ var cv = $('cv-f'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var top = Math.max(bd * 1.35, Math.abs(cc) + bd, 1e-6) * 1.12;
+ var M = mkMap(w, h, { l: 54, r: 18, t: 16, b: 26 }, [-1, 1], [-top, top]);
+ grid(g, M, 8, 6); frame(g, M);
+ var t;
+ for (t = -1; t <= 1.001; t += 0.5) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 12, '#6d665a', 'center', 10);
+ label(g, '+' + fixed(top, 3), M.pad.l - 7, M.Y(top), '#6d665a', 'right', 9);
+ label(g, MINUS + fixed(top, 3), M.pad.l - 7, M.Y(-top), '#6d665a', 'right', 9);
+ clipPlot(g, M);
+ hline(g, M, 0, 'rgba(109,102,90,.35)', [4, 4]);
+ hline(g, M, bd, 'rgba(13,107,93,.45)', [5, 4]);
+ hline(g, M, -bd, 'rgba(13,107,93,.45)', [5, 4]);
+ curve(g, M, P, -1, 1, '#c2531f', 2.4, [], 900);
+ unclip(g);
+ label(g, '\u00b12^' + (1 - n) + ' = ' + fixed(bd, 5), M.pad.l + M.iw - 4, M.Y(bd) - 11, '#0d6b5d', 'right', 10);
+ var k;
+ for (k = 0; k <= n; k++) dot(g, M, Math.cos(k * PI / n), bd * ((k % 2 === 0) ? 1 : -1) + cc * chebT(n - 1, Math.cos(k * PI / n)), 2.6, '#7d5a24');
+
+ /* 下图：等距 vs Chebyshev 的 max|ω| */
+ var cv2 = $('cv-f2'), Z2 = fit(cv2), g2 = Z2.g, w2 = Z2.w, h2 = Z2.h;
+ var D = omData();
+ var lo = Math.log10(D[D.length - 1].ch) - 0.4, hi = Math.log10(D[0].eq) + 0.4;
+ var M2 = mkMap(w2, h2, { l: 58, r: 18, t: 16, b: 28 }, [3.6, 20.6], [lo, hi]);
+ grid(g2, M2, 8, 6); frame(g2, M2);
+ var i;
+ for (i = 0; i < D.length; i++) label(g2, String(D[i].m), M2.X(D[i].m), M2.pad.t + M2.ih + 12, '#6d665a', 'center', 9);
+ for (t = Math.ceil(lo); t <= Math.floor(hi); t++){
+ if ((t - Math.ceil(lo)) % 2 === 0) label(g2, '1e' + (t < 0 ? MINUS : '') + Math.abs(t), M2.pad.l - 7, M2.Y(t), '#6d665a', 'right', 9);
+ }
+ label(g2, 'max|\u03c9|', M2.pad.l + M2.iw - 6, M2.pad.t + 10, '#6d665a', 'right', 10);
+ clipPlot(g2, M2);
+ var j, started;
+ g2.strokeStyle = '#c2531f'; g2.lineWidth = 2.2; g2.setLineDash([]); g2.beginPath();
+ started = false;
+ for (j = 0; j < D.length; j++){
+ if (!started){ g2.moveTo(M2.X(D[j].m), M2.Y(Math.log10(D[j].eq))); started = true; }
+ else g2.lineTo(M2.X(D[j].m), M2.Y(Math.log10(D[j].eq)));
+ }
+ g2.stroke();
+ g2.strokeStyle = '#0d6b5d'; g2.lineWidth = 2.2; g2.beginPath(); started = false;
+ for (j = 0; j < D.length; j++){
+ var yv = Math.log10(D[j].ch);
+ if (!started){ g2.moveTo(M2.X(D[j].m), M2.Y(yv)); started = true; }
+ else g2.lineTo(M2.X(D[j].m), M2.Y(yv));
+ }
+ g2.stroke();
+ unclip(g2);
+ for (j = 0; j < D.length; j++){
+ dot(g2, M2, D[j].m, Math.log10(D[j].eq), 2.6, '#c2531f');
+ dot(g2, M2, D[j].m, Math.log10(D[j].ch), 2.6, '#0d6b5d');
+ }
+ var r12 = 0;
+ for (j = 0; j < D.length; j++) if (D[j].m === 12) r12 = D[j].ratio;
+
+ setText('f-nv', String(n));
+ setText('f-cv', fixed(cc, 2));
+ setText('f-state', 'n = ' + n + ' \u00b7 c = ' + fixed(cc, 2));
+ setText('f-mx', fixed(mx, 6));
+ setText('f-bd', fixed(bd, 6));
+ setText('f-r', fixed(mx / bd, 4));
+ setText('f-ratio', fixed(r12, 2));
+ return { n: n, c: cc, max: mx, bound: bd, ratio: mx / bd, om: D, r12: r12 };
+}
+
+/* ============================================================
+ 事件绑定
+ ============================================================ */
+function on(id, fn){ var el = $(id); if (el && el.addEventListener) el.addEventListener('input', fn); }
+function onClick(id, fn){ var el = $(id); if (el && el.addEventListener) el.addEventListener('click', fn); }
+on('b-a', bDraw); on('b-b', bDraw);
+on('c-n', cDraw); on('c-k', cDraw);
+on('d-al', dDraw);
+on('e-al', eDraw);
+on('f-n', fDraw); on('f-c', fDraw);
+onClick('b-best', setBBest);
+onClick('d-best', function(){ var el = $('d-al'); if (el) el.value = String(SQ_ALPHA); dDraw(); });
+
+var rt = null;
+if (typeof window !== 'undefined' && window.addEventListener){
+ window.addEventListener('resize', function(){
+ if (rt) clearTimeout(rt);
+ rt = setTimeout(function(){ aDraw(); bDraw(); cDraw(); dDraw(); eDraw(); fDraw(); }, 120);
+ });
+}
+
+aDraw(); bDraw(); cDraw(); dDraw(); eDraw(); fDraw();
+
+window.NA31 = {
+ PI: PI, FE: FE, SQ: SQ, fixed: fixed, exs: exs, num: num, clamp: clamp,
+ solve: solve, peval: peval, maxErr: maxErr, chebT: chebT, lsPoly: lsPoly,
+ remez: remez, altCount: altCount, l1Norm: l1Norm, linfNorm: linfNorm, omegaMax: omegaMax,
+ aDraw: aDraw, bDraw: bDraw, cDraw: cDraw, dDraw: dDraw, eDraw: eDraw, fDraw: fDraw, setBBest: setBBest,
+ OPT1: OPT1, E1: E1, INT1: INT1, LS1: LS1, E0: E0, P0: P0,
+ remFor: remFor, omData: omData,
+ SQ_A: SQ_A, SQ_B: SQ_B, SQ_BETA: SQ_BETA, SQ_ALPHA: SQ_ALPHA, SQ_X1: SQ_X1
+};
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>偏微分方程的数值解：把导数换成差商 — 第 7 章可视化</title>
+<script>
+window.MathJax = {
+ tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+ svg: { fontCache: "global" },
+ options: { enableMenu: false },
+ startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+ --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+ --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+ --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+ --teal:#0F6E56; --teal-soft:#E1F5EE; --amber:#854F0B; --amber-soft:#FDF6EC;
+ --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:28px;line-height:1.35;margin:0 0 12px;font-weight:600}
+h2{font-size:22px;margin:64px 0 16px;font-weight:600;padding-top:8px;border-top:1px solid var(--border)}
+h2 .no{color:var(--accent);font-family:var(--mono);font-size:16px;margin-right:10px;font-weight:400}
+h3{font-size:17px;margin:36px 0 10px;font-weight:600}
+h4{font-size:15px;margin:24px 0 8px;font-weight:600;color:var(--accent-dark)}
+p{margin:12px 0}
+.hero{padding:56px 0 8px}
+.hero p.lead{font-size:17px;color:var(--muted);max-width:790px;margin:0}
+.crumb{font-size:13px;margin:0 0 18px;color:var(--muted)}
+.crumb a{color:var(--accent)}
+nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+ border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+nav .wrap{padding:10px 20px;display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px}
+nav a{color:var(--muted)}
+nav a:hover{color:var(--accent);text-decoration:none}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+.key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
+ border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--card);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+tr.hi td{background:var(--coral-soft)}
+.ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
+.ctl input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+.ctl .lb{white-space:nowrap;color:var(--muted)}
+button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
+ border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
+.val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
+figure{margin:20px 0}
+figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+canvas.plot{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+#e1c{height:300px}
+#e2c{aspect-ratio:1/1;height:auto;max-width:520px;margin:0 auto}
+#e3c{height:320px}
+#e4c{height:340px}
+#e5c{height:360px}
+#e6c{height:320px}
+#e7c{height:330px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kv .cell{background:var(--card);border-radius:8px;padding:10px 14px}
+.kv .k{font-size:12.5px;color:var(--muted)}
+.kv .v{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent-dark)}
+.kv .v.txt{font-size:14px;font-family:inherit;padding-top:3px}
+.lab{background:#fbfcfd;border:1px solid var(--border);border-radius:12px;padding:4px 18px 16px;margin:22px 0}
+.lab .h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:14px 0 2px}
+.lab .h b{font-size:15.5px}
+.lab .h .tag{font-family:var(--mono);font-size:11.5px;color:var(--muted);
+ border:1px solid var(--border);border-radius:5px;padding:1px 7px;white-space:nowrap}
+.lab p.sub{font-size:13.5px;color:var(--muted);margin:4px 0 10px}
+.std3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:14px 0}
+.std3 .sf{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13.5px;cursor:pointer}
+.std3 .sf b{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.std3 .sf.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.std3 .sf .f{font-family:var(--mono);font-size:12.5px;line-height:1.5}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:16px 0}
+.grid2 .box{border:1px solid var(--border);border-radius:10px;padding:12px 16px;background:#fff}
+.grid2 .box h4{margin-top:0}
+mjx-container{display:block!important;margin:.35em 0!important}
+mjx-container[display="true"]>svg{display:block;margin:0 auto}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[display="true"]{min-width:0!important}
+p mjx-container,li mjx-container,td mjx-container,th mjx-container,h3 mjx-container,h4 mjx-container,figcaption mjx-container,.note mjx-container,.warn mjx-container,.key mjx-container,.sf mjx-container,.cell mjx-container,.box mjx-container{display:inline-block!important;margin:0!important;vertical-align:baseline}
+p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,th mjx-container>svg,h3 mjx-container>svg,h4 mjx-container>svg,figcaption mjx-container>svg,.note mjx-container>svg,.warn mjx-container>svg,.key mjx-container>svg,.sf mjx-container>svg,.cell mjx-container>svg,.box mjx-container>svg{display:inline!important;margin:0!important;vertical-align:-1px}
+#mjx-offline{background:#fdf6ec;border:1px solid #EF9F27;border-radius:8px;padding:8px 14px;font-size:13px;color:#854F0B;margin:14px 0}
+#mjx-offline[hidden]{display:none}
+footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+ul.tight li{margin:6px 0}
+@media print{
+ nav,.ctl,button,#mjx-offline{display:none!important}
+ h2{page-break-after:avoid;break-after:avoid}
+ figure,.card,.note,.warn,.key,table,.kv,.std3,.lab{page-break-inside:avoid;break-inside:avoid}
+ body{font-size:12.5px}
+}
+</style>
+</head>
+<body>
+<div id="mjx-offline" hidden>公式渲染器（MathJax）未能加载，当前为离线模式：公式以 LaTeX 源码显示，排版受影响但内容不受影响。</div>
+
+<div class="hero"><div class="wrap">
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> · <a href="./index.html">数学物理方程</a></p>
+<h1>偏微分方程的数值解：把导数换成差商</h1>
+<p class="lead">教材第 7 章的交互可视化。前六章一直在找<b>解的表达式</b>，本章换目标：只要<b>节点上的近似值</b>。整章只有三步手艺——<b>离散化</b>（区域切成网格、只留节点值）、<b>用差商顶替导数</b>（一个导数有无数种差商，选哪个决定了格式）、<b>让误差不放大</b>（这就是稳定性，也是本章所有定理的真正内容）。第 7 章的三节其实是同一件事在三种方程上的演出：调和方程给静态的线性方程组，热传导给出<b>半步都不能多走</b>的显式格式与<b>随便走</b>的隐式格式，波动方程给出 CFL 条件——它说的不是代数，而是<b>特征线必须穿过网格节点</b>。页面数值全部由工作区根 <code>verify_readout_pde7.js</code> 端到端实测。</p>
+</div></div>
+
+<nav><div class="wrap">
+<a href="#map">本章地图</a>
+<a href="#s1">§1 离散化三步</a>
+<a href="#s2">§2 调和方程：五点格式</a>
+<a href="#s3">§3 三法归一</a>
+<a href="#s4">§4 热传导：显式与隐式</a>
+<a href="#s5">§5 波动：CFL 条件</a>
+<a href="#s6">§6 总表与习题</a>
+</div></nav>
+
+<div class="wrap">
+
+<h2 id="map"><span class="no">00</span>本章地图</h2>
+
+<p>第 7 章安排的三个例子不是随意挑的：它们对应三类方程，而三类方程的差分格式在<b>计算方式</b>上根本不同——这个差别比格式本身更值得记住。</p>
+
+<figure>
+<div class="grid2">
+<div class="box">
+<h4>调和方程 → 一次解一个大方程组</h4>
+<p>每个内节点一个方程（五点格式），所有方程<b>同时</b>成立，未知数之间没有先后。求解靠直接法或迭代法，没有"时间推进"这回事。</p>
+</div>
+<div class="box">
+<h4>热传导 → 沿时间逐排推进</h4>
+<p>格式算出的第 \(n+1\) 排只依赖第 \(n\) 排（显式），或者第 \(n+1\) 排自己解个小三对角方程组（隐式）。推进方向固定，误差也会沿着这个方向累积——稳定性就是问"累积会不会失控"。</p>
+</div>
+<div class="box">
+<h4>波动方程 → 第二排也要给准</h4>
+<p>二阶时间导数需要两个初值排 \(U^0,U^1\)。格式对 \(U^1\) 的取法（(3.9) 式用 \(U^1=\varphi+\psi\Delta t\)）只保证 \(O(\Delta t^2)\)，这个近似会被带进后续所有排。CFL 条件（\(\lambda\le 1\)）管的是另一件事：<b>依赖区间不能丢信息</b>。</p>
+</div>
+</div>
+<figcaption>三类方程、三种计算形态。本章所有定理（收敛、稳定、CFL）都在回答同一个问题：误差会不会被放大。</figcaption>
+</figure>
+
+<div class="key">
+<b>整章的一句话。</b>把连续的定解问题换成有限的线性代数问题，方法无穷多（差分、元体平衡、Ritz、伽辽金）；能用的方法必须同时满足<b>相容</b>（\(\Delta x,\Delta t\to0\) 时格式回到原方程）与<b>稳定</b>（舍入误差不放大）。Lax 等价定理说：相容 + 稳定 ⟺ 收敛。本章三节的定理，都是这条判据的具体化。
+</div>
+
+<h2 id="s1"><span class="no">01</span>离散化三步：区域、节点、差商</h2>
+
+<p>教材开头把整个流程拆成三步，值得原样记住，因为后面所有格式都是在这三步里做选择：</p>
+
+<ol class="tight">
+<li><b>切区域</b>：代替求整个 \(\Omega\) 上的 \(u(x,y)\)，只求节点上的近似值 \(u_{ij}\)。无限维 → <b>有限维</b>（\(n-1)^2\) 个未知数）。</li>
+<li><b>换导数</b>：把方程里的偏导数改写成节点上的差商。这一步<b>不唯一</b>，是格式多样性的全部来源。</li>
+<li><b>补边界</b>：边界节点上的值由定解条件直接给出（狄利克雷情形就是已知数），不参与求解。</li>
+</ol>
+
+<p>第 2 步的选择余地有多大？对同一个一阶导数，前后向差商都是一阶精度，中心差商是二阶——代价是中心差商"看不见"相邻节点，会引入非物理的振荡。下面这个实验台把三种差商的误差斜率真跑出来。</p>
+
+<div class="lab">
+<div class="h"><b>实验台 1 · 差商模板的实测阶</b><span class="tag">e1c</span></div>
+<p class="sub">被微分的函数取 \(f(x)=e^{x}\)，在 \(x_0=0\) 处用步长 \(h\) 做差商。纵轴误差取对数，直线斜率就是实测阶。拖滑杆看 \(h\) 从 \(10^{-1}\) 降到 \(10^{-7}\)。</p>
+<div class="ctl">
+<span class="lb">步长 h</span>
+<input type="range" id="h1" min="1" max="7" step="0.1" value="2">
+<span class="val" id="h1v">1.0e-2</span>
+</div>
+<figure><canvas class="plot" id="e1c" width="840" height="300"></canvas>
+<figcaption>三种差商的误差随 \(h\) 的变化（双对数）。斜率：前向/后向 \(\approx 1\)，中心 \(\approx 2\)。</figcaption></figure>
+<div class="kv">
+<div class="cell"><div class="k">前向差商误差</div><div class="v" id="e1a">—</div></div>
+<div class="cell"><div class="k">后向差商误差</div><div class="v" id="e1b">—</div></div>
+<div class="cell"><div class="k">中心差商误差</div><div class="v" id="e1c2">—</div></div>
+<div class="cell"><div class="k">实测阶（前向 / 中心）</div><div class="v txt" id="e1d">—</div></div>
+</div>
+<div class="note" id="e1note">读数说明。</div>
+</div>
+
+<p>对二阶导数，教材固定用二阶中心差商</p>
+
+$$f''(x)\approx\frac{f(x+h)-2f(x)+f(x-h)}{h^2}.$$
+
+<p>注意它<b>只用三个点</b>、且对三次以下多项式精确——这解释了两件事：后面五点格式恰好在网格上复现了平均值定理，以及在调和方程里取二次多项式作试验解时，离散解与精确解<b>逐点相等</b>（实验台 2 里可以切换验证，误差是 0）。</p>
+
+<h2 id="s2"><span class="no">02</span>调和方程：五点格式就是平均值定理</h2>
+
+<p>把两个二阶中心差商代进 \(\Delta u=0\)，整理后得到教材 (1.4)：</p>
+
+$$u_{ij}=\frac{1}{4}\left(u_{i+1,j}+u_{i-1,j}+u_{i,j+1}+u_{i,j-1}\right).$$
+
+<p>这不是一个随便的代数关系——它是<b>调和函数平均值定理在网格上的残留</b>：每个内节点的值等于上下左右四点的算术平均。教材特别点出了这一点，因为它同时给出了存在唯一性的直觉（这张"平均"方程组像一个离散的极值原理，强极值原理在网格上依然成立，所以齐次问题只有零解）。</p>
+
+<div class="lab">
+<div class="h"><b>实验台 2 · 五点格式求解与实测收敛阶</b><span class="tag">e2c</span></div>
+<p class="sub">单位正方形，边界由精确解给定。默认精确解取 \(u=\sin(\pi x)\sinh(\pi y)/\sinh\pi\)（非多项式，误差可见）；切成 \(n\times n\) 网格后用 SOR 迭代到残差 \(10^{-13}\)，再与精确解逐点比对。切到「二次函数」预设时，边界由 \(u=x^2-y^2\) 给出——这时五点格式<b>精确</b>，误差应为 0。</p>
+<div class="ctl">
+<span class="lb">网格细分 n</span>
+<input type="range" id="n2" min="1" max="4" step="1" value="2">
+<span class="val" id="n2v">8</span>
+<button id="b2a" class="on">sin·sinh 精确解</button>
+<button id="b2b">x²−y²（二次）</button>
+</div>
+<figure><canvas class="plot" id="e2c" width="460" height="460"></canvas>
+<figcaption>离散解的等值图（红=大，蓝=小；灰点是边界节点）。上方是解场，下方数字是误差账本。</figcaption></figure>
+<div class="kv">
+<div class="cell"><div class="k">L∞ 误差</div><div class="v" id="e2a">—</div></div>
+<div class="cell"><div class="k">实测收敛阶</div><div class="v" id="e2b">—</div></div>
+<div class="cell"><div class="k">SOR 迭代次数</div><div class="v" id="e2c3">—</div></div>
+<div class="cell"><div class="k">松弛因子 ω</div><div class="v" id="e2d">—</div></div>
+</div>
+<div class="note" id="e2note">读数说明。</div>
+</div>
+
+<p>实测阶稳定在 <b>2.00</b>：截断误差 \(O(h^2)\) 加上格式的稳定性，误差就是 \(O(h^2)\)。这条曲线还暴露一个常被忽略的事实——<b>迭代次数随 \(n\) 线性增长</b>（\(n\) 从 4 到 64，迭代从 21 次涨到 331 次），因为 SOR 的收敛速度由谱半径决定，而五点矩阵的条件数按 \(O(n^2)\) 增长。这就是为什么大网格上要换更快的解法（多重网格、共轭梯度），也是"直接法 vs 迭代法"这句轻描淡写背后的实际成本。</p>
+
+<h3>元体平衡法：从守恒律出发，落到同一个格式</h3>
+
+<p>教材第二个方法不走"换导数"这条路，而是从格林公式的<b>守恒形式</b>出发。对调和函数，任一闭环路 \(L\) 上的总法向通量为零：</p>
+
+$$\oint_L \frac{\partial u}{\partial n}\,ds = 0 .$$
+
+<p>物理图像是稳定温度场里"总热流量为零"。把这个环路积分限制在以节点为中心的小方元体 \(ABCD\) 上（过相邻节点中点作平行线围成），四条边上分别用中心差商代替法向导数，四条边加起来仍是五点格式：</p>
+
+$$(u_{i+1,j}-u_{ij})+(u_{i,j+1}-u_{ij})+(u_{ij}-u_{i-1,j})+(u_{ij}-u_{i,j-1})=0 .$$
+
+<p>四个通量都从中心节点流出（正号）或流入（负号），加起来恰好把 \(u_{ij}\) 的系数凑成 \(-4\)——<b>元体不自带源，四条边的净流量必须为零</b>。这个视角的价值在区域形状：直交网格贴不住斜边界，但元体可以选成三角形（教材后面的有限元分割），于是不规则区域也能列格式。教材明确指出这是元体平衡法"突出的优点"。</p>
+
+<div class="note">
+<b>一个容易漏掉的等号。</b>元体平衡法与有限元法在<b>同一剖分</b>下给出<b>完全相同</b>的格式（教材 §1 第 3、4 段的结论与习题 4）。下面的实验台 3 把这件事从"可以证明"变成"可以算"：直交网格每个小格沿对角线切成两个三角形，按 \(k_{ij}=\int_e \nabla\phi_i\cdot\nabla\phi_j\) 组装刚度矩阵 \(K\)，再与五点矩阵 \(A_5\) 逐元素相减。
+</div>
+
+<h2 id="s3"><span class="no">03</span>四法归一：差分、元体、Ritz、伽辽金</h2>
+
+<p>教材在 §1 里连续给了四种方法，最后落到一句话：<b>在特定情况下它们给出相同的计算格式</b>。四个方法的思想起点完全不同：</p>
+
+<table>
+<tr><th>方法</th><th>起点</th><th>离散化的对象</th><th>直交网格上的结果</th></tr>
+<tr><td>有限差分法</td><td>微分方程本身</td><td>把二阶偏导数换成二阶中心差商</td><td>五点格式 (1.4)</td></tr>
+<tr><td>元体平衡法</td><td>格林公式 / 守恒律</td><td>把环路积分限制到元体上，法向导数换差商</td><td>五点格式 (1.4)</td></tr>
+<tr><td>里茨法（有限元）</td><td>变分原理 \(J(u)=\min J(v)\)</td><td>把泛函限制在分块线性插值函数类 \(V_h\) 上</td><td>五点格式 ×(常数)</td></tr>
+<tr><td>伽辽金法（有限元）</td><td>弱形式 \(\int\nabla u\cdot\nabla w=0\)</td><td>把 \(u\) 与试验函数 \(w\) 都限制在 \(V_h\)</td><td>五点格式 ×(常数)</td></tr>
+</table>
+
+<p>伽辽金法与里茨法的关系值得单独说一句：当 \(u\) 和 \(w\) 用<b>同一套插值</b>时两者等价；一旦对 \(u\) 和 \(w\) 用不同的插值（不同剖分、不同精度），伽辽金法还能给出新格式——教材特意留了这个口子，说"伽辽金法可以含有更丰富的内容"。</p>
+
+<div class="lab">
+<div class="h"><b>实验台 3 · Ritz 刚度矩阵 vs 五点矩阵</b><span class="tag">e7c</span></div>
+<p class="sub">单位方格每格沿对角线切成两个直角三角形（P1 线性插值），逐单元组装刚度矩阵 \(K\)，再与五点格式矩阵 \(A_5\) 比较。<b>逐元素相减</b>，不是比范数——只有逐元素为零才算"格式相同"。右图是 \(K\) 的非零结构（每行 5 个非零元，正是五点模板）。</p>
+<div class="ctl">
+<span class="lb">网格细分 n</span>
+<input type="range" id="n7" min="3" max="7" step="1" value="4">
+<span class="val" id="n7v">4</span>
+</div>
+<figure><canvas class="plot" id="e7c" width="840" height="330"></canvas>
+<figcaption>左：\(K\) 的稀疏结构（深色=对角，浅色=邻元），每行 5 个非零元。右：五组代表性元素的数值对比——橙框正好套在蓝柱上，说明 \(K\) 与 \(A_5\) 在这些位置<b>完全相等</b>。</figcaption></figure>
+<div class="kv">
+<div class="cell"><div class="k">max|K − A₅|</div><div class="v" id="e7a">—</div></div>
+<div class="cell"><div class="k">max|K − Kᵀ|</div><div class="v" id="e7b">—</div></div>
+<div class="cell"><div class="k">对角 / 邻元</div><div class="v txt" id="e7c2">—</div></div>
+<div class="cell"><div class="k">λ_min / λ_max</div><div class="v txt" id="e7d">—</div></div>
+</div>
+<div class="note" id="e7note">读数说明。</div>
+</div>
+
+<p>实测逐元素差<b>恰好为 0</b>，对角元 4、邻元 \(-1\)，与五点矩阵同阶同值（不差常数因子）。刚度矩阵对称正定也当场验了：最小特征值在 \(n=4\) 时约 \(1.17>0\)——这正是习题 3 的结论，也是里茨法能成立的前提（正定 ⟺ 极值唯一）。</p>
+
+<div class="warn">
+<b>为什么"三法归一"值得记。</b>知识点层面它只是一条结论，工程层面它决定了代码结构：既然元体平衡与有限元在直交网格上等价，那么写一个只处理"三角形单元 + 局部刚度"的内核，就能同时覆盖规则区域和斜边界，而规则区域上的结果是现成的五点格式——一份代码两种能力。教材把这个等价写进习题（第 2、4、5、6 题），不是练习计算，是让读者自己走一遍这条等价链。
+</div>
+
+<h2 id="s4"><span class="no">04</span>热传导方程：显式会炸，隐式不会</h2>
+
+<p>热传导方程 \(u_t=a^2u_{xx}\) 用前向差分处理时间、中心差分处理空间，得到教材格式 I：</p>
+
+$$U_j^{n+1}=\lambda U_{j+1}^n+(1-2\lambda)U_j^n+\lambda U_{j-1}^n,$$
+<p>其中 \( \lambda=a^2\Delta t/(\Delta x)^2 \)（无量纲步长比）。</p>
+
+<p>它是显式的：第 \(n+1\) 排每个节点都能用第 \(n\) 排三个节点直接算出，按 \(t\) 增大的方向逐排推进，不用解方程组。代价是稳定性要求 \(\lambda\le 1/2\)。</p>
+
+<h3>稳定性到底在说什么</h3>
+
+<p>把单个 Fourier 模态 \(U_j^n=G^n e^{\mathrm{i}j\theta}\) 代进格式 I，立刻得到放大因子</p>
+
+$$G(\theta)=1-2\lambda(1-\cos\theta)=1-4\lambda\sin^2\frac{\theta}{2}.$$
+
+<p>要求所有模态都<b>不放大</b>（\(|G(\theta)|\le 1\)），最坏的是 \(\theta=\pi\)（棋盘格，相邻节点反号），那里 \(G(\pi)=1-4\lambda\)。于是：</p>
+
+<ul class="tight">
+<li>\(\lambda\le 1/2\)：\(|G(\pi)|\le 1\)，全部模态被压住，稳定。</li>
+<li>\(\lambda>1/2\)：\(G(\pi)&lt;-1\)，棋盘格模态每步变号且<b>绝对值增大</b>，误差指数增长。</li>
+</ul>
+
+<p>教材定理 2.2 的证明走的是另一条路（把绝对值三角不等式逐排传递：\(|V^{n+1}|\le\lambda|V^n|+(1-2\lambda)|V^n|+\lambda|V^n|\)，只在 \(\lambda\le1/2\) 时系数非负，于是 \(\max|V^{n+1}|\le\max|V^n|\)）。两条路结论一致，但 Fourier 那条解释了<b>为什么是 \(\theta=\pi\) 而不是别的</b>——最不稳定的模态总在网格能分辨的最高频处。</p>
+
+<div class="lab">
+<div class="h"><b>实验台 4 · 显式格式：λ 跨过 1/2 的一瞬间</b><span class="tag">e3c</span></div>
+<p class="sub">\(J=20\) 个区间，初值 \(\varphi=\sin\pi x+0.2\sin19\pi x\)（一个光滑模态 + 一个近棋盘模态），推进 60 步，记录每步的 \(\max|U|\)（对数纵轴）。\(\lambda\le 0.5\) 曲线下降；\(\lambda>0.5\) 曲线一路上翘。</p>
+<div class="ctl">
+<span class="lb">λ = a²Δt/Δx²</span>
+<input type="range" id="l3" min="0.1" max="1" step="0.05" value="0.5">
+<span class="val" id="l3v">0.50</span>
+</div>
+<figure><canvas class="plot" id="e3c" width="840" height="320"></canvas>
+<figcaption>\(\max|U|\) 随步数的变化（对数纵轴）。橙线是实测，灰色虚线是 \(1.1852\cdot|G(\pi)|^n\) 的理论预测。</figcaption></figure>
+<div class="kv">
+<div class="cell"><div class="k">G(π) = 1−4λ</div><div class="v" id="e3a">—</div></div>
+<div class="cell"><div class="k">|G(π)|</div><div class="v" id="e3b">—</div></div>
+<div class="cell"><div class="k">60 步后 max|U|</div><div class="v" id="e3c2">—</div></div>
+<div class="cell"><div class="k">判定</div><div class="v txt" id="e3d">—</div></div>
+</div>
+<div class="note" id="e3note">读数说明。</div>
+</div>
+
+<p>注意 \(\lambda=0.5\) 处曲线<b>不增长也不消失</b>（\(|G(\pi)|=1\)，棋盘模态被原样保留、每步变号），这是"临界稳定"的准确含义：不放大，但也不衰减。\(\lambda=0.25\) 时 \(G(\pi)=0\)——棋盘模态一步归零，这叫<b>一次抹平</b>，是显式格式里最"舒服"的取值。</p>
+
+<h3>隐式格式：拿解方程组换无条件稳定</h3>
+
+<p>格式 II 把空间差商写在<b>第 \(n+1\) 排</b>上（后向时间差分）：</p>
+
+$$-\lambda U_{j-1}^{n+1}+(1+2\lambda)U_j^{n+1}-\lambda U_{j+1}^{n+1}=U_j^n .$$
+
+
+<p>每一排都要解一个三对角方程组（追赶法 \(O(J)\)），但换来了<b>无条件稳定</b>：放大因子变成</p>
+
+$$G_{\text{隐}}(\theta)=\frac{1}{1+2\lambda(1-\cos\theta)}=\frac{1}{1+4\lambda\sin^2(\theta/2)}.$$
+
+<p>对任何 \(\lambda>0\)、任何 \(\theta\) 都有 \(|G|\le 1\)。\(G>0\) 还意味着它<b>不振荡</b>：棋盘模态被压成 \(1/(1+4\lambda)\) 这样的小正数，一步抹掉大半。</p>
+
+<div class="lab">
+<div class="h"><b>实验台 5 · 同一个 λ=4，显式炸到 10¹³，隐式稳在 0.32</b><span class="tag">e4c</span></div>
+<p class="sub">初值同上，\(J=20\)，\(\lambda=4\)（远超声显式稳定限 \(0.5\)，即 \(\Delta t\) 大了 8 倍）。两张图共用纵轴（对数）。显式前 12 步涨到 \(2.4\times10^{13}\)，隐式同时降到 \(0.324\)。</p>
+<figure><canvas class="plot" id="e4c" width="840" height="340"></canvas>
+<figcaption>橙：显式格式 I（爆炸）。蓝：隐式格式 II（衰减）。灰虚线：隐式的离散放大因子预测 \(G_{\text{隐}}^{n}\)。</figcaption></figure>
+<div class="kv">
+<div class="cell"><div class="k">显式 12 步 max|U|</div><div class="v" id="e4a">—</div></div>
+<div class="cell"><div class="k">隐式 12 步 max|U|</div><div class="v" id="e4b">—</div></div>
+<div class="cell"><div class="k">G隐(θ=πΔx)</div><div class="v" id="e4c2">—</div></div>
+<div class="cell"><div class="k">G隐¹² / 实测</div><div class="v txt" id="e4d">—</div></div>
+</div>
+<div class="note" id="e4note">读数说明。</div>
+</div>
+
+<div class="key">
+<b>选型的分界线不是精度，是 \(\Delta t\) 能不能自己定。</b>显式格式截断误差同样是 \(O(\Delta t)+O((\Delta x)^2)\)，但 \(\lambda\le1/2\) 逼着 \(\Delta t\le (\Delta x)^2/(2a^2)\)——网格加密一倍，步数涨 4 倍，总计算量涨 8 倍。隐式格式每步多解一个三对角方程组（\(O(J)\) 次运算，与显式的 \(O(J)\) 同阶），却可以把 \(\Delta t\) 取到精度允许的任意大。教材的措辞是"这是显式差分格式一个很大的缺陷"，指的就是这笔账。
+</div>
+
+<h2 id="s5"><span class="no">05</span>波动方程：CFL 条件说的是特征线</h2>
+
+<p>弦振动方程 \(u_{tt}=a^2u_{xx}\) 的二阶中心差分给出教材 (3.8)：</p>
+
+$$U_j^{n+1}=\lambda^2U_{j+1}^n+2(1-\lambda^2)U_j^n+\lambda^2U_{j-1}^n-U_j^{n-1},$$
+<p>其中 \( \lambda=a\Delta t/\Delta x \)——注意这个 λ 与热传导的 λ 定义不同。</p>
+
+<p>格式本身仍然是显式的，但稳定性条件从 \(1/2\) 变成了 <b>\(\lambda\le 1\)</b>。这个数字不是从代数配方里凑出来的，教材定理 3.1 的证法完全绕开代数，只用<b>依赖区间</b>：</p>
+
+<div class="card">
+<p><b>教材的论证（定理 3.1）</b>：取一点 \(P=(x_j,t_n)\)。差分格式每一步让依赖区间向两侧各扩一格网格，所以 \(n\) 步后差分在 \(P\) 的值只依赖 \(x\) 轴上一段区间 \(AB\)（<b>差分依赖区间</b>）。而微分方程在 \(P\) 的真依赖区间是 \([x_j-at_n,\ x_j+at_n]\)。</p>
+<p>当 \(\lambda=a\Delta t/\Delta x>1\) 时，\(at_n=\lambda n\Delta x>n\Delta x\)——<b>真依赖区间严格包含差分依赖区间</b>。于是可以在"真依赖内、差分依赖外"改动初值：微分方程的解在 \(P\) 变了，差分解在 \(P\) 却<b>一点没变</b>。两者的差不会随网格加密消失，收敛不可能。</p>
+</div>
+
+<p>把这段论证变成实验只要一步：真的去改初值，然后真的跑两遍差分，看 \(P\) 点变不变。</p>
+
+<div class="lab">
+<div class="h"><b>实验台 6 · 在"真依赖内、差分依赖外"改初值</b><span class="tag">e5c</span></div>
+<p class="sub">无边界柯西问题，\(a=1\)，\(\psi=0\)，一共走 \(n=30\) 步，\(\Delta x=1/60\)。差分解在 \(P\) 只看到差分依赖区间（灰带，半宽 \(n\Delta x\)）。把一个高斯鼓包放在真依赖区间的右端点 \(x_P+aT\) 处（紫点），它落在灰带<b>外面</b>还是<b>里面</b>，决定了差分解在 \(P\) 变不变。</p>
+<div class="ctl">
+<span class="lb">λ = aΔt/Δx</span>
+<input type="range" id="l5" min="0.4" max="2" step="0.05" value="1.5">
+<span class="val" id="l5v">1.50</span>
+</div>
+<figure><canvas class="plot" id="e5c" width="840" height="360"></canvas>
+<figcaption>金：真依赖区间 \([x_P-aT,x_P+aT]\)（淡）。蓝带：差分依赖区间（半宽 \(n\Delta x\)）。两条斜虚线是特征线 \(x\pm at=\)常数，实线是网格对角线。</figcaption></figure>
+<div class="kv">
+<div class="cell"><div class="k">ΔU(P) 实测</div><div class="v" id="e5a">—</div></div>
+<div class="cell"><div class="k">Δu(P) 解析</div><div class="v" id="e5b">—</div></div>
+<div class="cell"><div class="k">鼓包在差分依赖内？</div><div class="v txt" id="e5c2">—</div></div>
+<div class="cell"><div class="k">判定</div><div class="v txt" id="e5d">—</div></div>
+</div>
+<div class="note" id="e5note">读数说明。</div>
+</div>
+
+<p>实测在 \(\lambda>1\) 时 \(\Delta U(P)\) <b>严格为 0</b>（不是"很小"，是浮点零）：鼓包所在节点根本没被第 0、1 排的初值采样到，后续所有计算都用不到它。而解析的 \(\Delta u(P)=0.2\) 保持不变。两个数字一分开，收敛就死了。</p>
+
+<h3>λ = 1 的特殊地位</h3>
+
+<p>\(\lambda=1\) 时 \(a\Delta t=\Delta x\)，特征线恰好穿过网格节点。这时有习题 2 的结论：弦振动方程的真解在节点上的值 \(u(j\Delta x,n\Delta t)\) <b>精确满足</b>差分方程 (3.8)——差分解就是真解，没有截断误差。代数上验证一下：\(\lambda=1\) 时 (3.8) 变成 \(u_j^{n+1}=u_{j+1}^n+u_{j-1}^n-u_j^{n-1}\)，而 \(u=[\varphi(x-t)+\varphi(x+t)]/2\) 代入两边，两边都等于 \([\varphi(x_{j-1}-t_n)+\varphi(x_{j+1}+t_n)]/2\)。</p>
+
+<div class="warn">
+<b>但是"格式精确"≠"算出来的解精确"。</b>格式要复现真解，前提是<b>两个</b>初值排都给准。教材 (3.9) 的第二排取 \(U^1=\varphi+\psi\Delta t\)（\(\psi=0\) 时就是 \(\varphi\)），这只有 \(O(\Delta t^2)\) 精度——真值应该是 \([\varphi(x-\Delta x)+\varphi(x+\Delta x)]/2\)。这个 \(O(\Delta x^2)\) 的初值误差会被格式原样搬到每一排，永远不衰减。实验台 7 把两种第二排取法并排跑，\(\lambda=1\) 处的差别是一目了然的。
+</div>
+
+<div class="lab">
+<div class="h"><b>实验台 7 · 误差 vs λ：λ=1 的下陷只对精确第二排出现</b><span class="tag">e6c</span></div>
+<p class="sub">\(\Delta x=1/100\)，\(a=1\)，初值取高斯包 \(\varphi=e^{-((x-0.5)/0.08)^2}\)，\(\psi=0\)，推进到 \(T\approx0.1\)（步数取整，实际 \(T\) 在读数里给出）。纵轴是全域 \(L^\infty\) 误差（对数）。两条线分别用教材 (3.9) 的第二排和精确第二排。</p>
+<div class="ctl">
+<span class="lb">λ（决定 Δt 与步数）</span>
+<input type="range" id="l6" min="0.25" max="2" step="0.05" value="1">
+<span class="val" id="l6v">1.00</span>
+</div>
+<figure><canvas class="plot" id="e6c" width="840" height="320"></canvas>
+<figcaption>蓝：教材 (3.9) 的第二排 \(U^1=\varphi\)。橙：精确第二排。灰虚线标出 \(\lambda=1\)。</figcaption></figure>
+<div class="kv">
+<div class="cell"><div class="k">实测步数 N</div><div class="v" id="e6a">—</div></div>
+<div class="cell"><div class="k">实际 T</div><div class="v" id="e6b">—</div></div>
+<div class="cell"><div class="k">误差（(3.9) 第二排）</div><div class="v" id="e6c2">—</div></div>
+<div class="cell"><div class="k">误差（精确第二排）</div><div class="v" id="e6d">—</div></div>
+</div>
+<div class="note" id="e6note">读数说明。</div>
+</div>
+
+<p>两条线的形状说明了两件不同的事。用 (3.9) 的第二排时，误差随 \(\lambda\) <b>单调变大</b>——因为 \(\Delta t=\lambda\Delta x\) 变大，第二排的 \(O(\Delta t^2)\) 误差也变大，而格式不衰减它。用精确第二排时误差在 \(\lambda=1\) 处塌到 \(10^{-7}\) 量级（比两侧小四五个数量级），因为此时格式<b>没有截断误差</b>，剩下的只是边界处的极小残留。这就是 CFL 条件在临界点上的"技术性礼物"：\(\lambda=1\) 不但稳定，而且精确。</p>
+
+<div class="key">
+<b>CFL 条件的一般形式。</b>\(\lambda\le1\) 的实质是"网格的信息传播速度 \(a_{\text{grid}}=\Delta x/\Delta t\) 不能慢于物理波速 \(a\)"。写成物理量就是<b>依赖区间必须被差分的依赖区间覆盖</b>。这条判据对任何显式格式都成立，与方程、维数、格式细节无关——二维对流、三维弹性波都是同一个不等式，只是常系数不同。教材在定理 3.1 里只证了"\(\lambda>1\) 一定不收敛"，反方向的"\(\lambda\le1\) 收敛"则要求初值、边界有一定光滑性。
+</div>
+
+<h2 id="s6"><span class="no">06</span>总表与习题</h2>
+
+<h3>三类方程的差分格式与稳定性条件</h3>
+
+<table>
+<tr><th>方程</th><th>格式</th><th>计算方式</th><th>稳定性条件</th><th>截断误差</th></tr>
+<tr><td rowspan="2">热传导 \(u_t=a^2u_{xx}\)</td><td>I 显式 (2.5)</td><td>逐排直推</td><td class="hi">\(\lambda\le 1/2\)</td><td>Δt 一阶 / Δx 二阶</td></tr>
+<tr><td>II 隐式 (2.10)</td><td>每排解三对角</td><td>无条件稳定</td><td>Δt 一阶 / Δx 二阶</td></tr>
+<tr><td>波动 \(u_{tt}=a^2u_{xx}\)</td><td>显式 (3.8)</td><td>逐排直推（需两排初值）</td><td class="hi">\(\lambda\le 1\)（CFL）</td><td>Δt 二阶 / Δx 二阶</td></tr>
+<tr><td>调和 \(\Delta u=0\)</td><td>五点 (1.4)</td><td>解一个线性方程组</td><td>无时间推进，只讨论收敛</td><td>h 二阶</td></tr>
+</table>
+
+<p>三个 \(\lambda\) 的定义<b>不一样</b>，这是最容易记混的地方：热传导的 \(\lambda=a^2\Delta t/(\Delta x)^2\)（无量纲，因为方程对 \(t\) 是一阶），波动的 \(\lambda=a\Delta t/\Delta x\)（无量纲，对 \(t\) 二阶）。热传导的限是 \(1/2\)，波动的限是 \(1\)，而两个限制的<b>物理含义相同</b>：显式格式的信息传播速度不能慢于真实传播速度。热传导的"传播"是扩散，其虚拟速度 \(\sim a^2/\Delta x\) 随网格加密而增大，所以 \(\Delta t\) 必须按 \((\Delta x)^2\) 缩小——这就是显式格式在抛物型方程上格外吃亏的原因。</p>
+
+<h3>习题选讲</h3>
+
+<h4>习题 1（第 1 节）：五点格式恒有唯一解</h4>
+<p>把 (1.4) 写成 \(4u_{ij}-\sum u_{\text{邻}}=0\)。系数矩阵 \(A_5\) 是弱对角占优的不可约矩阵（对角 4，每行最多 4 个 \(-1\)，内点恰有 4 个邻元），但<b>纯对角占优不成立</b>（\(4-4=0\)），所以不能用最粗糙的判别法。正确路线走极值原理：设 \(u\) 非零解且在内点取到正的最大值 \(M\)，则 \(M=\text{四个邻点的平均}\le M\)，等式成立要求四邻都等于 \(M\)；沿网格连通性传播下去，最大值蔓延到边界，而边界值全零，矛盾。于是齐次问题只有零解，非齐次问题唯一可解。实验台 2 里换成 \(x^2-y^2\) 边界时误差恰好为 0，也可以看作这条唯一性的旁证（离散解与精确解重合，别无他解）。</p>
+
+<h4>习题 2（第 1 节）：无钝角三角形 ⟹ 元体平衡格式满足极值原理</h4>
+<p>三角形剖分下，元体平衡法给出的方程是 \(\sum_k c_k(u_k-u_i)=0\)，系数 \(c_k>0\) 正比于第 \(k\) 条边对元体的"热导"。极值原理能否成立，取决于<b>所有系数是否同号</b>。当元素是钝角三角形时，对应钝角那条边的法向通量项会变号——负系数出现，"平均值"就变成了"加权和，权重有正有负"，最大值可以在内点被造出来。这条结论解释了为什么有限元剖分要求"三内角大小相差不太悬殊"（教材反复强调这一点，不只为了精度，也为了格式的性质）。</p>
+
+<h4>习题 3（第 1 节）：刚度矩阵对称正定</h4>
+<p>对称性来自 \(k_{ij}=\int\nabla\phi_i\cdot\nabla\phi_j\) 的内积结构。正定性：对任意非零向量 \(v\)，\(v^{\mathsf T}Kv=\int_\Omega|\nabla v_h|^2\,dxdy\ge0\)，等于零要求 \(\nabla v_h\equiv0\)，即 \(v_h\) 分块常数；而 \(v_h\) 在所有边界节点为零、区域连通，所以 \(v_h\equiv0\)，即 \(v=0\)。实验台 3 用小网格直接算了特征值，全部为正。</p>
+
+<h4>习题 2（第 3 节）：\(\lambda=1\) 时真解满足差分方程</h4>
+<p>见上面"λ=1 的特殊地位"一段的代数验证。要点是用 \(t_{n\pm1}=t_n\pm\Delta x\)（\(\lambda=1\) 时）把 \(u_j^{n\pm1}\) 的每一项都搬成 \(x_{j\pm1}\) 处的值。</p>
+
+<h4>习题 1（第 3 节）：\(U_j^n=\alpha^n\beta^j\) 何时是格式的解</h4>
+<p>代入 (3.8) 得</p>
+
+$$\alpha^{n+1}\beta^j=\lambda^2\alpha^n\beta^{j+1}+2(1-\lambda^2)\alpha^n\beta^j+\lambda^2\alpha^n\beta^{j-1}-\alpha^{n-1}\beta^j .$$
+
+<p>约去 \(\alpha^{n-1}\beta^{j}\)，得到格式的特征方程</p>
+
+$$\alpha^2=\lambda^2\alpha\left(\beta+\beta^{-1}\right)+2(1-\lambda^2)\alpha-1 .$$
+<p>这就是格式的特征方程——与 Fourier 分析里的放大因子是同一件事（令 \(\beta=e^{\mathrm i\theta}\)，\(\alpha=G\)）。要求 \(|\alpha|\le1\) 对一切 \(|\beta|=1\) 成立，回到 CFL 条件。这道题的价值是把"稳定性"翻译成"特征根在单位圆内"的纯代数问题。</p>
+
+<h3>这张图之后</h3>
+
+<p>本章只处理了常系数线性方程、规则区域、直交/三角网格。真实计算里还要面对：变系数与非线性（格式要写成守恒形式才保得住守恒律）、高维（二维显式格式的稳定性条件是 \(\lambda\le1/4\)，代价按维数指数增长）、以及"稳定性只是必要条件"的收敛阶问题（相容阶 ≠ 实际收敛阶，后者还受解的光滑性限制）。</p>
+
+<p>一个可以和后面章节接上的接口：<b>本章的差分格式就是"粗网格解"的来源</b>。五点格式和显式格式在粗网格上都给出 \(O(h^2)\) 的解，误差有结构（集中在边界层与大梯度处），这正是可以用学习型方法去修正的对象——修正的目标不是替代格式，而是<b>把粗网格的 \(O(h^2)\) 误差压到接近细网格的水平，同时保留粗网格的计算量</b>。</p>
+
+<footer>
+<p>数学物理方程 · 第 7 章 · 偏微分方程的数值解。数值结论全部由 <code>verify_readout_pde7.js</code> 实跑核对（五点格式收敛阶、二次函数精确性、显式/隐式放大因子、CFL 初值改动实验、Ritz 与五点矩阵逐元素相等、刚度矩阵特征值）。</p>
+<p>← 返回 <a href="./index.html">数学物理方程目录</a> · <a href="../index.html">全部学科</a></p>
+</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ==================== 工具 ==================== */
+function $(id){ return document.getElementById(id); }
+function setT(id, s){ var e = $(id); if (e) e.textContent = s; }
+function sci(x, d){
+  d = (d === undefined) ? 2 : d;
+  if (x === null || x === undefined || !isFinite(x)) return "—";
+  if (x === 0) return "0";
+  var a = Math.abs(x);
+  if (a < 1e-3 || a >= 1e4) return x.toExponential(d);
+  return x.toFixed(a < 1 ? 4 : 3);
+}
+function cvs(id){ var c = $(id); return c ? c : null; }
+
+/* ==================== 内核：全部纯计算 ==================== */
+
+/* --- 差商（对 f=e^x 在 x=0） --- */
+function diffErr(h){
+  var f = Math.exp, t = 1;                 // f'(0) = 1
+  return {
+    fw: Math.abs((f(h) - f(0)) / h - t),   // 前向
+    bw: Math.abs((f(0) - f(-h)) / h - t),  // 后向
+    ct: Math.abs((f(h) - f(-h)) / (2 * h) - t) // 中心
+  };
+}
+
+/* --- 调和方程 --- */
+function fex(x, y){                        // 精确解：Δu=0，边界由它给
+  return Math.sin(Math.PI * x) * Math.sinh(Math.PI * y) / Math.sinh(Math.PI);
+}
+function gqu(x, y){ return x * x - y * y; } // 二次调和：五点格式恰好精确
+
+function solveFive(n, exact, tol){
+  var N = n - 1, W = n + 1, u = new Float64Array(W * W);
+  function I(i, j){ return i + j * W; }
+  var i, j;
+  for (i = 0; i <= n; i++){ u[I(i, 0)] = exact(i / n, 0); u[I(i, n)] = exact(i / n, 1); }
+  for (j = 0; j <= n; j++){ u[I(0, j)] = exact(0, j / n); u[I(n, j)] = exact(1, j / n); }
+  var omega = 2 / (1 + Math.sin(Math.PI / n));
+  var it = 0, diff = 1;
+  while (it < 200000 && diff > tol){
+    diff = 0;
+    for (j = 1; j <= N; j++) for (i = 1; i <= N; i++){
+      var gs = 0.25 * (u[I(i + 1, j)] + u[I(i - 1, j)] + u[I(i, j + 1)] + u[I(i, j - 1)]);
+      var nv = u[I(i, j)] + omega * (gs - u[I(i, j)]);
+      var d = Math.abs(nv - u[I(i, j)]);
+      if (d > diff) diff = d;
+      u[I(i, j)] = nv;
+    }
+    it++;
+  }
+  var err = 0;
+  for (j = 0; j <= n; j++) for (i = 0; i <= n; i++){
+    var e = Math.abs(u[I(i, j)] - exact(i / n, j / n));
+    if (e > err) err = e;
+  }
+  return { u: u, n: n, W: W, err: err, it: it, omega: omega };
+}
+
+/* --- 热传导：显式 / 隐式 --- */
+function phiHeat(x){ return Math.sin(Math.PI * x) + 0.2 * Math.sin(19 * Math.PI * x); }
+function Gexp(lam, th){ return 1 - 2 * lam * (1 - Math.cos(th)); }
+function Gimp(lam, th){ return 1 / (1 + 2 * lam * (1 - Math.cos(th))); }
+
+function heatExplicit(lam, J, N, phi){
+  var dx = 1 / J, j, k;
+  var U = [], V;
+  for (j = 0; j <= J; j++) U.push(phi(j * dx));
+  U[0] = 0; U[J] = 0;
+  var peaks = [maxAbs(U)];
+  for (k = 0; k < N; k++){
+    V = new Array(J + 1).fill(0);
+    for (j = 1; j < J; j++) V[j] = lam * U[j + 1] + (1 - 2 * lam) * U[j] + lam * U[j - 1];
+    V[0] = 0; V[J] = 0;
+    U = V;
+    peaks.push(maxAbs(U));
+  }
+  return { U: U, peaks: peaks, dx: dx, dt: lam * dx * dx };
+}
+function heatImplicit(lam, J, N, phi){
+  var dx = 1 / J, j, k, m = J - 1;
+  var U = [];
+  for (j = 0; j <= J; j++) U.push(phi(j * dx));
+  U[0] = 0; U[J] = 0;
+  var peaks = [maxAbs(U)];
+  for (k = 0; k < N; k++){
+    var a = new Float64Array(m).fill(-lam), b = new Float64Array(m).fill(1 + 2 * lam), c = new Float64Array(m).fill(-lam);
+    var d = new Float64Array(m);
+    for (j = 0; j < m; j++) d[j] = U[j + 1];      // 两端边界为零
+    for (j = 1; j < m; j++){                       // 追赶法
+      var w = a[j] / b[j - 1];
+      b[j] -= w * c[j - 1];
+      d[j] -= w * d[j - 1];
+    }
+    var x = new Float64Array(m);
+    x[m - 1] = d[m - 1] / b[m - 1];
+    for (j = m - 2; j >= 0; j--) x[j] = (d[j] - c[j] * x[j + 1]) / b[j];
+    U = [0]; for (j = 0; j < m; j++) U.push(x[j]); U.push(0);
+    peaks.push(maxAbs(U));
+  }
+  return { U: U, peaks: peaks, dx: dx, dt: lam * dx * dx };
+}
+function maxAbs(A){
+  var m = 0, i;
+  for (i = 0; i < A.length; i++){ var v = Math.abs(A[i]); if (v > m) m = v; }
+  return m;
+}
+
+/* --- 波动方程显式格式 --- */
+function waveGrid(lam, dx, N, x0, pad){
+  var need = Math.ceil((N * dx + (pad || 0.15)) / dx) + 25;
+  return { need: need, xmin: x0 - need * dx, M: 2 * need, dx: dx };
+}
+
+function waveErr(lam, dx, N, phi, secondExact, x0){
+  var g = waveGrid(lam, dx, N, x0), xmin = g.xmin, M = g.M, k, n;
+  var p = [], c = [], x;
+  for (k = 0; k <= M; k++){ x = xmin + k * dx; p.push(phi(x)); }
+  for (k = 0; k <= M; k++){
+    x = xmin + k * dx;
+    c.push(secondExact ? 0.5 * (phi(x - dx) + phi(x + dx)) : p[k]);
+  }
+  var nx;
+  for (n = 1; n < N; n++){
+    nx = new Array(M + 1).fill(0);
+    for (k = 1; k < M; k++)
+      nx[k] = lam * lam * c[k + 1] + 2 * (1 - lam * lam) * c[k] + lam * lam * c[k - 1] - p[k];
+    p = c; c = nx;
+  }
+  var T = N * lam * dx, err = 0;
+  for (k = 0; k <= M; k++){
+    x = xmin + k * dx;
+    var ue = 0.5 * (phi(x - T) + phi(x + T));
+    var e = Math.abs(c[k] - ue);
+    if (e > err) err = e;
+  }
+  return err;
+}
+
+/* 波形的 CFL 实验：在真依赖内、差分依赖外放一个鼓包，看差分解认不认 */
+function cflExp(lam, N, dx, x0){
+  var T = N * lam * dx, c = x0 + T;
+  var w = 0.012;                                  // 鼓包宽度
+  var base = function(x){ return 0.5 * Math.exp(-Math.pow((x - 0.2) / 0.05, 2)); };
+  var bump = function(x){ return 0.4 * Math.exp(-Math.pow((x - c) / w, 2)); };
+  function run(phi){
+    var g = waveGrid(lam, dx, N, x0, T + 0.05), xmin = g.xmin, M = g.M, k, n;
+    var p = [], cu = [], x;
+    for (k = 0; k <= M; k++){ x = xmin + k * dx; p.push(phi(x)); cu.push(phi(x)); }
+    var nx;
+    for (n = 1; n < N; n++){
+      nx = new Array(M + 1).fill(0);
+      for (k = 1; k < M; k++)
+        nx[k] = lam * lam * cu[k + 1] + 2 * (1 - lam * lam) * cu[k] + lam * lam * cu[k - 1] - p[k];
+      p = cu; cu = nx;
+    }
+    var kc = Math.round((x0 - xmin) / dx);
+    return cu[kc];
+  }
+  var U0 = run(base);
+  var U1 = run(function(x){ return base(x) + bump(x); });
+  var u0 = 0.5 * (base(x0 - T) + base(x0 + T));
+  var u1 = 0.5 * (base(x0 - T) + bump(x0 - T) + base(x0 + T) + bump(x0 + T));
+  return {
+    lam: lam, T: T, N: N, dx: dx, x0: x0, bumpC: c,
+    halfDiff: N * dx, halfTrue: T, bw: w,
+    /* 判据用鼓包支撑（±3 个宽度）是否与差分依赖区间相交：相交则差分至少能采到它的尾巴 */
+    inCone: (c - 3 * w) <= x0 + N * dx,
+    dU: U1 - U0, du: u1 - u0
+  };
+}
+
+/* --- 有限元刚度矩阵（直交网格沿对角线剖成直角三角形，P1 插值） --- */
+function ritzStiffness(n){
+  var h = 1 / n, N = n - 1, m = N * N, i, j, r, s;
+  function idx(a, b){ return (a - 1) + (b - 1) * N; }
+  var K = [], ii;
+  for (i = 0; i < m; i++){ K.push(new Float64Array(m)); }
+  function addTri(p1, p2, p3){
+    var P = [p1, p2, p3];
+    var A = 0.5 * Math.abs((p2[0] - p1[0]) * (p3[1] - p1[1]) - (p3[0] - p1[0]) * (p2[1] - p1[1]));
+    var b = [], c = [], t, a1, a2;
+    for (t = 0; t < 3; t++){
+      a1 = P[(t + 1) % 3]; a2 = P[(t + 2) % 3];
+      b.push(a1[1] - a2[1]); c.push(a2[0] - a1[0]);
+    }
+    var gid = P.map(function(p){
+      var gi = Math.round(p[0] / h), gj = Math.round(p[1] / h);
+      return (gi >= 1 && gi <= N && gj >= 1 && gj <= N) ? idx(gi, gj) : -1;
+    });
+    for (r = 0; r < 3; r++){
+      if (gid[r] < 0) continue;
+      for (s = 0; s < 3; s++){
+        if (gid[s] < 0) continue;
+        K[gid[r]][gid[s]] += (b[r] * b[s] + c[r] * c[s]) / (4 * A);
+      }
+    }
+  }
+  for (i = 0; i < n; i++) for (j = 0; j < n; j++){
+    var x = i * h, y = j * h;
+    addTri([x, y], [x + h, y], [x + h, y + h]);
+    addTri([x, y], [x + h, y + h], [x, y + h]);
+  }
+  return { K: K, N: N, m: m, idx: idx, h: h };
+}
+
+function fiveMat(N, idx){
+  var A = [], i, j, ii, jj, r, c;
+  for (i = 0; i < N * N; i++) A.push(new Float64Array(N * N));
+  for (j = 1; j <= N; j++) for (i = 1; i <= N; i++){
+    r = idx(i, j);
+    for (jj = 1; jj <= N; jj++) for (ii = 1; ii <= N; ii++){
+      c = idx(ii, jj);
+      if (ii === i && jj === j) A[r][c] = 4;
+      else if (Math.abs(ii - i) + Math.abs(jj - j) === 1) A[r][c] = -1;
+    }
+  }
+  return A;
+}
+
+function jacobiEig(K){
+  var m = K.length, A = K.map(function(row){ return Float64Array.from(row); });
+  var sw, p, q, k, off, th, cs, sn, kp, kq, pk, qk;
+  for (sw = 0; sw < 200; sw++){
+    off = 0;
+    for (p = 0; p < m; p++) for (q = p + 1; q < m; q++) off += A[p][q] * A[p][q];
+    if (off < 1e-26) break;
+    for (p = 0; p < m; p++) for (q = p + 1; q < m; q++){
+      if (Math.abs(A[p][q]) < 1e-18) continue;
+      th = 0.5 * Math.atan2(2 * A[p][q], A[q][q] - A[p][p]);
+      cs = Math.cos(th); sn = Math.sin(th);
+      for (k = 0; k < m; k++){ kp = A[k][p]; kq = A[k][q]; A[k][p] = cs * kp - sn * kq; A[k][q] = sn * kp + cs * kq; }
+      for (k = 0; k < m; k++){ pk = A[p][k]; qk = A[q][k]; A[p][k] = cs * pk - sn * qk; A[q][k] = sn * pk + cs * qk; }
+    }
+  }
+  var ev = [];
+  for (p = 0; p < m; p++) ev.push(A[p][p]);
+  ev.sort(function(a, b){ return a - b; });
+  return ev;
+}
+
+/* ==================== 绘图底座 ==================== */
+function panel(c, x0, y0, w, h, xmin, xmax, ymin, ymax){
+  var sx = w / (xmax - xmin), sy = h / (ymax - ymin);
+  return {
+    x0: x0, y0: y0, w: w, h: h, xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax,
+    X: function(x){ return x0 + (x - xmin) * sx; },
+    Y: function(y){ return y0 + h - (y - ymin) * sy; },
+    clipY: function(y){ return y > ymax ? ymax : (y < ymin ? ymin : y); }
+  };
+}
+function frame(c, P){
+  c.fillStyle = "#fff"; c.fillRect(P.x0, P.y0, P.w, P.h);
+  c.strokeStyle = "#d0d7de"; c.lineWidth = 1;
+  c.strokeRect(P.x0 + 0.5, P.y0 + 0.5, P.w - 1, P.h - 1);
+}
+function curve(c, P, f, n, color, wd){
+  var i, first = true, x, y, px, py;
+  c.beginPath(); c.strokeStyle = color; c.lineWidth = wd || 2;
+  for (i = 0; i <= n; i++){
+    x = P.xmin + (P.xmax - P.xmin) * i / n; y = f(x);
+    if (!isFinite(y)){ first = true; continue; }
+    px = P.X(x); py = P.Y(P.clipY(y));
+    if (first){ c.moveTo(px, py); first = false; } else c.lineTo(px, py);
+  }
+  c.stroke();
+}
+function lab(c, px, py, s, color, align, font){
+  c.fillStyle = color || "#57606a";
+  c.font = font || "11px system-ui,sans-serif";
+  c.textAlign = align || "left"; c.textBaseline = "middle";
+  c.fillText(s, px, py);
+}
+function dashH(c, P, y, color, text){
+  c.save(); c.setLineDash([4, 4]); c.strokeStyle = color; c.lineWidth = 1.2;
+  var py = P.Y(P.clipY(y));
+  c.beginPath(); c.moveTo(P.x0, py); c.lineTo(P.x0 + P.w, py); c.stroke(); c.restore();
+  if (text) lab(c, P.x0 + P.w - 4, py - 8, text, color, "right");
+}
+function dashV(c, P, x, color, text){
+  c.save(); c.setLineDash([4, 4]); c.strokeStyle = color; c.lineWidth = 1.2;
+  var px = P.X(x);
+  c.beginPath(); c.moveTo(px, P.y0); c.lineTo(px, P.y0 + P.h); c.stroke(); c.restore();
+  if (text) lab(c, px + 4, P.y0 + 12, text, color, "left");
+}
+
+/* ==================== 实验台 1：差商 ==================== */
+var R1 = {};
+function runE1(){
+  var c = cvs("e1c"); if (!c || !c.getContext) return;
+  var g = c.getContext("2d");
+  var W = (c.canvas && c.canvas.width) || 840, H = (c.canvas && c.canvas.height) || 300;
+  g.clearRect(0, 0, W, H);
+  var P = panel(g, 62, 16, W - 88, H - 56, -7, -1, -17, 1);
+  frame(g, P);
+
+  /* 坐标轴刻度（log10 h 为横轴，log10 err 为纵轴） */
+  var i, px, py;
+  g.strokeStyle = "#eaeef2"; g.lineWidth = 1;
+  for (i = -7; i <= -1; i++){
+    px = P.X(i);
+    g.beginPath(); g.moveTo(px, P.y0); g.lineTo(px, P.y0 + P.h); g.stroke();
+    lab(g, px, P.y0 + P.h + 14, "1e" + i, "#8b949e", "center");
+  }
+  for (i = -16; i <= 0; i += 4){
+    py = P.Y(i);
+    g.beginPath(); g.moveTo(P.x0, py); g.lineTo(P.x0 + P.w, py); g.stroke();
+    lab(g, P.x0 - 6, py, "1e" + i, "#8b949e", "right");
+  }
+  lab(g, P.x0 + P.w / 2, P.y0 + P.h + 32, "步长 h", "#57606a", "center", "12px system-ui");
+  lab(g, P.x0, P.y0 + P.h + 32, "误差", "#57606a", "left", "12px system-ui");
+
+  function lg(v){ return v <= 0 ? -20 : Math.log10(v); }
+  curve(g, P, function(t){ return lg(diffErr(Math.pow(10, t)).fw); }, 300, "#D85A30", 2);
+  curve(g, P, function(t){ return lg(diffErr(Math.pow(10, t)).bw); }, 300, "#0F6E56", 2);
+  curve(g, P, function(t){ return lg(diffErr(Math.pow(10, t)).ct); }, 300, "#185FA5", 2);
+
+  var h = Math.pow(10, parseFloat($("h1").value) * -1);
+  var e = diffErr(h);
+  var pts = [["fw", "#D85A30"], ["bw", "#0F6E56"], ["ct", "#185FA5"]];
+  pts.forEach(function(p){
+    var px2 = P.X(Math.log10(h)), py2 = P.Y(P.clipY(lg(e[p[0]])));
+    g.beginPath(); g.arc(px2, py2, 4, 0, 6.2832); g.fillStyle = p[1]; g.fill();
+    g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.stroke();
+  });
+  dashV(g, P, Math.log10(h), "#b6bec6", "");
+  /* 斜率参考线：从当前点向左画 2 个数量级 */
+  var e0 = Math.log10(e.fw);
+  g.save(); g.setLineDash([3, 3]); g.strokeStyle = "#D85A30"; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(P.X(Math.log10(h)), P.Y(P.clipY(e0)));
+  g.lineTo(P.X(Math.log10(h) - 3), P.Y(P.clipY(e0 + 3))); g.stroke(); g.restore();
+  var e1 = Math.log10(e.ct);
+  g.save(); g.setLineDash([3, 3]); g.strokeStyle = "#185FA5"; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(P.X(Math.log10(h)), P.Y(P.clipY(e1)));
+  g.lineTo(P.X(Math.log10(h) - 3), P.Y(P.clipY(e1 + 6))); g.stroke(); g.restore();
+
+  lab(g, P.x0 + 16, P.y0 + 18, "中心差商 斜率 2", "#185FA5", "left");
+  lab(g, P.x0 + 16, P.y0 + 36, "前向 / 后向 斜率 1", "#D85A30", "left");
+
+  /* 读数 */
+  var h2 = h / 10;
+  var e2 = diffErr(h2);
+  var rateF = Math.log(e.fw / e2.fw) / Math.log(10);
+  var rateC = Math.log(e.ct / e2.ct) / Math.log(10);
+  setT("h1v", "h = " + h.toExponential(1));
+  setT("e1a", sci(e.fw));
+  setT("e1b", sci(e.bw));
+  setT("e1c2", sci(e.ct));
+  setT("e1d", rateF.toFixed(2) + " / " + rateC.toFixed(2));
+  setT("e1note", "当前 h = " + h.toExponential(1) + "：中心差商的误差比前向小约 " +
+    sci(e.fw / e.ct, 1) + " 倍。实测阶取 h 与 h/10 两点的对数比，前向 " +
+    rateF.toFixed(2) + "（理论 1）、中心 " + rateC.toFixed(2) + "（理论 2）。" +
+    "h 降到 1e-7 以下时中心差商的误差反而回升——那是双精度相减的舍入噪声（约 1e-16/h），不是格式问题。");
+  R1 = { h: h, fw: e.fw, bw: e.bw, ct: e.ct, rateF: rateF, rateC: rateC };
+}
+
+/* ==================== 实验台 2：五点格式 ==================== */
+var R2 = { exact: "sin" };
+function runE2(){
+  var c = cvs("e2c"); if (!c || !c.getContext) return;
+  var g = c.getContext("2d");
+  var W = (c.canvas && c.canvas.width) || 460, H = (c.canvas && c.canvas.height) || 460;
+  g.clearRect(0, 0, W, H);
+  var n = [0, 4, 8, 16, 32][parseInt($("n2").value, 10)];
+  if (!n) n = 8;
+  var ex = R2.exact === "quad" ? gqu : fex;
+  var r = solveFive(n, ex, 1e-13);
+  var half = solveFive(Math.max(2, n / 2), ex, 1e-13);
+  var rate = n > 4 ? Math.log2(half.err / Math.max(r.err, 1e-300)) : NaN;
+
+  /* 固定色标：由精确解在全区的值域定，不随网格变（否则误差被归一化掩盖） */
+  var vmin = 1e9, vmax = -1e9, i, j, v;
+  for (j = 0; j <= 40; j++) for (i = 0; i <= 40; i++){
+    v = ex(i / 40, j / 40);
+    if (v < vmin) vmin = v; if (v > vmax) vmax = v;
+  }
+  var pad = 26, S = Math.min(W - 2 * pad - 80, H - 2 * pad - 30), ox = (W - S) / 2 - 16, oy = pad;
+  var cell = S / n;
+  for (j = 0; j < n; j++) for (i = 0; i < n; i++){
+    /* 每格取四角平均，格 (i,j) 覆盖 [i,i+1]×[j,j+1] */
+    var s = 0, k;
+    for (k = 0; k < 4; k++){
+      var ii = i + (k & 1), jj = j + ((k >> 1) & 1);
+      s += r.u[ii + jj * r.W];
+    }
+    s /= 4;
+    var t = (s - vmin) / (vmax - vmin || 1);
+    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    t = Math.pow(t, 0.6);            // 只压色阶：色标两端固定，不随网格变
+    g.fillStyle = heatColor(t);
+    g.fillRect(ox + i * cell, oy + (n - 1 - j) * cell, cell + 0.6, cell + 0.6);
+  }
+  /* 网格与节点 */
+  if (n <= 16){
+    g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 0.8;
+    for (i = 1; i < n; i++){
+      g.beginPath(); g.moveTo(ox + i * cell, oy); g.lineTo(ox + i * cell, oy + S); g.stroke();
+      g.beginPath(); g.moveTo(ox, oy + i * cell); g.lineTo(ox + S, oy + i * cell); g.stroke();
+    }
+  }
+  g.strokeStyle = "#57606a"; g.lineWidth = 1.4; g.strokeRect(ox + 0.5, oy + 0.5, S, S);
+  /* 色条：固定色标的可见证据（两端数值不随 n 或迭代次数变化） */
+  var cbW = 12, cbX = ox + S + 10;
+  for (i = 0; i < 60; i++){
+    var tt = 1 - i / 59;
+    g.fillStyle = heatColor(Math.pow(tt, 1 / 0.6));
+    g.fillRect(cbX, oy + S * i / 60, cbW, S / 60 + 0.6);
+  }
+  g.strokeStyle = "#c9d1d9"; g.lineWidth = 1; g.strokeRect(cbX + 0.5, oy + 0.5, cbW, S);
+  lab(g, cbX + cbW + 6, oy + 6, sci(vmax, 2), "#8b949e", "left", "10px system-ui");
+  lab(g, cbX + cbW + 6, oy + S - 6, sci(vmin, 2), "#8b949e", "left", "10px system-ui");
+  lab(g, ox, oy + S + 16, "n = " + n + "（内点 " + (n - 1) * (n - 1) + " 个）", "#57606a", "left");
+  lab(g, ox + S, oy + S + 16, R2.exact === "quad" ? "u = x² − y²" : "u = sin πx · sinh πy / sinh π", "#57606a", "right");
+
+  setT("n2v", "n = " + n);
+  setT("e2a", sci(r.err));
+  setT("e2b", isNaN(rate) ? "—" : rate.toFixed(2));
+  setT("e2c3", String(r.it));
+  setT("e2d", r.omega.toFixed(4));
+  setT("e2note", R2.exact === "quad"
+    ? "二次函数预设：五点格式对 x²−y² 逐点精确，误差 " + sci(r.err) + " 是迭代收敛容差 1e-13 留下的残量，不是格式误差。这条恰好印证了「二阶中心差商对三次以下多项式精确」。"
+    : "n 从 4 加到 32，误差按 1/4 缩小（实测阶 " + (isNaN(rate) ? "—" : rate.toFixed(2)) + "，理论 2）。同时 SOR 迭代次数从 " +
+      solveFive(4, ex, 1e-13).it + " 涨到 " + r.it + "，因为五点矩阵条件数按 O(n²) 增长。");
+  R2.err = r.err; R2.rate = rate; R2.it = r.it; R2.omega = r.omega; R2.n = n; R2.u = r.u; R2.W = r.W;
+}
+function heatColor(t){
+  /* 蓝 → 白 → 红（发散色图，中间白） */
+  var r, g2, b;
+  if (t < 0.5){
+    var u = t / 0.5;
+    r = Math.round(40 + (255 - 40) * u);
+    g2 = Math.round(90 + (255 - 90) * u);
+    b = Math.round(160 + (255 - 160) * u);
+  } else {
+    var v = (t - 0.5) / 0.5;
+    r = 255;
+    g2 = Math.round(255 - (255 - 70) * v);
+    b = Math.round(255 - (255 - 50) * v);
+  }
+  return "rgb(" + r + "," + g2 + "," + b + ")";
+}
+
+/* ==================== 实验台 3：Ritz vs 五点 ==================== */
+var R3 = {};
+function runE3(){
+  var c = cvs("e7c"); if (!c || !c.getContext) return;
+  var g = c.getContext("2d");
+  var W = (c.canvas && c.canvas.width) || 840, H = (c.canvas && c.canvas.height) || 330;
+  g.clearRect(0, 0, W, H);
+  var n = parseInt($("n7").value, 10);
+  if (!(n >= 2 && n <= 12)) n = 4;          // 钳位：外推滑杆时不许分配巨型矩阵
+  var R = ritzStiffness(n), K = R.K, N = R.N, m = R.m;
+  var A5 = fiveMat(N, R.idx);
+  var i, j, maxd = 0, asym = 0;
+  for (i = 0; i < m; i++) for (j = 0; j < m; j++){
+    var d = Math.abs(K[i][j] - A5[i][j]);
+    if (d > maxd) maxd = d;
+    var da = Math.abs(K[i][j] - K[j][i]);
+    if (da > asym) asym = da;
+  }
+  var ev = jacobiEig(K);
+
+  /* 左：稀疏结构 */
+  var S = Math.min(H - 60, 240), ox = 30, oy = 30, cell = S / m;
+  g.fillStyle = "#fff"; g.fillRect(ox, oy, S, S);
+  for (i = 0; i < m; i++) for (j = 0; j < m; j++){
+    if (K[i][j] === 0) continue;
+    g.fillStyle = (i === j) ? "#185FA5" : "#A7C7E7";
+    g.fillRect(ox + j * cell, oy + i * cell, Math.max(1, cell - 0.5), Math.max(1, cell - 0.5));
+  }
+  g.strokeStyle = "#d0d7de"; g.lineWidth = 1; g.strokeRect(ox + 0.5, oy + 0.5, S, S);
+  lab(g, ox, oy + S + 14, "K 的非零结构（" + m + "×" + m + "）", "#57606a", "left");
+
+  /* 右：代表性元素（对角 / 邻 / 远邻）的数值对比：蓝柱 = K，橙框 = A₅，框套柱即相等 */
+  var far = (R.idx(1, 1) + 2 < m) ? R.idx(1, 1) + 2 : R.idx(1, 1);
+  var picks = [
+    { r: R.idx(1, 1), c: R.idx(1, 1), n: "对角" },
+    { r: R.idx(1, 1), c: R.idx(2, 1), n: "右邻" },
+    { r: R.idx(1, 1), c: R.idx(1, 2), n: "上邻" },
+    { r: R.idx(2, 2), c: R.idx(2, 2), n: "对角(2,2)" },
+    { r: R.idx(1, 1), c: far, n: "隔两点" }
+  ];
+  var bx = ox + S + 60, bw = W - bx - 40, bh = S;
+  var P = panel(g, bx, oy, bw, bh, -0.5, picks.length - 0.5, -1.6, 4.6);
+  frame(g, P);
+  var zero = P.Y(0);
+  g.strokeStyle = "#c9d1d9"; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(P.x0, zero); g.lineTo(P.x0 + P.w, zero); g.stroke();
+  for (i = 0; i < picks.length; i++){
+    var kk = K[picks[i].r][picks[i].c], aa = A5[picks[i].r][picks[i].c];
+    var w1 = bw / picks.length * 0.26;
+    var px = P.X(i);
+    var top = Math.min(P.Y(kk), zero), hh = Math.max(1, Math.abs(P.Y(kk) - zero));
+    g.fillStyle = "#185FA5"; g.fillRect(px - w1, top, 2 * w1, hh);
+    var top2 = Math.min(P.Y(aa), zero), hh2 = Math.max(1, Math.abs(P.Y(aa) - zero));
+    g.strokeStyle = "#D85A30"; g.lineWidth = 1.8;
+    g.strokeRect(px - w1, top2, 2 * w1, hh2);
+    lab(g, px, P.y0 + P.h + 12, picks[i].n, "#57606a", "center");
+  }
+  lab(g, P.x0 + 4, P.y0 + 12, "蓝柱 = K，橙框 = A₅：框正好套住柱即数值相等", "#57606a", "left");
+  /* 图例 */
+  lab(g, bx + bw - 60, oy + bh + 34, "max|K−A₅| = " + (maxd === 0 ? "0（精确）" : sci(maxd)), "#0C447C", "right");
+
+  setT("n7v", "n = " + n);
+  setT("e7a", maxd === 0 ? "0" : sci(maxd));
+  setT("e7b", asym === 0 ? "0" : sci(asym));
+  setT("e7c2", K[0][0] + " / " + K[R.idx(1, 1)][R.idx(2, 1)]);
+  setT("e7d", ev[0].toFixed(4) + " / " + ev[m - 1].toFixed(4));
+  setT("e7note", "n=" + n + "（" + m + " 个内点，" + m * m + " 个元素）：Ritz 刚度矩阵与五点矩阵逐元素相等，最大偏差 " +
+    (maxd === 0 ? "恰好 0" : sci(maxd)) + "。特征值全为正（最小 " + ev[0].toFixed(4) + "），即 K 对称正定，" +
+    "里茨法的极值问题有唯一解。");
+  R3 = { n: n, m: m, maxd: maxd, asym: asym, diag: K[0][0], off: K[R.idx(1, 1)][R.idx(2, 1)], lmin: ev[0], lmax: ev[m - 1] };
+}
+
+/* ==================== 实验台 4：显式格式稳定性 ==================== */
+var R4 = {};
+function runE4(){
+  var c = cvs("e3c"); if (!c || !c.getContext) return;
+  var g = c.getContext("2d");
+  var W = (c.canvas && c.canvas.width) || 840, H = (c.canvas && c.canvas.height) || 320;
+  g.clearRect(0, 0, W, H);
+  var lam = parseFloat($("l3").value);
+  if (!(lam >= 0.05 && lam <= 1.5)) lam = 0.5; // 钳位
+  var J = 20, NS = 60;
+  var r = heatExplicit(lam, J, NS, phiHeat);
+  var Gpi = Gexp(lam, Math.PI), aG = Math.abs(Gpi);
+
+  var lo = -4, hi = 2, i, v;
+  for (i = 0; i <= NS; i++){ v = Math.log10(Math.max(r.peaks[i], 1e-300)); if (v > hi) hi = v; }
+  if (hi - lo < 4) hi = lo + 4;
+  var P = panel(g, 62, 16, W - 88, H - 56, 0, NS, lo, hi);
+  frame(g, P);
+  for (i = lo; i <= hi; i += 2){
+    var py = P.Y(i);
+    g.strokeStyle = "#eaeef2"; g.beginPath(); g.moveTo(P.x0, py); g.lineTo(P.x0 + P.w, py); g.stroke();
+    lab(g, P.x0 - 6, py, "1e" + i, "#8b949e", "right");
+  }
+  for (i = 0; i <= NS; i += 10) lab(g, P.X(i), P.y0 + P.h + 14, String(i), "#8b949e", "center");
+  lab(g, P.x0 + P.w / 2, P.y0 + P.h + 32, "步数 n", "#57606a", "center", "12px system-ui");
+  lab(g, P.x0, P.y0 + P.h + 32, "max|U|", "#57606a", "left", "12px system-ui");
+
+  curve(g, P, function(t){
+    var k = Math.round(t);
+    return Math.log10(Math.max(r.peaks[k], 1e-300));
+  }, NS, "#D85A30", 2.2);
+  if (aG > 0 && isFinite(aG)){
+    g.save(); g.setLineDash([5, 4]); g.strokeStyle = "#9aa4ad"; g.lineWidth = 1.3;
+    g.beginPath();
+    for (i = 0; i <= NS; i++){
+      var yy = Math.log10(1.1852) + i * Math.log10(aG);
+      var px = P.X(i), py2 = P.Y(P.clipY(yy));
+      if (i === 0) g.moveTo(px, py2); else g.lineTo(px, py2);
+    }
+    g.stroke(); g.restore();
+  }
+  lab(g, P.x0 + 12, P.y0 + 16, "λ = " + lam.toFixed(2) + "，G(π) = " + Gpi.toFixed(3), "#57606a", "left");
+  lab(g, P.x0 + 12, P.y0 + 34, aG > 1 ? "|G(π)| > 1：每步放大" : "|G(π)| ≤ 1：不放大", aG > 1 ? "#D85A30" : "#0F6E56", "left");
+
+  var last = r.peaks[NS];
+  setT("l3v", lam.toFixed(2));
+  setT("e3a", Gpi.toFixed(3));
+  setT("e3b", aG.toFixed(3));
+  setT("e3c2", sci(last));
+  var verdict = Math.abs(lam - 0.5) < 1e-9 ? "临界（|G(π)|=1，棋盘格模态不衰减也不放大）" :
+    (lam < 0.5 ? "稳定（λ ≤ 1/2）" : "不稳定（λ > 1/2，棋盘模态每步放大 " + aG.toFixed(2) + " 倍）");
+  setT("e3d", verdict);
+  setT("e3note", "λ = " + lam.toFixed(2) + "：G(π) = 1−4λ = " + Gpi.toFixed(3) + "，|G(π)| = " + aG.toFixed(3) +
+    "。60 步后 max|U| = " + sci(last) + "，初值 1.1852。" +
+    (aG > 1 ? "理论预测放大 " + sci(Math.pow(aG, NS), 1) + " 倍（" + sci(1.1852 * Math.pow(aG, NS), 1) + "），实测与此同阶。" : "") +
+    (Math.abs(lam - 0.25) < 1e-9 ? "λ=0.25 时 G(π)=0，棋盘模态被格式一步抹平。" : ""));
+  R4 = { lam: lam, Gpi: Gpi, absG: aG, peaks: r.peaks, last: last };
+}
+
+/* ==================== 实验台 5：显式 vs 隐式 ==================== */
+var R5 = {};
+function runE5(){
+  var c = cvs("e4c"); if (!c || !c.getContext) return;
+  var g = c.getContext("2d");
+  var W = (c.canvas && c.canvas.width) || 840, H = (c.canvas && c.canvas.height) || 340;
+  g.clearRect(0, 0, W, H);
+  var lam = 4, J = 20, NS = 12;
+  var ex = heatExplicit(lam, J, NS, phiHeat);
+  var im = heatImplicit(lam, J, NS, phiHeat);
+  var Gth = Gimp(lam, Math.PI * 1 / J);   // 最慢的光滑模态 θ=πΔx
+  var i;
+  var hi = 2, lo = -4;
+  for (i = 0; i <= NS; i++){
+    var v = Math.log10(Math.max(ex.peaks[i], 1e-300)); if (v > hi) hi = v;
+  }
+  var P = panel(g, 66, 16, W - 92, H - 56, 0, NS, lo, hi);
+  frame(g, P);
+  for (i = lo; i <= hi; i += 2){
+    var py = P.Y(i);
+    g.strokeStyle = "#eaeef2"; g.beginPath(); g.moveTo(P.x0, py); g.lineTo(P.x0 + P.w, py); g.stroke();
+    lab(g, P.x0 - 6, py, "1e" + i, "#8b949e", "right");
+  }
+  for (i = 0; i <= NS; i++) lab(g, P.X(i), P.y0 + P.h + 14, String(i), "#8b949e", "center");
+  lab(g, P.x0 + P.w / 2, P.y0 + P.h + 32, "步数 n（λ = 4，Δt 比显式稳定限大 8 倍）", "#57606a", "center", "12px system-ui");
+  lab(g, P.x0, P.y0 + P.h + 32, "max|U|", "#57606a", "left", "12px system-ui");
+
+  curve(g, P, function(t){ return Math.log10(Math.max(ex.peaks[Math.round(t)], 1e-300)); }, NS, "#D85A30", 2.2);
+  curve(g, P, function(t){ return Math.log10(Math.max(im.peaks[Math.round(t)], 1e-300)); }, NS, "#185FA5", 2.2);
+  /* 隐式理论：1.1852 * G^n */
+  g.save(); g.setLineDash([5, 4]); g.strokeStyle = "#9aa4ad"; g.lineWidth = 1.3;
+  g.beginPath();
+  for (i = 0; i <= NS; i++){
+    var yy = Math.log10(1.1852) + i * Math.log10(Gth);
+    var px = P.X(i), py2 = P.Y(P.clipY(yy));
+    if (i === 0) g.moveTo(px, py2); else g.lineTo(px, py2);
+  }
+  g.stroke(); g.restore();
+  lab(g, P.x0 + 12, P.y0 + 16, "橙：显式格式 I（λ=4 已越界）", "#D85A30", "left");
+  lab(g, P.x0 + 12, P.y0 + 34, "蓝：隐式格式 II（无条件稳定）", "#185FA5", "left");
+  lab(g, P.x0 + 12, P.y0 + 52, "灰虚线：隐式放大因子预测 Gⁿ", "#8b949e", "left");
+
+  setT("e4a", sci(ex.peaks[NS]));
+  setT("e4b", sci(im.peaks[NS]));
+  setT("e4c2", Gth.toFixed(6));
+  setT("e4d", sci(Math.pow(Gth, NS)) + " / " + sci(im.peaks[NS], 3));
+  setT("e4note", "同一个 λ=4（Δt 大了 8 倍）：显式 12 步从 1.1852 涨到 " + sci(ex.peaks[NS]) +
+    "（每步乘 1−4λ = −15），隐式同时降到 " + sci(im.peaks[NS]) +
+    "。隐式的离散放大因子 G = 1/(1+2λ(1−cos πΔx)) = " + Gth.toFixed(6) +
+    "，取 12 次方得 " + sci(Math.pow(Gth, NS)) + "，与实测 " + sci(im.peaks[NS], 3) +
+    " 的差别来自初值里那个高频模态（它衰减得更快，且 D 项已把两种模态混在一起）。");
+  R5 = { lam: lam, expLast: ex.peaks[NS], impLast: im.peaks[NS], Gth: Gth, GthN: Math.pow(Gth, NS),
+         expPeaks: ex.peaks, impPeaks: im.peaks };
+}
+
+/* ==================== 实验台 6：CFL 依赖区间 ==================== */
+var R6 = {};
+function runE6(){
+  var c = cvs("e5c"); if (!c || !c.getContext) return;
+  var g = c.getContext("2d");
+  var W = (c.canvas && c.canvas.width) || 840, H = (c.canvas && c.canvas.height) || 360;
+  g.clearRect(0, 0, W, H);
+  var lam = parseFloat($("l5").value);
+  if (!(lam >= 0.2 && lam <= 3)) lam = 1.5;    // 钳位
+  var N = 30, dx = 1 / 60, x0 = 0.5;
+  var r = cflExp(lam, N, dx, x0);
+  var T = r.T;
+
+  var xmin = Math.min(x0 - r.halfTrue, x0 - r.halfDiff) - 0.12;
+  var xmax = Math.max(x0 + r.halfTrue, x0 + r.halfDiff) + 0.12;
+  var P = panel(g, 66, 16, W - 92, H - 60, xmin, xmax, 0, T * 1.02);
+  frame(g, P);
+
+  /* 网格对角线（差分依赖锥） */
+  g.beginPath(); g.strokeStyle = "#185FA5"; g.lineWidth = 1.2;
+  g.moveTo(P.X(x0), P.Y(T)); g.lineTo(P.X(x0 - r.halfDiff), P.Y(0));
+  g.moveTo(P.X(x0), P.Y(T)); g.lineTo(P.X(x0 + r.halfDiff), P.Y(0));
+  g.stroke();
+  g.beginPath();
+  g.moveTo(P.X(x0), P.Y(T)); g.lineTo(P.X(x0 - r.halfDiff), P.Y(0)); g.lineTo(P.X(x0 + r.halfDiff), P.Y(0));
+  g.closePath(); g.fillStyle = "rgba(24,95,165,.10)"; g.fill();
+
+  /* 特征线（真依赖锥） */
+  g.beginPath(); g.strokeStyle = "#B8860B"; g.lineWidth = 1.6;
+  g.moveTo(P.X(x0), P.Y(T)); g.lineTo(P.X(x0 - r.halfTrue), P.Y(0));
+  g.moveTo(P.X(x0), P.Y(T)); g.lineTo(P.X(x0 + r.halfTrue), P.Y(0));
+  g.stroke();
+  g.beginPath();
+  g.moveTo(P.X(x0), P.Y(T)); g.lineTo(P.X(x0 - r.halfTrue), P.Y(0)); g.lineTo(P.X(x0 + r.halfTrue), P.Y(0));
+  g.closePath(); g.fillStyle = "rgba(184,134,11,.10)"; g.fill();
+
+  /* t=0 轴上的区间标注 */
+  g.beginPath(); g.strokeStyle = "#8b6914"; g.lineWidth = 3;
+  g.moveTo(P.X(x0 - r.halfTrue), P.Y(0)); g.lineTo(P.X(x0 + r.halfTrue), P.Y(0)); g.stroke();
+  g.beginPath(); g.strokeStyle = "#185FA5"; g.lineWidth = 3;
+  g.moveTo(P.X(x0 - r.halfDiff), P.Y(0)); g.lineTo(P.X(x0 + r.halfDiff), P.Y(0)); g.stroke();
+
+  /* P 点 */
+  g.beginPath(); g.arc(P.X(x0), P.Y(T), 5, 0, 6.2832); g.fillStyle = "#C00000"; g.fill();
+  lab(g, P.X(x0) + 8, P.Y(T) - 2, "P", "#C00000", "left", "12px system-ui");
+
+  /* 鼓包位置（标签靠右时改右对齐，避免被画布边缘裁掉） */
+  var bx = P.X(r.bumpC);
+  g.beginPath(); g.arc(bx, P.Y(0), 5, 0, 6.2832); g.fillStyle = "#534AB7"; g.fill();
+  var bLabX = Math.min(Math.max(bx, P.x0 + 18), P.x0 + P.w - 18);
+  lab(g, bLabX, P.Y(0) - 13, "鼓包", "#534AB7", Math.abs(bLabX - bx) < 1 ? "center" : "right");
+
+  /* x 轴刻度 */
+  var kx;
+  for (kx = 0; kx <= 4; kx++){
+    var xv = xmin + (xmax - xmin) * kx / 4;
+    lab(g, P.X(xv), P.y0 + P.h + 14, xv.toFixed(2), "#8b949e", "center");
+  }
+
+  /* A、B 端点 */
+  lab(g, P.X(x0 - r.halfDiff), P.Y(0) + 12, "A", "#185FA5", "center");
+  lab(g, P.X(x0 + r.halfDiff), P.Y(0) + 12, "B", "#185FA5", "center");
+  lab(g, P.x0 + 8, P.y0 + 14, "λ = " + lam.toFixed(2) + "，aT = " + T.toFixed(3) + "，nΔx = " + r.halfDiff.toFixed(3), "#57606a", "left");
+  lab(g, P.x0 + 8, P.y0 + 32, r.inCone ? "鼓包落在差分依赖区间内 → 差分看得见" : "鼓包落在差分依赖区间外 → 差分看不见",
+    r.inCone ? "#0F6E56" : "#D85A30", "left");
+  lab(g, P.x0 - 8, P.y0 + 4, "t", "#57606a", "right", "12px system-ui");
+
+  setT("l5v", lam.toFixed(2));
+  setT("e5a", r.dU === 0 ? "0（严格为零）" : sci(r.dU));
+  setT("e5b", r.du.toFixed(4));
+  setT("e5c2", r.inCone ? "是" : "否");
+  setT("e5d", r.inCone ? "两者都变（鼓包落进差分依赖区间）" : "发散：真解变了，差分解没变");
+  setT("e5note", "λ = " + lam.toFixed(2) + "，走 " + N + " 步，Δx = 1/60：差分依赖区间半宽 = nΔx = " +
+    r.halfDiff.toFixed(4) + "，真依赖区间半宽 = aT = " + r.halfTrue.toFixed(4) + "。" +
+    (r.inCone
+      ? "鼓包（连带它 3 个宽度的尾巴）已进入差分依赖区间，差分解在 P 点确实变了（ΔU = " + sci(r.dU) +
+        "）；它与解析的 Δu(P) = " + r.du.toFixed(4) + " 不相等，是因为固定 Δx 下格式自身有 O(Δx²) 的数值色散，鼓包被抹平了一部分。这不影响收敛——网格加密时这个差会消失。"
+      : "鼓包的整个支撑都在差分依赖区间「外」，差分在 P 点的值一笔都没用到它，所以 ΔU 严格为 0；而解析的 Δu(P) = " +
+        r.du.toFixed(4) + " 不为零。真解变了而差分解不变 ⟹ 差分解不可能收敛到真解，这正是教材定理 3.1 的证法。"));
+  R6 = { lam: lam, dU: r.dU, du: r.du, inCone: r.inCone, halfDiff: r.halfDiff, halfTrue: r.halfTrue, T: T, N: N };
+}
+
+/* ==================== 实验台 7：误差 vs λ ==================== */
+var R7 = {};
+function runE7(){
+  var c = cvs("e6c"); if (!c || !c.getContext) return;
+  var g = c.getContext("2d");
+  var W = (c.canvas && c.canvas.width) || 840, H = (c.canvas && c.canvas.height) || 320;
+  g.clearRect(0, 0, W, H);
+  var dx = 1 / 100, x0 = 0.5, Tt = 0.1;
+  var phi = function(x){ return Math.exp(-Math.pow((x - 0.5) / 0.08, 2)); };
+  var lam = parseFloat($("l6").value);
+  if (!(lam >= 0.2 && lam <= 3)) lam = 1;    // 钳位：λ→0 会让步数炸掉
+  var N = Math.max(2, Math.round(Tt / (lam * dx)));
+
+  var cur1 = waveErr(lam, dx, N, phi, false, x0);
+  var cur2 = waveErr(lam, dx, N, phi, true, x0);
+
+  /* 曲线数据：λ 从 0.25 到 2，共 36 点 */
+  var LAMS = [], E1 = [], E2 = [], i, l, nn, e1, e2;
+  for (i = 0; i <= 35; i++){
+    l = 0.25 + (2 - 0.25) * i / 35;
+    nn = Math.max(2, Math.round(Tt / (l * dx)));
+    LAMS.push(l);
+    E1.push(waveErr(l, dx, nn, phi, false, x0));
+    E2.push(waveErr(l, dx, nn, phi, true, x0));
+  }
+  function lg(v){ return v <= 0 ? -16 : Math.log10(v); }
+  var lo = -8, hi = 2;
+  for (i = 0; i <= 35; i++){
+    var a1 = lg(E1[i]), a2 = lg(E2[i]);
+    if (a1 > hi) hi = a1;
+    if (a2 > hi) hi = a2;
+  }
+  if (hi < 0) hi = 0;
+  var P = panel(g, 66, 16, W - 92, H - 56, 0.25, 2, lo, hi);
+  frame(g, P);
+  for (i = lo; i <= hi; i += 2){
+    var py = P.Y(i);
+    g.strokeStyle = "#eaeef2"; g.beginPath(); g.moveTo(P.x0, py); g.lineTo(P.x0 + P.w, py); g.stroke();
+    lab(g, P.x0 - 6, py, "1e" + i, "#8b949e", "right");
+  }
+  for (i = 0; i <= 8; i++){
+    var lv = 0.25 + (2 - 0.25) * i / 8;
+    lab(g, P.X(lv), P.y0 + P.h + 14, lv.toFixed(2), "#8b949e", "center");
+  }
+  lab(g, P.x0 + P.w / 2, P.y0 + P.h + 32, "λ = aΔt/Δx", "#57606a", "center", "12px system-ui");
+  lab(g, P.x0, P.y0 + P.h + 32, "L∞ 误差", "#57606a", "left", "12px system-ui");
+  dashV(g, P, 1, "#b6bec6", "λ=1");
+
+  function mk(arr){
+    return function(t){
+      var k = Math.max(0, Math.min(35, Math.round((t - 0.25) / (2 - 0.25) * 35)));
+      return lg(arr[k]);
+    };
+  }
+  curve(g, P, mk(E1), 140, "#185FA5", 2);
+  curve(g, P, mk(E2), 140, "#D85A30", 2);
+
+  var kc = Math.round((lam - 0.25) / (2 - 0.25) * 35);
+  kc = Math.max(0, Math.min(35, kc));
+  g.beginPath(); g.arc(P.X(lam), P.Y(P.clipY(lg(cur1))), 4, 0, 6.2832); g.fillStyle = "#185FA5"; g.fill();
+  g.beginPath(); g.arc(P.X(lam), P.Y(P.clipY(lg(cur2))), 4, 0, 6.2832); g.fillStyle = "#D85A30"; g.fill();
+  lab(g, P.x0 + 12, P.y0 + 16, "蓝：教材 (3.9) 第二排 U¹ = φ", "#185FA5", "left");
+  lab(g, P.x0 + 12, P.y0 + 34, "橙：精确第二排 [φ(x−Δx)+φ(x+Δx)]/2", "#D85A30", "left");
+
+  setT("l6v", lam.toFixed(2));
+  setT("e6a", String(N));
+  setT("e6b", (N * lam * dx).toFixed(4));
+  setT("e6c2", sci(cur1));
+  setT("e6d", sci(cur2));
+  setT("e6note", "λ = " + lam.toFixed(2) + "：步数 N = " + N + "，实际 T = " + (N * lam * dx).toFixed(4) +
+    "。用教材 (3.9) 的第二排时误差 " + sci(cur1) + "，随 λ 单调变大；换成精确第二排后 λ=1 处塌到 " +
+    sci(E2[Math.round((1 - 0.25) / 1.75 * 35)]) + "，比两侧小四五个数量级——那是格式本身无截断误差的证据。" +
+    "注意橙线在 λ>1 时重新变大：CFL 条件破坏后，第二排再准也救不回来。");
+  R7 = { lam: lam, N: N, Teff: N * lam * dx, errText: cur1, errExact: cur2,
+         lams: LAMS, e1: E1, e2: E2, e1At1: E2[Math.round((1 - 0.25) / 1.75 * 35)] };
+}
+
+/* ==================== 交互绑定 ==================== */
+function initSliders(){
+  /* 显式写初值：DOM 桩不读 HTML attribute，闸门跑起来才是页面默认态 */
+  var D = { h1: "2", n2: "2", n7: "4", l3: "0.5", l5: "1.5", l6: "1" };
+  Object.keys(D).forEach(function(k){ var e = $(k); if (e) e.value = D[k]; });
+}
+function bind(){
+  var h1 = $("h1"); if (h1){ h1.addEventListener("input", runE1); h1.addEventListener("change", runE1); }
+  var n2 = $("n2"); if (n2){ n2.addEventListener("input", runE2); n2.addEventListener("change", runE2); }
+  var b2a = $("b2a"), b2b = $("b2b");
+  if (b2a) b2a.addEventListener("click", function(){ R2.exact = "sin"; b2a.className = "on"; b2b.className = ""; runE2(); });
+  if (b2b) b2b.addEventListener("click", function(){ R2.exact = "quad"; b2b.className = "on"; b2a.className = ""; runE2(); });
+  var n7 = $("n7"); if (n7){ n7.addEventListener("input", runE3); n7.addEventListener("change", runE3); }
+  var l3 = $("l3"); if (l3){ l3.addEventListener("input", runE4); l3.addEventListener("change", runE4); }
+  var l5 = $("l5"); if (l5){ l5.addEventListener("input", runE6); l5.addEventListener("change", runE6); }
+  var l6 = $("l6"); if (l6){ l6.addEventListener("input", runE7); l6.addEventListener("change", runE7); }
+}
+
+/* ==================== 钩子（供闸门切换参数） ==================== */
+window.PDE7 = {
+  /* 内核 */
+  diffErr: diffErr, fex: fex, gqu: gqu, solveFive: solveFive,
+  phiHeat: phiHeat, heatExplicit: heatExplicit, heatImplicit: heatImplicit,
+  Gexp: Gexp, Gimp: Gimp, waveErr: waveErr, cflExp: cflExp,
+  ritzStiffness: ritzStiffness, fiveMat: fiveMat, jacobiEig: jacobiEig,
+  /* 驱动 */
+  setH: function(v){ $("h1").value = String(v); runE1(); return R1; },
+  setN: function(v){
+    var map = { 4: 1, 8: 2, 16: 3, 32: 4 };
+    $("n2").value = String(map[v] || v); runE2(); return R2;
+  },
+  setExact: function(k){ R2.exact = k;
+    if ($("b2a")) $("b2a").className = (k === "sin" ? "on" : "");
+    if ($("b2b")) $("b2b").className = (k === "quad" ? "on" : "");
+    runE2(); return R2; },
+  setN7: function(v){ $("n7").value = String(v); runE3(); return R3; },
+  setLam3: function(v){ $("l3").value = String(v); runE4(); return R4; },
+  setLam5: function(v){ $("l5").value = String(v); runE6(); return R6; },
+  setLam6: function(v){ $("l6").value = String(v); runE7(); return R7; },
+  read: function(){ return { e1: R1, e2: R2, e3: R3, e4: R4, e5: R5, e6: R6, e7: R7 }; },
+  runAll: function(){ runE1(); runE2(); runE3(); runE4(); runE5(); runE6(); runE7(); }
+};
+
+/* ==================== 启动 ==================== */
+try {
+  initSliders();
+  bind();
+  runE1(); runE2(); runE3(); runE4(); runE5(); runE6(); runE7();
+} catch (err) {
+  if (window.console && console.error) console.error("初始化异常：" + err.message);
+}
+})();
+</script>
+</body>
+</html>

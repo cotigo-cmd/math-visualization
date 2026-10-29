@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>弦的振动：达朗贝尔公式与驻波 — 第 1 章 §1–§3 可视化</title>
+<title>弦的振动：达朗贝尔公式与驻波 — 数学物理方程 第 1 章 §1–§3 可视化</title>
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "global" },
- options: { enableMenu: false },
- startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
- --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
- --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
- --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
- --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
@@ -36,19 +36,19 @@ p{margin:12px 0}
 .hero{padding:56px 0 8px}
 .hero p.lead{font-size:17px;color:var(--muted);max-width:780px;margin:0}
 nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
- border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
 nav .wrap{padding:10px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px}
 nav a{color:var(--muted)}
 nav a:hover{color:var(--accent);text-decoration:none}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
 .note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .thm{border-left:3px solid var(--teal);background:#E1F5EE;padding:12px 18px;
- border-radius:0 8px 8px 0;margin:18px 0;font-size:14.6px}
+  border-radius:0 8px 8px 0;margin:18px 0;font-size:14.6px}
 .thm .tag{font-family:var(--mono);font-size:12px;color:var(--teal);font-weight:600;margin-right:8px}
 table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
 th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
@@ -57,7 +57,7 @@ tr:nth-child(even) td{background:#fafbfc}
 .ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
 .ctl input[type=range]{flex:1;min-width:150px;accent-color:var(--accent)}
 button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
- border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
 button:hover{border-color:var(--accent);color:var(--accent)}
 button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
 .val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
@@ -119,7 +119,7 @@ code{font-family:var(--mono);font-size:13px;background:var(--card);border:1px so
 <div class="kv">
 <div class="cell"><div class="k">方程（§1）</div><div class="v">\(u_{tt}-a^2u_{xx}=f\)</div></div>
 <div class="cell"><div class="k">通解（§2）</div><div class="v">\(F(x-at)+G(x+at)\)</div></div>
-<div class="cell"><div class="k">驻波（§3）</div><div class="v">\(\sum_n c_n\sin\frac{n\pi x}{l}\) 模态叠加</div></div>
+<div class="cell"><div class="k">驻波（§3）</div><div class="v">\(\sum\) 模态叠加</div></div>
 </div>
 <p>同一条两端固定的弦，同一种运动，本章用两条互相印证的技术路线各解一遍：</p>
 <ul class="tight">
@@ -267,7 +267,7 @@ $$\boxed{\;u(x,t)=\frac{\varphi(x-at)+\varphi(x+at)}{2}+\frac{1}{2a}\int_{x-at}^
 </ul>
 <figure>
 <canvas id="dep-cv" class="plot" width="840" height="400"></canvas>
-<figcaption>交互 5 · 三个区域一张图：紫点 = 考察点 \((x_0,t_0)\)；轴上粗线段 = 依赖区间；蓝色三角形 = \([x_1,x_2]\) 的决定区域；</figcaption>
+<figcaption>交互 5 · 三个区域一张图：紫点 = 考察点 \((x_0,t_0)\)；轴上粗线段 = 依赖区间；蓝色三角形 = \([x_1,x_2]\) 的决定区域；珊瑚楔形 = 影响区域，\(t=t_0\) 处的切片即当前影响范围。</figcaption>
 </figure>
 <div class="ctl">
 <label>点 \(x_0\)<input type="range" id="dep-x0" min="-300" max="300" value="50"><span class="val" id="dep-x0v">0.50</span></label>
@@ -459,111 +459,659 @@ $$u_{\text{热}}(x,t)=\frac{1}{\sqrt{4\pi a^2t}}\int_{-\infty}^{\infty}e^{-\frac
 
 <footer>
 <p>内容依据：教材第 1 章 §1–§3。本页公式按编号 (1.1)–(3.40) 依推导重组，偏离处已在正文标注。页面数值结论由工作区根 <code>verify_readout_wave.js</code>（vm + DOM 桩端到端读数闸门）与 <code>verify_formulas.js</code>（MathJax 全量编译）实测。</p>
-<p>交互为零依赖原生 JS + Canvas；公式由 MathJax 3（cdnjs CDN）渲染，离线时退化为 LaTeX 源码。级数系数与积分实时计算，页面无预存答案。蓝线 = 前 "+swN+" 个模态叠加",X(0.02),Y(1.58),"#57606a");
- }
- curve(ctx,function(x){return swU(x,swT);},X,Y,0,1,600,"#185FA5",2.6);
+<p>交互为零依赖原生 JS + Canvas；公式由 MathJax 3（cdnjs CDN）渲染，离线时退化为 LaTeX 源码。级数系数与积分实时计算，页面无预存答案。</p>
+<p>生成于 2026-10-19 · 数学可视化工作室 · 配套页面：分离变量法-热传导方程（同名的驻波路线用于热方程）、卷积与热传导方程（热核视角）</p>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+"use strict";
+function $(id){ return document.getElementById(id); }
+function clampr(v,a,b){ return v<a?a:(v>b?b:v); }
+function fmt(v){
+  if(!isFinite(v))return "∞";
+  var a=Math.abs(v);
+  if(a!==0&&(a<1e-4||a>=1e5))return v.toExponential(3);
+  return v.toFixed(6);
+}
+function fmtE(v){ return isFinite(v)?v.toExponential(2):"—"; }
+function setTxt(id,s){ var e=$(id); if(e) e.textContent=s; }
+/* A&S 7.1.26，|ε|≤1.5e-7 */
+function erfA(z){
+  var s=z<0?-1:1; z=Math.abs(z);
+  var t=1/(1+0.3275911*z);
+  var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-z*z);
+  return s*y;
+}
+/* ---------- 画布坐标框 ---------- */
+function frame(ctx,W,H,X0,X1,Y0,Y1,o){
+  o=o||{};
+  var ml=o.ml||54,mr=o.mr||18,mt=o.mt||18,mb=o.mb||36;
+  var pw=W-ml-mr,ph=H-mt-mb;
+  var X=function(x){return ml+(x-X0)/(X1-X0)*pw;};
+  var Y=function(y){return mt+(Y1-y)/(Y1-Y0)*ph;};
+  if(o.clear!==false) ctx.clearRect(0,0,W,H);
+  ctx.lineWidth=1; ctx.strokeStyle="#e4e8ed"; ctx.fillStyle="#8b949e";
+  ctx.font='11px ui-monospace,Consolas,monospace';
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  (o.xt||[]).forEach(function(v){
+    var x=X(v);
+    ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke();
+    ctx.fillText(o.xf?o.xf(v):String(v),x,mt+ph+6);
+  });
+  ctx.textAlign="right"; ctx.textBaseline="middle";
+  (o.yt||[]).forEach(function(v){
+    var y=Y(v);
+    ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke();
+    ctx.fillText(o.yf?o.yf(v):String(v),ml-6,y);
+  });
+  ctx.strokeStyle="#57606a"; ctx.lineWidth=1.3;
+  if(Y0<0&&Y1>0){ var y0=Y(0); ctx.beginPath(); ctx.moveTo(ml,y0); ctx.lineTo(ml+pw,y0); ctx.stroke(); }
+  if(X0<0&&X1>0){ var x0=X(0); ctx.beginPath(); ctx.moveTo(x0,mt); ctx.lineTo(x0,mt+ph); ctx.stroke(); }
+  if(o.xlabel){ ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillStyle="#57606a"; ctx.fillText(o.xlabel,ml+pw/2,H-6); }
+  if(o.ylabel){ ctx.save(); ctx.translate(12,mt+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign="center"; ctx.fillStyle="#57606a"; ctx.fillText(o.ylabel,0,0); ctx.restore(); }
+  return {X:X,Y:Y,ml:ml,mt:mt,pw:pw,ph:ph};
+}
+function curve(ctx,F,X,Y,x0,x1,N,style,width){
+  ctx.strokeStyle=style; ctx.lineWidth=width||2;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  for(var i=0;i<=N;i++){
+    var x=x0+(x1-x0)*i/N, y=F(x);
+    var px=X(x), py=Y(y);
+    if(i===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+}
+function dashed(ctx,F,X,Y,x0,x1,N,style,width,dash){
+  ctx.strokeStyle=style; ctx.lineWidth=width||1.5;
+  ctx.setLineDash(dash||[5,4]);
+  ctx.beginPath();
+  for(var i=0;i<=N;i++){
+    var x=x0+(x1-x0)*i/N, y=F(x);
+    var px=X(x), py=Y(y);
+    if(i===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke(); ctx.setLineDash([]);
+}
+function label(ctx,txt,x,y,col,align){
+  ctx.fillStyle=col||"#1f2328"; ctx.textAlign=align||"left"; ctx.textBaseline="alphabetic";
+  ctx.font='12px ui-monospace,Consolas,monospace';
+  ctx.fillText(txt,x,y);
+}
+var T0=1, RHO0=1; /* 沙盘张力与密度 */
+
+/* ================= 1 微元段受力 ================= */
+var segX0=0.40, segDX=0.80;
+function segShape(x){ return 0.55*Math.sin(1.4*x+0.6); }
+function segD(x){ return 0.55*1.4*Math.cos(1.4*x+0.6); }
+function segAll(){
+  var x1=segX0, x2=segX0+segDX;
+  var a1=Math.atan(segD(x1)), a2=Math.atan(segD(x2));
+  var net=T0*(Math.sin(a2)-Math.sin(a1));
+  var hz=T0*(Math.cos(a2)-Math.cos(a1));
+  /* 弧长 Δs = ∫√(1+u_x²)dx，Simpson 400 */
+  var N=400, h=segDX/N, s=0, i;
+  for(i=0;i<=N;i++){
+    var w=(i===0||i===N)?1:((i%2)?4:2);
+    s+=w*Math.sqrt(1+segD(x1+i*h)*segD(x1+i*h));
+  }
+  s*=h/3;
+  setTxt("seg-x0v",segX0.toFixed(2));
+  setTxt("seg-dxv",segDX.toFixed(2));
+  setTxt("seg-a1",(a1*180/Math.PI).toFixed(2)+"°");
+  setTxt("seg-a2",(a2*180/Math.PI).toFixed(2)+"°");
+  setTxt("seg-net",fmt(net));
+  setTxt("seg-hz",fmt(hz));
+  setTxt("seg-ds",fmt(s/segDX));
+  var cv=$("seg-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,-2.6,2.6,-1.1,1.1,{xt:[-2,-1,0,1,2],yt:[-1,0,1],xlabel:"x",ylabel:"u(x)"});
+  var X=f.X,Y=f.Y;
+  curve(ctx,segShape,X,Y,-2.6,2.6,300,"#b9c2cc",1.5);
+  /* 弦段加粗 */
+  ctx.strokeStyle="#185FA5"; ctx.lineWidth=3.5; ctx.beginPath();
+  for(var j=0;j<=60;j++){
+    var xx=x1+(x2-x1)*j/60, px=X(xx), py=Y(segShape(xx));
+    if(j===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  /* 端点张力箭头 */
+  function tend(x,dir){
+    var u=segShape(x), d=segD(x);
+    var L=0.9;
+    var x0=X(x), y0=Y(u);
+    var ang=Math.atan(-d); /* 画布 y 向下，切线斜率取负 */
+    var tx=x0+dir*L*Math.cos(ang), ty=y0+dir*L*Math.sin(ang);
+    ctx.strokeStyle="#D85A30"; ctx.fillStyle="#D85A30"; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(tx,ty); ctx.stroke();
+    var a=Math.atan2(ty-y0,tx-x0),LL=9;
+    ctx.beginPath(); ctx.moveTo(tx,ty);
+    ctx.lineTo(tx-LL*Math.cos(a-0.4),ty-LL*Math.sin(a-0.4));
+    ctx.lineTo(tx-LL*Math.cos(a+0.4),ty-LL*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill();
+    label(ctx,"T("+(dir<0?"x":"x+Δx")+")",tx+dir*10,ty-6,"#D85A30");
+  }
+  tend(x1,-1); tend(x2,1);
+  /* 倾角弧 */
+  function arc(x,dir){
+    var u=segShape(x), d=segD(x);
+    var px=X(x), py=Y(u), r=34;
+    var a=Math.atan(-d)*(dir<0?1:-1);
+    ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.4; ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    if(dir<0) ctx.arc(px,py,r,Math.PI+a,Math.PI,false);
+    else ctx.arc(px,py,r,0,a,true);
+    ctx.stroke(); ctx.setLineDash([]);
+    label(ctx,dir<0?"α₁":"α₂",px+dir*(r+6),py+(dir<0?14:-8),"#534AB7");
+  }
+  arc(x1,-1); arc(x2,1);
+  label(ctx,"弦段 (x, x+Δx)，Δs ≈ Δx",X(-2.5),Y(1.05),"#57606a");
+}
+$("seg-x0").addEventListener("input",function(){ segX0=clampr(parseFloat(this.value)/100,-2,1.2); segAll(); });
+$("seg-dx").addEventListener("input",function(){ segDX=clampr(parseFloat(this.value)/100,0.2,1.6); segAll(); });
+
+/* ================= 2 三类边界 ================= */
+var bcMode=0, bcT=0, bcTimer=null;
+function bcG(z){ return Math.exp(-9*(z-2.4)*(z-2.4)); }
+function bcSol(x,t,mode){
+  if(mode===0) return bcG(x+t)-bcG(-x+t);
+  if(mode===1) return bcG(x+t)+bcG(-x+t);
+  return bcG(x+t);
+}
+function bcAll(){
+  var names=["第一类（固定端）","第二类（自由端）","第三类（弹性支承）"];
+  var forms=["u(0,t) = 0","u_x(0,t) = 0","u_x(0,t) + σ·u(0,t) = 0"];
+  var coefs=["−1（反相）","+1（同相）","全反射、相移随频率"];
+  setTxt("bc-tv",bcT.toFixed(2));
+  setTxt("bc-form",forms[bcMode]);
+  setTxt("bc-coef",coefs[bcMode]);
+  setTxt("bc-wall",bcMode===2?fmt(bcG(bcT))+"（入射）":fmt(bcSol(0,bcT,bcMode)));
+  $("bc-d").className=bcMode===0?"on":"";
+  $("bc-n").className=bcMode===1?"on":"";
+  $("bc-r").className=bcMode===2?"on":"";
+  var cv=$("bc-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,0,2.8,-1.35,1.35,{xt:[0,0.5,1,1.5,2,2.5],yt:[-1,0,1],xlabel:"x",ylabel:"u"});
+  var X=f.X,Y=f.Y;
+  /* 墙 */
+  ctx.strokeStyle="#1f2328"; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(X(0),f.mt); ctx.lineTo(X(0),f.mt+f.ph); ctx.stroke();
+  ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  for(var i=0;i<8;i++){
+    var yy=f.mt+f.ph*i/8;
+    ctx.beginPath(); ctx.moveTo(X(0),yy); ctx.lineTo(X(0)-10,yy+8); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  if(bcMode===2){
+    /* 弹簧：以 u(0,t) 伸缩 */
+    var ext=bcG(bcT);
+    var y0=Y(ext), xw=X(0);
+    ctx.strokeStyle="#D85A30"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(xw,y0);
+    for(var s2=0;s2<=16;s2++){
+      var t3=s2/16;
+      ctx.lineTo(xw-14*t3, y0+(s2%2?9:-9)*(1-t3*0.6));
+    }
+    ctx.stroke();
+    label(ctx,"弹簧（伸长 = u(0,t)）",X(0.9),Y(-1.15),"#D85A30");
+    label(ctx,"入射脉冲",X(1.4),Y(bcG(1.4+bcT))+16,"#57606a");
+  }
+  dashed(ctx,function(x){return bcG(x+bcT);},X,Y,0,2.8,300,"#8b949e",1.6,[6,4]);
+  if(bcMode<2){
+    dashed(ctx,function(x){return (bcMode===0?-1:1)*bcG(-x+bcT);},X,Y,0,2.8,300,"#0F6E56",1.6,[2,3]);
+  }
+  curve(ctx,function(x){return bcSol(x,bcT,bcMode);},X,Y,0,2.8,400,"#185FA5",2.6);
+  /* 墙位移标记 */
+  var uw=bcSol(0,bcT,bcMode);
+  ctx.fillStyle="#185FA5";
+  ctx.beginPath(); ctx.arc(X(0),Y(uw),4,0,7); ctx.fill();
+  label(ctx,"u(0,t)="+fmt(uw),X(0)+8,Y(uw)-8,"#185FA5");
+  label(ctx,names[bcMode],X(2.75),Y(1.22),"#57606a","right");
+}
+$("bc-d").addEventListener("click",function(){ bcMode=0; bcAll(); });
+$("bc-n").addEventListener("click",function(){ bcMode=1; bcAll(); });
+$("bc-r").addEventListener("click",function(){ bcMode=2; bcAll(); });
+$("bc-t").addEventListener("input",function(){ bcT=clampr(parseFloat(this.value)/10,0,5); bcAll(); });
+$("bc-play").addEventListener("click",function(){
+  var btn=this;
+  if(bcTimer){ clearInterval(bcTimer); bcTimer=null; btn.textContent="播放"; btn.className=""; return; }
+  btn.textContent="暂停"; btn.className="on";
+  bcTimer=setInterval(function(){
+    bcT+=0.03; if(bcT>5)bcT=0;
+    $("bc-t").value=String(Math.round(bcT*10));
+    bcAll();
+  },40);
+});
+
+/* ================= 3 特征线 ================= */
+function chAll(){
+  var a=clampr(parseFloat($("ch-a").value)/100,0.2,2);
+  setTxt("ch-av",a.toFixed(2));
+  setTxt("ch-slope","±"+(1/a).toFixed(3));
+  setTxt("ch-t2",((2-(-2))/a).toFixed(3));
+  var cv=$("ch-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,-4,4,0,4,{xt:[-4,-2,0,2,4],yt:[0,1,2,3,4],xlabel:"x",ylabel:"t"});
+  var X=f.X,Y=f.Y;
+  [-2,-1,0,1,2].forEach(function(x0){
+    ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.2; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(X(x0),Y(0)); ctx.lineTo(X(x0+4*a),Y(4)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(x0),Y(0)); ctx.lineTo(X(x0-4*a),Y(4)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#185FA5"; ctx.beginPath(); ctx.arc(X(x0),Y(0),3.5,0,7); ctx.fill();
+  });
+  /* 原点光锥填充 */
+  ctx.fillStyle="rgba(24,95,165,.08)";
+  ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(4*a),Y(4)); ctx.lineTo(X(-4*a),Y(4)); ctx.closePath(); ctx.fill();
+  label(ctx,"特征线 x = x₀ ± a t（斜率 ±1/a）",X(-3.8),Y(3.8),"#185FA5");
+}
+$("ch-a").addEventListener("input",chAll);
+
+/* ================= 4 达朗贝尔求解器 ================= */
+var daP=0, daA=1, daT=0, daX=0, daTimer=null;
+function daPhi(x){
+  if(daP===0){ var y=Math.abs(x); return y<=1?1-y:0; }
+  if(daP===1){ return Math.abs(x)<=0.6?1:0; }
+  if(daP===2){ return Math.exp(-4*x*x); }
+  return 0;
+}
+function daPsi(x){
+  if(daP===3){ return Math.abs(x)<=0.5?1:0; }
+  return 0;
+}
+function daPsiInt(lo,hi){
+  if(daP!==3) return 0;
+  var l=Math.max(lo,-0.5), h=Math.min(hi,0.5);
+  return h>l?h-l:0;
+}
+function daU(x,t){
+  var a=daA;
+  return 0.5*(daPhi(x-a*t)+daPhi(x+a*t))+(1/(2*a))*daPsiInt(x-a*t,x+a*t);
+}
+function daAll(){
+  setTxt("da-av",daA.toFixed(2));
+  setTxt("da-tv",daT.toFixed(2));
+  setTxt("da-xv",daX.toFixed(2));
+  var u=daU(daX,daT);
+  setTxt("da-u",fmt(u));
+  setTxt("da-lw",fmt(0.5*daPhi(daX-daA*daT)));
+  setTxt("da-rw",fmt(0.5*daPhi(daX+daA*daT)));
+  setTxt("da-psi",fmt((1/(2*daA))*daPsiInt(daX-daA*daT,daX+daA*daT)));
+  setTxt("da-dep","["+(daX-daA*daT).toFixed(2)+", "+(daX+daA*daT).toFixed(2)+"]");
+  var cv=$("da-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,-4,4,-1.7,1.7,{xt:[-4,-2,0,2,4],yt:[-1,0,1],xlabel:"x",ylabel:"u"});
+  var X=f.X,Y=f.Y;
+  dashed(ctx,function(x){return daPhi(x);},X,Y,-4,4,400,"#b9c2cc",1.4,[2,3]);
+  if(daP<3){
+    dashed(ctx,function(x){return 0.5*daPhi(x-daA*daT);},X,Y,-4,4,400,"#D85A30",1.8,[7,4]);
+    dashed(ctx,function(x){return 0.5*daPhi(x+daA*daT);},X,Y,-4,4,400,"#0F6E56",1.8,[2,3]);
+  }
+  curve(ctx,function(x){return daU(x,daT);},X,Y,-4,4,600,"#185FA5",2.8);
+  /* 探针 */
+  ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(X(daX),f.mt); ctx.lineTo(X(daX),f.mt+f.ph); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="#534AB7"; ctx.beginPath(); ctx.arc(X(daX),Y(u),4.5,0,7); ctx.fill();
+  /* 依赖区间括号 */
+  var d1=daX-daA*daT, d2=daX+daA*daT, yb=Y(-1.62);
+  ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(X(d1),yb-5); ctx.lineTo(X(d1),yb+5); ctx.moveTo(X(d2),yb-5); ctx.lineTo(X(d2),yb+5);
+  ctx.moveTo(X(d1),yb); ctx.lineTo(X(d2),yb); ctx.stroke();
+  label(ctx,"依赖区间",(X(d1)+X(d2))/2,yb-8,"#534AB7","center");
+  label(ctx,"— 合成 u    -- 右传 ½φ(x−at)    -- 左传 ½φ(x+at)    .. 初值",X(-3.9),Y(1.58),"#57606a");
+}
+$("da-p0").addEventListener("click",function(){ daP=0; daBtns(); daAll(); });
+$("da-p1").addEventListener("click",function(){ daP=1; daBtns(); daAll(); });
+$("da-p2").addEventListener("click",function(){ daP=2; daBtns(); daAll(); });
+$("da-p3").addEventListener("click",function(){ daP=3; daBtns(); daAll(); });
+function daBtns(){
+  $("da-p0").className=daP===0?"on":"";
+  $("da-p1").className=daP===1?"on":"";
+  $("da-p2").className=daP===2?"on":"";
+  $("da-p3").className=daP===3?"on":"";
+}
+$("da-a").addEventListener("input",function(){ daA=clampr(parseFloat(this.value)/100,0.2,2); daAll(); });
+$("da-t").addEventListener("input",function(){ daT=clampr(parseFloat(this.value)/100,0,4); daAll(); });
+$("da-x").addEventListener("input",function(){ daX=clampr(parseFloat(this.value)/100,-3,3); daAll(); });
+$("da-play").addEventListener("click",function(){
+  var btn=this;
+  if(daTimer){ clearInterval(daTimer); daTimer=null; btn.textContent="播放"; btn.className=""; return; }
+  btn.textContent="暂停"; btn.className="on";
+  daTimer=setInterval(function(){
+    daT+=0.03; if(daT>4)daT=0;
+    $("da-t").value=String(Math.round(daT*100));
+    daAll();
+  },40);
+});
+
+/* ================= 5 依赖/影响区域 ================= */
+var depX0=0.5, depT0=1, depX1=-1.5, depX2=1.5, depA=1;
+function depAll(){
+  var x1=Math.min(depX1,depX2), x2=Math.max(depX1,depX2);
+  if(x2-x1<0.1){ var mid=(x1+x2)/2; x1=mid-0.05; x2=mid+0.05; }
+  setTxt("dep-x0v",depX0.toFixed(2)); setTxt("dep-t0v",depT0.toFixed(2));
+  setTxt("dep-x1v",x1.toFixed(2)); setTxt("dep-x2v",x2.toFixed(2));
+  setTxt("dep-av",depA.toFixed(2));
+  var d1=depX0-depA*depT0, d2=depX0+depA*depT0;
+  var ax=(x1+x2)/2, at=(x2-x1)/(2*depA);
+  var f1=x1-depA*depT0, f2=x2+depA*depT0;
+  setTxt("dep-dep","["+d1.toFixed(2)+", "+d2.toFixed(2)+"]");
+  setTxt("dep-apex","("+ax.toFixed(2)+", "+at.toFixed(2)+")");
+  setTxt("dep-fan","["+f1.toFixed(2)+", "+f2.toFixed(2)+"]");
+  var cv=$("dep-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,-4,4,0,4,{xt:[-4,-2,0,2,4],yt:[0,1,2,3,4],xlabel:"x",ylabel:"t"});
+  var X=f.X,Y=f.Y;
+  /* 影响区域楔形 */
+  ctx.fillStyle="rgba(216,90,48,.10)";
+  ctx.beginPath(); ctx.moveTo(X(x1),Y(0)); ctx.lineTo(X(x1-4*depA),Y(4)); ctx.lineTo(X(x2+4*depA),Y(4)); ctx.lineTo(X(x2),Y(0)); ctx.closePath(); ctx.fill();
+  /* 决定区域三角形 */
+  ctx.fillStyle="rgba(24,95,165,.13)";
+  ctx.beginPath(); ctx.moveTo(X(x1),Y(0)); ctx.lineTo(X(x2),Y(0)); ctx.lineTo(X(ax),Y(at)); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(X(x1),Y(0)); ctx.lineTo(X(x2),Y(0)); ctx.lineTo(X(ax),Y(at)); ctx.closePath(); ctx.stroke();
+  /* 特征线过考察点 */
+  ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.6; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(X(depX0),Y(depT0)); ctx.lineTo(X(d1),Y(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X(depX0),Y(depT0)); ctx.lineTo(X(d2),Y(0)); ctx.stroke();
+  ctx.setLineDash([]);
+  /* 依赖区间 */
+  ctx.strokeStyle="#534AB7"; ctx.lineWidth=3.5;
+  ctx.beginPath(); ctx.moveTo(X(d1),Y(0)); ctx.lineTo(X(d2),Y(0)); ctx.stroke();
+  /* t0 切片 */
+  ctx.strokeStyle="#D85A30"; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(X(f1),Y(depT0)); ctx.lineTo(X(f2),Y(depT0)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="#534AB7"; ctx.beginPath(); ctx.arc(X(depX0),Y(depT0),5,0,7); ctx.fill();
+  ctx.fillStyle="#D85A30";
+  ctx.beginPath(); ctx.arc(X(f1),Y(depT0),3.5,0,7); ctx.fill();
+  ctx.beginPath(); ctx.arc(X(f2),Y(depT0),3.5,0,7); ctx.fill();
+  label(ctx,"考察点 (x₀,t₀)",X(depX0)+8,Y(depT0)-6,"#534AB7");
+  label(ctx,"依赖区间",X(d2)+6,Y(0)+16,"#534AB7");
+  label(ctx,"决定区域",X(ax),Y(at)+16,"#185FA5","center");
+  label(ctx,"影响区域（t₀ 切片 = 珊瑚线段）",X(-3.9),Y(3.85),"#D85A30");
+}
+$("dep-x0").addEventListener("input",function(){ depX0=parseFloat(this.value)/100; depAll(); });
+$("dep-t0").addEventListener("input",function(){ depT0=clampr(parseFloat(this.value)/100,0,3.5); depAll(); });
+$("dep-x1").addEventListener("input",function(){ depX1=clampr(parseFloat(this.value)/100,-3,3); depAll(); });
+$("dep-x2").addEventListener("input",function(){ depX2=clampr(parseFloat(this.value)/100,-3,3); depAll(); });
+$("dep-a").addEventListener("input",function(){ depA=clampr(parseFloat(this.value)/100,0.4,1.6); depAll(); });
+
+/* ================= 6 反射实验室 ================= */
+var refMode=0, refT=0, refTimer=null;
+function refG(z){ return Math.exp(-9*(z-2.4)*(z-2.4)); }
+function refU(x,t,mode){ return mode===0?(refG(x+t)-refG(-x+t)):(refG(x+t)+refG(-x+t)); }
+function refAll(){
+  setTxt("ref-tv",refT.toFixed(2));
+  $("ref-fix").className=refMode===0?"on":"";
+  $("ref-free").className=refMode===1?"on":"";
+  var wall=refU(0,refT,refMode);
+  var gp=refG(refT);
+  var slope=refMode===0?2*(-18*(refT-2.4)*refG(refT)):0; /* u_x(0,t) */
+  setTxt("ref-wall",fmt(wall));
+  setTxt("ref-slope",fmt(slope));
+  setTxt("ref-coef",refMode===0?"−1（反相）":"+1（同相）");
+  var mx=0;
+  for(var i=0;i<=2000;i++){
+    var x=i*4.5/2000, v=Math.abs(refU(x,refT,refMode));
+    if(v>mx)mx=v;
+  }
+  setTxt("ref-amp",fmt(mx));
+  var cv=$("ref-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,0,4.5,-1.4,1.4,{xt:[0,1,2,3,4],yt:[-1,0,1],xlabel:"x（半无界弦 x ≥ 0）",ylabel:"u"});
+  var X=f.X,Y=f.Y;
+  ctx.strokeStyle="#1f2328"; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(X(0),f.mt); ctx.lineTo(X(0),f.mt+f.ph); ctx.stroke();
+  ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  for(var k=0;k<9;k++){
+    var yy=f.mt+f.ph*k/9;
+    ctx.beginPath(); ctx.moveTo(X(0),yy); ctx.lineTo(X(0)-10,yy+8); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  dashed(ctx,function(x){return refG(x+refT);},X,Y,0,4.5,300,"#8b949e",1.6,[6,4]);
+  dashed(ctx,function(x){return (refMode===0?-1:1)*refG(-x+refT);},X,Y,0,4.5,300,"#0F6E56",1.6,[2,3]);
+  curve(ctx,function(x){return refU(x,refT,refMode);},X,Y,0,4.5,400,"#185FA5",2.6);
+  ctx.fillStyle="#185FA5"; ctx.beginPath(); ctx.arc(X(0),Y(wall),4.5,0,7); ctx.fill();
+  label(ctx,"入射（灰虚线） · 反射（青虚线） · 合成（蓝）",X(0.15),Y(1.28),"#57606a");
+  label(ctx,refMode===0?"固定端：奇延拓，反射波倒立":"自由端：偶延拓，反射波正立",X(4.4),Y(1.28),"#57606a","right");
+}
+$("ref-fix").addEventListener("click",function(){ refMode=0; refAll(); });
+$("ref-free").addEventListener("click",function(){ refMode=1; refAll(); });
+$("ref-t").addEventListener("input",function(){ refT=clampr(parseFloat(this.value)/10,0,5); refAll(); });
+$("ref-play").addEventListener("click",function(){
+  var btn=this;
+  if(refTimer){ clearInterval(refTimer); refTimer=null; btn.textContent="播放"; btn.className=""; return; }
+  btn.textContent="暂停"; btn.className="on";
+  refTimer=setInterval(function(){
+    refT+=0.03; if(refT>5)refT=0;
+    $("ref-t").value=String(Math.round(refT*10));
+    refAll();
+  },40);
+});
+
+/* ================= 7 齐次化原理 ================= */
+var duhP=0, duhX=0.35, duhT=1;
+function duhF(x){
+  if(duhP===0) return Math.sin(Math.PI*x);
+  if(duhP===1) return x*(1-x);
+  return Math.sin(2*Math.PI*x);
+}
+function duhClosed(x,t){
+  if(duhP===0) return (1-Math.cos(Math.PI*t))/(Math.PI*Math.PI)*Math.sin(Math.PI*x);
+  if(duhP===1) return t*t*x*(1-x)/2 - t**4/12;
+  return (1-Math.cos(2*Math.PI*t))/(4*Math.PI*Math.PI)*Math.sin(2*Math.PI*x);
+}
+function duhNum(x,t){
+  var a=1, M=800, N=800, dt=t/M, s=0;
+  if(t<=0) return 0;
+  for(var i=0;i<M;i++){
+    var tau=(i+0.5)*dt;
+    var lo=x-a*(t-tau), hi=x+a*(t-tau);
+    var si=0;
+    for(var j=0;j<N;j++) si+=duhF(lo+(hi-lo)*(j+0.5)/N);
+    s+=si*(hi-lo)/N*dt;
+  }
+  return s/(2*a);
+}
+function duhAll(){
+  setTxt("duh-xv",duhX.toFixed(2));
+  setTxt("duh-tv",duhT.toFixed(2));
+  var num=duhNum(duhX,duhT), cls=duhClosed(duhX,duhT);
+  setTxt("duh-num",fmtE(num));
+  setTxt("duh-cls",fmtE(cls));
+  if(Math.abs(cls)>1e-12) setTxt("duh-err",fmtE(Math.abs(num-cls)/Math.abs(cls)));
+  else setTxt("duh-err","|Δ|="+fmtE(Math.abs(num-cls)));
+  var cv=$("duh-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  /* 左：特征三角形 */
+  var x0=duhX, t0=duhT;
+  var m=Math.max(0.6,Math.abs(x0)+t0+0.4);
+  var f=frame(ctx,W/2-14,H,-m,m,0,Math.max(2.2,t0+0.4),{xt:[-m,-m/2,0,m/2,m],yt:[0,1,2,3],xlabel:"ξ",ylabel:"τ",ml:44,mb:30});
+  var X=f.X,Y=f.Y;
+  ctx.fillStyle="rgba(83,74,183,.12)";
+  ctx.beginPath(); ctx.moveTo(X(x0-t0),Y(0)); ctx.lineTo(X(x0),Y(t0)); ctx.lineTo(X(x0+t0),Y(0)); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(X(x0-t0),Y(0)); ctx.lineTo(X(x0),Y(t0)); ctx.lineTo(X(x0+t0),Y(0)); ctx.stroke();
+  ctx.fillStyle="#534AB7"; ctx.beginPath(); ctx.arc(X(x0),Y(t0),4.5,0,7); ctx.fill();
+  label(ctx,"积分域 G",X(x0-t0)+6,Y(t0/2)+14,"#534AB7");
+  label(ctx,"(ξ,τ) 平面",X(0),f.mt+f.ph-6,"#57606a","center");
+  /* 右：解随 τ 积累的曲线（闭式），当前 t 打点 */
+  var TMAX=2.2, i, vmin=0, vmax=0, vals=[];
+  for(i=0;i<=200;i++){
+    var tt=TMAX*i/200, vv=duhClosed(duhX,tt);
+    vals.push(vv);
+    if(vv<vmin)vmin=vv; if(vv>vmax)vmax=vv;
+  }
+  var pad=Math.max(0.05,(vmax-vmin)*0.12);
+  var g=frame(ctx,W,H,0,TMAX,vmin-pad,vmax+pad,{xt:[0,0.5,1,1.5,2],xlabel:"t",ylabel:"u(x,t)",ml:W/2+46,mb:30,clear:false});
+  var X2=g.X,Y2=g.Y;
+  curve(ctx,function(tt){ return duhClosed(duhX,tt); },X2,Y2,0,TMAX,200,"#534AB7",2.4);
+  ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(X2(t0),g.mt); ctx.lineTo(X2(t0),g.mt+g.ph); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="#185FA5"; ctx.beginPath(); ctx.arc(X2(t0),Y2(duhClosed(duhX,t0)),4.5,0,7); ctx.fill();
+  label(ctx,"解随时间积累（闭式曲线）",X2(0.06),g.mt+14,"#534AB7");
+}
+$("duh-p0").addEventListener("click",function(){ duhP=0; duhBtns(); duhAll(); });
+$("duh-p1").addEventListener("click",function(){ duhP=1; duhBtns(); duhAll(); });
+$("duh-p2").addEventListener("click",function(){ duhP=2; duhBtns(); duhAll(); });
+function duhBtns(){
+  $("duh-p0").className=duhP===0?"on":"";
+  $("duh-p1").className=duhP===1?"on":"";
+  $("duh-p2").className=duhP===2?"on":"";
+}
+$("duh-x").addEventListener("input",function(){ duhX=clampr(parseFloat(this.value)/100,0,1); duhAll(); });
+$("duh-t").addEventListener("input",function(){ duhT=clampr(parseFloat(this.value)/100,0,2); duhAll(); });
+
+/* ================= 8 驻波实验室 ================= */
+var swMode=0, swK=2, swN=8, swT=0, swTimer=null;
+var SWL=1, SWA=1, SWC=0.3, SWH=1;
+function swAk(k){ return 2*SWH*SWL*SWL*Math.sin(k*Math.PI*SWC/SWL)/(Math.PI*Math.PI*SWC*(SWL-SWC)*k*k); }
+function swU(x,t){
+  var s=0,k;
+  if(swMode===0){
+    s=Math.sin(swK*Math.PI*x/SWL)*Math.cos(swK*Math.PI*SWA/SWL*t);
+  }else{
+    for(k=1;k<=swN;k++) s+=swAk(k)*Math.cos(k*Math.PI*SWA/SWL*t)*Math.sin(k*Math.PI*x/SWL);
+  }
+  return s;
+}
+function swAll(){
+  setTxt("sw-kv",String(swK));
+  setTxt("sw-Nv",String(swN));
+  var om=swK*Math.PI*SWA/SWL;
+  setTxt("sw-om",om.toFixed(4));
+  setTxt("sw-fk",(om/(2*Math.PI)).toFixed(4)+" Hz");
+  setTxt("sw-per",(2*Math.PI/om).toFixed(4)+" s");
+  var nodes=[],m;
+  for(m=0;m<=swK;m++) nodes.push((m/swK).toFixed(4));
+  setTxt("sw-nodes",swMode===0?nodes.join(", "):"—（多模态无固定节点）");
+  setTxt("sw-ak1",swMode===1?fmt(swAk(1)):"—");
+  $("sw-m0").className=swMode===0?"on":"";
+  $("sw-m1").className=swMode===1?"on":"";
+  var cv=$("sw-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  var f=frame(ctx,W,H,0,1,-1.7,1.7,{xt:[0,0.25,0.5,0.75,1],yt:[-1,0,1],xlabel:"x（弦长 l = 1）",ylabel:"u"});
+  var X=f.X,Y=f.Y;
+  dashed(ctx,function(x){return daPhi0(x);},X,Y,0,1,300,"#b9c2cc",1.3,[2,3]);
+  if(swMode===0){
+    dashed(ctx,function(x){return Math.sin(swK*Math.PI*x/SWL);},X,Y,0,1,300,"#0F6E56",1.5,[5,4]);
+    dashed(ctx,function(x){return -Math.sin(swK*Math.PI*x/SWL);},X,Y,0,1,300,"#0F6E56",1.5,[5,4]);
+    for(var mm=0;mm<=swK;mm++){
+      ctx.fillStyle="#1f2328";
+      ctx.beginPath(); ctx.arc(X(mm/swK),Y(0),3.5,0,7); ctx.fill();
+    }
+    label(ctx,"包络 ±sin(kπx/l)（青虚线）· 节点（黑点）",X(0.02),Y(1.58),"#57606a");
+  }else{
+    label(ctx,"灰虚线 = 初始形状 φ；蓝线 = 前 "+swN+" 个模态叠加",X(0.02),Y(1.58),"#57606a");
+  }
+  curve(ctx,function(x){return swU(x,swT);},X,Y,0,1,600,"#185FA5",2.6);
 }
 function daPhi0(x){
- if(swMode===0) return 0;
- /* 拨弦初值（灰虚线参考） */
- return x<=SWC?SWH*x/SWC:(x<SWL?SWH*(SWL-x)/(SWL-SWC):0);
+  if(swMode===0) return 0;
+  /* 拨弦初值（灰虚线参考） */
+  return x<=SWC?SWH*x/SWC:(x<SWL?SWH*(SWL-x)/(SWL-SWC):0);
 }
 $("sw-m0").addEventListener("click",function(){ swMode=0; swAll(); });
 $("sw-m1").addEventListener("click",function(){ swMode=1; swAll(); });
 $("sw-k").addEventListener("input",function(){ swK=clampr(parseInt(this.value,10),1,8); swAll(); });
 $("sw-N").addEventListener("input",function(){ swN=clampr(parseInt(this.value,10),1,64); swAll(); });
 $("sw-play").addEventListener("click",function(){
- var btn=this;
- if(swTimer){ clearInterval(swTimer); swTimer=null; btn.textContent="播放"; btn.className=""; return; }
- btn.textContent="暂停"; btn.className="on";
- swTimer=setInterval(function(){
- swT+=0.02; if(swT>2)swT=0;
- swAll();
- },40);
+  var btn=this;
+  if(swTimer){ clearInterval(swTimer); swTimer=null; btn.textContent="播放"; btn.className=""; return; }
+  btn.textContent="暂停"; btn.className="on";
+  swTimer=setInterval(function(){
+    swT+=0.02; if(swT>2)swT=0;
+    swAll();
+  },40);
 });
 
 /* ================= 9 对比实验室 ================= */
 var cmpP=0, cmpA=1, cmpT=0.25, cmpTimer=null;
 function cmpPhi(x){
- if(cmpP===0) return Math.abs(x)<=1?1:0;
- return Math.exp(-4*x*x);
+  if(cmpP===0) return Math.abs(x)<=1?1:0;
+  return Math.exp(-4*x*x);
 }
 function cmpWave(x,t){
- return 0.5*(cmpPhi(x-cmpA*t)+cmpPhi(x+cmpA*t));
+  return 0.5*(cmpPhi(x-cmpA*t)+cmpPhi(x+cmpA*t));
 }
 function cmpHeat(x,t){
- if(t<=0) return cmpPhi(x);
- var s=cmpA*cmpA*t;
- if(cmpP===0) return 0.5*(erfA((1-x)/(2*Math.sqrt(s)))+erfA((1+x)/(2*Math.sqrt(s))));
- return Math.exp(-x*x/(1+4*s*4))/Math.sqrt(1+16*s);
+  if(t<=0) return cmpPhi(x);
+  var s=cmpA*cmpA*t;
+  if(cmpP===0) return 0.5*(erfA((1-x)/(2*Math.sqrt(s)))+erfA((1+x)/(2*Math.sqrt(s))));
+  return Math.exp(-x*x/(1+4*s*4))/Math.sqrt(1+16*s);
 }
 function cmpAll(){
- setTxt("cmp-av",cmpA.toFixed(2));
- setTxt("cmp-tv",cmpT.toFixed(2));
- var s=cmpA*cmpA*cmpT;
- var wsup,hl2;
- if(cmpP===0){
- wsup=(cmpA*cmpT<=1)?1:0.5;
- }else{
- wsup=Math.max(Math.exp(-4*s),0.5+0.5*Math.exp(-16*s));
- }
- var hsup=(cmpT<=0)?1:(cmpP===0?erfA(1/(2*Math.sqrt(s))):1/Math.sqrt(1+16*s));
- /* 热 ∫u²dx：矩形闭式繁杂，直接细网格（被积光滑）；高斯用闭式 */
- if(cmpP===1){
- hl2=Math.sqrt(Math.PI/8)/Math.sqrt(1+16*s);
- }else{
- var M=8000, dx=24/M, acc=0;
- for(var i=0;i<M;i++){
- var x=-12+(i+0.5)*dx, v=cmpHeat(x,cmpT);
- acc+=v*v*dx;
- }
- hl2=acc;
- }
- var wl2=(cmpP===0)?((cmpA*cmpT<=1)?2-cmpA*cmpT:1):0.5*Math.sqrt(Math.PI/8)*(1+Math.exp(-8*s));
- setTxt("cmp-wsup",wsup.toFixed(4));
- setTxt("cmp-hsup",hsup.toFixed(4));
- setTxt("cmp-wl2",wl2.toFixed(4));
- setTxt("cmp-hl2",hl2.toFixed(4));
- setTxt("cmp-front","±"+(cmpA*cmpT).toFixed(2));
- var cv=$("cmp-cv"), ctx=cv.getContext("2d");
- var W=cv.width,H=cv.height;
- /* 左：波动 */
- var f=frame(ctx,W/2-14,H,-7,7,-0.25,1.25,{xt:[-6,-3,0,3,6],yt:[0,0.5,1],xlabel:"x",ylabel:"u",ml:46,mb:30});
- var X=f.X,Y=f.Y;
- curve(ctx,function(x){return cmpWave(x,cmpT);},X,Y,-7,7,700,"#185FA5",2.6);
- dashed(ctx,function(x){return cmpPhi(x);},X,Y,-7,7,400,"#b9c2cc",1.3,[2,3]);
- ctx.strokeStyle="#D85A30"; ctx.lineWidth=1.2; ctx.setLineDash([4,4]);
- ctx.beginPath(); ctx.moveTo(X(-cmpA*cmpT),f.mt); ctx.lineTo(X(-cmpA*cmpT),f.mt+f.ph); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(X(cmpA*cmpT),f.mt); ctx.lineTo(X(cmpA*cmpT),f.mt+f.ph); ctx.stroke();
- ctx.setLineDash([]);
- label(ctx,"波动方程（达朗贝尔）",X(-6.8),Y(1.18),"#185FA5");
- label(ctx,"波前 ±at（珊瑚虚线）",X(-6.8),Y(1.05),"#D85A30");
- /* 右：热 */
- var xoff=W/2+14;
- var g=frame(ctx,W,H,-7,7,-0.25,1.25,{xt:[-6,-3,0,3,6],yt:[0,0.5,1],xlabel:"x",ylabel:"u",ml:xoff+32,mb:30,clear:false});
- var X2=g.X,Y2=g.Y;
- curve(ctx,function(x){return cmpHeat(x,cmpT);},X2,Y2,-7,7,700,"#534AB7",2.6);
- dashed(ctx,function(x){return cmpPhi(x);},X2,Y2,-7,7,400,"#b9c2cc",1.3,[2,3]);
- label(ctx,"热传导方程（热核）",X2(-6.8),Y2(1.18),"#534AB7");
- label(ctx,"瞬间波及全轴",X2(-6.8),Y2(1.05),"#57606a");
+  setTxt("cmp-av",cmpA.toFixed(2));
+  setTxt("cmp-tv",cmpT.toFixed(2));
+  var s=cmpA*cmpA*cmpT;
+  var wsup,hl2;
+  if(cmpP===0){
+    wsup=(cmpA*cmpT<=1)?1:0.5;
+  }else{
+    wsup=Math.max(Math.exp(-4*s),0.5+0.5*Math.exp(-16*s));
+  }
+  var hsup=(cmpT<=0)?1:(cmpP===0?erfA(1/(2*Math.sqrt(s))):1/Math.sqrt(1+16*s));
+  /* 热 ∫u²dx：矩形闭式繁杂，直接细网格（被积光滑）；高斯用闭式 */
+  if(cmpP===1){
+    hl2=Math.sqrt(Math.PI/8)/Math.sqrt(1+16*s);
+  }else{
+    var M=8000, dx=24/M, acc=0;
+    for(var i=0;i<M;i++){
+      var x=-12+(i+0.5)*dx, v=cmpHeat(x,cmpT);
+      acc+=v*v*dx;
+    }
+    hl2=acc;
+  }
+  var wl2=(cmpP===0)?((cmpA*cmpT<=1)?2-cmpA*cmpT:1):0.5*Math.sqrt(Math.PI/8)*(1+Math.exp(-8*s));
+  setTxt("cmp-wsup",wsup.toFixed(4));
+  setTxt("cmp-hsup",hsup.toFixed(4));
+  setTxt("cmp-wl2",wl2.toFixed(4));
+  setTxt("cmp-hl2",hl2.toFixed(4));
+  setTxt("cmp-front","±"+(cmpA*cmpT).toFixed(2));
+  var cv=$("cmp-cv"), ctx=cv.getContext("2d");
+  var W=cv.width,H=cv.height;
+  /* 左：波动 */
+  var f=frame(ctx,W/2-14,H,-7,7,-0.25,1.25,{xt:[-6,-3,0,3,6],yt:[0,0.5,1],xlabel:"x",ylabel:"u",ml:46,mb:30});
+  var X=f.X,Y=f.Y;
+  curve(ctx,function(x){return cmpWave(x,cmpT);},X,Y,-7,7,700,"#185FA5",2.6);
+  dashed(ctx,function(x){return cmpPhi(x);},X,Y,-7,7,400,"#b9c2cc",1.3,[2,3]);
+  ctx.strokeStyle="#D85A30"; ctx.lineWidth=1.2; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(X(-cmpA*cmpT),f.mt); ctx.lineTo(X(-cmpA*cmpT),f.mt+f.ph); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X(cmpA*cmpT),f.mt); ctx.lineTo(X(cmpA*cmpT),f.mt+f.ph); ctx.stroke();
+  ctx.setLineDash([]);
+  label(ctx,"波动方程（达朗贝尔）",X(-6.8),Y(1.18),"#185FA5");
+  label(ctx,"波前 ±at（珊瑚虚线）",X(-6.8),Y(1.05),"#D85A30");
+  /* 右：热 */
+  var xoff=W/2+14;
+  var g=frame(ctx,W,H,-7,7,-0.25,1.25,{xt:[-6,-3,0,3,6],yt:[0,0.5,1],xlabel:"x",ylabel:"u",ml:xoff+32,mb:30,clear:false});
+  var X2=g.X,Y2=g.Y;
+  curve(ctx,function(x){return cmpHeat(x,cmpT);},X2,Y2,-7,7,700,"#534AB7",2.6);
+  dashed(ctx,function(x){return cmpPhi(x);},X2,Y2,-7,7,400,"#b9c2cc",1.3,[2,3]);
+  label(ctx,"热传导方程（热核）",X2(-6.8),Y2(1.18),"#534AB7");
+  label(ctx,"瞬间波及全轴",X2(-6.8),Y2(1.05),"#57606a");
 }
 $("cmp-p0").addEventListener("click",function(){ cmpP=0; cmpBtns(); cmpAll(); });
 $("cmp-p1").addEventListener("click",function(){ cmpP=1; cmpBtns(); cmpAll(); });
 function cmpBtns(){
- $("cmp-p0").className=cmpP===0?"on":"";
- $("cmp-p1").className=cmpP===1?"on":"";
+  $("cmp-p0").className=cmpP===0?"on":"";
+  $("cmp-p1").className=cmpP===1?"on":"";
 }
 $("cmp-a").addEventListener("input",function(){ cmpA=clampr(parseFloat(this.value)/100,0.4,1.6); cmpAll(); });
 $("cmp-t").addEventListener("input",function(){ cmpT=clampr(parseFloat(this.value)/100,0,4); cmpAll(); });
 $("cmp-play").addEventListener("click",function(){
- var btn=this;
- if(cmpTimer){ clearInterval(cmpTimer); cmpTimer=null; btn.textContent="播放"; btn.className=""; return; }
- btn.textContent="暂停"; btn.className="on";
- cmpTimer=setInterval(function(){
- cmpT+=0.02; if(cmpT>4)cmpT=0;
- $("cmp-t").value=String(Math.round(cmpT*100));
- cmpAll();
- },40);
+  var btn=this;
+  if(cmpTimer){ clearInterval(cmpTimer); cmpTimer=null; btn.textContent="播放"; btn.className=""; return; }
+  btn.textContent="暂停"; btn.className="on";
+  cmpTimer=setInterval(function(){
+    cmpT+=0.02; if(cmpT>4)cmpT=0;
+    $("cmp-t").value=String(Math.round(cmpT*100));
+    cmpAll();
+  },40);
 });
 
 /* ---------- 初始化 ---------- */

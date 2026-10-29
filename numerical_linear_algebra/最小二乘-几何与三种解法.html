@@ -5,36 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>最小二乘 · 几何与三种解法 · 数值线性代数</title>
 <!--
- 维护说明（给未来的自己）：
- 2. 四个求解器都在页面内真实双精度运行：正规方程(Cholesky)、MGS-QR、Householder-QR、单边 Jacobi SVD。
- 踩坑记录：回代必须写 R[i][k]（行 i 列 k），写成 R[k][i] 等于没回代——本页开发时三个临时脚本全栽在这。
- 另：经由 AᵀA 求 SVD 会把条件数平方（κ(AᵀA)=κ(A)²），κ≳1e8 时 σₙ 淹没在噪声里，故 SVD 路线用单边 Jacobi（不形成 AᵀA）。
- 3. 读数闸门：verify_readout_ls.js（工作区根）。
+  维护说明（给未来的自己）：
+  2. 四个求解器都在页面内真实双精度运行：正规方程(Cholesky)、MGS-QR、Householder-QR、单边 Jacobi SVD。
+     踩坑记录：回代必须写 R[i][k]（行 i 列 k），写成 R[k][i] 等于没回代——本页开发时三个临时脚本全栽在这。
+     另：经由 AᵀA 求 SVD 会把条件数平方（κ(AᵀA)=κ(A)²），κ≳1e8 时 σₙ 淹没在噪声里，故 SVD 路线用单边 Jacobi（不形成 AᵀA）。
+  3. 读数闸门：verify_readout_ls.js（工作区根）。
 -->
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "local" },
- options: { enableMenu: false }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
- --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
- --line:#CBD5DF; --grid:#E6EBF1;
- --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
- --bad:#C0392B;
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+  --bad:#C0392B;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--steel);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
- overflow:hidden;margin:0 0 14px;background:var(--card)}
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -43,45 +43,45 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
 .tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
- border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
- background:#EEF3F8;color:var(--steel)}
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:#EEF3F8;color:var(--steel)}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
- border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
 p{margin:10px 0}
 ul,ol{margin:10px 0;padding-left:24px}
 li{margin:4px 0}
 .mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
 .lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
- margin:22px 0;padding:18px 20px 20px}
+  margin:22px 0;padding:18px 20px 20px}
 .lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
 .lab-head .t{font-size:15.5px;font-weight:680}
 .lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
- background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
 .lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
 canvas{display:block;width:100%;height:auto;background:var(--card);
- border:1px solid var(--line);border-radius:8px;touch-action:none}
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
 .ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
 .ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
 .ctrl label{color:var(--ink2);white-space:nowrap}
 .ctrl .nm{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
 input[type=range]{width:110px;accent-color:var(--cinn)}
 button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
- border-radius:7px;padding:5px 13px;cursor:pointer}
+  border-radius:7px;padding:5px 13px;cursor:pointer}
 button:hover{border-color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{border:none;border-radius:0;padding:5px 12px}
 .seg button.on{background:var(--steel);color:#fff}
 .readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
- display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
 .ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
- border-bottom:1px dotted var(--grid);padding:3px 0}
+  border-bottom:1px dotted var(--grid);padding:3px 0}
 .ro .k{color:var(--ink2)}
 .ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
 .eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
- border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
- border-radius:0 8px 8px 0;font-size:14px}
+  border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--steel);background:#EFF4F9}
 .note.g{border-left-color:var(--green);background:#EDF6F1}
 mjx-container[jax="SVG"]{max-width:100%}
@@ -95,7 +95,7 @@ table.coef th{background:var(--card);font-weight:600;text-align:center}
 table.coef .bad{color:var(--bad);font-weight:700}
 table.coef .ok{color:var(--ink)}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
- font-size:13px;color:var(--ink2)}
+  font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
 .pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
@@ -108,10 +108,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="../index.html">数值线性代数</a></p>
 
 <div class="sheet">
- <div class="cell"><p class="k">图号</p><p class="v no">NLA-06</p></div>
- <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">最小二乘 · 几何与三种解法</p></div>
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-06</p></div>
+  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">最小二乘 · 几何与三种解法</p></div>
  <div class="cell"><p class="k">教材</p><p class="v">Lecture 11</p></div>
- <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
 </div>
 
 <h1>最小二乘：没有解的问题，最好的答案</h1>
@@ -124,24 +124,24 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>几何上：在列空间 \(\operatorname{range}(A)\) 这个 \(n\) 维平面里，找离 \(b\) 最近的点 \(Ax\)。数据拟合是最典型的实例——给定 \(m\) 个点 \((x_i,y_i)\)，用次数 \(n-1&lt;m-1\) 的多项式去拟合，系数满足超定的 Vandermonde 系统，最小化的正是残差平方和 \(\sum_i|p(x_i)-y_i|^2\)（11.6）。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 01</span><span class="t">拟合实验台：残差⊥列空间，可测量</span><span class="tag">(11.6)(11.9)</span></div>
- <p class="lab-sub">拖动任意数据点（墨色圆点），或换预设。次数滑杆改变列数 \(n\)。竖着的绿色虚线段就是每个残差 \(r_i\)；下方读数直接给出正规方程的左边 \(A^{\mathrm{T}}r\) 的各个分量——它们应该全部为 0（读数里同时给出 \(\|A^{\mathrm{T}}r\|_\infty\) 这一总账本）。次数调到 10（=点数−1）时变成插值，残差归零但曲线剧烈振荡——正是教材图 11.1 的现象。</p>
- <canvas id="cv-fit" width="640" height="400"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>次数 \(n-1\)</label><input type="range" id="s-deg" min="0" max="10" step="1" value="10"><span class="nm" id="v-deg"></span></div>
- <span class="seg" id="fit-presets">
- <button data-p="square10" class="on">方波·插值(deg10)</button><button data-p="square7">方波·LS(deg7)</button><button data-p="line">噪声直线</button><button data-p="cheb">方波·Cheb 节点</button>
- </span>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">m / n</span><span class="v" id="ro-mn"></span></div>
- <div class="ro"><span class="k">‖r‖₂</span><span class="v" id="ro-r2"></span></div>
- <div class="ro"><span class="k">‖r‖∞</span><span class="v" id="ro-rinf"></span></div>
- <div class="ro"><span class="k">max|Aᵀr|（应为 0）</span><span class="v" id="ro-atr"></span></div>
- <div class="ro"><span class="k">Σrᵢ / Σrᵢxᵢ / Σrᵢxᵢ²</span><span class="v" id="ro-atr3"></span></div>
- <div class="ro"><span class="k">κ₂(A)</span><span class="v" id="ro-kappa"></span></div>
- </div>
- <p class="hint">残差与每根「基函数列」都正交：\(\sum_i r_i=\sum_i r_ix_i=\sum_i r_ix_i^2=0\)。这就是把微积分（对二次函数求导得线性条件）换成几何（正交投影）的那一步。</p>
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">拟合实验台：残差⊥列空间，可测量</span><span class="tag">(11.6)(11.9)</span></div>
+  <p class="lab-sub">拖动任意数据点（墨色圆点），或换预设。次数滑杆改变列数 \(n\)。竖着的绿色虚线段就是每个残差 \(r_i\)；下方读数直接给出正规方程的左边 \(A^{\mathrm{T}}r\) 的各个分量——它们应该全部为 0（读数里同时给出 \(\|A^{\mathrm{T}}r\|_\infty\) 这一总账本）。次数调到 10（=点数−1）时变成插值，残差归零但曲线剧烈振荡——正是教材图 11.1 的现象。</p>
+  <canvas id="cv-fit" width="640" height="400"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>次数 \(n-1\)</label><input type="range" id="s-deg" min="0" max="10" step="1" value="10"><span class="nm" id="v-deg"></span></div>
+    <span class="seg" id="fit-presets">
+      <button data-p="square10" class="on">方波·插值(deg10)</button><button data-p="square7">方波·LS(deg7)</button><button data-p="line">噪声直线</button><button data-p="cheb">方波·Cheb 节点</button>
+    </span>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">m / n</span><span class="v" id="ro-mn"></span></div>
+    <div class="ro"><span class="k">‖r‖₂</span><span class="v" id="ro-r2"></span></div>
+    <div class="ro"><span class="k">‖r‖∞</span><span class="v" id="ro-rinf"></span></div>
+    <div class="ro"><span class="k">max|Aᵀr|（应为 0）</span><span class="v" id="ro-atr"></span></div>
+    <div class="ro"><span class="k">Σrᵢ / Σrᵢxᵢ / Σrᵢxᵢ²</span><span class="v" id="ro-atr3"></span></div>
+    <div class="ro"><span class="k">κ₂(A)</span><span class="v" id="ro-kappa"></span></div>
+  </div>
+  <p class="hint">残差与每根「基函数列」都正交：\(\sum_i r_i=\sum_i r_ix_i=\sum_i r_ix_i^2=0\)。这就是把微积分（对二次函数求导得线性条件）换成几何（正交投影）的那一步。</p>
 </section>
 
 <h2><span class="no">02</span>几何：正交投影与正规方程</h2>
@@ -151,14 +151,14 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <div class="eq">$$ x=(A^{\mathrm{T}}A)^{-1}A^{\mathrm{T}}b=A^{+}b,\qquad A^{+}=(A^{\mathrm{T}}A)^{-1}A^{\mathrm{T}}\in\mathbb{R}^{n\times m}. \tag{11.11} $$</div>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 02</span><span class="t">图 11.3 示意：b 在列空间上的落点</span><span class="tag">Figure 11.3</span></div>
- <p class="lab-sub">几何示意（横轴即 \(\operatorname{range}(A)\)，纵轴即其正交补）。拖动 \(b\)（墨色点）：红点是列空间里离它最近的点 \(Pb=Ax\)，绿段是残差——永远与列空间垂直。读数核对勾股账本 \(\|b\|^2=\|Pb\|^2+\|r\|^2\)。</p>
- <canvas id="cv-geo" width="640" height="300"></canvas>
- <div class="readouts">
- <div class="ro"><span class="k">‖b‖² / ‖Pb‖² / ‖r‖²</span><span class="v" id="ro-geo3"></span></div>
- <div class="ro"><span class="k">勾股账本 ‖b‖²−‖Pb‖²−‖r‖²</span><span class="v" id="ro-geopy"></span></div>
- <div class="ro"><span class="k">b 落在列空间内？</span><span class="v" id="ro-geoin"></span></div>
- </div>
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">图 11.3 示意：b 在列空间上的落点</span><span class="tag">Figure 11.3</span></div>
+  <p class="lab-sub">几何示意（横轴即 \(\operatorname{range}(A)\)，纵轴即其正交补）。拖动 \(b\)（墨色点）：红点是列空间里离它最近的点 \(Pb=Ax\)，绿段是残差——永远与列空间垂直。读数核对勾股账本 \(\|b\|^2=\|Pb\|^2+\|r\|^2\)。</p>
+  <canvas id="cv-geo" width="640" height="300"></canvas>
+  <div class="readouts">
+    <div class="ro"><span class="k">‖b‖² / ‖Pb‖² / ‖r‖²</span><span class="v" id="ro-geo3"></span></div>
+    <div class="ro"><span class="k">勾股账本 ‖b‖²−‖Pb‖²−‖r‖²</span><span class="v" id="ro-geopy"></span></div>
+    <div class="ro"><span class="k">b 落在列空间内？</span><span class="v" id="ro-geoin"></span></div>
+  </div>
 </section>
 
 <h2><span class="no">03</span>三种算法与它们的脾气</h2>
@@ -168,53 +168,53 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>差别在稳定性。下面这个实验台把差别直接量出来：<strong>构造一个确切解已知的问题</strong>（取 \(x_{\mathrm{true}}=(1,\tfrac12,\tfrac13,\dots)\)，令 \(b=Ax_{\mathrm{true}}\)），于是 LS 的真解就是 \(x_{\mathrm{true}}\)，每个算法算出的 \(\|x-x_{\mathrm{true}}\|\) 就是它的纯舍入误差。设计矩阵取 \([0,1]\) 等距节点上的单项式 Vandermonde——次数一高，条件数就爆炸。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 03</span><span class="t">构造解标度：κ 涨一位，各方法掉几位</span><span class="tag">Lectures 11/18/19</span></div>
- <p class="lab-sub">\(m=20\)、\(t_i=i/19\)、\(A_{ij}=t_i^{j}\)、\(x_{\mathrm{true},j}=1/(j+1)\)、\(b=Ax_{\mathrm{true}}\)。四种方法页面内实时运算，读数给出各自与 \(x_{\mathrm{true}}\) 的最大相对误差。理论标度：正规方程 \(\sim\varepsilon\kappa_2(A)^2\)，QR 与 SVD \(\sim\varepsilon\kappa_2(A)\)——把次数从 2 拖到 8，看两条斜线分开。</p>
- <canvas id="cv-scale" width="640" height="230"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>次数 \(n-1\)</label><input type="range" id="s-deg2" min="2" max="8" step="1" value="6"><span class="nm" id="v-deg2"></span></div>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">κ₂(A) = σ₁/σₙ</span><span class="v" id="ro-sck"></span></div>
- <div class="ro"><span class="k">正规方程误差</span><span class="v" id="ro-scn"></span></div>
- <div class="ro"><span class="k">MGS-QR 误差</span><span class="v" id="ro-scm"></span></div>
- <div class="ro"><span class="k">Householder 误差</span><span class="v" id="ro-sch"></span></div>
- <div class="ro"><span class="k">SVD（单边 Jacobi）误差</span><span class="v" id="ro-scs"></span></div>
- <div class="ro"><span class="k">ε·κ² / ε·κ（理论线）</span><span class="v" id="ro-sct"></span></div>
- </div>
- <p class="hint">实测（deg=8，κ=6.2e5）：正规方程 2.7e-5，MGS 1.7e-6，Householder 4.7e-12，SVD 2.5e-10——正规方程的误差正是 \(\varepsilon\kappa^2\) 量级，QR/SVD 是 \(\varepsilon\kappa\) 量级。次数越低差距越小；这正是教材推荐 QR 作「日常用法」、SVD 留给接近亏秩情形的原因。</p>
+  <div class="lab-head"><span class="no">实验 03</span><span class="t">构造解标度：κ 涨一位，各方法掉几位</span><span class="tag">Lectures 11/18/19</span></div>
+  <p class="lab-sub">\(m=20\)、\(t_i=i/19\)、\(A_{ij}=t_i^{j}\)、\(x_{\mathrm{true},j}=1/(j+1)\)、\(b=Ax_{\mathrm{true}}\)。四种方法页面内实时运算，读数给出各自与 \(x_{\mathrm{true}}\) 的最大相对误差。理论标度：正规方程 \(\sim\varepsilon\kappa_2(A)^2\)，QR 与 SVD \(\sim\varepsilon\kappa_2(A)\)——把次数从 2 拖到 8，看两条斜线分开。</p>
+  <canvas id="cv-scale" width="640" height="230"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>次数 \(n-1\)</label><input type="range" id="s-deg2" min="2" max="8" step="1" value="6"><span class="nm" id="v-deg2"></span></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">κ₂(A) = σ₁/σₙ</span><span class="v" id="ro-sck"></span></div>
+    <div class="ro"><span class="k">正规方程误差</span><span class="v" id="ro-scn"></span></div>
+    <div class="ro"><span class="k">MGS-QR 误差</span><span class="v" id="ro-scm"></span></div>
+    <div class="ro"><span class="k">Householder 误差</span><span class="v" id="ro-sch"></span></div>
+    <div class="ro"><span class="k">SVD（单边 Jacobi）误差</span><span class="v" id="ro-scs"></span></div>
+    <div class="ro"><span class="k">ε·κ² / ε·κ（理论线）</span><span class="v" id="ro-sct"></span></div>
+  </div>
+  <p class="hint">实测（deg=8，κ=6.2e5）：正规方程 2.7e-5，MGS 1.7e-6，Householder 4.7e-12，SVD 2.5e-10——正规方程的误差正是 \(\varepsilon\kappa^2\) 量级，QR/SVD 是 \(\varepsilon\kappa\) 量级。次数越低差距越小；这正是教材推荐 QR 作「日常用法」、SVD 留给接近亏秩情形的原因。</p>
 </section>
 
 <h2><span class="no">04</span>复刻教材习题 11.3：红笔标错</h2>
 <p>教材习题 11.3 让读者用六种方法解同一个问题并「用红笔标出看起来受舍入误差影响的数字」。这里用四种方法复刻（\(m=50\)，\(n=12\)，\(t\) 为 \([0,1]\) 等距 50 点，\(b=\cos 4t\)，单项式 Vandermonde）：红色数字是与 SVD 参考解不一致的位。\(\kappa_2(A)\approx1.2\times10^8\)——注意，六种方法的<strong>残差都一样小</strong>（\(\sim10^{-8}\)），差的完全是系数向量。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 04</span><span class="t">习题 11.3：四种方法，一张红笔表</span><span class="tag">Exercise 11.3</span></div>
- <div id="ex113-holder" style="overflow-x:auto"></div>
- <div class="readouts">
- <div class="ro"><span class="k">κ₂(A)</span><span class="v" id="ro-e-k"></span></div>
- <div class="ro"><span class="k">最大相对偏差：正规方程</span><span class="v" id="ro-e-n"></span></div>
- <div class="ro"><span class="k">最大相对偏差：MGS-QR</span><span class="v" id="ro-e-m"></span></div>
- <div class="ro"><span class="k">最大相对偏差：Householder</span><span class="v" id="ro-e-h"></span></div>
- <div class="ro"><span class="k">‖r‖₂（四法一致）</span><span class="v" id="ro-e-r"></span></div>
- </div>
- <p class="hint">红色 = 与 SVD 参考解相对偏差超过 \(10^{-9}\) 的位。可以看到：次数越高（列越病态）红笔越多；正规方程与 MGS 的红区明显大于 Householder 与 SVD。这与实验 03 的标度完全一致。</p>
+  <div class="lab-head"><span class="no">实验 04</span><span class="t">习题 11.3：四种方法，一张红笔表</span><span class="tag">Exercise 11.3</span></div>
+  <div id="ex113-holder" style="overflow-x:auto"></div>
+  <div class="readouts">
+    <div class="ro"><span class="k">κ₂(A)</span><span class="v" id="ro-e-k"></span></div>
+    <div class="ro"><span class="k">最大相对偏差：正规方程</span><span class="v" id="ro-e-n"></span></div>
+    <div class="ro"><span class="k">最大相对偏差：MGS-QR</span><span class="v" id="ro-e-m"></span></div>
+    <div class="ro"><span class="k">最大相对偏差：Householder</span><span class="v" id="ro-e-h"></span></div>
+    <div class="ro"><span class="k">‖r‖₂（四法一致）</span><span class="v" id="ro-e-r"></span></div>
+  </div>
+  <p class="hint">红色 = 与 SVD 参考解相对偏差超过 \(10^{-9}\) 的位。可以看到：次数越高（列越病态）红笔越多；正规方程与 MGS 的红区明显大于 Householder 与 SVD。这与实验 03 的标度完全一致。</p>
 </section>
 
 <h2><span class="no">05</span>本页小结与习题</h2>
 <ul>
- <li><strong>几何一句话</strong>：\(Ax\) 是 \(b\) 在列空间上的投影，\(r\perp\operatorname{range}(A)\)；一切算法都是这句话的不同实现。</li>
- <li><strong>正规方程</strong>把问题变成 \(n\times n\) 对称正定系统，最便宜，但条件数平方（\(\kappa(A^{\mathrm{T}}A)=\kappa(A)^2\)）——实验 03 实测误差 \(\sim\varepsilon\kappa^2\)。</li>
- <li><strong>QR</strong>（MGS 或 Householder）化归三角方程组，误差 \(\sim\varepsilon\kappa\)，是日常标准；SVD 化归对角系统，代价最高，接近亏秩时最可靠（Lecture 18–19 展开）。</li>
- <li><strong>实现陷阱</strong>：不要为求 SVD 而形成 \(A^{\mathrm{T}}A\)（κ 平方后超出双精度）；本页 SVD 路线用单边 Jacobi 直接正交化列。</li>
+  <li><strong>几何一句话</strong>：\(Ax\) 是 \(b\) 在列空间上的投影，\(r\perp\operatorname{range}(A)\)；一切算法都是这句话的不同实现。</li>
+  <li><strong>正规方程</strong>把问题变成 \(n\times n\) 对称正定系统，最便宜，但条件数平方（\(\kappa(A^{\mathrm{T}}A)=\kappa(A)^2\)）——实验 03 实测误差 \(\sim\varepsilon\kappa^2\)。</li>
+  <li><strong>QR</strong>（MGS 或 Householder）化归三角方程组，误差 \(\sim\varepsilon\kappa\)，是日常标准；SVD 化归对角系统，代价最高，接近亏秩时最可靠（Lecture 18–19 展开）。</li>
+  <li><strong>实现陷阱</strong>：不要为求 SVD 而形成 \(A^{\mathrm{T}}A\)（κ 平方后超出双精度）；本页 SVD 路线用单边 Jacobi 直接正交化列。</li>
 </ul>
 <div class="note b"><strong>插值 vs 拟合（教材图 11.1 / 11.2）</strong>：同样的 11 个方波点，次数 10 穿过每个点但端点剧烈振荡；次数 7 不穿过任何点却抓住整体形态。插值要求 \(n=m\)，拟合主动降次数——用「偏差」换「方差」。实验 01 的「方波·插值」与「方波·LS」两个预设就是这个对比；换 Chebyshev 节点后连插值都服帖（连回数值分析页的 Runge 故事）。</div>
 <div class="note"><strong>统计注脚</strong>：若数据噪声独立同分布且高斯，最小二乘解就是最大似然估计；\(\|r\|_2^2\) 的自由度是 \(m-n\)。本页只讲线性代数层面，但 (11.2) 选 2-范数的「统计辩护」正源于此。</div>
 <div class="note g"><strong>本阶段收尾</strong>：Lecture 1–11（矩阵—向量乘积、正交性、范数、SVD、投影、QR、最小二乘）全部完工。后续对话按参照清单推进：Lecture 12 条件数（实验台里已埋 κ 的伏笔）、Lectures 13–19 浮点与稳定性、Lectures 20–23 直接法、特征值、CG 与预条件子。</div>
 
 <div class="pager">
- <a href="QR分解-Gram-Schmidt与Householder.html">← 上一页 · QR 分解</a>
- <a href="../index.html">学科索引 →</a>
+  <a href="QR分解-Gram-Schmidt与Householder.html">← 上一页 · QR 分解</a>
+  <a href="../index.html">学科索引 →</a>
 </div>
 
 <footer>
@@ -227,180 +227,180 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <script>
 "use strict";
 function fmt(x, d){ if(!isFinite(x)) return "—"; d=(d===undefined)?3:d;
- if(x===0) return (0).toFixed(d);
- if(Math.abs(x)>=1e5||Math.abs(x)<1e-4) return x.toExponential(2);
- return x.toFixed(d); }
+  if(x===0) return (0).toFixed(d);
+  if(Math.abs(x)>=1e5||Math.abs(x)<1e-4) return x.toExponential(2);
+  return x.toFixed(d); }
 function mapper(cv, cx, cy, s){
- return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
- x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
+  return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
+           x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
 }
 function grid(ctx, cx, cy, s, xmin, xmax, ymin, ymax){
- ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
- for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
- ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
- for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
- ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
- ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
- ctx.restore();
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
+    ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
+  for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
+    ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
+  ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
+  ctx.restore();
 }
 function arrow(ctx, x1, y1, x2, y2, color, w, dash){
- ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
- if(dash) ctx.setLineDash(dash);
- ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
- const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
- if(L>1){ const h=Math.min(9, L*0.28);
- ctx.beginPath(); ctx.moveTo(x2,y2);
- ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
- ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
- ctx.closePath(); ctx.fill(); }
- ctx.restore();
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+  const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
+  if(L>1){ const h=Math.min(9, L*0.28);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
+    ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
+    ctx.closePath(); ctx.fill(); }
+  ctx.restore();
 }
 function vec(ctx, m, v, color, w, dash){ arrow(ctx, m.X(0), m.Y(0), m.X(v[0]), m.Y(v[1]), color, w, dash); }
 function dot(ctx, x, y, color, r){ ctx.save(); ctx.fillStyle=color;
- ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
+  ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
 function label(ctx, txt, x, y, color, size, align){
- ctx.save(); ctx.fillStyle=color||"#22303F";
- ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
- ctx.textAlign=align||"left"; ctx.textBaseline="middle";
- ctx.fillText(txt, x, y); ctx.restore();
+  ctx.save(); ctx.fillStyle=color||"#22303F";
+  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+  ctx.fillText(txt, x, y); ctx.restore();
 }
 function pt2world(cv, m, e){
- const r = cv.getBoundingClientRect();
- return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
+  const r = cv.getBoundingClientRect();
+  return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
 }
 const $ = function(id){ return document.getElementById(id); };
 
 /* ================= 数值内核：四个求解器 ================= */
 /* 回代：R 上三角，s -= R[i][k]*x[k]（曾把 [k][i] 写成转置导致三个脚本全错） */
 function backSub(R, c){
- const n=R.length, x=[];
- for(let i=n-1;i>=0;i--){
- let s=c[i];
- for(let k=i+1;k<n;k++) s-=R[i][k]*x[k];
- x[i]=s/R[i][i];
- }
- return x;
+  const n=R.length, x=[];
+  for(let i=n-1;i>=0;i--){
+    let s=c[i];
+    for(let k=i+1;k<n;k++) s-=R[i][k]*x[k];
+    x[i]=s/R[i][i];
+  }
+  return x;
 }
 function houseQR(A){
- const m=A.length, n=A[0].length;
- const M=A.map(function(r){ return r.slice(); });
- const vs=[];
- for(let k=0;k<n;k++){
- const x=[]; for(let i=k;i<m;i++) x.push(M[i][k]);
- const nx=Math.sqrt(x.reduce(function(s,v){ return s+v*v; },0));
- const s=(x[0]>=0)?1:-1;
- const v=x.map(function(xi,i){ return i===0? s*nx+x[0] : xi; });
- const vv=v.reduce(function(s,vi){ return s+vi*vi; },0);
- vs.push(v);
- for(let j=k;j<n;j++){
- let d=0; for(let i=k;i<m;i++) d+=v[i-k]*M[i][j];
- const f=2*d/vv;
- for(let i=k;i<m;i++) M[i][j]-=f*v[i-k];
- }
- }
- const R=[]; for(let i=0;i<n;i++){ R.push([]); for(let j=0;j<n;j++) R[i].push(i<=j?M[i][j]:0); }
- return {R:R, vs:vs, m:m, n:n};
+  const m=A.length, n=A[0].length;
+  const M=A.map(function(r){ return r.slice(); });
+  const vs=[];
+  for(let k=0;k<n;k++){
+    const x=[]; for(let i=k;i<m;i++) x.push(M[i][k]);
+    const nx=Math.sqrt(x.reduce(function(s,v){ return s+v*v; },0));
+    const s=(x[0]>=0)?1:-1;
+    const v=x.map(function(xi,i){ return i===0? s*nx+x[0] : xi; });
+    const vv=v.reduce(function(s,vi){ return s+vi*vi; },0);
+    vs.push(v);
+    for(let j=k;j<n;j++){
+      let d=0; for(let i=k;i<m;i++) d+=v[i-k]*M[i][j];
+      const f=2*d/vv;
+      for(let i=k;i<m;i++) M[i][j]-=f*v[i-k];
+    }
+  }
+  const R=[]; for(let i=0;i<n;i++){ R.push([]); for(let j=0;j<n;j++) R[i].push(i<=j?M[i][j]:0); }
+  return {R:R, vs:vs, m:m, n:n};
 }
-function applyQTV(b, vs, m){ /* Qᵀb：Algorithm 10.2 顺序 */
- const bb=b.slice();
- for(let k=0;k<vs.length;k++){
- const v=vs[k];
- let d=0; for(let i=k;i<m;i++) d+=v[i-k]*bb[i];
- const f=2*d/(v.reduce(function(s,vi){ return s+vi*vi; },0));
- for(let i=k;i<m;i++) bb[i]-=f*v[i-k];
- }
- return bb;
+function applyQTV(b, vs, m){   /* Qᵀb：Algorithm 10.2 顺序 */
+  const bb=b.slice();
+  for(let k=0;k<vs.length;k++){
+    const v=vs[k];
+    let d=0; for(let i=k;i<m;i++) d+=v[i-k]*bb[i];
+    const f=2*d/(v.reduce(function(s,vi){ return s+vi*vi; },0));
+    for(let i=k;i<m;i++) bb[i]-=f*v[i-k];
+  }
+  return bb;
 }
 function houseLS(A,b){ const qr=houseQR(A); return backSub(qr.R, applyQTV(b, qr.vs, qr.m)); }
 function mgsLS(A,b){
- const m=A.length, n=A[0].length;
- const Q=[]; for(let j=0;j<n;j++){ const c=[]; for(let i=0;i<m;i++) c.push(A[i][j]); Q.push(c); }
- const R=[]; for(let i=0;i<n;i++) R.push(new Array(n).fill(0));
- for(let i=0;i<n;i++){
- let nrm=0; for(let k=0;k<m;k++) nrm+=Q[i][k]*Q[i][k];
- R[i][i]=Math.sqrt(nrm);
- for(let k=0;k<m;k++) Q[i][k]/=R[i][i];
- for(let j=i+1;j<n;j++){
- let s=0; for(let k=0;k<m;k++) s+=Q[i][k]*Q[j][k];
- R[i][j]=s;
- for(let k=0;k<m;k++) Q[j][k]-=s*Q[i][k];
- }
- }
- const c=[]; for(let i=0;i<n;i++){ let s=0; for(let k=0;k<m;k++) s+=Q[i][k]*b[k]; c.push(s); }
- return backSub(R,c);
+  const m=A.length, n=A[0].length;
+  const Q=[]; for(let j=0;j<n;j++){ const c=[]; for(let i=0;i<m;i++) c.push(A[i][j]); Q.push(c); }
+  const R=[]; for(let i=0;i<n;i++) R.push(new Array(n).fill(0));
+  for(let i=0;i<n;i++){
+    let nrm=0; for(let k=0;k<m;k++) nrm+=Q[i][k]*Q[i][k];
+    R[i][i]=Math.sqrt(nrm);
+    for(let k=0;k<m;k++) Q[i][k]/=R[i][i];
+    for(let j=i+1;j<n;j++){
+      let s=0; for(let k=0;k<m;k++) s+=Q[i][k]*Q[j][k];
+      R[i][j]=s;
+      for(let k=0;k<m;k++) Q[j][k]-=s*Q[i][k];
+    }
+  }
+  const c=[]; for(let i=0;i<n;i++){ let s=0; for(let k=0;k<m;k++) s+=Q[i][k]*b[k]; c.push(s); }
+  return backSub(R,c);
 }
 function normalEqLS(A,b){
- const m=A.length, n=A[0].length;
- const G=[]; for(let i=0;i<n;i++) G.push(new Array(n).fill(0));
- const h=[]; for(let i=0;i<n;i++) h.push(0);
- for(let i=0;i<n;i++){
- for(let j=0;j<n;j++){ let s=0; for(let k=0;k<m;k++) s+=A[k][i]*A[k][j]; G[i][j]=s; }
- let s=0; for(let k=0;k<m;k++) s+=A[k][i]*b[k]; h[i]=s;
- }
- const R=[]; for(let i=0;i<n;i++) R.push(new Array(n).fill(0));
- for(let j=0;j<n;j++) for(let i=j;i<n;i++){
- let s=G[i][j];
- for(let k=0;k<j;k++) s-=R[k][i]*R[k][j];
- if(i===j) R[j][j]=Math.sqrt(Math.max(0,s)); else R[j][i]=s/R[j][j];
- }
- /* G = RᵀR：先解 Rᵀw=h（前代），再 Rx=w（回代） */
- const w=[];
- for(let i=0;i<n;i++){ let s=h[i]; for(let k=0;k<i;k++) s-=R[k][i]*w[k]; w.push(s/R[i][i]); }
- return backSub(R,w);
+  const m=A.length, n=A[0].length;
+  const G=[]; for(let i=0;i<n;i++) G.push(new Array(n).fill(0));
+  const h=[]; for(let i=0;i<n;i++) h.push(0);
+  for(let i=0;i<n;i++){
+    for(let j=0;j<n;j++){ let s=0; for(let k=0;k<m;k++) s+=A[k][i]*A[k][j]; G[i][j]=s; }
+    let s=0; for(let k=0;k<m;k++) s+=A[k][i]*b[k]; h[i]=s;
+  }
+  const R=[]; for(let i=0;i<n;i++) R.push(new Array(n).fill(0));
+  for(let j=0;j<n;j++) for(let i=j;i<n;i++){
+    let s=G[i][j];
+    for(let k=0;k<j;k++) s-=R[k][i]*R[k][j];
+    if(i===j) R[j][j]=Math.sqrt(Math.max(0,s)); else R[j][i]=s/R[j][j];
+  }
+  /* G = RᵀR：先解 Rᵀw=h（前代），再 Rx=w（回代） */
+  const w=[];
+  for(let i=0;i<n;i++){ let s=h[i]; for(let k=0;k<i;k++) s-=R[k][i]*w[k]; w.push(s/R[i][i]); }
+  return backSub(R,w);
 }
 /* 单边 Jacobi SVD（不形成 AᵀA，避免 κ 平方） */
 function jacobiSVD(A){
- const m=A.length, n=A[0].length;
- const cols=[]; for(let j=0;j<n;j++){ const c=[]; for(let i=0;i<m;i++) c.push(A[i][j]); cols.push(c); }
- const V=[]; for(let i=0;i<n;i++){ const r=new Array(n).fill(0); r[i]=1; V.push(r); }
- const dot=function(a,b){ let s=0; for(let i=0;i<a.length;i++) s+=a[i]*b[i]; return s; };
- for(let sweep=0;sweep<60;sweep++){
- let off=0;
- for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
- const aii=dot(cols[i],cols[i]), bjj=dot(cols[j],cols[j]), aij=dot(cols[i],cols[j]);
- if(Math.abs(aij)<=1e-15*Math.sqrt(aii*bjj)) continue;
- off=Math.max(off, Math.abs(aij)/Math.sqrt(aii*bjj));
- const tau=(bjj-aii)/(2*aij);
- const tr=(tau>=0?1:-1)/(Math.abs(tau)+Math.sqrt(1+tau*tau));
- const c=1/Math.sqrt(1+tr*tr), s=c*tr;
- for(let k=0;k<m;k++){ const ak=cols[i][k], bk=cols[j][k]; cols[i][k]=c*ak-s*bk; cols[j][k]=s*ak+c*bk; }
- for(let k=0;k<n;k++){ const vik=V[i][k], vjk=V[j][k]; V[i][k]=c*vik-s*vjk; V[j][k]=s*vik+c*vjk; }
- }
- if(off<1e-13) break;
- }
- const items=[];
- for(let i=0;i<n;i++) items.push({i:i, s:Math.sqrt(dot(cols[i],cols[i]))});
- items.sort(function(p,q){ return q.s-p.s; });
- const sig=items.map(function(it){ return it.s; });
- const U=items.map(function(it){ return it.s>1e-300 ? cols[it.i].map(function(x){ return x/it.s; }) : null; });
- const Vs=items.map(function(it){ return V[it.i]; });
- return {sig:sig, U:U, V:Vs};
+  const m=A.length, n=A[0].length;
+  const cols=[]; for(let j=0;j<n;j++){ const c=[]; for(let i=0;i<m;i++) c.push(A[i][j]); cols.push(c); }
+  const V=[]; for(let i=0;i<n;i++){ const r=new Array(n).fill(0); r[i]=1; V.push(r); }
+  const dot=function(a,b){ let s=0; for(let i=0;i<a.length;i++) s+=a[i]*b[i]; return s; };
+  for(let sweep=0;sweep<60;sweep++){
+    let off=0;
+    for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
+      const aii=dot(cols[i],cols[i]), bjj=dot(cols[j],cols[j]), aij=dot(cols[i],cols[j]);
+      if(Math.abs(aij)<=1e-15*Math.sqrt(aii*bjj)) continue;
+      off=Math.max(off, Math.abs(aij)/Math.sqrt(aii*bjj));
+      const tau=(bjj-aii)/(2*aij);
+      const tr=(tau>=0?1:-1)/(Math.abs(tau)+Math.sqrt(1+tau*tau));
+      const c=1/Math.sqrt(1+tr*tr), s=c*tr;
+      for(let k=0;k<m;k++){ const ak=cols[i][k], bk=cols[j][k]; cols[i][k]=c*ak-s*bk; cols[j][k]=s*ak+c*bk; }
+      for(let k=0;k<n;k++){ const vik=V[i][k], vjk=V[j][k]; V[i][k]=c*vik-s*vjk; V[j][k]=s*vik+c*vjk; }
+    }
+    if(off<1e-13) break;
+  }
+  const items=[];
+  for(let i=0;i<n;i++) items.push({i:i, s:Math.sqrt(dot(cols[i],cols[i]))});
+  items.sort(function(p,q){ return q.s-p.s; });
+  const sig=items.map(function(it){ return it.s; });
+  const U=items.map(function(it){ return it.s>1e-300 ? cols[it.i].map(function(x){ return x/it.s; }) : null; });
+  const Vs=items.map(function(it){ return V[it.i]; });
+  return {sig:sig, U:U, V:Vs};
 }
 function svdLS(A,b){
- const S=jacobiSVD(A);
- const ub=[];
- for(let k=0;k<S.sig.length;k++){
- if(!S.U[k]||S.sig[k]<=0){ ub.push(0); continue; } /* 零奇异值方向不贡献 */
- let s=0; for(let i=0;i<A.length;i++) s+=S.U[k][i]*b[i];
- ub.push(s/S.sig[k]);
- }
- const x=[];
- for(let i=0;i<A[0].length;i++){
- let s=0; for(let k=0;k<S.sig.length;k++) s+=S.V[k][i]*ub[k];
- x.push(s);
- }
- return {x:x, sig:S.sig};
+  const S=jacobiSVD(A);
+  const ub=[];
+  for(let k=0;k<S.sig.length;k++){
+    if(!S.U[k]||S.sig[k]<=0){ ub.push(0); continue; }   /* 零奇异值方向不贡献 */
+    let s=0; for(let i=0;i<A.length;i++) s+=S.U[k][i]*b[i];
+    ub.push(s/S.sig[k]);
+  }
+  const x=[];
+  for(let i=0;i<A[0].length;i++){
+    let s=0; for(let k=0;k<S.sig.length;k++) s+=S.V[k][i]*ub[k];
+    x.push(s);
+  }
+  return {x:x, sig:S.sig};
 }
 function resid2(A,b,x){ let s=0;
- for(let i=0;i<A.length;i++){ let d=b[i];
- for(let j=0;j<A[0].length;j++) d-=A[i][j]*x[j];
- s+=d*d; }
- return Math.sqrt(s); }
+  for(let i=0;i<A.length;i++){ let d=b[i];
+    for(let j=0;j<A[0].length;j++) d-=A[i][j]*x[j];
+    s+=d*d; }
+  return Math.sqrt(s); }
 function maxRelErr(x, xt){ let e=0;
- for(let i=0;i<x.length;i++) e=Math.max(e, Math.abs(x[i]-xt[i])/(Math.abs(xt[i])||1));
- return e; }
+  for(let i=0;i<x.length;i++) e=Math.max(e, Math.abs(x[i]-xt[i])/(Math.abs(xt[i])||1));
+  return e; }
 
 /* ================= 实验 01 · 拟合实验台 ================= */
 const cvF = $("cv-fit"), WF=640, HF=400;
@@ -410,82 +410,82 @@ function equiPts(m){ const p=[]; for(let i=0;i<m;i++) p.push(i/(m-1)); return p;
 function chebPts(m){ const p=[]; for(let i=0;i<m;i++){ const k=2*i+1; p.push(0.5-0.5*Math.cos(k*Math.PI/(2*m))); } return p; }
 function squareWave(x){ return (x<0.5)? 1 : -1; }
 function loadFit(kind){
- let xs, ys;
- if(kind==="square10"){ xs=equiPts(11); ys=xs.map(squareWave); stateF.deg=10; }
- else if(kind==="square7"){ xs=equiPts(11); ys=xs.map(squareWave); stateF.deg=7; }
- else if(kind==="cheb"){ xs=chebPts(11).sort(function(a,b){return a-b;}); ys=xs.map(squareWave); stateF.deg=10; }
- else { xs=equiPts(11); ys=xs.map(function(x){ return 0.3+0.7*x+0.07*Math.sin(13*x+1); }); stateF.deg=1; }
- stateF.pts=[];
- for(let i=0;i<xs.length;i++) stateF.pts.push([xs[i], ys[i]]);
- $("s-deg").value=stateF.deg;
+  let xs, ys;
+  if(kind==="square10"){ xs=equiPts(11); ys=xs.map(squareWave); stateF.deg=10; }
+  else if(kind==="square7"){ xs=equiPts(11); ys=xs.map(squareWave); stateF.deg=7; }
+  else if(kind==="cheb"){ xs=chebPts(11).sort(function(a,b){return a-b;}); ys=xs.map(squareWave); stateF.deg=10; }
+  else { xs=equiPts(11); ys=xs.map(function(x){ return 0.3+0.7*x+0.07*Math.sin(13*x+1); }); stateF.deg=1; }
+  stateF.pts=[];
+  for(let i=0;i<xs.length;i++) stateF.pts.push([xs[i], ys[i]]);
+  $("s-deg").value=stateF.deg;
 }
 function fitNow(){
- const n=stateF.deg+1, pts=stateF.pts;
- const A=pts.map(function(p){ const r=[]; for(let j=0;j<n;j++) r.push(Math.pow(p[0],j)); return r; });
- const b=pts.map(function(p){ return p[1]; });
- const x=houseLS(A,b);
- const r=b.map(function(bi,i){ let d=bi; for(let j=0;j<n;j++) d-=A[i][j]*x[j]; return d; });
- const S=svdLS(A,b);
- return {A:A, b:b, x:x, r:r, n:n, sig:S.sig};
+  const n=stateF.deg+1, pts=stateF.pts;
+  const A=pts.map(function(p){ const r=[]; for(let j=0;j<n;j++) r.push(Math.pow(p[0],j)); return r; });
+  const b=pts.map(function(p){ return p[1]; });
+  const x=houseLS(A,b);
+  const r=b.map(function(bi,i){ let d=bi; for(let j=0;j<n;j++) d-=A[i][j]*x[j]; return d; });
+  const S=svdLS(A,b);
+  return {A:A, b:b, x:x, r:r, n:n, sig:S.sig};
 }
 function drawFit(){
- const ctx=cvF.getContext("2d"); ctx.clearRect(0,0,WF,HF);
- grid(ctx, mF.X(0), mF.Y(0), 520, -0.02, 1.02, -1.7, 1.7);
- const F=fitNow();
- /* 拟合曲线 */
- ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2.6;
- ctx.beginPath();
- for(let i=0;i<=240;i++){ const t=i/240; let y=0;
- for(let j=0;j<F.n;j++) y+=F.x[j]*Math.pow(t,j);
- const px=mF.X(t), py=mF.Y(Math.max(-1.65,Math.min(1.65,y)));
- if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
- ctx.stroke(); ctx.restore();
- /* 残差 + 数据点 */
- stateF.pts.forEach(function(p,i){
- let yh=0; for(let j=0;j<F.n;j++) yh+=F.x[j]*Math.pow(p[0],j);
- arrow(ctx, mF.X(p[0]), mF.Y(p[1]), mF.X(p[0]), mF.Y(yh), "#1F7A4D", 1.6, [4,3]);
- dot(ctx, mF.X(p[0]), mF.Y(p[1]), "#22303F", 5);
- });
- label(ctx, "数据点（可拖）", mF.X(0.03), mF.Y(1.55), "#5A6B7C", 12);
- label(ctx, "拟合曲线（次数 "+(F.n-1)+"）", mF.X(0.03), mF.Y(-1.58), "#B04A2F", 12);
- label(ctx, "残差 rᵢ", mF.X(0.86), mF.Y(-1.58), "#1F7A4D", 12);
- /* 读数 */
- $("v-deg").textContent=String(stateF.deg);
- $("ro-mn").textContent=stateF.pts.length+" / "+F.n;
- $("ro-r2").textContent=fmt(Math.sqrt(F.r.reduce(function(s,v){return s+v*v;},0)),4);
- $("ro-rinf").textContent=fmt(Math.max.apply(null, F.r.map(Math.abs)),4);
- let atr=0;
- for(let j=0;j<F.n;j++){ let s=0; for(let i=0;i<F.r.length;i++) s+=F.r[i]*F.A[i][j]; atr=Math.max(atr, Math.abs(s)); }
- $("ro-atr").textContent=fmt(atr,2);
- const s0=F.r.reduce(function(s,v){return s+v;},0);
- const s1=F.r.reduce(function(s,v,i){return s+v*stateF.pts[i][0];},0);
- const s2=F.r.reduce(function(s,v,i){return s+v*stateF.pts[i][0]*stateF.pts[i][0];},0);
- $("ro-atr3").textContent=fmt(s0,2)+" / "+fmt(s1,2)+" / "+fmt(s2,2);
- $("ro-kappa").textContent=(F.sig[0]/(F.sig[F.sig.length-1]||1e-300)).toPrecision(4);
+  const ctx=cvF.getContext("2d"); ctx.clearRect(0,0,WF,HF);
+  grid(ctx, mF.X(0), mF.Y(0), 520, -0.02, 1.02, -1.7, 1.7);
+  const F=fitNow();
+  /* 拟合曲线 */
+  ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2.6;
+  ctx.beginPath();
+  for(let i=0;i<=240;i++){ const t=i/240; let y=0;
+    for(let j=0;j<F.n;j++) y+=F.x[j]*Math.pow(t,j);
+    const px=mF.X(t), py=mF.Y(Math.max(-1.65,Math.min(1.65,y)));
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+  ctx.stroke(); ctx.restore();
+  /* 残差 + 数据点 */
+  stateF.pts.forEach(function(p,i){
+    let yh=0; for(let j=0;j<F.n;j++) yh+=F.x[j]*Math.pow(p[0],j);
+    arrow(ctx, mF.X(p[0]), mF.Y(p[1]), mF.X(p[0]), mF.Y(yh), "#1F7A4D", 1.6, [4,3]);
+    dot(ctx, mF.X(p[0]), mF.Y(p[1]), "#22303F", 5);
+  });
+  label(ctx, "数据点（可拖）", mF.X(0.03), mF.Y(1.55), "#5A6B7C", 12);
+  label(ctx, "拟合曲线（次数 "+(F.n-1)+"）", mF.X(0.03), mF.Y(-1.58), "#B04A2F", 12);
+  label(ctx, "残差 rᵢ", mF.X(0.86), mF.Y(-1.58), "#1F7A4D", 12);
+  /* 读数 */
+  $("v-deg").textContent=String(stateF.deg);
+  $("ro-mn").textContent=stateF.pts.length+" / "+F.n;
+  $("ro-r2").textContent=fmt(Math.sqrt(F.r.reduce(function(s,v){return s+v*v;},0)),4);
+  $("ro-rinf").textContent=fmt(Math.max.apply(null, F.r.map(Math.abs)),4);
+  let atr=0;
+  for(let j=0;j<F.n;j++){ let s=0; for(let i=0;i<F.r.length;i++) s+=F.r[i]*F.A[i][j]; atr=Math.max(atr, Math.abs(s)); }
+  $("ro-atr").textContent=fmt(atr,2);
+  const s0=F.r.reduce(function(s,v){return s+v;},0);
+  const s1=F.r.reduce(function(s,v,i){return s+v*stateF.pts[i][0];},0);
+  const s2=F.r.reduce(function(s,v,i){return s+v*stateF.pts[i][0]*stateF.pts[i][0];},0);
+  $("ro-atr3").textContent=fmt(s0,2)+" / "+fmt(s1,2)+" / "+fmt(s2,2);
+  $("ro-kappa").textContent=(F.sig[0]/(F.sig[F.sig.length-1]||1e-300)).toPrecision(4);
 }
 $("s-deg").addEventListener("input", function(){
- stateF.deg=Math.max(0, Math.min(stateF.pts.length-1, parseInt(this.value,10)||0)); drawFit(); });
+  stateF.deg=Math.max(0, Math.min(stateF.pts.length-1, parseInt(this.value,10)||0)); drawFit(); });
 $("fit-presets").addEventListener("click", function(e){
- const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.p) return;
- loadFit(t.dataset.p); drawFit();
+  const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.p) return;
+  loadFit(t.dataset.p); drawFit();
 });
 /* 拖数据点 */
 (function(){
- let dragIdx=-1;
- cvF.addEventListener("pointerdown", function(e){
- const w=pt2world(cvF,mF,e);
- for(let i=0;i<stateF.pts.length;i++){
- if(Math.hypot(w[0]-stateF.pts[i][0], w[1]-stateF.pts[i][1])<0.05){ dragIdx=i; break; }
- }
- });
- cvF.addEventListener("pointermove", function(e){
- if(dragIdx<0) return;
- const w=pt2world(cvF,mF,e);
- stateF.pts[dragIdx]=[Math.max(0,Math.min(1,w[0])), Math.max(-1.6,Math.min(1.6,w[1]))];
- drawFit();
- });
- cvF.addEventListener("pointerup", function(){ dragIdx=-1; });
- cvF.addEventListener("pointerleave", function(){ dragIdx=-1; });
+  let dragIdx=-1;
+  cvF.addEventListener("pointerdown", function(e){
+    const w=pt2world(cvF,mF,e);
+    for(let i=0;i<stateF.pts.length;i++){
+      if(Math.hypot(w[0]-stateF.pts[i][0], w[1]-stateF.pts[i][1])<0.05){ dragIdx=i; break; }
+    }
+  });
+  cvF.addEventListener("pointermove", function(e){
+    if(dragIdx<0) return;
+    const w=pt2world(cvF,mF,e);
+    stateF.pts[dragIdx]=[Math.max(0,Math.min(1,w[0])), Math.max(-1.6,Math.min(1.6,w[1]))];
+    drawFit();
+  });
+  cvF.addEventListener("pointerup", function(){ dragIdx=-1; });
+  cvF.addEventListener("pointerleave", function(){ dragIdx=-1; });
 })();
 loadFit("square10"); drawFit();
 
@@ -494,49 +494,49 @@ const cvG = $("cv-geo"), WG=640, HG=300;
 const mG = mapper(cvG, 320, 210, 150);
 const stateG = { b:[1.3,1.0] };
 function drawGeo(){
- const ctx=cvG.getContext("2d"); ctx.clearRect(0,0,WG,HG);
- /* 列空间 = 横轴；正交补 = 纵轴 */
- ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2.4;
- ctx.beginPath(); ctx.moveTo(mG.X(-2.0), mG.Y(0)); ctx.lineTo(mG.X(2.0), mG.Y(0)); ctx.stroke(); ctx.restore();
- label(ctx, "range(A)", mG.X(1.85), mG.Y(0.22), "#B04A2F", 12.5);
- ctx.save(); ctx.strokeStyle="#CBD5DF"; ctx.setLineDash([5,4]); ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(mG.X(0), mG.Y(-1.6)); ctx.lineTo(mG.X(0), mG.Y(1.6)); ctx.stroke(); ctx.restore();
- label(ctx, "range(A)⊥", mG.X(0.1), mG.Y(1.5), "#5A6B7C", 12);
- const b=stateG.b;
- const Pb=[b[0],0], r=[0,b[1]];
- vec(ctx, mG, Pb, "#B04A2F", 3.2); label(ctx, "Pb = Ax", mG.X(Pb[0])+7, mG.Y(0)-10, "#B04A2F", 12.5);
- vec(ctx, mG, b, "#22303F", 3.2); label(ctx, "b", mG.X(b[0])+8, mG.Y(b[1])-9, "#22303F", 13.5);
- arrow(ctx, mG.X(Pb[0]), mG.Y(0), mG.X(b[0]), mG.Y(b[1]), "#1F7A4D", 3.2);
- dot(ctx, mG.X(b[0]), mG.Y(b[1]), "#22303F", 5);
- label(ctx, "r ⟂ range(A)", mG.X(b[0])+8, mG.Y(b[1]/2), "#1F7A4D", 12.5);
- /* 直角标记 */
- if(Math.abs(b[0])>0.05){
- ctx.save(); ctx.strokeStyle="#8A6D1F"; ctx.lineWidth=1.5;
- const s=Math.sign(b[0]);
- ctx.beginPath();
- ctx.moveTo(mG.X(b[0]-s*0.14), mG.Y(0));
- ctx.lineTo(mG.X(b[0]-s*0.14), mG.Y(s*0.14));
- ctx.lineTo(mG.X(b[0]), mG.Y(s*0.14));
- ctx.stroke(); ctx.restore();
- }
- $("ro-geo3").textContent=fmt(b[0]*b[0]+b[1]*b[1],3)+" / "+fmt(b[0]*b[0],3)+" / "+fmt(b[1]*b[1],3);
- $("ro-geopy").textContent=fmt((b[0]*b[0]+b[1]*b[1])-b[0]*b[0]-b[1]*b[1],6);
- $("ro-geoin").textContent=(Math.abs(b[1])<1e-9)?"是（残差为 0）":"否";
+  const ctx=cvG.getContext("2d"); ctx.clearRect(0,0,WG,HG);
+  /* 列空间 = 横轴；正交补 = 纵轴 */
+  ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2.4;
+  ctx.beginPath(); ctx.moveTo(mG.X(-2.0), mG.Y(0)); ctx.lineTo(mG.X(2.0), mG.Y(0)); ctx.stroke(); ctx.restore();
+  label(ctx, "range(A)", mG.X(1.85), mG.Y(0.22), "#B04A2F", 12.5);
+  ctx.save(); ctx.strokeStyle="#CBD5DF"; ctx.setLineDash([5,4]); ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(mG.X(0), mG.Y(-1.6)); ctx.lineTo(mG.X(0), mG.Y(1.6)); ctx.stroke(); ctx.restore();
+  label(ctx, "range(A)⊥", mG.X(0.1), mG.Y(1.5), "#5A6B7C", 12);
+  const b=stateG.b;
+  const Pb=[b[0],0], r=[0,b[1]];
+  vec(ctx, mG, Pb, "#B04A2F", 3.2); label(ctx, "Pb = Ax", mG.X(Pb[0])+7, mG.Y(0)-10, "#B04A2F", 12.5);
+  vec(ctx, mG, b, "#22303F", 3.2);   label(ctx, "b", mG.X(b[0])+8, mG.Y(b[1])-9, "#22303F", 13.5);
+  arrow(ctx, mG.X(Pb[0]), mG.Y(0), mG.X(b[0]), mG.Y(b[1]), "#1F7A4D", 3.2);
+  dot(ctx, mG.X(b[0]), mG.Y(b[1]), "#22303F", 5);
+  label(ctx, "r ⟂ range(A)", mG.X(b[0])+8, mG.Y(b[1]/2), "#1F7A4D", 12.5);
+  /* 直角标记 */
+  if(Math.abs(b[0])>0.05){
+    ctx.save(); ctx.strokeStyle="#8A6D1F"; ctx.lineWidth=1.5;
+    const s=Math.sign(b[0]);
+    ctx.beginPath();
+    ctx.moveTo(mG.X(b[0]-s*0.14), mG.Y(0));
+    ctx.lineTo(mG.X(b[0]-s*0.14), mG.Y(s*0.14));
+    ctx.lineTo(mG.X(b[0]), mG.Y(s*0.14));
+    ctx.stroke(); ctx.restore();
+  }
+  $("ro-geo3").textContent=fmt(b[0]*b[0]+b[1]*b[1],3)+" / "+fmt(b[0]*b[0],3)+" / "+fmt(b[1]*b[1],3);
+  $("ro-geopy").textContent=fmt((b[0]*b[0]+b[1]*b[1])-b[0]*b[0]-b[1]*b[1],6);
+  $("ro-geoin").textContent=(Math.abs(b[1])<1e-9)?"是（残差为 0）":"否";
 }
 (function(){
- let dragging=false;
- cvG.addEventListener("pointerdown", function(e){
- const w=pt2world(cvG,mG,e);
- if(Math.hypot(w[0]-stateG.b[0], w[1]-stateG.b[1])<0.35) dragging=true;
- });
- cvG.addEventListener("pointermove", function(e){
- if(!dragging) return;
- const w=pt2world(cvG,mG,e);
- stateG.b=[Math.max(-1.9,Math.min(1.9,w[0])), Math.max(-1.5,Math.min(1.5,w[1]))];
- drawGeo();
- });
- cvG.addEventListener("pointerup", function(){ dragging=false; });
- cvG.addEventListener("pointerleave", function(){ dragging=false; });
+  let dragging=false;
+  cvG.addEventListener("pointerdown", function(e){
+    const w=pt2world(cvG,mG,e);
+    if(Math.hypot(w[0]-stateG.b[0], w[1]-stateG.b[1])<0.35) dragging=true;
+  });
+  cvG.addEventListener("pointermove", function(e){
+    if(!dragging) return;
+    const w=pt2world(cvG,mG,e);
+    stateG.b=[Math.max(-1.9,Math.min(1.9,w[0])), Math.max(-1.5,Math.min(1.5,w[1]))];
+    drawGeo();
+  });
+  cvG.addEventListener("pointerup", function(){ dragging=false; });
+  cvG.addEventListener("pointerleave", function(){ dragging=false; });
 })();
 drawGeo();
 
@@ -544,106 +544,106 @@ drawGeo();
 const cvS = $("cv-scale"), WS=640, HS=230;
 const stateS = { deg:6 };
 function scaleData(deg){
- const m=20, n=deg+1;
- const t=[]; for(let i=0;i<m;i++) t.push(i/(m-1));
- const A=[]; for(let i=0;i<m;i++){ const r=[]; for(let j=0;j<n;j++) r.push(Math.pow(t[i],j)); A.push(r); }
- const xt=[]; for(let j=0;j<n;j++) xt.push(1/(j+1));
- const b=A.map(function(r){ let s=0; for(let j=0;j<n;j++) s+=r[j]*xt[j]; return s; });
- const S=svdLS(A,b);
- return { A:A, b:b, xt:xt, sig:S.sig,
- en:normalEqLS(A,b), em:mgsLS(A,b), eh:houseLS(A,b), es:S.x };
+  const m=20, n=deg+1;
+  const t=[]; for(let i=0;i<m;i++) t.push(i/(m-1));
+  const A=[]; for(let i=0;i<m;i++){ const r=[]; for(let j=0;j<n;j++) r.push(Math.pow(t[i],j)); A.push(r); }
+  const xt=[]; for(let j=0;j<n;j++) xt.push(1/(j+1));
+  const b=A.map(function(r){ let s=0; for(let j=0;j<n;j++) s+=r[j]*xt[j]; return s; });
+  const S=svdLS(A,b);
+  return { A:A, b:b, xt:xt, sig:S.sig,
+    en:normalEqLS(A,b), em:mgsLS(A,b), eh:houseLS(A,b), es:S.x };
 }
 function drawScale(){
- const D=scaleData(stateS.deg);
- const kap=D.sig[0]/D.sig[D.sig.length-1];
- const en=maxRelErr(D.en,D.xt), em=maxRelErr(D.em,D.xt), eh=maxRelErr(D.eh,D.xt), es=maxRelErr(D.es,D.xt);
- $("v-deg2").textContent=String(stateS.deg);
- $("ro-sck").textContent=kap.toPrecision(4);
- $("ro-scn").textContent=fmt(en,2);
- $("ro-scm").textContent=fmt(em,2);
- $("ro-sch").textContent=fmt(eh,2);
- $("ro-scs").textContent=fmt(es,2);
- $("ro-sct").textContent=fmt(2.22e-16*kap*kap,2)+" / "+fmt(2.22e-16*kap,2);
- /* 双对数图：误差 vs 次数 */
- const ctx=cvS.getContext("2d"); ctx.clearRect(0,0,WS,HS);
- const pl=52, pr=14, pt=14, pb=30;
- const dMin=2, dMax=8, eMin=-17, eMax=-1;
- function X(d){ return pl+(d-dMin)/(dMax-dMin)*(WS-pl-pr); }
- function Y(l){ return pt+(eMax-l)/(eMax-eMin)*(HS-pt-pb); }
- ctx.save(); ctx.strokeStyle="#E6EBF1";
- for(let d=dMin;d<=dMax;d+=2){ ctx.beginPath(); ctx.moveTo(X(d),pt); ctx.lineTo(X(d),HS-pb); ctx.stroke(); }
- for(let l=eMax;l>=eMin;l-=4){ ctx.beginPath(); ctx.moveTo(pl,Y(l)); ctx.lineTo(WS-pr,Y(l)); ctx.stroke(); }
- ctx.restore();
- for(let d=dMin;d<=dMax;d+=2) label(ctx, "deg "+d, X(d), HS-pb+13, "#5A6B7C", 10, "center");
- for(let l=eMax;l>=eMin;l-=4) label(ctx, "1e"+l, pl-6, Y(l), "#5A6B7C", 10, "right");
- label(ctx, "最大相对误差", pl-6, pt-2, "#5A6B7C", 10, "right");
- function series(get){
- const vals=[];
- for(let d=dMin;d<=dMax;d++){ const D2=scaleData(d);
- vals.push({d:d, e:Math.max(1e-17, get(D2))}); }
- ctx.beginPath();
- vals.forEach(function(v,i){ const px=X(v.d), py=Y(Math.log10(v.e));
- if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); });
- ctx.stroke();
- return vals;
- }
- const errs={
- n:function(D){ return maxRelErr(D.en,D.xt); },
- m:function(D){ return maxRelErr(D.em,D.xt); },
- h:function(D){ return maxRelErr(D.eh,D.xt); },
- s:function(D){ return maxRelErr(D.es,D.xt); }
- };
- ctx.save(); ctx.lineWidth=2.2;
- ctx.strokeStyle="#B04A2F"; series(errs.n);
- ctx.strokeStyle="#8A6D1F"; series(errs.m);
- ctx.strokeStyle="#2F5D8A"; series(errs.h);
- ctx.strokeStyle="#1F7A4D"; series(errs.s);
- ctx.restore();
- /* 当前 deg 标记 */
- const cx=X(stateS.deg);
- ctx.save(); ctx.strokeStyle="#22303F"; ctx.setLineDash([3,3]); ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(cx,pt); ctx.lineTo(cx,HS-pb); ctx.stroke(); ctx.restore();
- label(ctx, "正规方程", X(3.4), Y(-3.2), "#B04A2F", 11.5);
- label(ctx, "MGS", X(3.4), Y(-6.6), "#8A6D1F", 11.5);
- label(ctx, "Householder", X(6.2), Y(-11.4), "#2F5D8A", 11.5);
- label(ctx, "SVD", X(6.2), Y(-13.8), "#1F7A4D", 11.5);
+  const D=scaleData(stateS.deg);
+  const kap=D.sig[0]/D.sig[D.sig.length-1];
+  const en=maxRelErr(D.en,D.xt), em=maxRelErr(D.em,D.xt), eh=maxRelErr(D.eh,D.xt), es=maxRelErr(D.es,D.xt);
+  $("v-deg2").textContent=String(stateS.deg);
+  $("ro-sck").textContent=kap.toPrecision(4);
+  $("ro-scn").textContent=fmt(en,2);
+  $("ro-scm").textContent=fmt(em,2);
+  $("ro-sch").textContent=fmt(eh,2);
+  $("ro-scs").textContent=fmt(es,2);
+  $("ro-sct").textContent=fmt(2.22e-16*kap*kap,2)+" / "+fmt(2.22e-16*kap,2);
+  /* 双对数图：误差 vs 次数 */
+  const ctx=cvS.getContext("2d"); ctx.clearRect(0,0,WS,HS);
+  const pl=52, pr=14, pt=14, pb=30;
+  const dMin=2, dMax=8, eMin=-17, eMax=-1;
+  function X(d){ return pl+(d-dMin)/(dMax-dMin)*(WS-pl-pr); }
+  function Y(l){ return pt+(eMax-l)/(eMax-eMin)*(HS-pt-pb); }
+  ctx.save(); ctx.strokeStyle="#E6EBF1";
+  for(let d=dMin;d<=dMax;d+=2){ ctx.beginPath(); ctx.moveTo(X(d),pt); ctx.lineTo(X(d),HS-pb); ctx.stroke(); }
+  for(let l=eMax;l>=eMin;l-=4){ ctx.beginPath(); ctx.moveTo(pl,Y(l)); ctx.lineTo(WS-pr,Y(l)); ctx.stroke(); }
+  ctx.restore();
+  for(let d=dMin;d<=dMax;d+=2) label(ctx, "deg "+d, X(d), HS-pb+13, "#5A6B7C", 10, "center");
+  for(let l=eMax;l>=eMin;l-=4) label(ctx, "1e"+l, pl-6, Y(l), "#5A6B7C", 10, "right");
+  label(ctx, "最大相对误差", pl-6, pt-2, "#5A6B7C", 10, "right");
+  function series(get){
+    const vals=[];
+    for(let d=dMin;d<=dMax;d++){ const D2=scaleData(d);
+      vals.push({d:d, e:Math.max(1e-17, get(D2))}); }
+    ctx.beginPath();
+    vals.forEach(function(v,i){ const px=X(v.d), py=Y(Math.log10(v.e));
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); });
+    ctx.stroke();
+    return vals;
+  }
+  const errs={
+    n:function(D){ return maxRelErr(D.en,D.xt); },
+    m:function(D){ return maxRelErr(D.em,D.xt); },
+    h:function(D){ return maxRelErr(D.eh,D.xt); },
+    s:function(D){ return maxRelErr(D.es,D.xt); }
+  };
+  ctx.save(); ctx.lineWidth=2.2;
+  ctx.strokeStyle="#B04A2F"; series(errs.n);
+  ctx.strokeStyle="#8A6D1F"; series(errs.m);
+  ctx.strokeStyle="#2F5D8A"; series(errs.h);
+  ctx.strokeStyle="#1F7A4D"; series(errs.s);
+  ctx.restore();
+  /* 当前 deg 标记 */
+  const cx=X(stateS.deg);
+  ctx.save(); ctx.strokeStyle="#22303F"; ctx.setLineDash([3,3]); ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(cx,pt); ctx.lineTo(cx,HS-pb); ctx.stroke(); ctx.restore();
+  label(ctx, "正规方程", X(3.4), Y(-3.2), "#B04A2F", 11.5);
+  label(ctx, "MGS", X(3.4), Y(-6.6), "#8A6D1F", 11.5);
+  label(ctx, "Householder", X(6.2), Y(-11.4), "#2F5D8A", 11.5);
+  label(ctx, "SVD", X(6.2), Y(-13.8), "#1F7A4D", 11.5);
 }
 $("s-deg2").addEventListener("input", function(){
- stateS.deg=Math.max(2, Math.min(8, parseInt(this.value,10)||2)); drawScale(); });
+  stateS.deg=Math.max(2, Math.min(8, parseInt(this.value,10)||2)); drawScale(); });
 drawScale();
 
 /* ================= 实验 04 · 习题 11.3 复刻 ================= */
 function ex113(){
- const m=50, n=12;
- const t=[]; for(let i=0;i<m;i++) t.push(i/(m-1));
- const b=[]; for(let i=0;i<m;i++) b.push(Math.cos(4*t[i]));
- const A=[]; for(let i=0;i<m;i++){ const r=[]; for(let j=0;j<n;j++) r.push(Math.pow(t[i],j)); A.push(r); }
- const S=svdLS(A,b);
- const xn=normalEqLS(A,b), xm=mgsLS(A,b), xh=houseLS(A,b);
- const ref=S.x;
- const rel=function(x){ return maxRelErr(x, ref); };
- $("ro-e-k").textContent=(S.sig[0]/S.sig[n-1]).toPrecision(4);
- $("ro-e-n").textContent=fmt(rel(xn),2);
- $("ro-e-m").textContent=fmt(rel(xm),2);
- $("ro-e-h").textContent=fmt(rel(xh),2);
- $("ro-e-r").textContent=fmt(resid2(A,b,ref),2);
- /* 红笔表：与参考相对偏差 > 1e-9 的位标红 */
- function cell(x, i){
- const s=x[i].toExponential(6);
- const e=Math.abs(x[i]-ref[i])/(Math.abs(ref[i])||1);
- if(e<=1e-9) return '<td class="ok">'+s+'</td>';
- /* 找第一个不一致的数字 */
- const rs=ref[i].toExponential(6);
- let k=0;
- while(k<s.length && k<rs.length && s[k]===rs[k]) k++;
- return '<td><span class="ok">'+s.slice(0,k)+'</span><span class="bad">'+s.slice(k)+'</span></td>';
- }
- let html='<table class="coef"><tr><th>j</th><th>SVD（参考）</th><th>正规方程</th><th>MGS-QR</th><th>Householder</th></tr>';
- for(let i=0;i<n;i++){
- html+='<tr><td>'+i+'</td><td class="ok">'+ref[i].toExponential(6)+'</td>'+cell(xn,i)+cell(xm,i)+cell(xh,i)+'</tr>';
- }
- html+='</table>';
- $("ex113-holder").innerHTML=html;
+  const m=50, n=12;
+  const t=[]; for(let i=0;i<m;i++) t.push(i/(m-1));
+  const b=[]; for(let i=0;i<m;i++) b.push(Math.cos(4*t[i]));
+  const A=[]; for(let i=0;i<m;i++){ const r=[]; for(let j=0;j<n;j++) r.push(Math.pow(t[i],j)); A.push(r); }
+  const S=svdLS(A,b);
+  const xn=normalEqLS(A,b), xm=mgsLS(A,b), xh=houseLS(A,b);
+  const ref=S.x;
+  const rel=function(x){ return maxRelErr(x, ref); };
+  $("ro-e-k").textContent=(S.sig[0]/S.sig[n-1]).toPrecision(4);
+  $("ro-e-n").textContent=fmt(rel(xn),2);
+  $("ro-e-m").textContent=fmt(rel(xm),2);
+  $("ro-e-h").textContent=fmt(rel(xh),2);
+  $("ro-e-r").textContent=fmt(resid2(A,b,ref),2);
+  /* 红笔表：与参考相对偏差 > 1e-9 的位标红 */
+  function cell(x, i){
+    const s=x[i].toExponential(6);
+    const e=Math.abs(x[i]-ref[i])/(Math.abs(ref[i])||1);
+    if(e<=1e-9) return '<td class="ok">'+s+'</td>';
+    /* 找第一个不一致的数字 */
+    const rs=ref[i].toExponential(6);
+    let k=0;
+    while(k<s.length && k<rs.length && s[k]===rs[k]) k++;
+    return '<td><span class="ok">'+s.slice(0,k)+'</span><span class="bad">'+s.slice(k)+'</span></td>';
+  }
+  let html='<table class="coef"><tr><th>j</th><th>SVD（参考）</th><th>正规方程</th><th>MGS-QR</th><th>Householder</th></tr>';
+  for(let i=0;i<n;i++){
+    html+='<tr><td>'+i+'</td><td class="ok">'+ref[i].toExponential(6)+'</td>'+cell(xn,i)+cell(xm,i)+cell(xh,i)+'</tr>';
+  }
+  html+='</table>';
+  $("ex113-holder").innerHTML=html;
 }
 ex113();
 </script>

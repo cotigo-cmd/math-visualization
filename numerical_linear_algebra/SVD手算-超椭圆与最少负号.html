@@ -5,38 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SVD 手算 · 超椭圆与最少负号 · 数值线性代数</title>
 <!--
- 维护说明（给未来的自己）：
- 1. 本页 = 数值线性代数系列第 7 页（图号 NLA-07），对应第二次测试第 5 题原题。
- 2. 矩阵固定为作业原题的 A = [[-2,11],[-10,5]]，不开放滑杆——本页目的是「手算流程」，
- 不是探索参数空间（探索见 NLA-03）。所有读数由 verify_midterm.js 实测核对。
- 3. 核心交互两个：
- (a) 符号翻转开关：u_j、v_j 同时变号 → A 不变，但 U/V 的负号个数变。四种组合里 (+,+) 最少（2 个）。
- (b) 三步法推演滑块：1 算 AᵀA 特征值 → 2 求 v_j → 3 求 u_j=Av_j/σ_j → 4 拼装验算。
- 4. 顶点 = σ_j u_j，这是超椭圆与 SVD 的接缝，必须画出来。
+  维护说明（给未来的自己）：
+  1. 本页 = 数值线性代数系列第 7 页（图号 NLA-07），对应第二次测试第 5 题原题。
+  2. 矩阵固定为作业原题的 A = [[-2,11],[-10,5]]，不开放滑杆——本页目的是「手算流程」，
+     不是探索参数空间（探索见 NLA-03）。所有读数由 verify_midterm.js 实测核对。
+  3. 核心交互两个：
+     (a) 符号翻转开关：u_j、v_j 同时变号 → A 不变，但 U/V 的负号个数变。四种组合里 (+,+) 最少（2 个）。
+     (b) 三步法推演滑块：1 算 AᵀA 特征值 → 2 求 v_j → 3 求 u_j=Av_j/σ_j → 4 拼装验算。
+  4. 顶点 = σ_j u_j，这是超椭圆与 SVD 的接缝，必须画出来。
 -->
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "local" },
- options: { enableMenu: false }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
- --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
- --line:#CBD5DF; --grid:#E6EBF1;
- --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--steel);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
- overflow:hidden;margin:0 0 14px;background:var(--card)}
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -45,10 +45,10 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
 .tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
- border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
- background:#EEF3F8;color:var(--steel)}
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:#EEF3F8;color:var(--steel)}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
- border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
 h3{font-size:15px;font-weight:680;margin:26px 0 8px}
 p{margin:10px 0}
@@ -56,35 +56,35 @@ ul,ol{margin:10px 0;padding-left:24px}
 li{margin:4px 0}
 .mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
 .lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
- margin:22px 0;padding:18px 20px 20px}
+  margin:22px 0;padding:18px 20px 20px}
 .lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
 .lab-head .t{font-size:15.5px;font-weight:680}
 .lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
- background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
 .lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
 canvas{display:block;width:100%;height:auto;background:var(--card);
- border:1px solid var(--line);border-radius:8px;touch-action:none}
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
 .ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
 .ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
 .ctrl label{color:var(--ink2);white-space:nowrap}
 .ctrl .nm{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
 input[type=range]{width:150px;accent-color:var(--cinn)}
 button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
- border-radius:7px;padding:5px 13px;cursor:pointer}
+  border-radius:7px;padding:5px 13px;cursor:pointer}
 button:hover{border-color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{border:none;border-radius:0;padding:5px 12px}
 .seg button.on{background:var(--steel);color:#fff}
 .readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
- display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
 .ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
- border-bottom:1px dotted var(--grid);padding:3px 0}
+  border-bottom:1px dotted var(--grid);padding:3px 0}
 .ro .k{color:var(--ink2)}
 .ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
 .eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
- border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
- border-radius:0 8px 8px 0;font-size:14px}
+  border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--steel);background:#EFF4F9}
 .note.g{border-left-color:var(--green);background:#EDF6F1}
 .note .h{font-weight:680;display:block;margin-bottom:2px}
@@ -96,7 +96,7 @@ table.tb th{background:#F2F5F8;font-weight:650;text-align:center;white-space:now
 table.tb td.c{text-align:center}
 table.tb tr.hi td{background:#FBF1ED;font-weight:600}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
- font-size:13px;color:var(--ink2)}
+  font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:22px 0 0;flex-wrap:wrap}
 .pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
@@ -106,11 +106,11 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 .cell2 .cap{font-size:12.5px;color:var(--ink2);text-align:center;margin:6px 0 0}
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:14px 0}
 .steps .s{border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--paper);
- font-size:12.5px;color:var(--ink2);transition:.2s}
+  font-size:12.5px;color:var(--ink2);transition:.2s}
 .steps .s.on{background:#EFF4F9;border-color:var(--steel);color:var(--ink);font-weight:600}
 .steps .s .n{font-family:ui-monospace,Consolas,monospace;color:var(--cinn);font-size:11px}
 .stepbody{margin-top:10px;padding:12px 14px;border:1px dashed var(--line);border-radius:8px;
- font-size:14px;background:var(--paper);min-height:74px}
+  font-size:14px;background:var(--paper);min-height:74px}
 </style>
 </head>
 <body>
@@ -119,10 +119,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
 
 <div class="sheet">
- <div class="cell"><p class="k">图号</p><p class="v no">NLA-07</p></div>
- <div class="cell" style="flex:2 1 240px"><p class="k">主题</p><p class="v">SVD 手算 · 超椭圆与最少负号</p></div>
- <div class="cell"><p class="k">出处</p><p class="v">第二次测试第 5 题</p></div>
- <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-07</p></div>
+  <div class="cell" style="flex:2 1 240px"><p class="k">主题</p><p class="v">SVD 手算 · 超椭圆与最少负号</p></div>
+  <div class="cell"><p class="k">出处</p><p class="v">第二次测试第 5 题</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
 </div>
 
 <h1>把单位圆压成超椭圆：SVD 的几何一次看全</h1>
@@ -142,43 +142,43 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <h2><span class="no">02</span>沙盘：单位圆 → 超椭圆</h2>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 01</span><span class="t">两个空间的对照</span><span class="tag">第二次第 5(b) 题</span></div>
- <p class="lab-sub">左图是输入空间：单位圆与右奇异向量 \(v_1,v_2\)。右图是像空间：超椭圆与左奇异向量 \(u_1,u_2\)，四个顶点标了坐标。切换符号开关，看 \(U\)、\(V\) 怎么变而 \(A\) 不动——这正是「SVD 不唯一」的全部来源。</p>
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">两个空间的对照</span><span class="tag">第二次第 5(b) 题</span></div>
+  <p class="lab-sub">左图是输入空间：单位圆与右奇异向量 \(v_1,v_2\)。右图是像空间：超椭圆与左奇异向量 \(u_1,u_2\)，四个顶点标了坐标。切换符号开关，看 \(U\)、\(V\) 怎么变而 \(A\) 不动——这正是「SVD 不唯一」的全部来源。</p>
 
- <div class="two">
- <div class="cell2">
- <canvas id="cv-in" width="360" height="360"></canvas>
- <p class="cap">输入空间 \(\mathbb{R}^2\)：单位圆 + \(v_1,v_2\)</p>
- </div>
- <div class="cell2">
- <canvas id="cv-out" width="360" height="360"></canvas>
- <p class="cap">像空间 \(\mathbb{R}^2\)：超椭圆 + \(u_1,u_2\) + 顶点 \(\sigma_ju_j\)</p>
- </div>
- </div>
+  <div class="two">
+    <div class="cell2">
+      <canvas id="cv-in" width="360" height="360"></canvas>
+      <p class="cap">输入空间 \(\mathbb{R}^2\)：单位圆 + \(v_1,v_2\)</p>
+    </div>
+    <div class="cell2">
+      <canvas id="cv-out" width="360" height="360"></canvas>
+      <p class="cap">像空间 \(\mathbb{R}^2\)：超椭圆 + \(u_1,u_2\) + 顶点 \(\sigma_ju_j\)</p>
+    </div>
+  </div>
 
- <div class="ctrls">
- <span class="seg" id="seg-sign">
- <button data-s="1,1" class="on">(+,+)</button><button data-s="-1,1">(−,+)</button><button data-s="1,-1">(+,−)</button><button data-s="-1,-1">(−,−)</button>
- </span>
- <div class="ctrl"><label>显示</label>
- <button id="b-vert">顶点坐标</button>
- <button id="b-grid">网格</button>
- </div>
- </div>
+  <div class="ctrls">
+    <span class="seg" id="seg-sign">
+      <button data-s="1,1" class="on">(+,+)</button><button data-s="-1,1">(−,+)</button><button data-s="1,-1">(+,−)</button><button data-s="-1,-1">(−,−)</button>
+    </span>
+    <div class="ctrl"><label>显示</label>
+      <button id="b-vert">顶点坐标</button>
+      <button id="b-grid">网格</button>
+    </div>
+  </div>
 
- <div class="readouts">
- <div class="ro"><span class="k">σ₁</span><span class="v" id="r-s1">14.142136</span></div>
- <div class="ro"><span class="k">σ₂</span><span class="v" id="r-s2">7.071068</span></div>
- <div class="ro"><span class="k">顶点 σ₁u₁</span><span class="v" id="r-v1">(10, 10)</span></div>
- <div class="ro"><span class="k">顶点 σ₂u₂</span><span class="v" id="r-v2">(5, −5)</span></div>
- <div class="ro"><span class="k">det A</span><span class="v" id="r-det">100</span></div>
- <div class="ro"><span class="k">面积 πσ₁σ₂</span><span class="v" id="r-area">314.159265</span></div>
- <div class="ro"><span class="k">U 中负号数</span><span class="v" id="r-nu">1</span></div>
- <div class="ro"><span class="k">V 中负号数</span><span class="v" id="r-nv">1</span></div>
- <div class="ro"><span class="k">合计负号</span><span class="v" id="r-nt">2</span></div>
- <div class="ro"><span class="k">UᵀAV 与 Σ 的偏差</span><span class="v" id="r-res">0.0e+0</span></div>
- </div>
- <p class="hint">读数由页内矩阵运算实时得出；「UᵀAV 与 Σ 的偏差」是分解正确性的自检，应恒为 0。四种符号组合里合计负号最少的是 (+,+)，共 2 个。</p>
+  <div class="readouts">
+    <div class="ro"><span class="k">σ₁</span><span class="v" id="r-s1">14.142136</span></div>
+    <div class="ro"><span class="k">σ₂</span><span class="v" id="r-s2">7.071068</span></div>
+    <div class="ro"><span class="k">顶点 σ₁u₁</span><span class="v" id="r-v1">(10, 10)</span></div>
+    <div class="ro"><span class="k">顶点 σ₂u₂</span><span class="v" id="r-v2">(5, −5)</span></div>
+    <div class="ro"><span class="k">det A</span><span class="v" id="r-det">100</span></div>
+    <div class="ro"><span class="k">面积 πσ₁σ₂</span><span class="v" id="r-area">314.159265</span></div>
+    <div class="ro"><span class="k">U 中负号数</span><span class="v" id="r-nu">1</span></div>
+    <div class="ro"><span class="k">V 中负号数</span><span class="v" id="r-nv">1</span></div>
+    <div class="ro"><span class="k">合计负号</span><span class="v" id="r-nt">2</span></div>
+    <div class="ro"><span class="k">UᵀAV 与 Σ 的偏差</span><span class="v" id="r-res">0.0e+0</span></div>
+  </div>
+  <p class="hint">读数由页内矩阵运算实时得出；「UᵀAV 与 Σ 的偏差」是分解正确性的自检，应恒为 0。四种符号组合里合计负号最少的是 (+,+)，共 2 个。</p>
 </section>
 
 <div class="note b">
@@ -191,18 +191,18 @@ $$Ax=\cos t\,(Av_1)+\sin t\,(Av_2)=\cos t\,\sigma_1u_1+\sin t\,\sigma_2u_2.$$
 <h2><span class="no">03</span>三步法：手算流程逐步点亮</h2>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 02</span><span class="t">手算四步</span><span class="tag">第二次第 1、5 题通用</span></div>
- <p class="lab-sub">拖动滑块或点击步骤，看每一步该算什么、算出来的东西在图上对应哪个对象。</p>
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">手算四步</span><span class="tag">第二次第 1、5 题通用</span></div>
+  <p class="lab-sub">拖动滑块或点击步骤，看每一步该算什么、算出来的东西在图上对应哪个对象。</p>
 
- <div class="steps" id="steps">
- <div class="s on" data-i="0"><span class="n">STEP 1</span><br>算 \(A^{\mathrm{T}}A\) 的特征值</div>
- <div class="s" data-i="1"><span class="n">STEP 2</span><br>求单位特征向量 \(v_j\)</div>
- <div class="s" data-i="2"><span class="n">STEP 3</span><br>算 \(u_j=Av_j/\sigma_j\)</div>
- <div class="s" data-i="3"><span class="n">STEP 4</span><br>拼装并回代验算</div>
- </div>
- <div class="ctrl" style="margin:12px 0 0"><label>步骤</label><input type="range" id="s-step" min="0" max="3" step="1" value="0"><span class="nm" id="v-step">1 / 4</span></div>
- <div class="stepbody" id="stepbody"></div>
- <p class="hint">图上的高亮会跟着步骤走：STEP 2 亮左图的 \(v_j\)，STEP 3 亮右图的 \(u_j\) 与顶点，STEP 4 亮整个超椭圆。</p>
+  <div class="steps" id="steps">
+    <div class="s on" data-i="0"><span class="n">STEP 1</span><br>算 \(A^{\mathrm{T}}A\) 的特征值</div>
+    <div class="s" data-i="1"><span class="n">STEP 2</span><br>求单位特征向量 \(v_j\)</div>
+    <div class="s" data-i="2"><span class="n">STEP 3</span><br>算 \(u_j=Av_j/\sigma_j\)</div>
+    <div class="s" data-i="3"><span class="n">STEP 4</span><br>拼装并回代验算</div>
+  </div>
+  <div class="ctrl" style="margin:12px 0 0"><label>步骤</label><input type="range" id="s-step" min="0" max="3" step="1" value="0"><span class="nm" id="v-step">1 / 4</span></div>
+  <div class="stepbody" id="stepbody"></div>
+  <p class="hint">图上的高亮会跟着步骤走：STEP 2 亮左图的 \(v_j\)，STEP 3 亮右图的 \(u_j\) 与顶点，STEP 4 亮整个超椭圆。</p>
 </section>
 
 <h2><span class="no">04</span>最少负号：SVD 不唯一的唯一来源</h2>
@@ -239,14 +239,14 @@ $$Ax=\cos t\,(Av_1)+\sin t\,(Av_2)=\cos t\,\sigma_1u_1+\sin t\,\sigma_2u_2.$$
 
 <h2><span class="no">06</span>三个最容易翻车的细节</h2>
 <ol>
- <li><strong>\(V\) 是反射不是旋转</strong>：\(\det V=-1\)。若你在文字里写「\(V^{\mathrm{T}}\) 把圆旋转了一下」，严格说是错的；它先把 \((1,2)\) 方向翻到另一侧。圆的形状不变，所以几何结论不受影响，但表述要准。</li>
- <li><strong>\(u_2\) 的符号</strong>：算 \(u_2=Av_2/\sigma_2\) 时若 \(v_2\) 取了 \(-\tfrac15(4,3)\)，\(u_2\) 也会跟着变号。两种都对，但「最少负号」要求你检查一遍。</li>
- <li><strong>顶点不是特征向量方向</strong>：超椭圆顶点方向是 \(u_j\)（\(A\) 的左奇异向量），不是 \(A\) 的特征向量方向。本题 \(A\) 根本没有实特征向量，若按特征方向找顶点会直接卡死。</li>
+  <li><strong>\(V\) 是反射不是旋转</strong>：\(\det V=-1\)。若你在文字里写「\(V^{\mathrm{T}}\) 把圆旋转了一下」，严格说是错的；它先把 \((1,2)\) 方向翻到另一侧。圆的形状不变，所以几何结论不受影响，但表述要准。</li>
+  <li><strong>\(u_2\) 的符号</strong>：算 \(u_2=Av_2/\sigma_2\) 时若 \(v_2\) 取了 \(-\tfrac15(4,3)\)，\(u_2\) 也会跟着变号。两种都对，但「最少负号」要求你检查一遍。</li>
+  <li><strong>顶点不是特征向量方向</strong>：超椭圆顶点方向是 \(u_j\)（\(A\) 的左奇异向量），不是 \(A\) 的特征向量方向。本题 \(A\) 根本没有实特征向量，若按特征方向找顶点会直接卡死。</li>
 </ol>
 
 <div class="pager">
- <a href="./期中复习-指南.html">← 期中复习指南</a>
- <a href="./Givens与Householder-旋转反射与flop账本.html">NLA-08 Givens 与 Householder →</a>
+  <a href="./期中复习-指南.html">← 期中复习指南</a>
+  <a href="./Givens与Householder-旋转反射与flop账本.html">NLA-08 Givens 与 Householder →</a>
 </div>
 
 <footer>
@@ -258,238 +258,238 @@ $$Ax=\cos t\,(Av_1)+\sin t\,(Av_2)=\cos t\,\sigma_1u_1+\sin t\,\sigma_2u_2.$$
 
 <script>
 (function(){
- const SQ2 = Math.SQRT2;
- const S1 = 10*SQ2, S2 = 5*SQ2;
- const A = [[-2,11],[-10,5]];
- // 最少负号形式（列向量）
- const U0 = [[1/SQ2, 1/SQ2],[1/SQ2, -1/SQ2]]; // U0[i][j]
- const V0 = [[-3/5, 4/5],[4/5, 3/5]];
+  const SQ2 = Math.SQRT2;
+  const S1 = 10*SQ2, S2 = 5*SQ2;
+  const A = [[-2,11],[-10,5]];
+  // 最少负号形式（列向量）
+  const U0 = [[1/SQ2, 1/SQ2],[1/SQ2, -1/SQ2]];   // U0[i][j]
+  const V0 = [[-3/5, 4/5],[4/5, 3/5]];
 
- let sign = [1,1];
- let showVert = true, showGrid = true;
- let step = 0;
+  let sign = [1,1];
+  let showVert = true, showGrid = true;
+  let step = 0;
 
- const $ = id => document.getElementById(id);
- const fmt = (x,n=4) => (Math.abs(x)<1e-12?0:x).toFixed(n);
+  const $ = id => document.getElementById(id);
+  const fmt = (x,n=4) => (Math.abs(x)<1e-12?0:x).toFixed(n);
 
- // 当前带符号的 U, V（列 j 乘 sign[j]）
- function UV(){
- const U = U0.map(r=>r.slice()), V = V0.map(r=>r.slice());
- for(let j=0;j<2;j++){ for(let i=0;i<2;i++){ U[i][j]*=sign[j]; V[i][j]*=sign[j]; } }
- return {U,V};
- }
- function negCount(M){ let c=0; for(const r of M) for(const x of r) if(x<0) c++; return c; }
+  // 当前带符号的 U, V（列 j 乘 sign[j]）
+  function UV(){
+    const U = U0.map(r=>r.slice()), V = V0.map(r=>r.slice());
+    for(let j=0;j<2;j++){ for(let i=0;i<2;i++){ U[i][j]*=sign[j]; V[i][j]*=sign[j]; } }
+    return {U,V};
+  }
+  function negCount(M){ let c=0; for(const r of M) for(const x of r) if(x<0) c++; return c; }
 
- // ---------- 画布工具 ----------
- function setup(cv){
- const dpr = window.devicePixelRatio||1;
- const w = cv.width, h = cv.height;
- cv.width = w*dpr; cv.height = h*dpr;
- cv.style.width = w+'px'; cv.style.maxWidth='100%';
- const ctx = cv.getContext('2d');
- ctx.setTransform(dpr,0,0,dpr,0,0);
- return {ctx,w,h};
- }
+  // ---------- 画布工具 ----------
+  function setup(cv){
+    const dpr = window.devicePixelRatio||1;
+    const w = cv.width, h = cv.height;
+    cv.width = w*dpr; cv.height = h*dpr;
+    cv.style.width = w+'px'; cv.style.maxWidth='100%';
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return {ctx,w,h};
+  }
 
- function makeFrame(cv, half, pad){
- const {ctx,w,h} = setup(cv);
- const cx = w/2, cy = h/2;
- const s = (Math.min(w,h)/2 - pad)/half; // world -> px
- return {
- ctx,w,h,cx,cy,s,half,
- X:x=>cx + x*s,
- Y:y=>cy - y*s,
- clear(){ ctx.clearRect(0,0,w,h); },
- grid(){
- if(!showGrid) return;
- ctx.strokeStyle='#E6EBF1'; ctx.lineWidth=1;
- const stepW = half<=1.5?0.5:(half<=6?2:5);
- for(let v=-half;v<=half+1e-9;v+=stepW){
- ctx.beginPath(); ctx.moveTo(this.X(v),this.Y(-half)); ctx.lineTo(this.X(v),this.Y(half)); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(this.X(-half),this.Y(v)); ctx.lineTo(this.X(half),this.Y(v)); ctx.stroke();
- }
- ctx.strokeStyle='#B9C4CF'; ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(this.X(-half),this.Y(0)); ctx.lineTo(this.X(half),this.Y(0)); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(this.X(0),this.Y(-half)); ctx.lineTo(this.X(0),this.Y(half)); ctx.stroke();
- },
- arrow(x0,y0,x1,y1,color,label,opt){
- const X0=this.X(x0),Y0=this.Y(y0),X1=this.X(x1),Y1=this.Y(y1);
- const dx=X1-X0, dy=Y1-Y0, len=Math.hypot(dx,dy);
- if(len<0.5) return;
- ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=opt&&opt.w||2;
- ctx.beginPath(); ctx.moveTo(X0,Y0); ctx.lineTo(X1,Y1); ctx.stroke();
- const a=Math.atan2(dy,dx), hl=Math.min(11,len*0.35);
- ctx.beginPath();
- ctx.moveTo(X1,Y1);
- ctx.lineTo(X1-hl*Math.cos(a-0.36), Y1-hl*Math.sin(a-0.36));
- ctx.lineTo(X1-hl*Math.cos(a+0.36), Y1-hl*Math.sin(a+0.36));
- ctx.closePath(); ctx.fill();
- if(label){
- ctx.font='600 12.5px ui-monospace,Consolas,monospace';
- ctx.textAlign='center'; ctx.textBaseline='middle';
- const ox = 14*Math.cos(a), oy = 14*Math.sin(a);
- ctx.fillStyle='#fff';
- const tw = ctx.measureText(label).width;
- ctx.fillRect(X1+ox-tw/2-3, Y1+oy-9, tw+6, 18);
- ctx.fillStyle=color;
- ctx.fillText(label, X1+ox, Y1+oy);
- }
- },
- dot(x,y,color,r=3.4){
- ctx.fillStyle=color; ctx.beginPath(); ctx.arc(this.X(x),this.Y(y),r,0,7); ctx.fill();
- },
- text(x,y,str,color,align){
- ctx.font='600 12px ui-monospace,Consolas,monospace';
- ctx.fillStyle=color; ctx.textAlign=align||'left'; ctx.textBaseline='middle';
- ctx.fillText(str, this.X(x), this.Y(y));
- }
- };
- }
+  function makeFrame(cv, half, pad){
+    const {ctx,w,h} = setup(cv);
+    const cx = w/2, cy = h/2;
+    const s = (Math.min(w,h)/2 - pad)/half;   // world -> px
+    return {
+      ctx,w,h,cx,cy,s,half,
+      X:x=>cx + x*s,
+      Y:y=>cy - y*s,
+      clear(){ ctx.clearRect(0,0,w,h); },
+      grid(){
+        if(!showGrid) return;
+        ctx.strokeStyle='#E6EBF1'; ctx.lineWidth=1;
+        const stepW = half<=1.5?0.5:(half<=6?2:5);
+        for(let v=-half;v<=half+1e-9;v+=stepW){
+          ctx.beginPath(); ctx.moveTo(this.X(v),this.Y(-half)); ctx.lineTo(this.X(v),this.Y(half)); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(this.X(-half),this.Y(v)); ctx.lineTo(this.X(half),this.Y(v)); ctx.stroke();
+        }
+        ctx.strokeStyle='#B9C4CF'; ctx.lineWidth=1.2;
+        ctx.beginPath(); ctx.moveTo(this.X(-half),this.Y(0)); ctx.lineTo(this.X(half),this.Y(0)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(this.X(0),this.Y(-half)); ctx.lineTo(this.X(0),this.Y(half)); ctx.stroke();
+      },
+      arrow(x0,y0,x1,y1,color,label,opt){
+        const X0=this.X(x0),Y0=this.Y(y0),X1=this.X(x1),Y1=this.Y(y1);
+        const dx=X1-X0, dy=Y1-Y0, len=Math.hypot(dx,dy);
+        if(len<0.5) return;
+        ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=opt&&opt.w||2;
+        ctx.beginPath(); ctx.moveTo(X0,Y0); ctx.lineTo(X1,Y1); ctx.stroke();
+        const a=Math.atan2(dy,dx), hl=Math.min(11,len*0.35);
+        ctx.beginPath();
+        ctx.moveTo(X1,Y1);
+        ctx.lineTo(X1-hl*Math.cos(a-0.36), Y1-hl*Math.sin(a-0.36));
+        ctx.lineTo(X1-hl*Math.cos(a+0.36), Y1-hl*Math.sin(a+0.36));
+        ctx.closePath(); ctx.fill();
+        if(label){
+          ctx.font='600 12.5px ui-monospace,Consolas,monospace';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          const ox = 14*Math.cos(a), oy = 14*Math.sin(a);
+          ctx.fillStyle='#fff';
+          const tw = ctx.measureText(label).width;
+          ctx.fillRect(X1+ox-tw/2-3, Y1+oy-9, tw+6, 18);
+          ctx.fillStyle=color;
+          ctx.fillText(label, X1+ox, Y1+oy);
+        }
+      },
+      dot(x,y,color,r=3.4){
+        ctx.fillStyle=color; ctx.beginPath(); ctx.arc(this.X(x),this.Y(y),r,0,7); ctx.fill();
+      },
+      text(x,y,str,color,align){
+        ctx.font='600 12px ui-monospace,Consolas,monospace';
+        ctx.fillStyle=color; ctx.textAlign=align||'left'; ctx.textBaseline='middle';
+        ctx.fillText(str, this.X(x), this.Y(y));
+      }
+    };
+  }
 
- const cvIn = $('cv-in'), cvOut = $('cv-out');
- const fIn = makeFrame(cvIn, 1.45, 26);
- const fOut = makeFrame(cvOut, 13.2, 26);
+  const cvIn = $('cv-in'), cvOut = $('cv-out');
+  const fIn = makeFrame(cvIn, 1.45, 26);
+  const fOut = makeFrame(cvOut, 13.2, 26);
 
- function drawIn(){
- const {U,V} = UV();
- fIn.clear(); fIn.grid();
- // 单位圆
- fIn.ctx.strokeStyle = step>=1 ? '#2F5D8A' : '#B04A2F';
- fIn.ctx.lineWidth = step>=1 ? 2.4 : 1.8;
- fIn.ctx.beginPath();
- fIn.ctx.arc(fIn.X(0), fIn.Y(0), fIn.s, 0, 7);
- fIn.ctx.stroke();
- // 轴标签
- fIn.text(1.38, -0.09, 'x₁', '#5A6B7C', 'right');
- fIn.text(0.06, 1.36, 'x₂', '#5A6B7C', 'left');
- // v1 v2
- const hl = (step===1);
- fIn.arrow(0,0, V[0][0], V[1][0], hl?'#B04A2F':'#B04A2F', 'v₁', {w: hl?3:2.2});
- fIn.arrow(0,0, V[0][1], V[1][1], hl?'#8A6D1F':'#8A6D1F', 'v₂', {w: hl?3:2.2});
- }
+  function drawIn(){
+    const {U,V} = UV();
+    fIn.clear(); fIn.grid();
+    // 单位圆
+    fIn.ctx.strokeStyle = step>=1 ? '#2F5D8A' : '#B04A2F';
+    fIn.ctx.lineWidth = step>=1 ? 2.4 : 1.8;
+    fIn.ctx.beginPath();
+    fIn.ctx.arc(fIn.X(0), fIn.Y(0), fIn.s, 0, 7);
+    fIn.ctx.stroke();
+    // 轴标签
+    fIn.text(1.38, -0.09, 'x₁', '#5A6B7C', 'right');
+    fIn.text(0.06, 1.36, 'x₂', '#5A6B7C', 'left');
+    // v1 v2
+    const hl = (step===1);
+    fIn.arrow(0,0, V[0][0], V[1][0], hl?'#B04A2F':'#B04A2F', 'v₁', {w: hl?3:2.2});
+    fIn.arrow(0,0, V[0][1], V[1][1], hl?'#8A6D1F':'#8A6D1F', 'v₂', {w: hl?3:2.2});
+  }
 
- function drawOut(){
- const {U,V} = UV();
- fOut.clear(); fOut.grid();
+  function drawOut(){
+    const {U,V} = UV();
+    fOut.clear(); fOut.grid();
 
- // 超椭圆： x = σ1 cos t u1 + σ2 sin t u2
- fOut.ctx.beginPath();
- for(let i=0;i<=240;i++){
- const t = i/240*Math.PI*2;
- const x = S1*Math.cos(t)*U[0][0] + S2*Math.sin(t)*U[0][1];
- const y = S1*Math.cos(t)*U[1][0] + S2*Math.sin(t)*U[1][1];
- if(i===0) fOut.ctx.moveTo(fOut.X(x),fOut.Y(y));
- else fOut.ctx.lineTo(fOut.X(x),fOut.Y(y));
- }
- fOut.ctx.closePath();
- fOut.ctx.fillStyle = step>=3 ? 'rgba(176,74,47,.07)' : 'rgba(47,93,138,.06)';
- fOut.ctx.fill();
- fOut.ctx.strokeStyle = step>=3 ? '#B04A2F' : '#2F5D8A';
- fOut.ctx.lineWidth = 2.4; fOut.ctx.stroke();
+    // 超椭圆： x = σ1 cos t u1 + σ2 sin t u2
+    fOut.ctx.beginPath();
+    for(let i=0;i<=240;i++){
+      const t = i/240*Math.PI*2;
+      const x = S1*Math.cos(t)*U[0][0] + S2*Math.sin(t)*U[0][1];
+      const y = S1*Math.cos(t)*U[1][0] + S2*Math.sin(t)*U[1][1];
+      if(i===0) fOut.ctx.moveTo(fOut.X(x),fOut.Y(y));
+      else fOut.ctx.lineTo(fOut.X(x),fOut.Y(y));
+    }
+    fOut.ctx.closePath();
+    fOut.ctx.fillStyle = step>=3 ? 'rgba(176,74,47,.07)' : 'rgba(47,93,138,.06)';
+    fOut.ctx.fill();
+    fOut.ctx.strokeStyle = step>=3 ? '#B04A2F' : '#2F5D8A';
+    fOut.ctx.lineWidth = 2.4; fOut.ctx.stroke();
 
- // 长轴虚线（提示主轴）
- fOut.ctx.setLineDash([5,5]); fOut.ctx.strokeStyle='#CBD5DF'; fOut.ctx.lineWidth=1;
- fOut.ctx.beginPath();
- fOut.ctx.moveTo(fOut.X(-S1*U[0][0]), fOut.Y(-S1*U[1][0]));
- fOut.ctx.lineTo(fOut.X(S1*U[0][0]), fOut.Y(S1*U[1][0]));
- fOut.ctx.stroke();
- fOut.ctx.beginPath();
- fOut.ctx.moveTo(fOut.X(-S2*U[0][1]), fOut.Y(-S2*U[1][1]));
- fOut.ctx.lineTo(fOut.X(S2*U[0][1]), fOut.Y(S2*U[1][1]));
- fOut.ctx.stroke();
- fOut.ctx.setLineDash([]);
+    // 长轴虚线（提示主轴）
+    fOut.ctx.setLineDash([5,5]); fOut.ctx.strokeStyle='#CBD5DF'; fOut.ctx.lineWidth=1;
+    fOut.ctx.beginPath();
+    fOut.ctx.moveTo(fOut.X(-S1*U[0][0]), fOut.Y(-S1*U[1][0]));
+    fOut.ctx.lineTo(fOut.X(S1*U[0][0]), fOut.Y(S1*U[1][0]));
+    fOut.ctx.stroke();
+    fOut.ctx.beginPath();
+    fOut.ctx.moveTo(fOut.X(-S2*U[0][1]), fOut.Y(-S2*U[1][1]));
+    fOut.ctx.lineTo(fOut.X(S2*U[0][1]), fOut.Y(S2*U[1][1]));
+    fOut.ctx.stroke();
+    fOut.ctx.setLineDash([]);
 
- // u1 u2
- const hl = (step>=2);
- fOut.arrow(0,0, U[0][0], U[1][0], '#B04A2F', 'u₁', {w: hl?3:2});
- fOut.arrow(0,0, U[0][1], U[1][1], '#8A6D1F', 'u₂', {w: hl?3:2});
+    // u1 u2
+    const hl = (step>=2);
+    fOut.arrow(0,0, U[0][0], U[1][0], '#B04A2F', 'u₁', {w: hl?3:2});
+    fOut.arrow(0,0, U[0][1], U[1][1], '#8A6D1F', 'u₂', {w: hl?3:2});
 
- // 顶点
- if(showVert){
- const pts = [
- [S1*U[0][0], S1*U[1][0], 'σ₁u₁'],
- [-S1*U[0][0], -S1*U[1][0], '−σ₁u₁'],
- [S2*U[0][1], S2*U[1][1], 'σ₂u₂'],
- [-S2*U[0][1], -S2*U[1][1], '−σ₂u₂']
- ];
- for(const [x,y,lab] of pts){
- fOut.dot(x,y,'#B04A2F',4.2);
- fOut.ctx.font='600 11.5px ui-monospace,Consolas,monospace';
- fOut.ctx.fillStyle='#22303F'; fOut.ctx.textAlign='center'; fOut.ctx.textBaseline='middle';
- const px=fOut.X(x), py=fOut.Y(y);
- const ox = x>0? 30 : -30, oy = y>0? -14 : 14;
- const str = `(${Math.round(x)}, ${Math.round(y)})`;
- const tw = fOut.ctx.measureText(str).width;
- fOut.ctx.fillStyle='rgba(255,255,255,.85)';
- fOut.ctx.fillRect(px+ox-tw/2-2, py+oy-8, tw+4, 16);
- fOut.ctx.fillStyle='#B04A2F';
- fOut.ctx.fillText(str, px+ox, py+oy);
- }
- }
- // 刻度
- fOut.text(12.6, -0.9, '10', '#9AA7B4', 'center');
- fOut.text(-12.6, -0.9, '−10', '#9AA7B4', 'center');
- }
+    // 顶点
+    if(showVert){
+      const pts = [
+        [S1*U[0][0], S1*U[1][0], 'σ₁u₁'],
+        [-S1*U[0][0], -S1*U[1][0], '−σ₁u₁'],
+        [S2*U[0][1], S2*U[1][1], 'σ₂u₂'],
+        [-S2*U[0][1], -S2*U[1][1], '−σ₂u₂']
+      ];
+      for(const [x,y,lab] of pts){
+        fOut.dot(x,y,'#B04A2F',4.2);
+        fOut.ctx.font='600 11.5px ui-monospace,Consolas,monospace';
+        fOut.ctx.fillStyle='#22303F'; fOut.ctx.textAlign='center'; fOut.ctx.textBaseline='middle';
+        const px=fOut.X(x), py=fOut.Y(y);
+        const ox = x>0? 30 : -30, oy = y>0? -14 : 14;
+        const str = `(${Math.round(x)}, ${Math.round(y)})`;
+        const tw = fOut.ctx.measureText(str).width;
+        fOut.ctx.fillStyle='rgba(255,255,255,.85)';
+        fOut.ctx.fillRect(px+ox-tw/2-2, py+oy-8, tw+4, 16);
+        fOut.ctx.fillStyle='#B04A2F';
+        fOut.ctx.fillText(str, px+ox, py+oy);
+      }
+    }
+    // 刻度
+    fOut.text(12.6, -0.9, '10', '#9AA7B4', 'center');
+    fOut.text(-12.6, -0.9, '−10', '#9AA7B4', 'center');
+  }
 
- function refreshReadouts(){
- const {U,V} = UV();
- $('r-s1').textContent = fmt(S1,6);
- $('r-s2').textContent = fmt(S2,6);
- $('r-v1').textContent = `(${fmt(S1*U[0][0],1)}, ${fmt(S1*U[1][0],1)})`;
- $('r-v2').textContent = `(${fmt(S2*U[0][1],1)}, ${fmt(S2*U[1][1],1)})`;
- $('r-det').textContent = '100';
- $('r-area').textContent = fmt(Math.PI*S1*S2,6);
- const nu = negCount(U), nv = negCount(V);
- $('r-nu').textContent = nu;
- $('r-nv').textContent = nv;
- $('r-nt').textContent = nu+nv;
- // 自检：Uᵀ A V 应等于 Σ
- const Sig = [[S1,0],[0,S2]];
- let mx = 0;
- for(let i=0;i<2;i++) for(let j=0;j<2;j++){
- let s=0;
- for(let p=0;p<2;p++) for(let q=0;q<2;q++) s += U[p][i]*A[p][q]*V[q][j];
- mx = Math.max(mx, Math.abs(s - Sig[i][j]));
- }
- $('r-res').textContent = mx.toExponential(1);
- }
+  function refreshReadouts(){
+    const {U,V} = UV();
+    $('r-s1').textContent = fmt(S1,6);
+    $('r-s2').textContent = fmt(S2,6);
+    $('r-v1').textContent = `(${fmt(S1*U[0][0],1)}, ${fmt(S1*U[1][0],1)})`;
+    $('r-v2').textContent = `(${fmt(S2*U[0][1],1)}, ${fmt(S2*U[1][1],1)})`;
+    $('r-det').textContent = '100';
+    $('r-area').textContent = fmt(Math.PI*S1*S2,6);
+    const nu = negCount(U), nv = negCount(V);
+    $('r-nu').textContent = nu;
+    $('r-nv').textContent = nv;
+    $('r-nt').textContent = nu+nv;
+    // 自检：Uᵀ A V 应等于 Σ
+    const Sig = [[S1,0],[0,S2]];
+    let mx = 0;
+    for(let i=0;i<2;i++) for(let j=0;j<2;j++){
+      let s=0;
+      for(let p=0;p<2;p++) for(let q=0;q<2;q++) s += U[p][i]*A[p][q]*V[q][j];
+      mx = Math.max(mx, Math.abs(s - Sig[i][j]));
+    }
+    $('r-res').textContent = mx.toExponential(1);
+  }
 
- // 步骤文本。注意：JS 模板字符串里要输出 \( 必须写 \\(，否则 \( 会被当成无效转义吞成 (
- const stepText = [
- `<strong>STEP 1 · 算 \\(A^{\\mathrm{T}}A\\) 的特征值。</strong> \\(A^{\\mathrm{T}}A=\\begin{bmatrix}104&-72\\\\-72&146\\end{bmatrix}\\)，特征多项式 \\(\\lambda^2-250\\lambda+10000=0\\)，得 \\(\\lambda_1=200,\\ \\lambda_2=50\\)。取 \\(\\sigma_j=\\sqrt{\\lambda_j}\\) 并降序：\\(\\sigma_1=10\\sqrt2\\approx14.1421\\)，\\(\\sigma_2=5\\sqrt2\\approx7.0711\\)。`,
- `<strong>STEP 2 · 求单位特征向量 \\(v_j\\)。</strong> 对 \\(\\lambda_1=200\\)：\\((104-200)x-72y=0\\Rightarrow y=-\\tfrac43x\\)，取 \\(v_1=\\tfrac15(3,-4)^{\\mathrm{T}}\\)。对 \\(\\lambda_2=50\\)：得 \\(v_2=\\tfrac15(4,3)^{\\mathrm{T}}\\)。两个特征值不同，\\(v_1\\perp v_2\\) 自动成立，不必再正交化。<span style="color:#B04A2F">← 左图高亮的就是这两个方向</span>`,
- `<strong>STEP 3 · 算 \\(u_j=Av_j/\\sigma_j\\)。</strong> \\(Av_1=(10,10)^{\\mathrm{T}}\\)，除以 \\(\\sigma_1=10\\sqrt2\\) 得 \\(u_1=\\tfrac{1}{\\sqrt2}(1,1)^{\\mathrm{T}}\\)；\\(Av_2=(5,-5)^{\\mathrm{T}}\\)，除以 \\(\\sigma_2=5\\sqrt2\\) 得 \\(u_2=\\tfrac{1}{\\sqrt2}(1,-1)^{\\mathrm{T}}\\)。本题 \\(m=n=2\\)，两个 \\(u\\) 已凑齐正交基，无需补。<span style="color:#B04A2F">← 右图的 \\(u_1,u_2\\) 与四个顶点同时亮起</span>`,
- `<strong>STEP 4 · 拼装并回代验算。</strong> 把 \\(u_1,v_1\\) 同时变号可得最少负号形式。最后<strong>务必回代 \\(U\\Sigma V^{\\mathrm{T}}=A\\)</strong>——这是唯一能自己抓出符号错误的方法。页面读数的「UᵀAV 与 Σ 的偏差」若为 0，说明分解正确。`
- ];
+  // 步骤文本。注意：JS 模板字符串里要输出 \( 必须写 \\(，否则 \( 会被当成无效转义吞成 (
+  const stepText = [
+    `<strong>STEP 1 · 算 \\(A^{\\mathrm{T}}A\\) 的特征值。</strong> \\(A^{\\mathrm{T}}A=\\begin{bmatrix}104&-72\\\\-72&146\\end{bmatrix}\\)，特征多项式 \\(\\lambda^2-250\\lambda+10000=0\\)，得 \\(\\lambda_1=200,\\ \\lambda_2=50\\)。取 \\(\\sigma_j=\\sqrt{\\lambda_j}\\) 并降序：\\(\\sigma_1=10\\sqrt2\\approx14.1421\\)，\\(\\sigma_2=5\\sqrt2\\approx7.0711\\)。`,
+    `<strong>STEP 2 · 求单位特征向量 \\(v_j\\)。</strong> 对 \\(\\lambda_1=200\\)：\\((104-200)x-72y=0\\Rightarrow y=-\\tfrac43x\\)，取 \\(v_1=\\tfrac15(3,-4)^{\\mathrm{T}}\\)。对 \\(\\lambda_2=50\\)：得 \\(v_2=\\tfrac15(4,3)^{\\mathrm{T}}\\)。两个特征值不同，\\(v_1\\perp v_2\\) 自动成立，不必再正交化。<span style="color:#B04A2F">← 左图高亮的就是这两个方向</span>`,
+    `<strong>STEP 3 · 算 \\(u_j=Av_j/\\sigma_j\\)。</strong> \\(Av_1=(10,10)^{\\mathrm{T}}\\)，除以 \\(\\sigma_1=10\\sqrt2\\) 得 \\(u_1=\\tfrac{1}{\\sqrt2}(1,1)^{\\mathrm{T}}\\)；\\(Av_2=(5,-5)^{\\mathrm{T}}\\)，除以 \\(\\sigma_2=5\\sqrt2\\) 得 \\(u_2=\\tfrac{1}{\\sqrt2}(1,-1)^{\\mathrm{T}}\\)。本题 \\(m=n=2\\)，两个 \\(u\\) 已凑齐正交基，无需补。<span style="color:#B04A2F">← 右图的 \\(u_1,u_2\\) 与四个顶点同时亮起</span>`,
+    `<strong>STEP 4 · 拼装并回代验算。</strong> 把 \\(u_1,v_1\\) 同时变号可得最少负号形式。最后<strong>务必回代 \\(U\\Sigma V^{\\mathrm{T}}=A\\)</strong>——这是唯一能自己抓出符号错误的方法。页面读数的「UᵀAV 与 Σ 的偏差」若为 0，说明分解正确。`
+  ];
 
- function refreshStep(){
- $('v-step').textContent = (step+1)+' / 4';
- $('s-step').value = step;
- document.querySelectorAll('#steps .s').forEach((el,i)=>el.classList.toggle('on', i===step));
- $('stepbody').innerHTML = stepText[step];
- if(window.MathJax && MathJax.typesetPromise){
- MathJax.typesetPromise([$('stepbody')]).catch(()=>{});
- }
- drawIn(); drawOut();
- }
+  function refreshStep(){
+    $('v-step').textContent = (step+1)+' / 4';
+    $('s-step').value = step;
+    document.querySelectorAll('#steps .s').forEach((el,i)=>el.classList.toggle('on', i===step));
+    $('stepbody').innerHTML = stepText[step];
+    if(window.MathJax && MathJax.typesetPromise){
+      MathJax.typesetPromise([$('stepbody')]).catch(()=>{});
+    }
+    drawIn(); drawOut();
+  }
 
- // 事件
- document.querySelectorAll('#seg-sign button').forEach(b=>{
- b.addEventListener('click',()=>{
- document.querySelectorAll('#seg-sign button').forEach(x=>x.classList.remove('on'));
- b.classList.add('on');
- sign = b.dataset.s.split(',').map(Number);
- drawIn(); drawOut(); refreshReadouts();
- });
- });
- $('b-vert').addEventListener('click',()=>{ showVert=!showVert; drawOut(); });
- $('b-grid').addEventListener('click',()=>{ showGrid=!showGrid; drawIn(); drawOut(); });
- document.querySelectorAll('#steps .s').forEach(el=>{
- el.addEventListener('click',()=>{ step = +el.dataset.i; refreshStep(); });
- });
- $('s-step').addEventListener('input',e=>{ step = +e.target.value; refreshStep(); });
+  // 事件
+  document.querySelectorAll('#seg-sign button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('#seg-sign button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      sign = b.dataset.s.split(',').map(Number);
+      drawIn(); drawOut(); refreshReadouts();
+    });
+  });
+  $('b-vert').addEventListener('click',()=>{ showVert=!showVert; drawOut(); });
+  $('b-grid').addEventListener('click',()=>{ showGrid=!showGrid; drawIn(); drawOut(); });
+  document.querySelectorAll('#steps .s').forEach(el=>{
+    el.addEventListener('click',()=>{ step = +el.dataset.i; refreshStep(); });
+  });
+  $('s-step').addEventListener('input',e=>{ step = +e.target.value; refreshStep(); });
 
- drawIn(); drawOut(); refreshReadouts(); refreshStep();
+  drawIn(); drawOut(); refreshReadouts(); refreshStep();
 })();
 </script>
 </body>

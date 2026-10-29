@@ -5,39 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>正交投影与最佳逼近 · 泛函分析</title>
 <!--
- 维护说明（给未来的自己）：
- 1. 本页 = 泛函分析系列第 1 页（图号 FA-01），教材第 2 章 Hilbert 空间 §1–§3
- 2. 版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；
- 实验台结构 .lab/.lab-head/.lab-sub/canvas/.ctrls/.readouts 沿用全站约定。
- 3. 四个实验台：01 正交分解沙盘（定理 3.1）、02 最佳逼近与变分不等式（实验 01 同场景加游标）、
- 03 投影算子账本（P²=P、P*=P、‖P‖=1、Q=I−P）、04 Parseval 对账台（l² 影子，章末推论）。
- 4. 读数闸门：verify_readout_fa01.js（工作区根，vm + DOM 桩）；公式 verify_formulas.js 0 failed。
+  维护说明（给未来的自己）：
+  1. 本页 = 泛函分析系列第 1 页（图号 FA-01），教材第 2 章 Hilbert 空间 §1–§3。
+  2. 版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；
+     实验台结构 .lab/.lab-head/.lab-sub/canvas/.ctrls/.readouts 沿用全站约定。
+  3. 四个实验台：01 正交分解沙盘（定理 3.1）、02 最佳逼近与变分不等式（实验 01 同场景加游标）、
+     03 投影算子账本（P²=P、P*=P、‖P‖=1、Q=I−P）、04 Parseval 对账台（l² 影子，章末推论）。
+  4. 读数闸门：verify_readout_fa01.js（工作区根，vm + DOM 桩）；公式 verify_formulas.js 0 failed。
+  5. 「变分不等式」的编号在整理稿中缺失，页内按定理 3.1 上下文重组给出并注明，不冒用教材编号。
 -->
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "local" },
- options: { enableMenu: false }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
- --paper:#f4f5fa; --card:#ffffff; --ink:#1e2440; --ink2:#5a6078;
- --line:#d8dcee; --line2:#b9c0dd; --grid:#e7eaf4;
- --indigo:#3d4fa3; --indigo-soft:#e9ecfa;
- --violet:#7a4fa3; --violet-soft:#f1eaf8;
- --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",monospace;
+  --paper:#f4f5fa; --card:#ffffff; --ink:#1e2440; --ink2:#5a6078;
+  --line:#d8dcee; --line2:#b9c0dd; --grid:#e7eaf4;
+  --indigo:#3d4fa3; --indigo-soft:#e9ecfa;
+  --violet:#7a4fa3; --violet-soft:#f1eaf8;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--indigo);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
- overflow:hidden;margin:0 0 14px;background:var(--card)}
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -46,45 +47,45 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:#3c4260;font-size:15px;margin:0 0 8px;max-width:70ch}
 .tag{display:inline-block;font-size:11.5px;font-family:var(--mono);
- border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
- background:var(--indigo-soft);color:var(--indigo)}
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:var(--indigo-soft);color:var(--indigo)}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
- border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:var(--mono);font-size:12.5px;color:var(--indigo);font-weight:600}
 p{margin:10px 0}
 ul,ol{margin:10px 0;padding-left:24px}
 li{margin:4px 0}
 .mono{font-family:var(--mono)}
 .lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
- margin:22px 0;padding:18px 20px 20px}
+  margin:22px 0;padding:18px 20px 20px}
 .lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
 .lab-head .t{font-size:15.5px;font-weight:680}
 .lab-head .no{font-family:var(--mono);font-size:12px;color:#fff;
- background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
 .lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
 canvas{display:block;width:100%;height:auto;background:var(--card);
- border:1px solid var(--line);border-radius:8px;touch-action:none}
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
 .ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
 .ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
 .ctrl label{color:var(--ink2);white-space:nowrap}
 .ctrl .nm{font-family:var(--mono);color:var(--ink)}
 input[type=range]{width:104px;accent-color:var(--indigo)}
 button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
- border-radius:7px;padding:5px 13px;cursor:pointer}
+  border-radius:7px;padding:5px 13px;cursor:pointer}
 button:hover{border-color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{border:none;border-radius:0;padding:5px 12px}
 .seg button.on{background:var(--indigo);color:#fff}
 .readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
- display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 18px}
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 18px}
 .ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
- border-bottom:1px dotted var(--grid);padding:3px 0}
+  border-bottom:1px dotted var(--grid);padding:3px 0}
 .ro .k{color:var(--ink2)}
 .ro .v{font-family:var(--mono);font-weight:600}
 .eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
- border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--violet);background:var(--violet-soft);padding:10px 16px;margin:16px 0;
- border-radius:0 8px 8px 0;font-size:14px}
+  border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--indigo);background:#eef1fb}
 mjx-container[jax="SVG"]{max-width:100%}
 mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
@@ -93,15 +94,15 @@ table.tb td,table.tb th{border:1px solid var(--line);padding:5px 14px;text-align
 table.tb th{background:var(--card);font-weight:600}
 table.tb tr.hi td{background:var(--indigo-soft)}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
- font-size:13px;color:var(--ink2)}
+  font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
 .pager a{color:var(--indigo);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
 .hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
 @media print{
- .noprint{display:none}
- h2{page-break-after:avoid}
- .lab,table.tb,.eq{page-break-inside:avoid}
+  .noprint{display:none}
+  h2{page-break-after:avoid}
+  .lab,table.tb,.eq{page-break-inside:avoid}
 }
 </style>
 </head>
@@ -111,10 +112,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">泛函分析</a></p>
 
 <div class="sheet">
- <div class="cell"><p class="k">图号</p><p class="v no">FA-01</p></div>
- <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">正交投影与最佳逼近</p></div>
- <div class="cell"><p class="k">教材</p><p class="v">第 2 章 §1–§3</p></div>
- <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+  <div class="cell"><p class="k">图号</p><p class="v no">FA-01</p></div>
+  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">正交投影与最佳逼近</p></div>
+  <div class="cell"><p class="k">教材</p><p class="v">第 2 章 §1–§3</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
 </div>
 
 <h1>正交投影：Hilbert 空间里「最近的点」是怎样被选出来的</h1>
@@ -171,22 +172,22 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>值得知道这个定理有多稀罕：20 世纪 30 年代人们就构造了反例，\(L^p\)（\(p\ne 2\)）空间没有类似射影定理的美好性质（章末引 [36]）。Hilbert 空间几何丰富，理由之一就在于它有射影定理。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 01</span><span class="t">正交分解沙盘：拖动 x 与子空间 M，看 x = y + z</span><span class="tag">定理 3.1</span></div>
- <p class="lab-sub">\(M\) 是过原点、方向角 \(\theta\) 的直线，\(e=(\cos\theta,\sin\theta)^{\mathrm T}\) 是它的单位方向。\(y=P_Mx=(x,e)e\)（靛蓝），\(z=x-y\)（紫）。读数逐项核对：\((z,y)\) 归零（\(z\perp M\) 而 \(y\in M\)）、勾股对账 \(\|x\|^2=\|y\|^2+\|z\|^2\)、以及 \(\mathrm{dist}(x,M)=\|z\|\)——「\(M\) 中离 \(x\) 最近的点」与「投影」从此是同一件事。</p>
- <canvas id="cv-dec" width="600" height="400"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>θ（M 的方向角）</label><input type="range" id="s-dec-th" min="0" max="180" step="1" value="35"><span class="nm" id="v-dec-th"></span></div>
- <div class="ctrl"><button id="b-dec-90">θ ← 90°（M = 纵轴）</button><button id="b-dec-0">θ ← 0°</button><button id="b-dec-x0">x ← 默认</button></div>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">(z, y)（z ⊥ M 核对，应为 0）</span><span class="v" id="ro-dec-ip"></span></div>
- <div class="ro"><span class="k">‖x‖²</span><span class="v" id="ro-dec-nx"></span></div>
- <div class="ro"><span class="k">‖y‖² + ‖z‖²（勾股对账）</span><span class="v" id="ro-dec-sum"></span></div>
- <div class="ro"><span class="k">dist(x, M) = ‖z‖</span><span class="v" id="ro-dec-dist"></span></div>
- <div class="ro"><span class="k">投影坐标 (x, e)</span><span class="v" id="ro-dec-yc"></span></div>
- <div class="ro"><span class="k">分解判定</span><span class="v" id="ro-dec-ok"></span></div>
- </div>
- <p class="hint">墨色箭头 = x（可拖动）；靛蓝 = y ∈ M；紫 = z ⊥ M。θ 与 x 任意组合下，六项读数恒成立。</p>
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">正交分解沙盘：拖动 x 与子空间 M，看 x = y + z</span><span class="tag">定理 3.1</span></div>
+  <p class="lab-sub">\(M\) 是过原点、方向角 \(\theta\) 的直线，\(e=(\cos\theta,\sin\theta)^{\mathrm T}\) 是它的单位方向。\(y=P_Mx=(x,e)e\)（靛蓝），\(z=x-y\)（紫）。读数逐项核对：\((z,y)\) 归零（\(z\perp M\) 而 \(y\in M\)）、勾股对账 \(\|x\|^2=\|y\|^2+\|z\|^2\)、以及 \(\mathrm{dist}(x,M)=\|z\|\)——「\(M\) 中离 \(x\) 最近的点」与「投影」从此是同一件事。</p>
+  <canvas id="cv-dec" width="600" height="400"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>θ（M 的方向角）</label><input type="range" id="s-dec-th" min="0" max="180" step="1" value="35"><span class="nm" id="v-dec-th"></span></div>
+    <div class="ctrl"><button id="b-dec-90">θ ← 90°（M = 纵轴）</button><button id="b-dec-0">θ ← 0°</button><button id="b-dec-x0">x ← 默认</button></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">(z, y)（z ⊥ M 核对，应为 0）</span><span class="v" id="ro-dec-ip"></span></div>
+    <div class="ro"><span class="k">‖x‖²</span><span class="v" id="ro-dec-nx"></span></div>
+    <div class="ro"><span class="k">‖y‖² + ‖z‖²（勾股对账）</span><span class="v" id="ro-dec-sum"></span></div>
+    <div class="ro"><span class="k">dist(x, M) = ‖z‖</span><span class="v" id="ro-dec-dist"></span></div>
+    <div class="ro"><span class="k">投影坐标 (x, e)</span><span class="v" id="ro-dec-yc"></span></div>
+    <div class="ro"><span class="k">分解判定</span><span class="v" id="ro-dec-ok"></span></div>
+  </div>
+  <p class="hint">墨色箭头 = x（可拖动）；靛蓝 = y ∈ M；紫 = z ⊥ M。θ 与 x 任意组合下，六项读数恒成立。</p>
 </section>
 
 <h2><span class="no">05</span>最佳逼近与变分不等式</h2>
@@ -195,26 +196,26 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>展开就看见它为什么等价于「最小」：</p>
 <div class="eq">$$ \|x-z\|^{2}=\|x-y\|^{2}+\|z-y\|^{2}-2\,(x-y,\ z-y)\ \ge\ \|x-y\|^{2},\qquad \forall z\in C $$</div>
 <p>VI 项非正先砍一刀，平方项再兜底一次。两种退化值得记住：\(C\) 是<strong>子空间</strong>时 \(x-y\perp C\)，VI 退化为正交、处处取等（实验 01 的情形）；\(x\in C\) 时 \(y=x\)，VI 处处为 0。真正出现<strong>严格不等式</strong>的是 \(x\notin C\) 且 \(C\) 不是子空间的情形——实验 02 用闭球 \(\bar B(0,R)\) 实测：残差沿半径指向圆外，圆内任何别的点都落在「钝角」一侧。</p>
-<p>存在唯一性也不绕弯：球的情形由射影定理直接给出（\(y=R\,x/\|x\|\)）；这个不等式是 PDE 变分形式的思想原型：把「解方程」换成「在凸集上最小化能量」。</p>
+<p>存在唯一性也不绕弯：球的情形由射影定理直接给出（\(y=R\,x/\|x\|\)）；一般闭凸集的情形，对最小化列用平行四边形法则验证它是 Cauchy 列，完备性保证收敛（该引理编号在整理稿中缺失，此处按上下文重组为 (VI)，实测独立成立）。这个不等式是 PDE 变分形式的思想原型：把「解方程」换成「在凸集上最小化能量」。</p>
 <p>顺带预告本页的下游：<strong>Fréchet-Riesz 表现定理</strong>（定理 3.2）——\(H\) 上连续线性泛函 \(f\) 必唯一表为 \(f(x)=(x,z_f)\)，且 \(\|f\|_{H^*}=\|z_f\|_H\)；证明第一步就是拿核空间 \(\ker f\) 做射影（\(M\ne H\) 时 \(x_0=y_0+z_0\)，\(z_0\ne 0\)，取 \(z_f=\|z_0\|^2\,\overline{f(z_0)}\,z_0\)）。「泛函 = 向量」是 Hilbert 空间自共轭性的来源，FA-03 展开。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 02</span><span class="t">最佳逼近与变分不等式：闭球里的最近点</span><span class="tag">(VI) · 闭凸集</span></div>
- <p class="lab-sub">\(C=\bar B(0,R)\) 是闭球（半径滑杆）。\(x\) 可自由拖动；游标 \(w\) 也可拖动，但被约束在圆内。最近点 \(y=P_Cx\)：\(x\) 在圆外时 \(y=R\,x/\|x\|\)（边界上，靛蓝），\(x\) 在圆内时 \(y=x\)。下半部：\(w\) 沿边界扫过时 \(\|x-w\|^2\) 随角度的曲线，在 \(\varphi_x=\arg x\) 处取唯一最小值。读数核对变分不等式 \((x-y,\ w-y)\le 0\) 与恒等式 \(\|x-w\|^2-\|x-y\|^2=\|w-y\|^2-2(x-y,\ w-y)\ge 0\)。</p>
- <canvas id="cv-var" width="600" height="400"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>R（球的半径）</label><input type="range" id="s-var-R" min="0.5" max="2.5" step="0.1" value="1.2"><span class="nm" id="v-var-R"></span></div>
- <div class="ctrl"><button id="b-var-y">w ← y（取等）</button><button id="b-var-rand">w ← 圆内随机</button><button id="b-var-in">x ← 拖进圆内</button><button id="b-var-x0">全部重置</button></div>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">(x−y, w−y)（≤ 0）</span><span class="v" id="ro-var-vi"></span></div>
- <div class="ro"><span class="k">变分不等式判定</span><span class="v" id="ro-var-ok"></span></div>
- <div class="ro"><span class="k">‖x−w‖² − ‖x−y‖²（≥ 0）</span><span class="v" id="ro-var-gap"></span></div>
- <div class="ro"><span class="k">当前 ‖x−w‖²</span><span class="v" id="ro-var-cur"></span></div>
- <div class="ro"><span class="k">圆内采样最小值（= ‖x−y‖²）</span><span class="v" id="ro-var-min"></span></div>
- <div class="ro"><span class="k">‖w − y‖（游标离最优点）</span><span class="v" id="ro-var-wy"></span></div>
- </div>
- <p class="hint">把 w 拖到 y 上：VI 取等、gap 归零；拖到圆内别处：VI 严格小于 0。x 拖进圆内后 y=x、残差为 0，VI 处处取 0。最小值由圆内 17 万个采样点实测。</p>
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">最佳逼近与变分不等式：闭球里的最近点</span><span class="tag">(VI) · 闭凸集</span></div>
+  <p class="lab-sub">\(C=\bar B(0,R)\) 是闭球（半径滑杆）。\(x\) 可自由拖动；游标 \(w\) 也可拖动，但被约束在圆内。最近点 \(y=P_Cx\)：\(x\) 在圆外时 \(y=R\,x/\|x\|\)（边界上，靛蓝），\(x\) 在圆内时 \(y=x\)。下半部：\(w\) 沿边界扫过时 \(\|x-w\|^2\) 随角度的曲线，在 \(\varphi_x=\arg x\) 处取唯一最小值。读数核对变分不等式 \((x-y,\ w-y)\le 0\) 与恒等式 \(\|x-w\|^2-\|x-y\|^2=\|w-y\|^2-2(x-y,\ w-y)\ge 0\)。</p>
+  <canvas id="cv-var" width="600" height="400"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>R（球的半径）</label><input type="range" id="s-var-R" min="0.5" max="2.5" step="0.1" value="1.2"><span class="nm" id="v-var-R"></span></div>
+    <div class="ctrl"><button id="b-var-y">w ← y（取等）</button><button id="b-var-rand">w ← 圆内随机</button><button id="b-var-in">x ← 拖进圆内</button><button id="b-var-x0">全部重置</button></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">(x−y, w−y)（≤ 0）</span><span class="v" id="ro-var-vi"></span></div>
+    <div class="ro"><span class="k">变分不等式判定</span><span class="v" id="ro-var-ok"></span></div>
+    <div class="ro"><span class="k">‖x−w‖² − ‖x−y‖²（≥ 0）</span><span class="v" id="ro-var-gap"></span></div>
+    <div class="ro"><span class="k">当前 ‖x−w‖²</span><span class="v" id="ro-var-cur"></span></div>
+    <div class="ro"><span class="k">圆内采样最小值（= ‖x−y‖²）</span><span class="v" id="ro-var-min"></span></div>
+    <div class="ro"><span class="k">‖w − y‖（游标离最优点）</span><span class="v" id="ro-var-wy"></span></div>
+  </div>
+  <p class="hint">把 w 拖到 y 上：VI 取等、gap 归零；拖到圆内别处：VI 严格小于 0。x 拖进圆内后 y=x、残差为 0，VI 处处取 0。最小值由圆内 17 万个采样点实测。</p>
 </section>
 <h2><span class="no">06</span>投影算子账本：幂等、自伴与直和分解</h2>
 <p>把射影看成算子 \(P=P_M:H\to M\)，它有一本可以逐条核对的账：</p>
@@ -228,24 +229,24 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>这本账后面越记越厚：FA-04 的谱定理，本质就是把「自伴算子按本征方向做账」推广到无穷多副。与本站 <a href="../numerical_linear_algebra/投影算子-正交与斜投影.html">数值线性代数 · 投影算子</a> 页互为参照——那里在有限维 \(\mathbb R^n\) 里对比正交与斜投影，本页把同一本账（幂等/自伴/范数）搬进 Hilbert 空间，三条一条不变。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 03</span><span class="t">投影算子账本：P 的矩阵与五条恒等式</span><span class="tag">P²=P · P*=P · ‖P‖=1</span></div>
- <p class="lab-sub">实平面上 \(P=ee^{\mathrm T}\)（\(e\) 为 \(M\) 单位方向），左上画布画出单位圆（灰虚线）与它的像 \(P(S)\)——\(M\) 上一条线段（靛蓝粗线）：投影「压扁」单位球，但最长方向不被放大（\(\|P\|_2=1\)），而亏秩使 \(\kappa_2(P)=\infty\)（接 NLA-10 的条件数语言）。右侧账本逐行给出矩阵与恒等式的<strong>实测残差</strong>，应全部为 0。</p>
- <canvas id="cv-led" width="600" height="400"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>θ（M 的方向角）</label><input type="range" id="s-led-th" min="0" max="180" step="1" value="35"><span class="nm" id="v-led-th"></span></div>
- <div class="ctrl"><button id="b-led-0">θ ← 0°（投到横轴）</button><button id="b-led-45">θ ← 45°</button><button id="b-led-90">θ ← 90°（投到纵轴）</button></div>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">P = [p₁₁ p₁₂; p₂₁ p₂₂]</span><span class="v" id="ro-led-P"></span></div>
- <div class="ro"><span class="k">max |P² − P|（幂等）</span><span class="v" id="ro-led-idem"></span></div>
- <div class="ro"><span class="k">max |Pᵀ − P|（自伴）</span><span class="v" id="ro-led-self"></span></div>
- <div class="ro"><span class="k">‖P‖₂ = σ₁(P)</span><span class="v" id="ro-led-norm"></span></div>
- <div class="ro"><span class="k">tr P（= dim M）</span><span class="v" id="ro-led-tr"></span></div>
- <div class="ro"><span class="k">max |PQ|（Q = I − P）</span><span class="v" id="ro-led-pq"></span></div>
- <div class="ro"><span class="k">Q 的幂等 / 自伴</span><span class="v" id="ro-led-q"></span></div>
- <div class="ro"><span class="k">账本判定</span><span class="v" id="ro-led-ok"></span></div>
- </div>
- <p class="hint">θ=0° 时 P=[[1,0],[0,0]]；θ=45° 时 P=[[½,½],[½,½]]——四个预设可直接对照手算。</p>
+  <div class="lab-head"><span class="no">实验 03</span><span class="t">投影算子账本：P 的矩阵与五条恒等式</span><span class="tag">P²=P · P*=P · ‖P‖=1</span></div>
+  <p class="lab-sub">实平面上 \(P=ee^{\mathrm T}\)（\(e\) 为 \(M\) 单位方向），左上画布画出单位圆（灰虚线）与它的像 \(P(S)\)——\(M\) 上一条线段（靛蓝粗线）：投影「压扁」单位球，但最长方向不被放大（\(\|P\|_2=1\)），而亏秩使 \(\kappa_2(P)=\infty\)（接 NLA-10 的条件数语言）。右侧账本逐行给出矩阵与恒等式的<strong>实测残差</strong>，应全部为 0。</p>
+  <canvas id="cv-led" width="600" height="400"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>θ（M 的方向角）</label><input type="range" id="s-led-th" min="0" max="180" step="1" value="35"><span class="nm" id="v-led-th"></span></div>
+    <div class="ctrl"><button id="b-led-0">θ ← 0°（投到横轴）</button><button id="b-led-45">θ ← 45°</button><button id="b-led-90">θ ← 90°（投到纵轴）</button></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">P = [p₁₁ p₁₂; p₂₁ p₂₂]</span><span class="v" id="ro-led-P"></span></div>
+    <div class="ro"><span class="k">max |P² − P|（幂等）</span><span class="v" id="ro-led-idem"></span></div>
+    <div class="ro"><span class="k">max |Pᵀ − P|（自伴）</span><span class="v" id="ro-led-self"></span></div>
+    <div class="ro"><span class="k">‖P‖₂ = σ₁(P)</span><span class="v" id="ro-led-norm"></span></div>
+    <div class="ro"><span class="k">tr P（= dim M）</span><span class="v" id="ro-led-tr"></span></div>
+    <div class="ro"><span class="k">max |PQ|（Q = I − P）</span><span class="v" id="ro-led-pq"></span></div>
+    <div class="ro"><span class="k">Q 的幂等 / 自伴</span><span class="v" id="ro-led-q"></span></div>
+    <div class="ro"><span class="k">账本判定</span><span class="v" id="ro-led-ok"></span></div>
+  </div>
+  <p class="hint">θ=0° 时 P=[[1,0],[0,0]]；θ=45° 时 P=[[½,½],[½,½]]——四个预设可直接对照手算。</p>
 </section>
 
 <h2><span class="no">07</span>在 l² 里对账：Bessel 与 Parseval 的实测</h2>
@@ -253,30 +254,30 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <div class="eq">$$ \sum_{n=1}^{k}|\xi_n|^{2}\ \le\ \sum_{n=1}^{\infty}|\xi_n|^{2}=\|x\|^{2}\quad(\text{Bessel});\qquad k\to\infty\ \text{时取等（Parseval）} $$</div>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 04</span><span class="t">Parseval 对账台：拖坐标、改截断 k，看能量对账</span><span class="tag">Bessel · 定理 1.1 · (2.3)</span></div>
- <p class="lab-sub">\(l^2\) 里的向量 \(x\)，六个坐标 \(\xi_1,\dots,\xi_6\) 各一个滑杆。上图：坐标柱（靛蓝 = 已纳入部分和的前 \(k\) 项，灰 = 尾部）；下图：累积能量占比 \(\sum_{n\le k}|\xi_n|^2/\|x\|^2\)。读数给出 Bessel 余量 \(\sum_{n&gt;k}|\xi_n|^2\)、残差范数 \(\|x-S_k\|\) 与取等判定——\(k=6\) 时精确取等（机器精度内）。</p>
- <canvas id="cv-par" width="600" height="400"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>ξ₁</label><input type="range" id="s-p-x1" min="-2" max="2" step="0.1" value="0.8"><span class="nm" id="v-p-x1"></span></div>
- <div class="ctrl"><label>ξ₂</label><input type="range" id="s-p-x2" min="-2" max="2" step="0.1" value="-0.5"><span class="nm" id="v-p-x2"></span></div>
- <div class="ctrl"><label>ξ₃</label><input type="range" id="s-p-x3" min="-2" max="2" step="0.1" value="1.2"><span class="nm" id="v-p-x3"></span></div>
- <div class="ctrl"><label>k（截断）</label><input type="range" id="s-p-k" min="1" max="6" step="1" value="4"><span class="nm" id="v-p-k"></span></div>
- </div>
- <div class="ctrls">
- <div class="ctrl"><label>ξ₄</label><input type="range" id="s-p-x4" min="-2" max="2" step="0.1" value="0.3"><span class="nm" id="v-p-x4"></span></div>
- <div class="ctrl"><label>ξ₅</label><input type="range" id="s-p-x5" min="-2" max="2" step="0.1" value="-0.9"><span class="nm" id="v-p-x5"></span></div>
- <div class="ctrl"><label>ξ₆</label><input type="range" id="s-p-x6" min="-2" max="2" step="0.1" value="0.4"><span class="nm" id="v-p-x6"></span></div>
- <div class="ctrl"><button id="b-p-rand">随机 x</button><button id="b-p-e3">x ← e₃</button><button id="b-p-zero">x ← 0</button></div>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">‖x‖² = Σ|ξₙ|²</span><span class="v" id="ro-p-nx"></span></div>
- <div class="ro"><span class="k">部分能量 Σ_{n≤k}|ξₙ|²</span><span class="v" id="ro-p-part"></span></div>
- <div class="ro"><span class="k">Bessel 余量 Σ_{n&gt;k}|ξₙ|²（≥0）</span><span class="v" id="ro-p-tail"></span></div>
- <div class="ro"><span class="k">残差 ‖x − S_k‖</span><span class="v" id="ro-p-err"></span></div>
- <div class="ro"><span class="k">能量占比</span><span class="v" id="ro-p-frac"></span></div>
- <div class="ro"><span class="k">对账判定</span><span class="v" id="ro-p-ok"></span></div>
- </div>
- <p class="hint">k=6 且无尾部时 Parseval 取等、余量为 0；「x ← e₃」让全部能量集中在第 3 项——Fourier 系数的极端情形。</p>
+  <div class="lab-head"><span class="no">实验 04</span><span class="t">Parseval 对账台：拖坐标、改截断 k，看能量对账</span><span class="tag">Bessel · 定理 1.1 · (2.3)</span></div>
+  <p class="lab-sub">\(l^2\) 里的向量 \(x\)，六个坐标 \(\xi_1,\dots,\xi_6\) 各一个滑杆。上图：坐标柱（靛蓝 = 已纳入部分和的前 \(k\) 项，灰 = 尾部）；下图：累积能量占比 \(\sum_{n\le k}|\xi_n|^2/\|x\|^2\)。读数给出 Bessel 余量 \(\sum_{n&gt;k}|\xi_n|^2\)、残差范数 \(\|x-S_k\|\) 与取等判定——\(k=6\) 时精确取等（机器精度内）。</p>
+  <canvas id="cv-par" width="600" height="400"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>ξ₁</label><input type="range" id="s-p-x1" min="-2" max="2" step="0.1" value="0.8"><span class="nm" id="v-p-x1"></span></div>
+    <div class="ctrl"><label>ξ₂</label><input type="range" id="s-p-x2" min="-2" max="2" step="0.1" value="-0.5"><span class="nm" id="v-p-x2"></span></div>
+    <div class="ctrl"><label>ξ₃</label><input type="range" id="s-p-x3" min="-2" max="2" step="0.1" value="1.2"><span class="nm" id="v-p-x3"></span></div>
+    <div class="ctrl"><label>k（截断）</label><input type="range" id="s-p-k" min="1" max="6" step="1" value="4"><span class="nm" id="v-p-k"></span></div>
+  </div>
+  <div class="ctrls">
+    <div class="ctrl"><label>ξ₄</label><input type="range" id="s-p-x4" min="-2" max="2" step="0.1" value="0.3"><span class="nm" id="v-p-x4"></span></div>
+    <div class="ctrl"><label>ξ₅</label><input type="range" id="s-p-x5" min="-2" max="2" step="0.1" value="-0.9"><span class="nm" id="v-p-x5"></span></div>
+    <div class="ctrl"><label>ξ₆</label><input type="range" id="s-p-x6" min="-2" max="2" step="0.1" value="0.4"><span class="nm" id="v-p-x6"></span></div>
+    <div class="ctrl"><button id="b-p-rand">随机 x</button><button id="b-p-e3">x ← e₃</button><button id="b-p-zero">x ← 0</button></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">‖x‖² = Σ|ξₙ|²</span><span class="v" id="ro-p-nx"></span></div>
+    <div class="ro"><span class="k">部分能量 Σ_{n≤k}|ξₙ|²</span><span class="v" id="ro-p-part"></span></div>
+    <div class="ro"><span class="k">Bessel 余量 Σ_{n&gt;k}|ξₙ|²（≥0）</span><span class="v" id="ro-p-tail"></span></div>
+    <div class="ro"><span class="k">残差 ‖x − S_k‖</span><span class="v" id="ro-p-err"></span></div>
+    <div class="ro"><span class="k">能量占比</span><span class="v" id="ro-p-frac"></span></div>
+    <div class="ro"><span class="k">对账判定</span><span class="v" id="ro-p-ok"></span></div>
+  </div>
+  <p class="hint">k=6 且无尾部时 Parseval 取等、余量为 0；「x ← e₃」让全部能量集中在第 3 项——Fourier 系数的极端情形。</p>
 </section>
 
 <h2><span class="no">08</span>小结与互相引用</h2>
@@ -288,72 +289,73 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <li><strong>能量</strong>：Bessel \(\le\)、定理 1.1「= + 残差」、Parseval「=」（实验 04 在 \(l^2\) 里实测取等）。</li>
 </ul>
 <div class="note b"><strong>互为参照 · NLA</strong>：<a href="../numerical_linear_algebra/投影算子-正交与斜投影.html">投影算子（正交与斜投影）</a>页在有限维对比两类投影，<a href="../numerical_linear_algebra/条件数-几何与误差放大.html">条件数</a>页给出 \(\kappa_2\) 语言——实验 03 里 \(P(S)\) 退化成线段正是 \(\|P\|_2=1\) 而 \(\kappa_2=\infty\) 的同一幅图。本页不假设读者学过那两页。</div>
-<div class="note"><strong>科研连接</strong>：粗网格修正里「残差在近似解空间上最小」、PDE 的 Lax–Milgram 定理（第 2 章定理 4.3：把 Fréchet–Riesz 的内积换成满足 \(|B(f,f)|\ge r\|f\|^2\) 的有界共轭双线性泛函）、以及「修正量子空间」的能量最小化——原型都是射影定理。FA-04（谱论）、FA-05（广义函数）与 PDE 学科会沿这条线继续。例 1–5 的数值按原书复刻。</div>
+<div class="note"><strong>科研连接</strong>：粗网格修正里「残差在近似解空间上最小」、PDE 的 Lax–Milgram 定理（第 2 章定理 4.3：把 Fréchet–Riesz 的内积换成满足 \(|B(f,f)|\ge r\|f\|^2\) 的有界共轭双线性泛函）、以及「修正量子空间」的能量最小化——原型都是射影定理。FA-04（谱论）、FA-05（广义函数）与 PDE 学科会沿这条线继续。</div>
+<div class="note b"><strong>引用说明</strong>：定义 1.1–1.3、定义 2.1、定理 1.1–1.3、定理 2.1–2.3、定理 3.1–3.3、命题 1.1–1.4、命题 2.1、命题 3.1、推论 1–2 与式 (1.1)、(2.1)、(2.3) 均按原编号原样引用。「变分不等式」编号未保留，页内标注为定理 3.1 的等价刻画并独立实测；例 1–5 的数值按原书复刻。</div>
 
 <div class="pager">
- <span style="font-size:13px;color:var(--ink2)">上一页 · 无（FA-01 是本系列第一页）</span>
- <a href="./index.html">下一页 · FA-02 单位球、开闭集与完备性（筹备中）→ 回学科索引</a>
+  <span style="font-size:13px;color:var(--ink2)">上一页 · 无（FA-01 是本系列第一页）</span>
+  <a href="./index.html">下一页 · FA-02 单位球、开闭集与完备性（筹备中）→ 回学科索引</a>
 </div>
 
 <footer>
-<p>引用位置：第 2 章 Hilbert 空间 §1–§3。引用位置精确到节。</p>
+<p>范围：教材第 2 章 Hilbert 空间 §1–§3。公式引用前已按上下文重组核对；引用位置精确到节。</p>
 <p>本页全部读数由工作区根脚本 <span class="mono">verify_readout_fa01.js</span>（vm + DOM 桩）与 <span class="mono">smoke_dom.js</span> 实测；公式经 <span class="mono">verify_formulas.js</span> 本地编译 0 failed。页面零依赖、可离线打开（公式渲染需联网）。2026-10-25 制。</p>
 </footer>
 <script>
 "use strict";
 function fmt(x, d){ if(!isFinite(x)) return "∞"; d=(d===undefined)?3:d;
- if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
- return x.toFixed(d); }
+  if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
+  return x.toFixed(d); }
 function mapper(cv, cx, cy, s){
- return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
- x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
+  return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
+           x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
 }
 function grid(ctx, cx, cy, s, xmin, xmax, ymin, ymax){
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
- ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
- for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
- ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
- ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
- ctx.restore();
+  ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+  for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
+    ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
+  for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
+    ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
+  ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
+  ctx.restore();
 }
 function arrow(ctx, x1, y1, x2, y2, color, w, dash){
- ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
- if(dash) ctx.setLineDash(dash);
- ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
- const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
- if(L>1){ const h=Math.min(9, L*0.28);
- ctx.beginPath(); ctx.moveTo(x2,y2);
- ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
- ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
- ctx.closePath(); ctx.fill(); }
- ctx.restore();
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+  const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
+  if(L>1){ const h=Math.min(9, L*0.28);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
+    ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
+    ctx.closePath(); ctx.fill(); }
+  ctx.restore();
 }
 function vec(ctx, m, v, color, w, dash){ arrow(ctx, m.X(0), m.Y(0), m.X(v[0]), m.Y(v[1]), color, w, dash); }
 function dot(ctx, x, y, color, r){ ctx.save(); ctx.fillStyle=color;
- ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
+  ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
 function label(ctx, txt, x, y, color, size, align){
- ctx.save(); ctx.fillStyle=color||"#1E2440";
- ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
- ctx.textAlign=align||"left"; ctx.textBaseline="middle";
- ctx.fillText(txt, x, y); ctx.restore();
+  ctx.save(); ctx.fillStyle=color||"#1E2440";
+  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+  ctx.fillText(txt, x, y); ctx.restore();
 }
 function pt2world(cv, m, e){
- const r = cv.getBoundingClientRect();
- return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
+  const r = cv.getBoundingClientRect();
+  return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
 }
 function makeDrag(cv, m, get, set){
- let dragging=false;
- cv.addEventListener("pointerdown", function(e){
- const w=pt2world(cv,m,e), g=get();
- if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.6){ dragging=true;
- cv.setPointerCapture(e.pointerId); set(w); }
- });
- cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
- cv.addEventListener("pointerup", function(){ dragging=false; });
- cv.addEventListener("pointerleave", function(){ dragging=false; });
+  let dragging=false;
+  cv.addEventListener("pointerdown", function(e){
+    const w=pt2world(cv,m,e), g=get();
+    if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.6){ dragging=true;
+      cv.setPointerCapture(e.pointerId); set(w); }
+  });
+  cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
+  cv.addEventListener("pointerup", function(){ dragging=false; });
+  cv.addEventListener("pointerleave", function(){ dragging=false; });
 }
 function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
 const $ = function(id){ return document.getElementById(id); };
@@ -364,55 +366,55 @@ const mD = mapper(cvD, 300, 200, 90);
 const stD = { th:35, x:[1.6, 0.9] };
 function eD(){ const t=stD.th*Math.PI/180; return [Math.cos(t), Math.sin(t)]; }
 function drawDec(){
- const ctx=cvD.getContext("2d"); ctx.clearRect(0,0,WD,HD);
- grid(ctx, mD.X(0), mD.Y(0), 90, -3.3, 3.3, -2.2, 2.2);
- const e=eD(), x=stD.x;
- const c=x[0]*e[0]+x[1]*e[1];
- const y=[c*e[0], c*e[1]], z=[x[0]-y[0], x[1]-y[1]];
- /* M：过原点、方向 e 的直线 */
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2;
- ctx.beginPath(); ctx.moveTo(mD.X(-3.2*e[0]), mD.Y(-3.2*e[1]));
- ctx.lineTo(mD.X(3.2*e[0]), mD.Y(3.2*e[1])); ctx.stroke(); ctx.restore();
- label(ctx, "M（θ = "+stD.th+"°）", mD.X(3.2*e[0]), mD.Y(3.2*e[1])+15, "#3D4FA3", 12, "right");
- /* 直角记号（y 处，沿 e 与 z 方向） */
- const nz=Math.hypot(z[0], z[1]);
- if(nz>1e-6){
- const uz=[z[0]/nz, z[1]/nz], a=0.24;
- ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.lineWidth=1.3;
- ctx.beginPath();
- ctx.moveTo(mD.X(y[0]+a*e[0]), mD.Y(y[1]+a*e[1]));
- ctx.lineTo(mD.X(y[0]+a*e[0]+a*uz[0]), mD.Y(y[1]+a*e[1]+a*uz[1]));
- ctx.lineTo(mD.X(y[0]+a*uz[0]), mD.Y(y[1]+a*uz[1]));
- ctx.stroke(); ctx.restore();
- }
- /* x（墨）、y（靛蓝）、z（紫） */
- vec(ctx, mD, x, "#1E2440", 3);
- dot(ctx, mD.X(x[0]), mD.Y(x[1]), "#1E2440", 4.5);
- label(ctx, "x", mD.X(x[0])+8, mD.Y(x[1])-10, "#1E2440", 13);
- vec(ctx, mD, y, "#3D4FA3", 2.6);
- dot(ctx, mD.X(y[0]), mD.Y(y[1]), "#3D4FA3", 5.5);
- label(ctx, "y = P_M x", mD.X(y[0])+8, mD.Y(y[1])+15, "#3D4FA3", 12.5);
- arrow(ctx, mD.X(y[0]), mD.Y(y[1]), mD.X(x[0]), mD.Y(x[1]), "#7A4FA3", 2.2, [6,4]);
- label(ctx, "z = x − y ⊥ M", mD.X((x[0]+y[0])/2)+9, mD.Y((x[1]+y[1])/2), "#7A4FA3", 12);
- /* 读数：正交核对 (z, y) = 0（z ⊥ M，而 y ∈ M） */
- const ip=z[0]*y[0]+z[1]*y[1];
- const nx=x[0]*x[0]+x[1]*x[1], ny=y[0]*y[0]+y[1]*y[1], nz2=z[0]*z[0]+z[1]*z[1];
- $("v-dec-th").textContent = stD.th+"°";
- $("ro-dec-ip").textContent = fmt(ip, 6);
- $("ro-dec-nx").textContent = fmt(nx, 4);
- $("ro-dec-sum").textContent = fmt(ny+nz2, 4);
- $("ro-dec-dist").textContent = fmt(Math.sqrt(nz2), 4);
- $("ro-dec-yc").textContent = fmt(c, 4);
- $("ro-dec-ok").textContent = (Math.abs(ip)<1e-9 && Math.abs(nx-(ny+nz2))<1e-9)
- ? "x = y + z 成立 ✓" : "对账失败 ✗";
+  const ctx=cvD.getContext("2d"); ctx.clearRect(0,0,WD,HD);
+  grid(ctx, mD.X(0), mD.Y(0), 90, -3.3, 3.3, -2.2, 2.2);
+  const e=eD(), x=stD.x;
+  const c=x[0]*e[0]+x[1]*e[1];
+  const y=[c*e[0], c*e[1]], z=[x[0]-y[0], x[1]-y[1]];
+  /* M：过原点、方向 e 的直线 */
+  ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(mD.X(-3.2*e[0]), mD.Y(-3.2*e[1]));
+  ctx.lineTo(mD.X(3.2*e[0]), mD.Y(3.2*e[1])); ctx.stroke(); ctx.restore();
+  label(ctx, "M（θ = "+stD.th+"°）", mD.X(3.2*e[0]), mD.Y(3.2*e[1])+15, "#3D4FA3", 12, "right");
+  /* 直角记号（y 处，沿 e 与 z 方向） */
+  const nz=Math.hypot(z[0], z[1]);
+  if(nz>1e-6){
+    const uz=[z[0]/nz, z[1]/nz], a=0.24;
+    ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.lineWidth=1.3;
+    ctx.beginPath();
+    ctx.moveTo(mD.X(y[0]+a*e[0]), mD.Y(y[1]+a*e[1]));
+    ctx.lineTo(mD.X(y[0]+a*e[0]+a*uz[0]), mD.Y(y[1]+a*e[1]+a*uz[1]));
+    ctx.lineTo(mD.X(y[0]+a*uz[0]), mD.Y(y[1]+a*uz[1]));
+    ctx.stroke(); ctx.restore();
+  }
+  /* x（墨）、y（靛蓝）、z（紫） */
+  vec(ctx, mD, x, "#1E2440", 3);
+  dot(ctx, mD.X(x[0]), mD.Y(x[1]), "#1E2440", 4.5);
+  label(ctx, "x", mD.X(x[0])+8, mD.Y(x[1])-10, "#1E2440", 13);
+  vec(ctx, mD, y, "#3D4FA3", 2.6);
+  dot(ctx, mD.X(y[0]), mD.Y(y[1]), "#3D4FA3", 5.5);
+  label(ctx, "y = P_M x", mD.X(y[0])+8, mD.Y(y[1])+15, "#3D4FA3", 12.5);
+  arrow(ctx, mD.X(y[0]), mD.Y(y[1]), mD.X(x[0]), mD.Y(x[1]), "#7A4FA3", 2.2, [6,4]);
+  label(ctx, "z = x − y ⊥ M", mD.X((x[0]+y[0])/2)+9, mD.Y((x[1]+y[1])/2), "#7A4FA3", 12);
+  /* 读数：正交核对 (z, y) = 0（z ⊥ M，而 y ∈ M） */
+  const ip=z[0]*y[0]+z[1]*y[1];
+  const nx=x[0]*x[0]+x[1]*x[1], ny=y[0]*y[0]+y[1]*y[1], nz2=z[0]*z[0]+z[1]*z[1];
+  $("v-dec-th").textContent = stD.th+"°";
+  $("ro-dec-ip").textContent = fmt(ip, 6);
+  $("ro-dec-nx").textContent = fmt(nx, 4);
+  $("ro-dec-sum").textContent = fmt(ny+nz2, 4);
+  $("ro-dec-dist").textContent = fmt(Math.sqrt(nz2), 4);
+  $("ro-dec-yc").textContent = fmt(c, 4);
+  $("ro-dec-ok").textContent = (Math.abs(ip)<1e-9 && Math.abs(nx-(ny+nz2))<1e-9)
+    ? "x = y + z 成立 ✓" : "对账失败 ✗";
 }
 $("s-dec-th").addEventListener("input", function(){
- const v=parseFloat(this.value); if(isFinite(v)) stD.th=clamp(v, 0, 180); drawDec(); });
+  const v=parseFloat(this.value); if(isFinite(v)) stD.th=clamp(v, 0, 180); drawDec(); });
 $("b-dec-90").onclick=function(){ stD.th=90; $("s-dec-th").value="90"; drawDec(); };
 $("b-dec-0").onclick=function(){ stD.th=0; $("s-dec-th").value="0"; drawDec(); };
 $("b-dec-x0").onclick=function(){ stD.x=[1.6, 0.9]; drawDec(); };
 makeDrag(cvD, mD, function(){ return stD.x; }, function(w){
- stD.x=[clamp(w[0],-3.2,3.2), clamp(w[1],-2.1,2.1)]; drawDec(); });
+  stD.x=[clamp(w[0],-3.2,3.2), clamp(w[1],-2.1,2.1)]; drawDec(); });
 $("v-dec-th").textContent=stD.th+"°"; drawDec();
 
 /* ================= 实验 02 · 闭球最佳逼近与变分不等式 ================= */
@@ -420,120 +422,120 @@ const cvV = $("cv-var"), WV=600, HV=400;
 const mV = mapper(cvV, 300, 124, 56);
 const stV = { R:1.2, x:[2.1, 0.7], w:[0.6, 0.4] };
 function projC(x, R){
- const n=Math.hypot(x[0], x[1]);
- return (n>R) ? [R*x[0]/n, R*x[1]/n] : [x[0], x[1]];
+  const n=Math.hypot(x[0], x[1]);
+  return (n>R) ? [R*x[0]/n, R*x[1]/n] : [x[0], x[1]];
 }
 function clampW(w, R){
- const n=Math.hypot(w[0], w[1]);
- return (n>R) ? [R*w[0]/n, R*w[1]/n] : [w[0], w[1]];
+  const n=Math.hypot(w[0], w[1]);
+  return (n>R) ? [R*w[0]/n, R*w[1]/n] : [w[0], w[1]];
 }
 function drawVar(){
- const ctx=cvV.getContext("2d"); ctx.clearRect(0,0,WV,HV);
- grid(ctx, mV.X(0), mV.Y(0), 56, -3.4, 3.4, -2.2, 2.2);
- const R=stV.R, x=stV.x, w=stV.w;
- const nx=Math.hypot(x[0], x[1]);
- const y=projC(x, R);
- /* 闭球 C */
- ctx.save();
- ctx.fillStyle="rgba(122,79,163,0.07)";
- ctx.beginPath(); ctx.arc(mV.X(0), mV.Y(0), R*56, 0, 7); ctx.fill();
- ctx.strokeStyle="#7A4FA3"; ctx.lineWidth=1.6; ctx.setLineDash([6,4]);
- ctx.stroke(); ctx.restore();
- label(ctx, "C = B(0,R)", mV.X(0)+R*56*0.7, mV.Y(0)-R*56*0.7, "#7A4FA3", 12);
- /* 半径参考方向 0 → x̂ */
- if(nx>1e-9){
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.setLineDash([3,4]); ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(mV.X(0), mV.Y(0));
- ctx.lineTo(mV.X(3.3*x[0]/nx), mV.Y(3.3*x[1]/nx)); ctx.stroke(); ctx.restore();
- }
- /* x 与残差 x − y */
- vec(ctx, mV, x, "#1E2440", 3);
- dot(ctx, mV.X(x[0]), mV.Y(x[1]), "#1E2440", 4.5);
- label(ctx, "x", mV.X(x[0])+8, mV.Y(x[1])-10, "#1E2440", 13);
- if(nx>R){
- arrow(ctx, mV.X(y[0]), mV.Y(y[1]), mV.X(x[0]), mV.Y(x[1]), "#1E2440", 1.8, [5,4]);
- }
- /* y = P_C x */
- dot(ctx, mV.X(y[0]), mV.Y(y[1]), "#3D4FA3", 5.5);
- label(ctx, "y = P_C x", mV.X(y[0])+8, mV.Y(y[1])+15, "#3D4FA3", 12.5);
- /* 游标 w 与线段 xw */
- ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.setLineDash([5,4]); ctx.lineWidth=1.6;
- ctx.beginPath(); ctx.moveTo(mV.X(x[0]), mV.Y(x[1])); ctx.lineTo(mV.X(w[0]), mV.Y(w[1]));
- ctx.stroke(); ctx.restore();
- dot(ctx, mV.X(w[0]), mV.Y(w[1]), "#7A4FA3", 5);
- label(ctx, "w", mV.X(w[0])+8, mV.Y(w[1])+13, "#7A4FA3", 12.5);
- /* ---- 下半部：边界扫描曲线 g(φ) = ‖x − R·e(φ)‖² ---- */
- const gx0=46, gx1=574, gy0=276, gy1=382;
- const M=240, gs=[]; let gmin=Infinity, gmax=-Infinity;
- for(let i=0;i<=M;i++){
- const p=i/M*2*Math.PI;
- const g=(x[0]-R*Math.cos(p))*(x[0]-R*Math.cos(p))+(x[1]-R*Math.sin(p))*(x[1]-R*Math.sin(p));
- gs.push(g); if(g<gmin) gmin=g; if(g>gmax) gmax=g;
- }
- label(ctx, "‖x−w‖²（w 在边界上，φ ∈ [0, 2π]）", gx0, gy0-12, "#5A6078", 12);
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke(); ctx.restore();
- const span=(gmax-gmin>1e-12)?(gmax-gmin):1;
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2;
- ctx.beginPath();
- for(let i=0;i<=M;i++){
- const px=gx0+i/M*(gx1-gx0), py=gy1-8-(gs[i]-gmin)/span*(gy1-gy0-20);
- if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
- }
- ctx.stroke(); ctx.restore();
- /* 最小点 φ_x 与当前 w 的角度 */
- const phix=(nx>1e-9)?Math.atan2(x[1], x[0]):0;
- const pxMin=gx0+((phix<0?phix+2*Math.PI:phix))/(2*Math.PI)*(gx1-gx0);
- const pyMin=gy1-8-(gmin-gmin)/span*(gy1-gy0-20);
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.setLineDash([3,3]); ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(pxMin, gy1); ctx.lineTo(pxMin, gy0+2); ctx.stroke(); ctx.restore();
- dot(ctx, pxMin, pyMin, "#3D4FA3", 4);
- label(ctx, "最小点 φ_x = arg x", pxMin+6, pyMin-10, "#3D4FA3", 11.5);
- const phiw=Math.atan2(w[1], w[0]);
- const pxw=gx0+((phiw<0?phiw+2*Math.PI:phiw))/(2*Math.PI)*(gx1-gx0);
- const pw2=(x[0]-w[0])*(x[0]-w[0])+(x[1]-w[1])*(x[1]-w[1]);
- const pyw=gy1-8-clamp((pw2-gmin)/span,0,1)*(gy1-gy0-20);
- dot(ctx, pxw, pyw, "#7A4FA3", 4.5);
- label(ctx, "w", pxw+6, pyw+12, "#7A4FA3", 11.5);
- /* ---- 读数 ---- */
- const res=[x[0]-y[0], x[1]-y[1]], wy=[w[0]-y[0], w[1]-y[1]];
- const vi=res[0]*wy[0]+res[1]*wy[1];
- const ny2=res[0]*res[0]+res[1]*res[1];
- const nw2=(x[0]-w[0])*(x[0]-w[0])+(x[1]-w[1])*(x[1]-w[1]);
- let smin=Infinity;
- const NR=240, NA=720;
- for(let i=0;i<=NR;i++){
- const r=R*i/NR;
- for(let j=0;j<NA;j++){
- const p=j/NA*2*Math.PI;
- const d=(x[0]-r*Math.cos(p))*(x[0]-r*Math.cos(p))+(x[1]-r*Math.sin(p))*(x[1]-r*Math.sin(p));
- if(d<smin) smin=d;
- }
- }
- $("v-var-R").textContent=fmt(R,2);
- $("ro-var-vi").textContent=fmt(vi,6);
- $("ro-var-gap").textContent=fmt(nw2-ny2,6);
- $("ro-var-cur").textContent=fmt(nw2,4);
- $("ro-var-min").textContent=fmt(smin,4);
- $("ro-var-wy").textContent=fmt(Math.hypot(wy[0],wy[1]),4);
- $("ro-var-ok").textContent = (nx<=R+1e-12) ? "x ∈ C：y = x，VI 处处取 0 ✓" :
- (Math.abs(vi)<1e-9 ? "w = y：变分不等式取等 ✓" :
- (vi<0 ? "≤ 0 成立 ✓（w ≠ y 时严格 < 0）" : "> 0 ✗"));
+  const ctx=cvV.getContext("2d"); ctx.clearRect(0,0,WV,HV);
+  grid(ctx, mV.X(0), mV.Y(0), 56, -3.4, 3.4, -2.2, 2.2);
+  const R=stV.R, x=stV.x, w=stV.w;
+  const nx=Math.hypot(x[0], x[1]);
+  const y=projC(x, R);
+  /* 闭球 C */
+  ctx.save();
+  ctx.fillStyle="rgba(122,79,163,0.07)";
+  ctx.beginPath(); ctx.arc(mV.X(0), mV.Y(0), R*56, 0, 7); ctx.fill();
+  ctx.strokeStyle="#7A4FA3"; ctx.lineWidth=1.6; ctx.setLineDash([6,4]);
+  ctx.stroke(); ctx.restore();
+  label(ctx, "C = B(0,R)", mV.X(0)+R*56*0.7, mV.Y(0)-R*56*0.7, "#7A4FA3", 12);
+  /* 半径参考方向 0 → x̂ */
+  if(nx>1e-9){
+    ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.setLineDash([3,4]); ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(mV.X(0), mV.Y(0));
+    ctx.lineTo(mV.X(3.3*x[0]/nx), mV.Y(3.3*x[1]/nx)); ctx.stroke(); ctx.restore();
+  }
+  /* x 与残差 x − y */
+  vec(ctx, mV, x, "#1E2440", 3);
+  dot(ctx, mV.X(x[0]), mV.Y(x[1]), "#1E2440", 4.5);
+  label(ctx, "x", mV.X(x[0])+8, mV.Y(x[1])-10, "#1E2440", 13);
+  if(nx>R){
+    arrow(ctx, mV.X(y[0]), mV.Y(y[1]), mV.X(x[0]), mV.Y(x[1]), "#1E2440", 1.8, [5,4]);
+  }
+  /* y = P_C x */
+  dot(ctx, mV.X(y[0]), mV.Y(y[1]), "#3D4FA3", 5.5);
+  label(ctx, "y = P_C x", mV.X(y[0])+8, mV.Y(y[1])+15, "#3D4FA3", 12.5);
+  /* 游标 w 与线段 xw */
+  ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.setLineDash([5,4]); ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(mV.X(x[0]), mV.Y(x[1])); ctx.lineTo(mV.X(w[0]), mV.Y(w[1]));
+  ctx.stroke(); ctx.restore();
+  dot(ctx, mV.X(w[0]), mV.Y(w[1]), "#7A4FA3", 5);
+  label(ctx, "w", mV.X(w[0])+8, mV.Y(w[1])+13, "#7A4FA3", 12.5);
+  /* ---- 下半部：边界扫描曲线 g(φ) = ‖x − R·e(φ)‖² ---- */
+  const gx0=46, gx1=574, gy0=276, gy1=382;
+  const M=240, gs=[]; let gmin=Infinity, gmax=-Infinity;
+  for(let i=0;i<=M;i++){
+    const p=i/M*2*Math.PI;
+    const g=(x[0]-R*Math.cos(p))*(x[0]-R*Math.cos(p))+(x[1]-R*Math.sin(p))*(x[1]-R*Math.sin(p));
+    gs.push(g); if(g<gmin) gmin=g; if(g>gmax) gmax=g;
+  }
+  label(ctx, "‖x−w‖²（w 在边界上，φ ∈ [0, 2π]）", gx0, gy0-12, "#5A6078", 12);
+  ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke(); ctx.restore();
+  const span=(gmax-gmin>1e-12)?(gmax-gmin):1;
+  ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2;
+  ctx.beginPath();
+  for(let i=0;i<=M;i++){
+    const px=gx0+i/M*(gx1-gx0), py=gy1-8-(gs[i]-gmin)/span*(gy1-gy0-20);
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke(); ctx.restore();
+  /* 最小点 φ_x 与当前 w 的角度 */
+  const phix=(nx>1e-9)?Math.atan2(x[1], x[0]):0;
+  const pxMin=gx0+((phix<0?phix+2*Math.PI:phix))/(2*Math.PI)*(gx1-gx0);
+  const pyMin=gy1-8-(gmin-gmin)/span*(gy1-gy0-20);
+  ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.setLineDash([3,3]); ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(pxMin, gy1); ctx.lineTo(pxMin, gy0+2); ctx.stroke(); ctx.restore();
+  dot(ctx, pxMin, pyMin, "#3D4FA3", 4);
+  label(ctx, "最小点 φ_x = arg x", pxMin+6, pyMin-10, "#3D4FA3", 11.5);
+  const phiw=Math.atan2(w[1], w[0]);
+  const pxw=gx0+((phiw<0?phiw+2*Math.PI:phiw))/(2*Math.PI)*(gx1-gx0);
+  const pw2=(x[0]-w[0])*(x[0]-w[0])+(x[1]-w[1])*(x[1]-w[1]);
+  const pyw=gy1-8-clamp((pw2-gmin)/span,0,1)*(gy1-gy0-20);
+  dot(ctx, pxw, pyw, "#7A4FA3", 4.5);
+  label(ctx, "w", pxw+6, pyw+12, "#7A4FA3", 11.5);
+  /* ---- 读数 ---- */
+  const res=[x[0]-y[0], x[1]-y[1]], wy=[w[0]-y[0], w[1]-y[1]];
+  const vi=res[0]*wy[0]+res[1]*wy[1];
+  const ny2=res[0]*res[0]+res[1]*res[1];
+  const nw2=(x[0]-w[0])*(x[0]-w[0])+(x[1]-w[1])*(x[1]-w[1]);
+  let smin=Infinity;
+  const NR=240, NA=720;
+  for(let i=0;i<=NR;i++){
+    const r=R*i/NR;
+    for(let j=0;j<NA;j++){
+      const p=j/NA*2*Math.PI;
+      const d=(x[0]-r*Math.cos(p))*(x[0]-r*Math.cos(p))+(x[1]-r*Math.sin(p))*(x[1]-r*Math.sin(p));
+      if(d<smin) smin=d;
+    }
+  }
+  $("v-var-R").textContent=fmt(R,2);
+  $("ro-var-vi").textContent=fmt(vi,6);
+  $("ro-var-gap").textContent=fmt(nw2-ny2,6);
+  $("ro-var-cur").textContent=fmt(nw2,4);
+  $("ro-var-min").textContent=fmt(smin,4);
+  $("ro-var-wy").textContent=fmt(Math.hypot(wy[0],wy[1]),4);
+  $("ro-var-ok").textContent = (nx<=R+1e-12) ? "x ∈ C：y = x，VI 处处取 0 ✓" :
+    (Math.abs(vi)<1e-9 ? "w = y：变分不等式取等 ✓" :
+    (vi<0 ? "≤ 0 成立 ✓（w ≠ y 时严格 < 0）" : "> 0 ✗"));
 }
 $("s-var-R").addEventListener("input", function(){
- const v=parseFloat(this.value); if(isFinite(v)) stV.R=clamp(v, 0.5, 2.5);
- stV.w=clampW(stV.w, stV.R); drawVar(); });
+  const v=parseFloat(this.value); if(isFinite(v)) stV.R=clamp(v, 0.5, 2.5);
+  stV.w=clampW(stV.w, stV.R); drawVar(); });
 $("b-var-y").onclick=function(){ stV.w=projC(stV.x, stV.R); drawVar(); };
 $("b-var-rand").onclick=function(){
- const r=stV.R*Math.sqrt(Math.random()), p=Math.random()*2*Math.PI;
- stV.w=[r*Math.cos(p), r*Math.sin(p)]; drawVar(); };
+  const r=stV.R*Math.sqrt(Math.random()), p=Math.random()*2*Math.PI;
+  stV.w=[r*Math.cos(p), r*Math.sin(p)]; drawVar(); };
 $("b-var-in").onclick=function(){ stV.x=[0.45, 0.3]; drawVar(); };
 $("b-var-x0").onclick=function(){ stV.R=1.2; stV.x=[2.1, 0.7]; stV.w=[0.6, 0.4];
- $("s-var-R").value="1.2"; drawVar(); };
+  $("s-var-R").value="1.2"; drawVar(); };
 makeDrag(cvV, mV, function(){ return stV.x; }, function(w){
- stV.x=[clamp(w[0],-3.3,3.3), clamp(w[1],-2.1,2.1)]; drawVar(); });
+  stV.x=[clamp(w[0],-3.3,3.3), clamp(w[1],-2.1,2.1)]; drawVar(); });
 makeDrag(cvV, mV, function(){ return stV.w; }, function(w){
- stV.w=clampW([clamp(w[0],-3.3,3.3), clamp(w[1],-2.1,2.1)], stV.R); drawVar(); });
+  stV.w=clampW([clamp(w[0],-3.3,3.3), clamp(w[1],-2.1,2.1)], stV.R); drawVar(); });
 $("v-var-R").textContent=fmt(stV.R,2); drawVar();
 /* ================= 实验 03 · 投影算子账本 ================= */
 const cvL = $("cv-led"), WL=600, HL=400;
@@ -541,72 +543,72 @@ const mL = mapper(cvL, 168, 200, 78);
 const stL = { th:35 };
 function eL(){ const t=stL.th*Math.PI/180; return [Math.cos(t), Math.sin(t)]; }
 function sigma1sym(P){
- /* 2×2 对称阵的最大奇异值：AᵀA 特征值闭式（退化到 rank-1 时即 tr） */
- const a=P[0][0], b=P[0][1], d=P[1][1];
- const m11=a*a+b*b, m12=a*b+b*d, m22=b*b+d*d;
- const tr=m11+m22, det=m11*m22-m12*m12;
- const disc=Math.max(0, tr*tr-4*det);
- return Math.sqrt((tr+Math.sqrt(disc))/2);
+  /* 2×2 对称阵的最大奇异值：AᵀA 特征值闭式（退化到 rank-1 时即 tr） */
+  const a=P[0][0], b=P[0][1], d=P[1][1];
+  const m11=a*a+b*b, m12=a*b+b*d, m22=b*b+d*d;
+  const tr=m11+m22, det=m11*m22-m12*m12;
+  const disc=Math.max(0, tr*tr-4*det);
+  return Math.sqrt((tr+Math.sqrt(disc))/2);
 }
 function drawLed(){
- const ctx=cvL.getContext("2d"); ctx.clearRect(0,0,WL,HL);
- grid(ctx, mL.X(0), mL.Y(0), 78, -2.25, 2.25, -2.55, 2.55);
- const e=eL(), ep=[-e[1], e[0]];
- /* 单位圆（灰虚线） */
- ctx.save(); ctx.strokeStyle="#B9C0DD"; ctx.setLineDash([6,5]); ctx.lineWidth=1.5;
- ctx.beginPath(); ctx.arc(mL.X(0), mL.Y(0), 78, 0, 7); ctx.stroke(); ctx.restore();
- label(ctx, "S（单位圆）", mL.X(0)+70, mL.Y(0)-66, "#5A6078", 12);
- /* M 与 M⊥ */
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2;
- ctx.beginPath(); ctx.moveTo(mL.X(-2.2*e[0]), mL.Y(-2.2*e[1]));
- ctx.lineTo(mL.X(2.2*e[0]), mL.Y(2.2*e[1])); ctx.stroke(); ctx.restore();
- label(ctx, "M", mL.X(2.2*e[0]), mL.Y(2.2*e[1])+14, "#3D4FA3", 12, "right");
- ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.setLineDash([4,4]); ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(mL.X(-2.2*ep[0]), mL.Y(-2.2*ep[1]));
- ctx.lineTo(mL.X(2.2*ep[0]), mL.Y(2.2*ep[1])); ctx.stroke(); ctx.restore();
- label(ctx, "M⊥", mL.X(2.2*ep[0]), mL.Y(2.2*ep[1])+14, "#7A4FA3", 12, "right");
- /* P(S) = [−e, e]：圆被压成线段 */
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=4.5;
- ctx.beginPath(); ctx.moveTo(mL.X(-e[0]), mL.Y(-e[1])); ctx.lineTo(mL.X(e[0]), mL.Y(e[1]));
- ctx.stroke(); ctx.restore();
- dot(ctx, mL.X(e[0]), mL.Y(e[1]), "#3D4FA3", 4.5);
- dot(ctx, mL.X(-e[0]), mL.Y(-e[1]), "#3D4FA3", 4.5);
- vec(ctx, mL, e, "#3D4FA3", 2.2);
- label(ctx, "e", mL.X(e[0])+8, mL.Y(e[1])-10, "#3D4FA3", 12.5);
- label(ctx, "P(S) = [−e, e]", mL.X(-e[0])-8, mL.Y(-e[1])+14, "#3D4FA3", 12, "right");
- /* 右侧批注 */
- label(ctx, "单位圆被压成 M 上的线段：", 372, 120, "#5A6078", 12.5);
- label(ctx, "最长方向不被放大（‖P‖₂ = 1），", 372, 142, "#5A6078", 12.5);
- label(ctx, "但值域亏秩（κ₂(P) = ∞）——", 372, 164, "#5A6078", 12.5);
- label(ctx, "接 NLA-10 条件数页的语言。", 372, 186, "#5A6078", 12.5);
- label(ctx, "θ = "+stL.th+"°", 372, 232, "#1E2440", 13);
- /* ---- 账本读数（全部实测残差） ---- */
- const P=[[e[0]*e[0], e[0]*e[1]], [e[1]*e[0], e[1]*e[1]]];
- const P2=[[P[0][0]*P[0][0]+P[0][1]*P[1][0], P[0][0]*P[0][1]+P[0][1]*P[1][1]],
- [P[1][0]*P[0][0]+P[1][1]*P[1][0], P[1][0]*P[0][1]+P[1][1]*P[1][1]]];
- const Q=[[1-P[0][0], -P[0][1]], [-P[1][0], 1-P[1][1]]];
- const Q2=[[Q[0][0]*Q[0][0]+Q[0][1]*Q[1][0], Q[0][0]*Q[0][1]+Q[0][1]*Q[1][1]],
- [Q[1][0]*Q[0][0]+Q[1][1]*Q[1][0], Q[1][0]*Q[0][1]+Q[1][1]*Q[1][1]]];
- const PQ=[[P[0][0]*Q[0][0]+P[0][1]*Q[1][0], P[0][0]*Q[0][1]+P[0][1]*Q[1][1]],
- [P[1][0]*Q[0][0]+P[1][1]*Q[1][0], P[1][0]*Q[0][1]+P[1][1]*Q[1][1]]];
- const mx=function(A,B){ return Math.max(Math.abs(A[0][0]-B[0][0]), Math.abs(A[0][1]-B[0][1]),
- Math.abs(A[1][0]-B[1][0]), Math.abs(A[1][1]-B[1][1])); };
- const idem=mx(P2,P), self=Math.max(Math.abs(P[0][1]-P[1][0]), 0);
- const s1=sigma1sym(P), tr=P[0][0]+P[1][1];
- const qidem=mx(Q2,Q), qself=Math.max(Math.abs(Q[0][1]-Q[1][0]), 0), pq=mx(PQ,[[0,0],[0,0]]);
- $("v-led-th").textContent=stL.th+"°";
- $("ro-led-P").textContent=fmt(P[0][0],4)+" / "+fmt(P[0][1],4)+" / "+fmt(P[1][0],4)+" / "+fmt(P[1][1],4);
- $("ro-led-idem").textContent=fmt(idem,2);
- $("ro-led-self").textContent=fmt(self,2);
- $("ro-led-norm").textContent=fmt(s1,6);
- $("ro-led-tr").textContent=fmt(tr,4);
- $("ro-led-pq").textContent=fmt(pq,2);
- $("ro-led-q").textContent=(qidem<1e-12&&qself<1e-12)?"Q²=Q ✓ Qᵀ=Q ✓":"Q 的账不平 ✗";
- $("ro-led-ok").textContent=(idem<1e-12&&self<1e-12&&Math.abs(s1-1)<1e-12&&Math.abs(tr-1)<1e-12&&pq<1e-12)
- ?"五条恒等式全部成立 ✓":"账本不平 ✗";
+  const ctx=cvL.getContext("2d"); ctx.clearRect(0,0,WL,HL);
+  grid(ctx, mL.X(0), mL.Y(0), 78, -2.25, 2.25, -2.55, 2.55);
+  const e=eL(), ep=[-e[1], e[0]];
+  /* 单位圆（灰虚线） */
+  ctx.save(); ctx.strokeStyle="#B9C0DD"; ctx.setLineDash([6,5]); ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(mL.X(0), mL.Y(0), 78, 0, 7); ctx.stroke(); ctx.restore();
+  label(ctx, "S（单位圆）", mL.X(0)+70, mL.Y(0)-66, "#5A6078", 12);
+  /* M 与 M⊥ */
+  ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(mL.X(-2.2*e[0]), mL.Y(-2.2*e[1]));
+  ctx.lineTo(mL.X(2.2*e[0]), mL.Y(2.2*e[1])); ctx.stroke(); ctx.restore();
+  label(ctx, "M", mL.X(2.2*e[0]), mL.Y(2.2*e[1])+14, "#3D4FA3", 12, "right");
+  ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.setLineDash([4,4]); ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(mL.X(-2.2*ep[0]), mL.Y(-2.2*ep[1]));
+  ctx.lineTo(mL.X(2.2*ep[0]), mL.Y(2.2*ep[1])); ctx.stroke(); ctx.restore();
+  label(ctx, "M⊥", mL.X(2.2*ep[0]), mL.Y(2.2*ep[1])+14, "#7A4FA3", 12, "right");
+  /* P(S) = [−e, e]：圆被压成线段 */
+  ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=4.5;
+  ctx.beginPath(); ctx.moveTo(mL.X(-e[0]), mL.Y(-e[1])); ctx.lineTo(mL.X(e[0]), mL.Y(e[1]));
+  ctx.stroke(); ctx.restore();
+  dot(ctx, mL.X(e[0]), mL.Y(e[1]), "#3D4FA3", 4.5);
+  dot(ctx, mL.X(-e[0]), mL.Y(-e[1]), "#3D4FA3", 4.5);
+  vec(ctx, mL, e, "#3D4FA3", 2.2);
+  label(ctx, "e", mL.X(e[0])+8, mL.Y(e[1])-10, "#3D4FA3", 12.5);
+  label(ctx, "P(S) = [−e, e]", mL.X(-e[0])-8, mL.Y(-e[1])+14, "#3D4FA3", 12, "right");
+  /* 右侧批注 */
+  label(ctx, "单位圆被压成 M 上的线段：", 372, 120, "#5A6078", 12.5);
+  label(ctx, "最长方向不被放大（‖P‖₂ = 1），", 372, 142, "#5A6078", 12.5);
+  label(ctx, "但值域亏秩（κ₂(P) = ∞）——", 372, 164, "#5A6078", 12.5);
+  label(ctx, "接 NLA-10 条件数页的语言。", 372, 186, "#5A6078", 12.5);
+  label(ctx, "θ = "+stL.th+"°", 372, 232, "#1E2440", 13);
+  /* ---- 账本读数（全部实测残差） ---- */
+  const P=[[e[0]*e[0], e[0]*e[1]], [e[1]*e[0], e[1]*e[1]]];
+  const P2=[[P[0][0]*P[0][0]+P[0][1]*P[1][0], P[0][0]*P[0][1]+P[0][1]*P[1][1]],
+             [P[1][0]*P[0][0]+P[1][1]*P[1][0], P[1][0]*P[0][1]+P[1][1]*P[1][1]]];
+  const Q=[[1-P[0][0], -P[0][1]], [-P[1][0], 1-P[1][1]]];
+  const Q2=[[Q[0][0]*Q[0][0]+Q[0][1]*Q[1][0], Q[0][0]*Q[0][1]+Q[0][1]*Q[1][1]],
+             [Q[1][0]*Q[0][0]+Q[1][1]*Q[1][0], Q[1][0]*Q[0][1]+Q[1][1]*Q[1][1]]];
+  const PQ=[[P[0][0]*Q[0][0]+P[0][1]*Q[1][0], P[0][0]*Q[0][1]+P[0][1]*Q[1][1]],
+             [P[1][0]*Q[0][0]+P[1][1]*Q[1][0], P[1][0]*Q[0][1]+P[1][1]*Q[1][1]]];
+  const mx=function(A,B){ return Math.max(Math.abs(A[0][0]-B[0][0]), Math.abs(A[0][1]-B[0][1]),
+    Math.abs(A[1][0]-B[1][0]), Math.abs(A[1][1]-B[1][1])); };
+  const idem=mx(P2,P), self=Math.max(Math.abs(P[0][1]-P[1][0]), 0);
+  const s1=sigma1sym(P), tr=P[0][0]+P[1][1];
+  const qidem=mx(Q2,Q), qself=Math.max(Math.abs(Q[0][1]-Q[1][0]), 0), pq=mx(PQ,[[0,0],[0,0]]);
+  $("v-led-th").textContent=stL.th+"°";
+  $("ro-led-P").textContent=fmt(P[0][0],4)+" / "+fmt(P[0][1],4)+" / "+fmt(P[1][0],4)+" / "+fmt(P[1][1],4);
+  $("ro-led-idem").textContent=fmt(idem,2);
+  $("ro-led-self").textContent=fmt(self,2);
+  $("ro-led-norm").textContent=fmt(s1,6);
+  $("ro-led-tr").textContent=fmt(tr,4);
+  $("ro-led-pq").textContent=fmt(pq,2);
+  $("ro-led-q").textContent=(qidem<1e-12&&qself<1e-12)?"Q²=Q ✓ Qᵀ=Q ✓":"Q 的账不平 ✗";
+  $("ro-led-ok").textContent=(idem<1e-12&&self<1e-12&&Math.abs(s1-1)<1e-12&&Math.abs(tr-1)<1e-12&&pq<1e-12)
+    ?"五条恒等式全部成立 ✓":"账本不平 ✗";
 }
 $("s-led-th").addEventListener("input", function(){
- const v=parseFloat(this.value); if(isFinite(v)) stL.th=clamp(v, 0, 180); drawLed(); });
+  const v=parseFloat(this.value); if(isFinite(v)) stL.th=clamp(v, 0, 180); drawLed(); });
 $("b-led-0").onclick=function(){ stL.th=0; $("s-led-th").value="0"; drawLed(); };
 $("b-led-45").onclick=function(){ stL.th=45; $("s-led-th").value="45"; drawLed(); };
 $("b-led-90").onclick=function(){ stL.th=90; $("s-led-th").value="90"; drawLed(); };
@@ -616,84 +618,84 @@ $("v-led-th").textContent=stL.th+"°"; drawLed();
 const cvP = $("cv-par"), WP=600, HP=400;
 const stP = { xi:[0.8, -0.5, 1.2, 0.3, -0.9, 0.4], k:4 };
 function drawPar(){
- const ctx=cvP.getContext("2d"); ctx.clearRect(0,0,WP,HP);
- const xi=stP.xi, k=stP.k;
- /* ---- 上图：坐标柱 ---- */
- const bx0=70, bw=(570-70)/6, zero=150, sc=52;
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(bx0-14, zero); ctx.lineTo(584, zero); ctx.stroke(); ctx.restore();
- for(let n=0;n<6;n++){
- const cx0=bx0+n*bw+bw*0.22, cw=bw*0.56;
- const h=xi[n]*sc;
- ctx.fillStyle=(n<k)?"#3D4FA3":"#B9C0DD";
- ctx.fillRect(cx0, h>=0?zero-h:zero, cw, Math.abs(h));
- ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1;
- ctx.strokeRect(cx0, h>=0?zero-h:zero, cw, Math.abs(h));
- label(ctx, "ξ"+(n+1), bx0+n*bw+bw/2, zero+16, "#5A6078", 12, "center");
- label(ctx, fmt(xi[n],2), bx0+n*bw+bw/2, (h>=0?zero-h:zero)-9, n<k?"#3D4FA3":"#5A6078", 11.5, "center");
- }
- label(ctx, "坐标（靛蓝 = 已进部分和，灰 = 尾部）", bx0-14, 26, "#5A6078", 12);
- /* ---- 下图：累积能量占比 ---- */
- const cy0=238, cy1=372;
- label(ctx, "累积能量占比 Σ_{n≤k}|ξₙ|² / ‖x‖²", bx0-14, cy0-8, "#5A6078", 12);
- let nx=0; for(let n=0;n<6;n++) nx+=xi[n]*xi[n];
- const E=[]; let acc=0;
- for(let n=0;n<6;n++){ acc+=xi[n]*xi[n]; E.push(acc); }
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- ctx.beginPath(); ctx.moveTo(bx0-14, cy1); ctx.lineTo(584, cy1); ctx.stroke(); ctx.restore();
- /* 100% 参考线 */
- if(nx>1e-12){
- const y100=cy0+10;
- ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.setLineDash([5,4]); ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(bx0-14, y100); ctx.lineTo(584, y100); ctx.stroke(); ctx.restore();
- label(ctx, "100%", 588, y100, "#7A4FA3", 11);
- }
- /* 阶梯曲线 */
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2; ctx.beginPath();
- for(let n=0;n<6;n++){
- const f=(nx>1e-12)?(E[n]/nx):0;
- const px=bx0+n*bw+bw/2, py=cy1-8-f*(cy1-cy0-18);
- if(n===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
- }
- ctx.stroke(); ctx.restore();
- for(let n=0;n<6;n++){
- const f=(nx>1e-12)?(E[n]/nx):0;
- const px=bx0+n*bw+bw/2, py=cy1-8-f*(cy1-cy0-18);
- dot(ctx, px, py, (n<k)?"#3D4FA3":"#B9C0DD", (n===k-1)?5:3.5);
- }
- /* ---- 读数 ---- */
- let part=0; for(let n=0;n<k;n++) part+=xi[n]*xi[n];
- const tail=nx-part;
- $("v-p-k").textContent=k;
- for(let n=0;n<6;n++) $("v-p-x"+(n+1)).textContent=fmt(xi[n],2);
- $("ro-p-nx").textContent=fmt(nx,4);
- $("ro-p-part").textContent=fmt(part,4);
- $("ro-p-tail").textContent=fmt(tail,4);
- $("ro-p-err").textContent=fmt(Math.sqrt(Math.max(0,tail)),4);
- $("ro-p-frac").textContent=(nx>1e-12)?fmt(part/nx*100,2)+" %":"—";
- $("ro-p-ok").textContent = (nx<1e-12) ? "x = 0：能量为 0 ✓" :
- (k>=6 ? "Parseval 取等：余量 = 0 ✓" : "Bessel 成立：部分能量 ≤ 总能量 ✓");
+  const ctx=cvP.getContext("2d"); ctx.clearRect(0,0,WP,HP);
+  const xi=stP.xi, k=stP.k;
+  /* ---- 上图：坐标柱 ---- */
+  const bx0=70, bw=(570-70)/6, zero=150, sc=52;
+  ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(bx0-14, zero); ctx.lineTo(584, zero); ctx.stroke(); ctx.restore();
+  for(let n=0;n<6;n++){
+    const cx0=bx0+n*bw+bw*0.22, cw=bw*0.56;
+    const h=xi[n]*sc;
+    ctx.fillStyle=(n<k)?"#3D4FA3":"#B9C0DD";
+    ctx.fillRect(cx0, h>=0?zero-h:zero, cw, Math.abs(h));
+    ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1;
+    ctx.strokeRect(cx0, h>=0?zero-h:zero, cw, Math.abs(h));
+    label(ctx, "ξ"+(n+1), bx0+n*bw+bw/2, zero+16, "#5A6078", 12, "center");
+    label(ctx, fmt(xi[n],2), bx0+n*bw+bw/2, (h>=0?zero-h:zero)-9, n<k?"#3D4FA3":"#5A6078", 11.5, "center");
+  }
+  label(ctx, "坐标（靛蓝 = 已进部分和，灰 = 尾部）", bx0-14, 26, "#5A6078", 12);
+  /* ---- 下图：累积能量占比 ---- */
+  const cy0=238, cy1=372;
+  label(ctx, "累积能量占比 Σ_{n≤k}|ξₙ|² / ‖x‖²", bx0-14, cy0-8, "#5A6078", 12);
+  let nx=0; for(let n=0;n<6;n++) nx+=xi[n]*xi[n];
+  const E=[]; let acc=0;
+  for(let n=0;n<6;n++){ acc+=xi[n]*xi[n]; E.push(acc); }
+  ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(bx0-14, cy1); ctx.lineTo(584, cy1); ctx.stroke(); ctx.restore();
+  /* 100% 参考线 */
+  if(nx>1e-12){
+    const y100=cy0+10;
+    ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.setLineDash([5,4]); ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(bx0-14, y100); ctx.lineTo(584, y100); ctx.stroke(); ctx.restore();
+    label(ctx, "100%", 588, y100, "#7A4FA3", 11);
+  }
+  /* 阶梯曲线 */
+  ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2; ctx.beginPath();
+  for(let n=0;n<6;n++){
+    const f=(nx>1e-12)?(E[n]/nx):0;
+    const px=bx0+n*bw+bw/2, py=cy1-8-f*(cy1-cy0-18);
+    if(n===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke(); ctx.restore();
+  for(let n=0;n<6;n++){
+    const f=(nx>1e-12)?(E[n]/nx):0;
+    const px=bx0+n*bw+bw/2, py=cy1-8-f*(cy1-cy0-18);
+    dot(ctx, px, py, (n<k)?"#3D4FA3":"#B9C0DD", (n===k-1)?5:3.5);
+  }
+  /* ---- 读数 ---- */
+  let part=0; for(let n=0;n<k;n++) part+=xi[n]*xi[n];
+  const tail=nx-part;
+  $("v-p-k").textContent=k;
+  for(let n=0;n<6;n++) $("v-p-x"+(n+1)).textContent=fmt(xi[n],2);
+  $("ro-p-nx").textContent=fmt(nx,4);
+  $("ro-p-part").textContent=fmt(part,4);
+  $("ro-p-tail").textContent=fmt(tail,4);
+  $("ro-p-err").textContent=fmt(Math.sqrt(Math.max(0,tail)),4);
+  $("ro-p-frac").textContent=(nx>1e-12)?fmt(part/nx*100,2)+" %":"—";
+  $("ro-p-ok").textContent = (nx<1e-12) ? "x = 0：能量为 0 ✓" :
+    (k>=6 ? "Parseval 取等：余量 = 0 ✓" : "Bessel 成立：部分能量 ≤ 总能量 ✓");
 }
 for(let n=1;n<=6;n++){
- $("s-p-x"+n).addEventListener("input", function(){
- const v=parseFloat(this.value); if(isFinite(v)) stP.xi[n-1]=clamp(v,-2,2); drawPar(); });
+  $("s-p-x"+n).addEventListener("input", function(){
+    const v=parseFloat(this.value); if(isFinite(v)) stP.xi[n-1]=clamp(v,-2,2); drawPar(); });
 }
 $("s-p-k").addEventListener("input", function(){
- const v=parseInt(this.value,10); if(isFinite(v)) stP.k=clamp(v,1,6); drawPar(); });
+  const v=parseInt(this.value,10); if(isFinite(v)) stP.k=clamp(v,1,6); drawPar(); });
 $("b-p-rand").onclick=function(){
- for(let n=0;n<6;n++){
- stP.xi[n]=Math.round((Math.random()*4-2)*10)/10;
- $("s-p-x"+(n+1)).value=String(stP.xi[n]);
- }
- drawPar(); };
+  for(let n=0;n<6;n++){
+    stP.xi[n]=Math.round((Math.random()*4-2)*10)/10;
+    $("s-p-x"+(n+1)).value=String(stP.xi[n]);
+  }
+  drawPar(); };
 $("b-p-e3").onclick=function(){
- stP.xi=[0,0,1,0,0,0];
- for(let n=0;n<6;n++) $("s-p-x"+(n+1)).value=String(stP.xi[n]);
- drawPar(); };
+  stP.xi=[0,0,1,0,0,0];
+  for(let n=0;n<6;n++) $("s-p-x"+(n+1)).value=String(stP.xi[n]);
+  drawPar(); };
 $("b-p-zero").onclick=function(){
- stP.xi=[0,0,0,0,0,0];
- for(let n=0;n<6;n++) $("s-p-x"+(n+1)).value="0";
- drawPar(); };
+  stP.xi=[0,0,0,0,0,0];
+  for(let n=0;n<6;n++) $("s-p-x"+(n+1)).value="0";
+  drawPar(); };
 $("v-p-k").textContent=stP.k; drawPar();
 </script>
 </div>

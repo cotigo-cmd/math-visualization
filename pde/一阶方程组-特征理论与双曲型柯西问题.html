@@ -6,25 +6,25 @@
 <title>一阶偏微分方程组：特征理论、对角化与柯西问题 — 第 5 章可视化</title>
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "global" },
- options: { enableMenu: false },
- startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
- --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
- --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
- --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
- --teal:#0F6E56; --teal-soft:#E1F5EE; --amber:#854F0B; --amber-soft:#FDF6EC;
- --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --teal-soft:#E1F5EE; --amber:#854F0B; --amber-soft:#FDF6EC;
+  --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
@@ -39,19 +39,19 @@ p{margin:12px 0}
 .crumb{font-size:13px;margin:0 0 18px;color:var(--muted)}
 .crumb a{color:var(--accent)}
 nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
- border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
 nav .wrap{padding:10px 20px;display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px}
 nav a{color:var(--muted)}
 nav a:hover{color:var(--accent);text-decoration:none}
 .eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
- margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
 .note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
 table.fix{table-layout:fixed}
 th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
@@ -62,7 +62,7 @@ tr.hi td{background:var(--coral-soft)}
 .ctl input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
 .ctl .lb{white-space:nowrap;color:var(--muted)}
 button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
- border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
 button:hover{border-color:var(--accent);color:var(--accent)}
 button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
 .val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
@@ -82,7 +82,7 @@ canvas.plot{width:100%;background:#fff;border:1px solid var(--border);border-rad
 .lab .h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:14px 0 2px}
 .lab .h b{font-size:15.5px}
 .lab .h .tag{font-family:var(--mono);font-size:11.5px;color:var(--muted);
- border:1px solid var(--border);border-radius:5px;padding:1px 7px;white-space:nowrap}
+  border:1px solid var(--border);border-radius:5px;padding:1px 7px;white-space:nowrap}
 .lab p.sub{font-size:13.5px;color:var(--muted);margin:4px 0 10px}
 .std3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:14px 0}
 .std3 .sf{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13.5px}
@@ -99,10 +99,10 @@ p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,h4 mjx-container>s
 footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
 ul.tight li{margin:6px 0}
 @media print{
- nav,.ctl,button,#mjx-offline{display:none!important}
- h2{page-break-after:avoid;break-after:avoid}
- figure,.card,.note,.warn,.key,table,.kv,.std3,.lab{page-break-inside:avoid;break-inside:avoid}
- body{font-size:12.5px}
+  nav,.ctl,button,#mjx-offline{display:none!important}
+  h2{page-break-after:avoid;break-after:avoid}
+  figure,.card,.note,.warn,.key,table,.kv,.std3,.lab{page-break-inside:avoid;break-inside:avoid}
+  body{font-size:12.5px}
 }
 </style>
 </head>
@@ -607,35 +607,35 @@ $$\begin{cases}
 /* ==================== 公共 ==================== */
 function $(id){ return document.getElementById(id); }
 function fx(x, d){
- d = (d === undefined) ? 4 : d;
- if (x === null || x === undefined || !isFinite(x)) return "—";
- if (x === 0) return "0";
- var a = Math.abs(x);
- if (a < 1e-3 || a >= 1e5) return x.toExponential(2);
- return x.toFixed(d);
+  d = (d === undefined) ? 4 : d;
+  if (x === null || x === undefined || !isFinite(x)) return "—";
+  if (x === 0) return "0";
+  var a = Math.abs(x);
+  if (a < 1e-3 || a >= 1e5) return x.toExponential(2);
+  return x.toFixed(d);
 }
 function setTxt(id, s){ var e = $(id); if (e) e.textContent = s; }
 var CVS = {};
 function cx(id){ if (!CVS[id]) CVS[id] = $(id).getContext("2d"); return CVS[id]; }
 function panel(x0, y0, w, h, xmin, xmax, ymin, ymax){
- var sx = w / (xmax - xmin), sy = h / (ymax - ymin);
- return {
- x0: x0, y0: y0, w: w, h: h,
- X: function(x){ return x0 + (x - xmin) * sx; },
- Y: function(y){ return y0 + h - (y - ymin) * sy; },
- invX: function(px){ return xmin + (px - x0) / sx; },
- invY: function(py){ return ymin + (y0 + h - py) / sy; }
- };
+  var sx = w / (xmax - xmin), sy = h / (ymax - ymin);
+  return {
+    x0: x0, y0: y0, w: w, h: h,
+    X: function(x){ return x0 + (x - xmin) * sx; },
+    Y: function(y){ return y0 + h - (y - ymin) * sy; },
+    invX: function(px){ return xmin + (px - x0) / sx; },
+    invY: function(py){ return ymin + (y0 + h - py) / sy; }
+  };
 }
 function frame(c, P, xlab, tlab){
- c.fillStyle = "#fff"; c.fillRect(P.x0, P.y0, P.w, P.h);
- c.strokeStyle = "#d0d7de"; c.lineWidth = 1;
- c.strokeRect(P.x0 + .5, P.y0 + .5, P.w - 1, P.h - 1);
- c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
- c.textAlign = "right"; c.textBaseline = "top";
- c.fillText(xlab, P.x0 + P.w - 4, P.y0 + P.h + 4);
- c.textAlign = "left"; c.textBaseline = "bottom";
- c.fillText(tlab, P.x0 - 14, P.y0 + 12);
+  c.fillStyle = "#fff"; c.fillRect(P.x0, P.y0, P.w, P.h);
+  c.strokeStyle = "#d0d7de"; c.lineWidth = 1;
+  c.strokeRect(P.x0 + .5, P.y0 + .5, P.w - 1, P.h - 1);
+  c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = "right"; c.textBaseline = "top";
+  c.fillText(xlab, P.x0 + P.w - 4, P.y0 + P.h + 4);
+  c.textAlign = "left"; c.textBaseline = "bottom";
+  c.fillText(tlab, P.x0 - 14, P.y0 + 12);
 }
 function clamp01(v){ return v < 0 ? 0 : (v > 1 ? 1 : v); }
 
@@ -644,19 +644,19 @@ var L1 = { mode: "wave", a: 1.0, k: 1.0, eps: 1.0, x0: 0.6, t0: 0.5 };
 var L1X = { min: -4.5, max: 4.5, tmax: 1.2 };
 
 function l1U(x, t){
- if (L1.mode === "wave") return Math.sin(L1.k * x) * Math.cos(L1.a * L1.k * t);
- if (L1.mode === "heat") return Math.exp(-L1.a * L1.a * L1.k * L1.k * t) * Math.sin(L1.k * x);
- return NaN;
+  if (L1.mode === "wave") return Math.sin(L1.k * x) * Math.cos(L1.a * L1.k * t);
+  if (L1.mode === "heat") return Math.exp(-L1.a * L1.a * L1.k * L1.k * t) * Math.sin(L1.k * x);
+  return NaN;
 }
 function l1P(x, t){
- if (L1.mode === "wave") return L1.k * Math.cos(L1.k * x) * Math.cos(L1.a * L1.k * t);
- if (L1.mode === "heat") return L1.k * Math.cos(L1.k * x) * Math.exp(-L1.a * L1.a * L1.k * L1.k * t);
- return NaN;
+  if (L1.mode === "wave") return L1.k * Math.cos(L1.k * x) * Math.cos(L1.a * L1.k * t);
+  if (L1.mode === "heat") return L1.k * Math.cos(L1.k * x) * Math.exp(-L1.a * L1.a * L1.k * L1.k * t);
+  return NaN;
 }
 function l1Q(x, t){
- if (L1.mode === "wave") return -L1.a * L1.k * Math.sin(L1.k * x) * Math.sin(L1.a * L1.k * t);
- if (L1.mode === "heat") return -L1.a * L1.a * L1.k * L1.k * Math.sin(L1.k * x) * Math.exp(-L1.a * L1.a * L1.k * L1.k * t);
- return NaN;
+  if (L1.mode === "wave") return -L1.a * L1.k * Math.sin(L1.k * x) * Math.sin(L1.a * L1.k * t);
+  if (L1.mode === "heat") return -L1.a * L1.a * L1.k * L1.k * Math.sin(L1.k * x) * Math.exp(-L1.a * L1.a * L1.k * L1.k * t);
+  return NaN;
 }
 /* 非线性弹性：σ(p)=p+εp³/3，给定光滑 p 场做链式法则核对 */
 function l1Sigma(p){ return p + L1.eps * p * p * p / 3; }
@@ -668,169 +668,169 @@ function dX(f, x, t){ return (f(x + L1H, t) - f(x - L1H, t)) / (2 * L1H); }
 function dT(f, x, t){ return (f(x, t + L1H) - f(x, t - L1H)) / (2 * L1H); }
 
 function l1Residuals(){
- var i, x, t, e1 = 0, e2 = 0, s1 = 0, s2 = 0, f1, f2;
- var NX = 13, NT = 9;
- if (L1.mode === "nonlin"){
- var e3 = 0, s3 = 0;
- for (i = 0; i < NX; i++){
- for (var j = 0; j < NT; j++){
- x = -1.6 + 3.2 * i / (NX - 1); t = 0.02 + 0.9 * j / (NT - 1);
- var sx = (l1Sigma(l1Pn(x + L1H, t)) - l1Sigma(l1Pn(x - L1H, t))) / (2 * L1H);
- var ref = l1SigmaD(l1Pn(x, t)) * dX(l1Pn, x, t);
- e3 = Math.max(e3, Math.abs(sx - ref)); s3 = Math.max(s3, Math.abs(sx));
- }
- }
- return { res1: e3 / (s3 || 1), res2: NaN };
- }
- for (i = 0; i < NX; i++){
- for (var jj = 0; jj < NT; jj++){
- x = -1.6 + 3.2 * i / (NX - 1); t = 0.02 + 0.9 * jj / (NT - 1);
- f1 = dT(l1P, x, t) - dX(l1Q, x, t); /* p_t − q_x = 0 */
- s1 = Math.max(s1, Math.abs(dT(l1P, x, t)));
- if (L1.mode === "wave"){
- f2 = dT(l1Q, x, t) - L1.a * L1.a * dX(l1P, x, t); /* q_t − a²p_x = 0 */
- s2 = Math.max(s2, Math.abs(dT(l1Q, x, t)));
- } else {
- f2 = l1Q(x, t) - L1.a * L1.a * dX(l1P, x, t); /* q − a²p_x = 0（约束） */
- s2 = Math.max(s2, Math.abs(l1Q(x, t)));
- }
- e1 = Math.max(e1, Math.abs(f1)); e2 = Math.max(e2, Math.abs(f2));
- }
- }
- return { res1: e1 / (s1 || 1), res2: e2 / (s2 || 1) };
+  var i, x, t, e1 = 0, e2 = 0, s1 = 0, s2 = 0, f1, f2;
+  var NX = 13, NT = 9;
+  if (L1.mode === "nonlin"){
+    var e3 = 0, s3 = 0;
+    for (i = 0; i < NX; i++){
+      for (var j = 0; j < NT; j++){
+        x = -1.6 + 3.2 * i / (NX - 1); t = 0.02 + 0.9 * j / (NT - 1);
+        var sx = (l1Sigma(l1Pn(x + L1H, t)) - l1Sigma(l1Pn(x - L1H, t))) / (2 * L1H);
+        var ref = l1SigmaD(l1Pn(x, t)) * dX(l1Pn, x, t);
+        e3 = Math.max(e3, Math.abs(sx - ref)); s3 = Math.max(s3, Math.abs(sx));
+      }
+    }
+    return { res1: e3 / (s3 || 1), res2: NaN };
+  }
+  for (i = 0; i < NX; i++){
+    for (var jj = 0; jj < NT; jj++){
+      x = -1.6 + 3.2 * i / (NX - 1); t = 0.02 + 0.9 * jj / (NT - 1);
+      f1 = dT(l1P, x, t) - dX(l1Q, x, t);            /* p_t − q_x = 0 */
+      s1 = Math.max(s1, Math.abs(dT(l1P, x, t)));
+      if (L1.mode === "wave"){
+        f2 = dT(l1Q, x, t) - L1.a * L1.a * dX(l1P, x, t);   /* q_t − a²p_x = 0 */
+        s2 = Math.max(s2, Math.abs(dT(l1Q, x, t)));
+      } else {
+        f2 = l1Q(x, t) - L1.a * L1.a * dX(l1P, x, t);       /* q − a²p_x = 0（约束） */
+        s2 = Math.max(s2, Math.abs(l1Q(x, t)));
+      }
+      e1 = Math.max(e1, Math.abs(f1)); e2 = Math.max(e2, Math.abs(f2));
+    }
+  }
+  return { res1: e1 / (s1 || 1), res2: e2 / (s2 || 1) };
 }
 
 function l1Path(){
- var x0 = L1.x0, t0 = L1.t0, n = 1200, i, s, h;
- /* 路径 A：先沿 x 再沿 t */
- var IA = 0; h = x0 / n;
- for (i = 0; i < n; i++){ s = h * (i + 0.5); IA += h * l1P(s, 0); }
- h = t0 / n;
- for (i = 0; i < n; i++){ s = h * (i + 0.5); IA += h * l1Q(x0, s); }
- /* 路径 B：先沿 t 再沿 x */
- var IB = 0; h = t0 / n;
- for (i = 0; i < n; i++){ s = h * (i + 0.5); IB += h * l1Q(0, s); }
- h = x0 / n;
- for (i = 0; i < n; i++){ s = h * (i + 0.5); IB += h * l1P(s, t0); }
- var uRec = l1U(0, 0) + IA;
- return { IA: IA, IB: IB, diff: Math.abs(IA - IB), uRec: uRec, uEx: l1U(x0, t0) };
+  var x0 = L1.x0, t0 = L1.t0, n = 1200, i, s, h;
+  /* 路径 A：先沿 x 再沿 t */
+  var IA = 0; h = x0 / n;
+  for (i = 0; i < n; i++){ s = h * (i + 0.5); IA += h * l1P(s, 0); }
+  h = t0 / n;
+  for (i = 0; i < n; i++){ s = h * (i + 0.5); IA += h * l1Q(x0, s); }
+  /* 路径 B：先沿 t 再沿 x */
+  var IB = 0; h = t0 / n;
+  for (i = 0; i < n; i++){ s = h * (i + 0.5); IB += h * l1Q(0, s); }
+  h = x0 / n;
+  for (i = 0; i < n; i++){ s = h * (i + 0.5); IB += h * l1P(s, t0); }
+  var uRec = l1U(0, 0) + IA;
+  return { IA: IA, IB: IB, diff: Math.abs(IA - IB), uRec: uRec, uEx: l1U(x0, t0) };
 }
 
 function l1Update(){
- var out = {};
- var r = l1Residuals();
- out.res1 = r.res1; out.res2 = r.res2;
- if (L1.mode === "nonlin"){
- var p = l1Pn(L1.x0, L1.t0), sd = l1SigmaD(p);
- out.lam1 = Math.sqrt(sd); out.lam2 = -Math.sqrt(sd); out.lam = Math.sqrt(sd);
- out.path = 0; out.diff = 0; out.rec = 0;
- setTxt("e1-sys", "p_t − q_x = 0, q_t − ∂ₓσ(p) = 0");
- setTxt("e1-res1", fx(out.res1, 2) + "（链式法则）");
- setTxt("e1-res2", "—（无解析 u）");
- setTxt("e1-path", "—");
- setTxt("e1-rec", "—");
- setTxt("e1-lam", "±" + fx(out.lam, 3));
- setTxt("e1-note", "拟线性：特征速度 λ± = ±√σ′(p) 在探针处为 ±" + fx(out.lam, 3) +
- "，随 p 变化 ⇒ 特征线是曲线。上一格读数核对的是 ∂ₓσ(p) = σ′(p)pₓ 这条链式法则（相对误差 " +
- fx(out.res1, 2) + "）。");
- } else {
- var pp = l1Path();
- out.path = pp.diff; out.diff = pp.diff; out.rec = Math.abs(pp.uRec - pp.uEx);
- out.lam1 = (L1.mode === "wave") ? L1.a : 0;
- out.lam2 = (L1.mode === "wave") ? -L1.a : 0;
- out.lam = (L1.mode === "wave") ? L1.a : 0;
- setTxt("e1-sys", (L1.mode === "wave")
- ? "p_t − q_x = 0, q_t − a²p_x = 0"
- : "p_t − q_x = 0, q − a²p_x = 0（约束）");
- setTxt("e1-res1", fx(out.res1, 2));
- setTxt("e1-res2", fx(out.res2, 2));
- setTxt("e1-path", fx(out.path, 2));
- setTxt("e1-rec", fx(out.rec, 2));
- setTxt("e1-lam", (L1.mode === "wave") ? "±" + fx(out.lam, 2) : "0（二重，A 幂零）");
- setTxt("e1-note", (L1.mode === "wave")
- ? "线性：λ±=±a=±" + fx(out.lam, 2) + " 与解无关 ⇒ 特征线是直线族。两条折线的积分差 " +
- fx(out.path, 2) + " ≈ 0，说明 (1.9) 的路径无关性成立；复原误差 " + fx(out.rec, 2) + "。"
- : "抛物：降阶后第二式是约束而非演化方程，A 奇异、λ=0 二重且不可对角化——只有一族特征方向。两条折线的积分差 " +
- fx(out.path, 2) + " 仍为 0（因为 p_t=q_x 依旧成立），复原误差 " + fx(out.rec, 2) + "。");
- }
- l1Draw();
- return out;
+  var out = {};
+  var r = l1Residuals();
+  out.res1 = r.res1; out.res2 = r.res2;
+  if (L1.mode === "nonlin"){
+    var p = l1Pn(L1.x0, L1.t0), sd = l1SigmaD(p);
+    out.lam1 = Math.sqrt(sd); out.lam2 = -Math.sqrt(sd); out.lam = Math.sqrt(sd);
+    out.path = 0; out.diff = 0; out.rec = 0;
+    setTxt("e1-sys", "p_t − q_x = 0,  q_t − ∂ₓσ(p) = 0");
+    setTxt("e1-res1", fx(out.res1, 2) + "（链式法则）");
+    setTxt("e1-res2", "—（无解析 u）");
+    setTxt("e1-path", "—");
+    setTxt("e1-rec", "—");
+    setTxt("e1-lam", "±" + fx(out.lam, 3));
+    setTxt("e1-note", "拟线性：特征速度 λ± = ±√σ′(p) 在探针处为 ±" + fx(out.lam, 3) +
+      "，随 p 变化 ⇒ 特征线是曲线。上一格读数核对的是 ∂ₓσ(p) = σ′(p)pₓ 这条链式法则（相对误差 " +
+      fx(out.res1, 2) + "）。");
+  } else {
+    var pp = l1Path();
+    out.path = pp.diff; out.diff = pp.diff; out.rec = Math.abs(pp.uRec - pp.uEx);
+    out.lam1 = (L1.mode === "wave") ? L1.a : 0;
+    out.lam2 = (L1.mode === "wave") ? -L1.a : 0;
+    out.lam = (L1.mode === "wave") ? L1.a : 0;
+    setTxt("e1-sys", (L1.mode === "wave")
+      ? "p_t − q_x = 0,  q_t − a²p_x = 0"
+      : "p_t − q_x = 0,  q − a²p_x = 0（约束）");
+    setTxt("e1-res1", fx(out.res1, 2));
+    setTxt("e1-res2", fx(out.res2, 2));
+    setTxt("e1-path", fx(out.path, 2));
+    setTxt("e1-rec", fx(out.rec, 2));
+    setTxt("e1-lam", (L1.mode === "wave") ? "±" + fx(out.lam, 2) : "0（二重，A 幂零）");
+    setTxt("e1-note", (L1.mode === "wave")
+      ? "线性：λ±=±a=±" + fx(out.lam, 2) + " 与解无关 ⇒ 特征线是直线族。两条折线的积分差 " +
+        fx(out.path, 2) + " ≈ 0，说明 (1.9) 的路径无关性成立；复原误差 " + fx(out.rec, 2) + "。"
+      : "抛物：降阶后第二式是约束而非演化方程，A 奇异、λ=0 二重且不可对角化——只有一族特征方向。两条折线的积分差 " +
+        fx(out.path, 2) + " 仍为 0（因为 p_t=q_x 依旧成立），复原误差 " + fx(out.rec, 2) + "。");
+  }
+  l1Draw();
+  return out;
 }
 
 function l1Col(v){
- var t = clamp01(Math.abs(v));
- if (v >= 0) return [Math.round(255 - t * (255 - 24)), Math.round(255 - t * (255 - 95)), Math.round(255 - t * (255 - 165))];
- return [Math.round(255 - t * (255 - 216)), Math.round(255 - t * (255 - 90)), Math.round(255 - t * (255 - 48))];
+  var t = clamp01(Math.abs(v));
+  if (v >= 0) return [Math.round(255 - t * (255 - 24)), Math.round(255 - t * (255 - 95)), Math.round(255 - t * (255 - 165))];
+  return [Math.round(255 - t * (255 - 216)), Math.round(255 - t * (255 - 90)), Math.round(255 - t * (255 - 48))];
 }
 function l1Draw(){
- var c = cx("e1c"), W = $("e1c").width, H = $("e1c").height;
- c.clearRect(0, 0, W, H);
- var P = panel(56, 22, W - 96, H - 66, L1X.min, L1X.max, 0, L1X.tmax);
- frame(c, P, "x", "t");
- var i, j, n;
- if (L1.mode === "nonlin"){
- /* 特征线族：dx/dt = ±√σ′(p(x,t))，RK2 积分 */
- for (n = -10; n <= 10; n++){
- var xs0 = n * 0.42;
- var dirs = [1, -1];
- for (var dd = 0; dd < 2; dd++){
- var sg = dirs[dd], x = xs0, t = 0, N = 90, ht = L1X.tmax / N;
- c.beginPath(); c.moveTo(P.X(x), P.Y(t));
- var ok = true;
- for (i = 0; i < N; i++){
- var k1 = sg * Math.sqrt(l1SigmaD(l1Pn(x, t)));
- var xm = x + 0.5 * ht * k1, tm = t + 0.5 * ht;
- var k2 = sg * Math.sqrt(l1SigmaD(l1Pn(xm, tm)));
- x += ht * k2; t += ht;
- if (x < L1X.min || x > L1X.max){ ok = false; break; }
- c.lineTo(P.X(x), P.Y(t));
- }
- c.strokeStyle = (sg > 0) ? "rgba(15,110,86,.75)" : "rgba(216,90,48,.75)";
- c.lineWidth = 1.1; c.stroke();
- }
- }
- c.fillStyle = "#57606a"; c.font = "12px system-ui,sans-serif";
- c.textAlign = "left"; c.textBaseline = "top";
- c.fillText("特征线族 dx/dt = ±√σ′(p(x,t))，ε = " + L1.eps.toFixed(1) + "：ε=0 时退化为直线", P.x0 + 8, P.y0 + 8);
- } else {
- var pw = Math.round(P.w), ph = Math.round(P.h);
- var img = c.createImageData(pw, ph), d = img.data;
- var vmax = 1;
- for (j = 0; j < ph; j++){
- var tt = L1X.tmax * (1 - j / (ph - 1));
- for (i = 0; i < pw; i++){
- var xx = L1X.min + (L1X.max - L1X.min) * i / (pw - 1);
- var col = l1Col(l1U(xx, tt) / vmax);
- var id = 4 * (j * pw + i);
- d[id] = col[0]; d[id + 1] = col[1]; d[id + 2] = col[2]; d[id + 3] = 255;
- }
- }
- c.putImageData(img, Math.round(P.x0), Math.round(P.y0));
- c.strokeStyle = "#d0d7de"; c.strokeRect(P.x0 + .5, P.y0 + .5, P.w - 1, P.h - 1);
- }
- /* 探针 */
- var px = P.X(L1.x0), py = P.Y(L1.t0);
- c.strokeStyle = "#534AB7"; c.lineWidth = 1; c.setLineDash([3, 3]);
- c.beginPath(); c.moveTo(px, P.y0); c.lineTo(px, P.y0 + P.h); c.stroke();
- c.beginPath(); c.moveTo(P.x0, py); c.lineTo(P.x0 + P.w, py); c.stroke();
- c.setLineDash([]);
- c.fillStyle = "#534AB7"; c.beginPath(); c.arc(px, py, 4, 0, 6.2832); c.fill();
- c.fillStyle = "#26215C"; c.font = "11px ui-monospace,monospace";
- c.textAlign = "left"; c.textBaseline = "bottom";
- c.fillText("(" + L1.x0.toFixed(2) + ", " + L1.t0.toFixed(2) + ")", px + 7, py - 4);
- /* 色标 */
- var bx = P.x0 + P.w + 10, by = P.y0, bh = P.h;
- for (i = 0; i < 60; i++){
- var v = 1 - 2 * i / 59, col2 = l1Col(v);
- c.fillStyle = "rgb(" + col2[0] + "," + col2[1] + "," + col2[2] + ")";
- c.fillRect(bx, by + bh * i / 60, 12, bh / 60 + 1);
- }
- c.strokeStyle = "#d0d7de"; c.strokeRect(bx + .5, by + .5, 12, bh - 1);
- c.fillStyle = "#57606a"; c.font = "10px ui-monospace,monospace";
- c.textAlign = "left"; c.textBaseline = "middle";
- c.fillText("+1", bx + 16, by + 8);
- c.fillText("0", bx + 16, by + bh / 2);
- c.fillText("−1", bx + 16, by + bh - 8);
+  var c = cx("e1c"), W = $("e1c").width, H = $("e1c").height;
+  c.clearRect(0, 0, W, H);
+  var P = panel(56, 22, W - 96, H - 66, L1X.min, L1X.max, 0, L1X.tmax);
+  frame(c, P, "x", "t");
+  var i, j, n;
+  if (L1.mode === "nonlin"){
+    /* 特征线族：dx/dt = ±√σ′(p(x,t))，RK2 积分 */
+    for (n = -10; n <= 10; n++){
+      var xs0 = n * 0.42;
+      var dirs = [1, -1];
+      for (var dd = 0; dd < 2; dd++){
+        var sg = dirs[dd], x = xs0, t = 0, N = 90, ht = L1X.tmax / N;
+        c.beginPath(); c.moveTo(P.X(x), P.Y(t));
+        var ok = true;
+        for (i = 0; i < N; i++){
+          var k1 = sg * Math.sqrt(l1SigmaD(l1Pn(x, t)));
+          var xm = x + 0.5 * ht * k1, tm = t + 0.5 * ht;
+          var k2 = sg * Math.sqrt(l1SigmaD(l1Pn(xm, tm)));
+          x += ht * k2; t += ht;
+          if (x < L1X.min || x > L1X.max){ ok = false; break; }
+          c.lineTo(P.X(x), P.Y(t));
+        }
+        c.strokeStyle = (sg > 0) ? "rgba(15,110,86,.75)" : "rgba(216,90,48,.75)";
+        c.lineWidth = 1.1; c.stroke();
+      }
+    }
+    c.fillStyle = "#57606a"; c.font = "12px system-ui,sans-serif";
+    c.textAlign = "left"; c.textBaseline = "top";
+    c.fillText("特征线族 dx/dt = ±√σ′(p(x,t))，ε = " + L1.eps.toFixed(1) + "：ε=0 时退化为直线", P.x0 + 8, P.y0 + 8);
+  } else {
+    var pw = Math.round(P.w), ph = Math.round(P.h);
+    var img = c.createImageData(pw, ph), d = img.data;
+    var vmax = 1;
+    for (j = 0; j < ph; j++){
+      var tt = L1X.tmax * (1 - j / (ph - 1));
+      for (i = 0; i < pw; i++){
+        var xx = L1X.min + (L1X.max - L1X.min) * i / (pw - 1);
+        var col = l1Col(l1U(xx, tt) / vmax);
+        var id = 4 * (j * pw + i);
+        d[id] = col[0]; d[id + 1] = col[1]; d[id + 2] = col[2]; d[id + 3] = 255;
+      }
+    }
+    c.putImageData(img, Math.round(P.x0), Math.round(P.y0));
+    c.strokeStyle = "#d0d7de"; c.strokeRect(P.x0 + .5, P.y0 + .5, P.w - 1, P.h - 1);
+  }
+  /* 探针 */
+  var px = P.X(L1.x0), py = P.Y(L1.t0);
+  c.strokeStyle = "#534AB7"; c.lineWidth = 1; c.setLineDash([3, 3]);
+  c.beginPath(); c.moveTo(px, P.y0); c.lineTo(px, P.y0 + P.h); c.stroke();
+  c.beginPath(); c.moveTo(P.x0, py); c.lineTo(P.x0 + P.w, py); c.stroke();
+  c.setLineDash([]);
+  c.fillStyle = "#534AB7"; c.beginPath(); c.arc(px, py, 4, 0, 6.2832); c.fill();
+  c.fillStyle = "#26215C"; c.font = "11px ui-monospace,monospace";
+  c.textAlign = "left"; c.textBaseline = "bottom";
+  c.fillText("(" + L1.x0.toFixed(2) + ", " + L1.t0.toFixed(2) + ")", px + 7, py - 4);
+  /* 色标 */
+  var bx = P.x0 + P.w + 10, by = P.y0, bh = P.h;
+  for (i = 0; i < 60; i++){
+    var v = 1 - 2 * i / 59, col2 = l1Col(v);
+    c.fillStyle = "rgb(" + col2[0] + "," + col2[1] + "," + col2[2] + ")";
+    c.fillRect(bx, by + bh * i / 60, 12, bh / 60 + 1);
+  }
+  c.strokeStyle = "#d0d7de"; c.strokeRect(bx + .5, by + .5, 12, bh - 1);
+  c.fillStyle = "#57606a"; c.font = "10px ui-monospace,monospace";
+  c.textAlign = "left"; c.textBaseline = "middle";
+  c.fillText("+1", bx + 16, by + 8);
+  c.fillText("0", bx + 16, by + bh / 2);
+  c.fillText("−1", bx + 16, by + bh - 8);
 }
 
 /* ==================== 实验 02：特征方程沙盘 ==================== */
@@ -838,156 +838,156 @@ var L2 = { a: 0, b: 1, c: 1 };
 
 function l2Mu(){ return L2.a * L2.a + L2.b * L2.c; }
 function l2Eigvec(lam){
- /* A=[[a,b],[c,−a]]，λ 为实根时取 (b, λ−a)；b=0 时取 (λ+a, c) */
- if (Math.abs(L2.b) > 1e-12) return [L2.b, lam - L2.a];
- if (Math.abs(L2.c) > 1e-12) return [lam + L2.a, L2.c];
- return [1, 0];
+  /* A=[[a,b],[c,−a]]，λ 为实根时取 (b, λ−a)；b=0 时取 (λ+a, c) */
+  if (Math.abs(L2.b) > 1e-12) return [L2.b, lam - L2.a];
+  if (Math.abs(L2.c) > 1e-12) return [lam + L2.a, L2.c];
+  return [1, 0];
 }
 function l2Res(lam, re, im){
- /* 复数残差 ‖A r − λ r‖（λ = re + i·im），r = (b, λ−a) 或 (λ+a, c) */
- var r;
- if (Math.abs(L2.b) > 1e-12){
- r = [[L2.b, 0], [lam - L2.a, im]];
- } else {
- r = [[lam + L2.a, im], [L2.c, 0]];
- }
- var lr = [re, im], best = 0;
- for (var i = 0; i < 2; i++){
- /* (A r)_i，r 为复数 */
- var ar = L2.a * r[0][0] + L2.b * r[1][0];
- var ai = L2.a * r[0][1] + L2.b * r[1][1];
- if (i === 1){ ar = L2.c * r[0][0] - L2.a * r[1][0]; ai = L2.c * r[0][1] - L2.a * r[1][1]; }
- /* λ r */
- var br = lr[0] * r[i][0] - lr[1] * r[i][1];
- var bi = lr[0] * r[i][1] + lr[1] * r[i][0];
- best = Math.max(best, Math.hypot(ar - br, ai - bi));
- }
- return best;
+  /* 复数残差 ‖A r − λ r‖（λ = re + i·im），r = (b, λ−a) 或 (λ+a, c) */
+  var r;
+  if (Math.abs(L2.b) > 1e-12){
+    r = [[L2.b, 0], [lam - L2.a, im]];
+  } else {
+    r = [[lam + L2.a, im], [L2.c, 0]];
+  }
+  var lr = [re, im], best = 0;
+  for (var i = 0; i < 2; i++){
+    /* (A r)_i，r 为复数 */
+    var ar = L2.a * r[0][0] + L2.b * r[1][0];
+    var ai = L2.a * r[0][1] + L2.b * r[1][1];
+    if (i === 1){ ar = L2.c * r[0][0] - L2.a * r[1][0]; ai = L2.c * r[0][1] - L2.a * r[1][1]; }
+    /* λ r */
+    var br = lr[0] * r[i][0] - lr[1] * r[i][1];
+    var bi = lr[0] * r[i][1] + lr[1] * r[i][0];
+    best = Math.max(best, Math.hypot(ar - br, ai - bi));
+  }
+  return best;
 }
 
 function l2Update(){
- var mu = l2Mu(), out = { mu: mu };
- var zero = (Math.abs(L2.a) + Math.abs(L2.b) + Math.abs(L2.c) < 1e-12);
- if (mu > 1e-9){
- out.type = "hyp"; out.l1 = Math.sqrt(mu); out.l2 = -Math.sqrt(mu);
- out.re = Math.sqrt(mu); out.im = 0; out.ns = 2;
- out.res = Math.max(l2Res(out.l1, out.l1, 0), l2Res(out.l2, out.l2, 0));
- setTxt("e2-l1", fx(out.l1, 3)); setTxt("e2-l2", fx(out.l2, 3));
- setTxt("e2-type", "严格双曲型");
- setTxt("e2-ns", "2");
- setTxt("e2-note", "λ = ±√(a²+bc) = ±" + fx(out.l1, 3) + " 为两个互异实根 ⇒ 过每点两条实特征线，斜率 dx/dt = ±" + fx(out.l1, 3) + "。特征向量 (b, λ−a) 的残差 ‖Ar−λr‖ = " + fx(out.res, 2) + "。");
- } else if (mu < -1e-9){
- out.type = "ell"; out.l1 = 0; out.l2 = 0; out.re = 0; out.im = Math.sqrt(-mu);
- out.ns = 0;
- out.res = Math.max(l2Res(0, 0, out.im), l2Res(0, 0, -out.im));
- setTxt("e2-l1", "+" + fx(out.im, 3) + "i"); setTxt("e2-l2", "−" + fx(out.im, 3) + "i");
- setTxt("e2-type", "椭圆型");
- setTxt("e2-ns", "0");
- setTxt("e2-note", "λ = ±" + fx(out.im, 3) + "i 是一对共轭复根 ⇒ 无实特征方向，解不可能有实的弱间断曲线。特征向量取复向量，残差 ‖Ar−λr‖ = " + fx(out.res, 2) + "（复数运算下仍为 0）。");
- } else {
- out.type = zero ? "triv" : "nil";
- out.l1 = 0; out.l2 = 0; out.re = 0; out.im = 0;
- out.ns = zero ? 2 : 1;
- out.res = l2Res(0, 0, 0);
- setTxt("e2-l1", "0"); setTxt("e2-l2", "0（二重）");
- setTxt("e2-type", zero ? "双曲型（A=0 平凡）" : "退化：重根且不可对角化");
- setTxt("e2-ns", zero ? "2" : "1");
- setTxt("e2-note", zero
- ? "A = 0，任何方向都是特征方向，λ=0 二重但 A 可对角化，属双曲型的平凡情形。"
- : "a²+bc = 0 而 A ≠ 0 ⇒ A² = (a²+bc)I = 0，A 是幂零矩阵、只有一个线性无关特征向量，不可对角化。它既不是严格双曲型（根不互异），也不满足「双曲型」要求的 N 个无关特征向量——教材明确指出这类情形需要另划类别。特征线退化为 t = 常数（水平），信息不沿 x 传播。");
- }
- setTxt("e2-mu", fx(mu, 3));
- setTxt("e2-res", fx(out.res, 2));
- l2Draw();
- return out;
+  var mu = l2Mu(), out = { mu: mu };
+  var zero = (Math.abs(L2.a) + Math.abs(L2.b) + Math.abs(L2.c) < 1e-12);
+  if (mu > 1e-9){
+    out.type = "hyp"; out.l1 = Math.sqrt(mu); out.l2 = -Math.sqrt(mu);
+    out.re = Math.sqrt(mu); out.im = 0; out.ns = 2;
+    out.res = Math.max(l2Res(out.l1, out.l1, 0), l2Res(out.l2, out.l2, 0));
+    setTxt("e2-l1", fx(out.l1, 3)); setTxt("e2-l2", fx(out.l2, 3));
+    setTxt("e2-type", "严格双曲型");
+    setTxt("e2-ns", "2");
+    setTxt("e2-note", "λ = ±√(a²+bc) = ±" + fx(out.l1, 3) + " 为两个互异实根 ⇒ 过每点两条实特征线，斜率 dx/dt = ±" + fx(out.l1, 3) + "。特征向量 (b, λ−a) 的残差 ‖Ar−λr‖ = " + fx(out.res, 2) + "。");
+  } else if (mu < -1e-9){
+    out.type = "ell"; out.l1 = 0; out.l2 = 0; out.re = 0; out.im = Math.sqrt(-mu);
+    out.ns = 0;
+    out.res = Math.max(l2Res(0, 0, out.im), l2Res(0, 0, -out.im));
+    setTxt("e2-l1", "+" + fx(out.im, 3) + "i"); setTxt("e2-l2", "−" + fx(out.im, 3) + "i");
+    setTxt("e2-type", "椭圆型");
+    setTxt("e2-ns", "0");
+    setTxt("e2-note", "λ = ±" + fx(out.im, 3) + "i 是一对共轭复根 ⇒ 无实特征方向，解不可能有实的弱间断曲线。特征向量取复向量，残差 ‖Ar−λr‖ = " + fx(out.res, 2) + "（复数运算下仍为 0）。");
+  } else {
+    out.type = zero ? "triv" : "nil";
+    out.l1 = 0; out.l2 = 0; out.re = 0; out.im = 0;
+    out.ns = zero ? 2 : 1;
+    out.res = l2Res(0, 0, 0);
+    setTxt("e2-l1", "0"); setTxt("e2-l2", "0（二重）");
+    setTxt("e2-type", zero ? "双曲型（A=0 平凡）" : "退化：重根且不可对角化");
+    setTxt("e2-ns", zero ? "2" : "1");
+    setTxt("e2-note", zero
+      ? "A = 0，任何方向都是特征方向，λ=0 二重但 A 可对角化，属双曲型的平凡情形。"
+      : "a²+bc = 0 而 A ≠ 0 ⇒ A² = (a²+bc)I = 0，A 是幂零矩阵、只有一个线性无关特征向量，不可对角化。它既不是严格双曲型（根不互异），也不满足「双曲型」要求的 N 个无关特征向量——教材明确指出这类情形需要另划类别。特征线退化为 t = 常数（水平），信息不沿 x 传播。");
+  }
+  setTxt("e2-mu", fx(mu, 3));
+  setTxt("e2-res", fx(out.res, 2));
+  l2Draw();
+  return out;
 }
 
 function l2Draw(){
- var c = cx("e2c"), W = $("e2c").width, H = $("e2c").height;
- c.clearRect(0, 0, W, H);
- var P = panel(50, 22, 400, H - 66, -3, 3, 0, 2.2);
- frame(c, P, "x", "t");
- var i, n;
- if (L2.a * L2.a + L2.b * L2.c > 1e-9){
- var lam = Math.sqrt(L2.a * L2.a + L2.b * L2.c);
- for (n = -6; n <= 6; n++){
- var x0 = n * 0.5;
- for (var s = 0; s < 2; s++){
- var L = (s === 0) ? lam : -lam;
- var x1 = x0 + L * 2.2;
- c.beginPath(); c.moveTo(P.X(x0), P.Y(0)); c.lineTo(P.X(x1), P.Y(2.2));
- c.strokeStyle = (s === 0) ? "rgba(15,110,86,.55)" : "rgba(216,90,48,.55)";
- c.lineWidth = 1; c.stroke();
- }
- }
- c.fillStyle = "#57606a"; c.font = "12px system-ui,sans-serif";
- c.textAlign = "left"; c.textBaseline = "top";
- c.fillText("两族实特征线：dx/dt = ±" + lam.toFixed(2), P.x0 + 8, P.y0 + 8);
- } else if (Math.abs(L2.a * L2.a + L2.b * L2.c) <= 1e-9){
- for (n = 1; n <= 5; n++){
- var yy = 2.2 * n / 6;
- c.beginPath(); c.moveTo(P.x0, P.Y(yy)); c.lineTo(P.x0 + P.w, P.Y(yy));
- c.strokeStyle = "rgba(83,74,183,.45)"; c.lineWidth = 1; c.stroke();
- }
- c.fillStyle = "#3C3489"; c.font = "12px system-ui,sans-serif";
- c.textAlign = "left"; c.textBaseline = "top";
- c.fillText("特征线退化为 t = 常数（λ=0），只有一族", P.x0 + 8, P.y0 + 8);
- } else {
- c.strokeStyle = "#eef0f2"; c.lineWidth = 1;
- for (n = 1; n < 12; n++){
- c.beginPath(); c.moveTo(P.x0 + P.w * n / 12, P.y0); c.lineTo(P.x0 + P.w * n / 12, P.y0 + P.h); c.stroke();
- c.beginPath(); c.moveTo(P.x0, P.y0 + P.h * n / 12); c.lineTo(P.x0 + P.w, P.y0 + P.h * n / 12); c.stroke();
- }
- c.fillStyle = "#0F6E56"; c.font = "13px system-ui,sans-serif";
- c.textAlign = "center"; c.textBaseline = "middle";
- c.fillText("无实特征方向", P.x0 + P.w / 2, P.y0 + P.h / 2 - 10);
- c.font = "12px ui-monospace,monospace"; c.fillStyle = "#57606a";
- c.fillText("λ = ±" + Math.sqrt(-(L2.a * L2.a + L2.b * L2.c)).toFixed(2) + "i", P.x0 + P.w / 2, P.y0 + P.h / 2 + 12);
- c.font = "11px system-ui,sans-serif";
- c.fillText("椭圆型：不存在实的弱间断曲线", P.x0 + P.w / 2, P.y0 + P.h / 2 + 34);
- }
- /* 右：复平面 */
- var Q = panel(520, 22, 200, H - 66, -2, 2, -2, 2);
- frame(c, Q, "Re λ", "Im λ");
- c.strokeStyle = "#c9d1d9"; c.lineWidth = 1;
- c.beginPath(); c.moveTo(Q.x0, Q.Y(0)); c.lineTo(Q.x0 + Q.w, Q.Y(0)); c.stroke();
- c.beginPath(); c.moveTo(Q.X(0), Q.y0); c.lineTo(Q.X(0), Q.y0 + Q.h); c.stroke();
- c.fillStyle = "#57606a"; c.font = "10px ui-monospace,monospace";
- c.textAlign = "center"; c.textBaseline = "top";
- c.fillText("1", Q.X(1), Q.Y(0) + 3); c.fillText("−1", Q.X(-1), Q.Y(0) + 3);
- c.textAlign = "right"; c.textBaseline = "middle";
- c.fillText("i", Q.X(0) - 3, Q.Y(1)); c.fillText("−i", Q.X(0) - 3, Q.Y(-1));
- var pts = [];
- if (L2.a * L2.a + L2.b * L2.c > 1e-9){
- var l0 = Math.sqrt(L2.a * L2.a + L2.b * L2.c);
- pts = [[l0, 0], [-l0, 0]];
- } else if (L2.a * L2.a + L2.b * L2.c < -1e-9){
- var m0 = Math.sqrt(-(L2.a * L2.a + L2.b * L2.c));
- pts = [[0, m0], [0, -m0]];
- } else {
- pts = [[0, 0]];
- }
- for (i = 0; i < pts.length; i++){
- c.fillStyle = (pts[i][1] === 0) ? "#D85A30" : "#0F6E56";
- c.beginPath(); c.arc(Q.X(pts[i][0]), Q.Y(pts[i][1]), 4.5, 0, 6.2832); c.fill();
- }
- c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
- c.textAlign = "center"; c.textBaseline = "top";
- c.fillText("λ 的谱", Q.x0 + Q.w / 2, Q.y0 + Q.h + 4);
+  var c = cx("e2c"), W = $("e2c").width, H = $("e2c").height;
+  c.clearRect(0, 0, W, H);
+  var P = panel(50, 22, 400, H - 66, -3, 3, 0, 2.2);
+  frame(c, P, "x", "t");
+  var i, n;
+  if (L2.a * L2.a + L2.b * L2.c > 1e-9){
+    var lam = Math.sqrt(L2.a * L2.a + L2.b * L2.c);
+    for (n = -6; n <= 6; n++){
+      var x0 = n * 0.5;
+      for (var s = 0; s < 2; s++){
+        var L = (s === 0) ? lam : -lam;
+        var x1 = x0 + L * 2.2;
+        c.beginPath(); c.moveTo(P.X(x0), P.Y(0)); c.lineTo(P.X(x1), P.Y(2.2));
+        c.strokeStyle = (s === 0) ? "rgba(15,110,86,.55)" : "rgba(216,90,48,.55)";
+        c.lineWidth = 1; c.stroke();
+      }
+    }
+    c.fillStyle = "#57606a"; c.font = "12px system-ui,sans-serif";
+    c.textAlign = "left"; c.textBaseline = "top";
+    c.fillText("两族实特征线：dx/dt = ±" + lam.toFixed(2), P.x0 + 8, P.y0 + 8);
+  } else if (Math.abs(L2.a * L2.a + L2.b * L2.c) <= 1e-9){
+    for (n = 1; n <= 5; n++){
+      var yy = 2.2 * n / 6;
+      c.beginPath(); c.moveTo(P.x0, P.Y(yy)); c.lineTo(P.x0 + P.w, P.Y(yy));
+      c.strokeStyle = "rgba(83,74,183,.45)"; c.lineWidth = 1; c.stroke();
+    }
+    c.fillStyle = "#3C3489"; c.font = "12px system-ui,sans-serif";
+    c.textAlign = "left"; c.textBaseline = "top";
+    c.fillText("特征线退化为 t = 常数（λ=0），只有一族", P.x0 + 8, P.y0 + 8);
+  } else {
+    c.strokeStyle = "#eef0f2"; c.lineWidth = 1;
+    for (n = 1; n < 12; n++){
+      c.beginPath(); c.moveTo(P.x0 + P.w * n / 12, P.y0); c.lineTo(P.x0 + P.w * n / 12, P.y0 + P.h); c.stroke();
+      c.beginPath(); c.moveTo(P.x0, P.y0 + P.h * n / 12); c.lineTo(P.x0 + P.w, P.y0 + P.h * n / 12); c.stroke();
+    }
+    c.fillStyle = "#0F6E56"; c.font = "13px system-ui,sans-serif";
+    c.textAlign = "center"; c.textBaseline = "middle";
+    c.fillText("无实特征方向", P.x0 + P.w / 2, P.y0 + P.h / 2 - 10);
+    c.font = "12px ui-monospace,monospace"; c.fillStyle = "#57606a";
+    c.fillText("λ = ±" + Math.sqrt(-(L2.a * L2.a + L2.b * L2.c)).toFixed(2) + "i", P.x0 + P.w / 2, P.y0 + P.h / 2 + 12);
+    c.font = "11px system-ui,sans-serif";
+    c.fillText("椭圆型：不存在实的弱间断曲线", P.x0 + P.w / 2, P.y0 + P.h / 2 + 34);
+  }
+  /* 右：复平面 */
+  var Q = panel(520, 22, 200, H - 66, -2, 2, -2, 2);
+  frame(c, Q, "Re λ", "Im λ");
+  c.strokeStyle = "#c9d1d9"; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(Q.x0, Q.Y(0)); c.lineTo(Q.x0 + Q.w, Q.Y(0)); c.stroke();
+  c.beginPath(); c.moveTo(Q.X(0), Q.y0); c.lineTo(Q.X(0), Q.y0 + Q.h); c.stroke();
+  c.fillStyle = "#57606a"; c.font = "10px ui-monospace,monospace";
+  c.textAlign = "center"; c.textBaseline = "top";
+  c.fillText("1", Q.X(1), Q.Y(0) + 3); c.fillText("−1", Q.X(-1), Q.Y(0) + 3);
+  c.textAlign = "right"; c.textBaseline = "middle";
+  c.fillText("i", Q.X(0) - 3, Q.Y(1)); c.fillText("−i", Q.X(0) - 3, Q.Y(-1));
+  var pts = [];
+  if (L2.a * L2.a + L2.b * L2.c > 1e-9){
+    var l0 = Math.sqrt(L2.a * L2.a + L2.b * L2.c);
+    pts = [[l0, 0], [-l0, 0]];
+  } else if (L2.a * L2.a + L2.b * L2.c < -1e-9){
+    var m0 = Math.sqrt(-(L2.a * L2.a + L2.b * L2.c));
+    pts = [[0, m0], [0, -m0]];
+  } else {
+    pts = [[0, 0]];
+  }
+  for (i = 0; i < pts.length; i++){
+    c.fillStyle = (pts[i][1] === 0) ? "#D85A30" : "#0F6E56";
+    c.beginPath(); c.arc(Q.X(pts[i][0]), Q.Y(pts[i][1]), 4.5, 0, 6.2832); c.fill();
+  }
+  c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = "center"; c.textBaseline = "top";
+  c.fillText("λ 的谱", Q.x0 + Q.w / 2, Q.y0 + Q.h + 4);
 }
 
 /* ==================== 实验 03：黎曼不变量 ==================== */
 var L3 = { mode: "pulse", c0: 1.0, rho0: 1.0, t: 0.8, x: 0.3 };
 function l3U0(x){
- if (L3.mode === "pulse") return Math.exp(-Math.pow(x / 0.7, 2));
- if (L3.mode === "right") return Math.exp(-Math.pow((x + 1.4) / 0.45, 2));
- if (L3.mode === "left") return Math.exp(-Math.pow((x - 1.4) / 0.45, 2));
- return 0.8 * Math.tanh(x / 0.35);
+  if (L3.mode === "pulse") return Math.exp(-Math.pow(x / 0.7, 2));
+  if (L3.mode === "right") return Math.exp(-Math.pow((x + 1.4) / 0.45, 2));
+  if (L3.mode === "left") return Math.exp(-Math.pow((x - 1.4) / 0.45, 2));
+  return 0.8 * Math.tanh(x / 0.35);
 }
 function l3R0(x){
- if (L3.mode === "right") return (L3.rho0 / L3.c0) * l3U0(x);
- if (L3.mode === "left") return -(L3.rho0 / L3.c0) * l3U0(x);
- return 0;
+  if (L3.mode === "right") return (L3.rho0 / L3.c0) * l3U0(x);
+  if (L3.mode === "left") return -(L3.rho0 / L3.c0) * l3U0(x);
+  return 0;
 }
 function l3V10(x){ return L3.rho0 * l3U0(x) + L3.c0 * l3R0(x); }
 function l3V20(x){ return L3.rho0 * l3U0(x) - L3.c0 * l3R0(x); }
@@ -995,108 +995,108 @@ function l3U(x, t){ return (l3V10(x - L3.c0 * t) + l3V20(x + L3.c0 * t)) / (2 * 
 function l3Rho(x, t){ return (l3V10(x - L3.c0 * t) - l3V20(x + L3.c0 * t)) / (2 * L3.c0); }
 
 function l3Res(){
- var h = 1e-4, e1 = 0, e2 = 0, s1 = 0, s2 = 0, i, x, t;
- for (i = 0; i < 15; i++){
- x = -2 + 4 * i / 14; t = 0.05 + ((i * 7) % 11) * 0.1;
- var ut = (l3U(x, t + h) - l3U(x, t - h)) / (2 * h);
- var rx = (l3Rho(x + h, t) - l3Rho(x - h, t)) / (2 * h);
- e1 = Math.max(e1, Math.abs(ut + L3.c0 * L3.c0 / L3.rho0 * rx));
- s1 = Math.max(s1, Math.abs(ut));
- var rt = (l3Rho(x, t + h) - l3Rho(x, t - h)) / (2 * h);
- var ux = (l3U(x + h, t) - l3U(x - h, t)) / (2 * h);
- e2 = Math.max(e2, Math.abs(rt + L3.rho0 * ux));
- s2 = Math.max(s2, Math.abs(rt));
- }
- return { res1: e1 / (s1 || 1), res2: e2 / (s2 || 1) };
+  var h = 1e-4, e1 = 0, e2 = 0, s1 = 0, s2 = 0, i, x, t;
+  for (i = 0; i < 15; i++){
+    x = -2 + 4 * i / 14; t = 0.05 + ((i * 7) % 11) * 0.1;
+    var ut = (l3U(x, t + h) - l3U(x, t - h)) / (2 * h);
+    var rx = (l3Rho(x + h, t) - l3Rho(x - h, t)) / (2 * h);
+    e1 = Math.max(e1, Math.abs(ut + L3.c0 * L3.c0 / L3.rho0 * rx));
+    s1 = Math.max(s1, Math.abs(ut));
+    var rt = (l3Rho(x, t + h) - l3Rho(x, t - h)) / (2 * h);
+    var ux = (l3U(x + h, t) - l3U(x - h, t)) / (2 * h);
+    e2 = Math.max(e2, Math.abs(rt + L3.rho0 * ux));
+    s2 = Math.max(s2, Math.abs(rt));
+  }
+  return { res1: e1 / (s1 || 1), res2: e2 / (s2 || 1) };
 }
 
 function l3Update(){
- var x = L3.x, t = L3.t, out = {};
- var u = l3U(x, t), rho = l3Rho(x, t);
- var v1 = L3.rho0 * u + L3.c0 * rho, v2 = L3.rho0 * u - L3.c0 * rho;
- var x1 = x - L3.c0 * t, x2 = x + L3.c0 * t;
- out.u = u; out.rho = rho; out.v1 = v1; out.v2 = v2; out.x1 = x1; out.x2 = x2;
- out.inv = Math.abs(v1 - l3V10(x1)) + Math.abs(v2 - l3V20(x2));
- var r = l3Res(); out.res1 = r.res1; out.res2 = r.res2;
- setTxt("e3-u", fx(u, 4));
- setTxt("e3-rho", fx(rho, 4));
- setTxt("e3-v", fx(v1, 4) + " / " + fx(v2, 4));
- setTxt("e3-x1", fx(x1, 3));
- setTxt("e3-x2", fx(x2, 3));
- setTxt("e3-inv", fx(out.inv, 2));
- setTxt("e3-res1", fx(out.res1, 2));
- setTxt("e3-res2", fx(out.res2, 2));
- var txt = {
- pulse: "单脉冲：u 的鼓包一半向右（v₁ 通道）、一半向左（v₂ 通道），这正是达朗贝尔公式里 ½φ(x−ct)+½φ(x+ct) 的来源。",
- right: "纯右行波：v₂ ≡ 0，全部信息只走 x−c₀t 一族特征线，波形不变地平移。",
- left: "纯左行波：v₁ ≡ 0，全部信息只走 x+c₀t 一族特征线。",
- step: "阶跃：向左右各散出一半台阶，中间留下 0（tanh 的对称性）。"
- };
- setTxt("e3-note", txt[L3.mode] + " 不变量守恒误差 " + fx(out.inv, 2) +
- "（v₁ 与 v₁⁰(x−c₀t) 之差加 v₂ 与 v₂⁰(x+c₀t) 之差）；把解代回 (2.10) 的中心差分残差为 " +
- fx(out.res1, 2) + " 与 " + fx(out.res2, 2) + "（相对量级，截断误差 O(h²)）。");
- l3Draw();
- return out;
+  var x = L3.x, t = L3.t, out = {};
+  var u = l3U(x, t), rho = l3Rho(x, t);
+  var v1 = L3.rho0 * u + L3.c0 * rho, v2 = L3.rho0 * u - L3.c0 * rho;
+  var x1 = x - L3.c0 * t, x2 = x + L3.c0 * t;
+  out.u = u; out.rho = rho; out.v1 = v1; out.v2 = v2; out.x1 = x1; out.x2 = x2;
+  out.inv = Math.abs(v1 - l3V10(x1)) + Math.abs(v2 - l3V20(x2));
+  var r = l3Res(); out.res1 = r.res1; out.res2 = r.res2;
+  setTxt("e3-u", fx(u, 4));
+  setTxt("e3-rho", fx(rho, 4));
+  setTxt("e3-v", fx(v1, 4) + " / " + fx(v2, 4));
+  setTxt("e3-x1", fx(x1, 3));
+  setTxt("e3-x2", fx(x2, 3));
+  setTxt("e3-inv", fx(out.inv, 2));
+  setTxt("e3-res1", fx(out.res1, 2));
+  setTxt("e3-res2", fx(out.res2, 2));
+  var txt = {
+    pulse: "单脉冲：u 的鼓包一半向右（v₁ 通道）、一半向左（v₂ 通道），这正是达朗贝尔公式里 ½φ(x−ct)+½φ(x+ct) 的来源。",
+    right: "纯右行波：v₂ ≡ 0，全部信息只走 x−c₀t 一族特征线，波形不变地平移。",
+    left: "纯左行波：v₁ ≡ 0，全部信息只走 x+c₀t 一族特征线。",
+    step: "阶跃：向左右各散出一半台阶，中间留下 0（tanh 的对称性）。"
+  };
+  setTxt("e3-note", txt[L3.mode] + " 不变量守恒误差 " + fx(out.inv, 2) +
+    "（v₁ 与 v₁⁰(x−c₀t) 之差加 v₂ 与 v₂⁰(x+c₀t) 之差）；把解代回 (2.10) 的中心差分残差为 " +
+    fx(out.res1, 2) + " 与 " + fx(out.res2, 2) + "（相对量级，截断误差 O(h²)）。");
+  l3Draw();
+  return out;
 }
 
 function l3Draw(){
- var c = cx("e3c"), W = $("e3c").width, H = $("e3c").height;
- c.clearRect(0, 0, W, H);
- var P = panel(48, 22, 380, H - 70, -3, 3, 0, 2.0);
- frame(c, P, "x", "t");
- var i, n, x0, L = L3.c0;
- for (n = -8; n <= 8; n++){
- x0 = n * 0.4;
- for (var s = 0; s < 2; s++){
- var lam = (s === 0) ? L : -L;
- var x1 = x0 + lam * 2.0;
- c.beginPath(); c.moveTo(P.X(x0), P.Y(0)); c.lineTo(P.X(x1), P.Y(2.0));
- c.strokeStyle = "rgba(24,95,165,.16)"; c.lineWidth = 1; c.stroke();
- }
- }
- /* 过探针的两条特征线 + 依赖区间 */
- var px = P.X(L3.x), py = P.Y(L3.t);
- var xa = L3.x - L3.c0 * L3.t, xb = L3.x + L3.c0 * L3.t;
- c.beginPath(); c.moveTo(P.X(xb), P.Y(0)); c.lineTo(px, py);
- c.strokeStyle = "#0F6E56"; c.lineWidth = 1.6; c.stroke();
- c.beginPath(); c.moveTo(P.X(xa), P.Y(0)); c.lineTo(px, py);
- c.strokeStyle = "#D85A30"; c.lineWidth = 1.6; c.stroke();
- c.beginPath(); c.moveTo(P.X(xa), P.Y(0)); c.lineTo(P.X(xb), P.Y(0));
- c.strokeStyle = "#D85A30"; c.lineWidth = 3.2; c.stroke();
- c.fillStyle = "#712D17"; c.font = "11px system-ui,sans-serif";
- c.textAlign = "center"; c.textBaseline = "top";
- c.fillText("依赖区间", P.X((xa + xb) / 2), P.Y(0) + 5);
- c.fillStyle = "#534AB7"; c.beginPath(); c.arc(px, py, 4.5, 0, 6.2832); c.fill();
- c.fillStyle = "#26215C"; c.font = "11px ui-monospace,monospace";
- c.textAlign = "left"; c.textBaseline = "bottom";
- c.fillText("(" + L3.x.toFixed(2) + ", " + L3.t.toFixed(2) + ")", px + 7, py - 4);
- c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
- c.textAlign = "left"; c.textBaseline = "top";
- c.fillText("v₁ 沿绿线不变 · v₂ 沿橙线不变（点画布可移动探针）", P.x0 + 8, P.y0 + 8);
+  var c = cx("e3c"), W = $("e3c").width, H = $("e3c").height;
+  c.clearRect(0, 0, W, H);
+  var P = panel(48, 22, 380, H - 70, -3, 3, 0, 2.0);
+  frame(c, P, "x", "t");
+  var i, n, x0, L = L3.c0;
+  for (n = -8; n <= 8; n++){
+    x0 = n * 0.4;
+    for (var s = 0; s < 2; s++){
+      var lam = (s === 0) ? L : -L;
+      var x1 = x0 + lam * 2.0;
+      c.beginPath(); c.moveTo(P.X(x0), P.Y(0)); c.lineTo(P.X(x1), P.Y(2.0));
+      c.strokeStyle = "rgba(24,95,165,.16)"; c.lineWidth = 1; c.stroke();
+    }
+  }
+  /* 过探针的两条特征线 + 依赖区间 */
+  var px = P.X(L3.x), py = P.Y(L3.t);
+  var xa = L3.x - L3.c0 * L3.t, xb = L3.x + L3.c0 * L3.t;
+  c.beginPath(); c.moveTo(P.X(xb), P.Y(0)); c.lineTo(px, py);
+  c.strokeStyle = "#0F6E56"; c.lineWidth = 1.6; c.stroke();
+  c.beginPath(); c.moveTo(P.X(xa), P.Y(0)); c.lineTo(px, py);
+  c.strokeStyle = "#D85A30"; c.lineWidth = 1.6; c.stroke();
+  c.beginPath(); c.moveTo(P.X(xa), P.Y(0)); c.lineTo(P.X(xb), P.Y(0));
+  c.strokeStyle = "#D85A30"; c.lineWidth = 3.2; c.stroke();
+  c.fillStyle = "#712D17"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = "center"; c.textBaseline = "top";
+  c.fillText("依赖区间", P.X((xa + xb) / 2), P.Y(0) + 5);
+  c.fillStyle = "#534AB7"; c.beginPath(); c.arc(px, py, 4.5, 0, 6.2832); c.fill();
+  c.fillStyle = "#26215C"; c.font = "11px ui-monospace,monospace";
+  c.textAlign = "left"; c.textBaseline = "bottom";
+  c.fillText("(" + L3.x.toFixed(2) + ", " + L3.t.toFixed(2) + ")", px + 7, py - 4);
+  c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = "left"; c.textBaseline = "top";
+  c.fillText("v₁ 沿绿线不变 · v₂ 沿橙线不变（点画布可移动探针）", P.x0 + 8, P.y0 + 8);
 
- /* 右：t* 时刻的 u 与 ρ 剖面 */
- var Q = panel(470, 22, W - 510, H - 70, -3, 3, -1.1, 1.1);
- frame(c, Q, "x", "值");
- c.strokeStyle = "#eef0f2"; c.lineWidth = 1;
- c.beginPath(); c.moveTo(Q.x0, Q.Y(0)); c.lineTo(Q.x0 + Q.w, Q.Y(0)); c.stroke();
- var drawCurve = function(f, col, lw){
- c.beginPath();
- for (var k = 0; k <= 260; k++){
- var xx = -3 + 6 * k / 260, yy = f(xx, L3.t);
- if (k === 0) c.moveTo(Q.X(xx), Q.Y(yy)); else c.lineTo(Q.X(xx), Q.Y(yy));
- }
- c.strokeStyle = col; c.lineWidth = lw; c.stroke();
- };
- drawCurve(l3U, "#185FA5", 1.8);
- drawCurve(l3Rho, "#D85A30", 1.4);
- c.fillStyle = "#185FA5"; c.font = "11px system-ui,sans-serif";
- c.textAlign = "left"; c.textBaseline = "top";
- c.fillText("u(x, t*)", Q.x0 + 6, Q.y0 + 6);
- c.fillStyle = "#D85A30";
- c.fillText("ρ(x, t*)", Q.x0 + 56, Q.y0 + 6);
- c.strokeStyle = "#534AB7"; c.lineWidth = 1; c.setLineDash([3, 3]);
- c.beginPath(); c.moveTo(Q.X(L3.x), Q.y0); c.lineTo(Q.X(L3.x), Q.y0 + Q.h); c.stroke();
- c.setLineDash([]);
+  /* 右：t* 时刻的 u 与 ρ 剖面 */
+  var Q = panel(470, 22, W - 510, H - 70, -3, 3, -1.1, 1.1);
+  frame(c, Q, "x", "值");
+  c.strokeStyle = "#eef0f2"; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(Q.x0, Q.Y(0)); c.lineTo(Q.x0 + Q.w, Q.Y(0)); c.stroke();
+  var drawCurve = function(f, col, lw){
+    c.beginPath();
+    for (var k = 0; k <= 260; k++){
+      var xx = -3 + 6 * k / 260, yy = f(xx, L3.t);
+      if (k === 0) c.moveTo(Q.X(xx), Q.Y(yy)); else c.lineTo(Q.X(xx), Q.Y(yy));
+    }
+    c.strokeStyle = col; c.lineWidth = lw; c.stroke();
+  };
+  drawCurve(l3U, "#185FA5", 1.8);
+  drawCurve(l3Rho, "#D85A30", 1.4);
+  c.fillStyle = "#185FA5"; c.font = "11px system-ui,sans-serif";
+  c.textAlign = "left"; c.textBaseline = "top";
+  c.fillText("u(x, t*)", Q.x0 + 6, Q.y0 + 6);
+  c.fillStyle = "#D85A30";
+  c.fillText("ρ(x, t*)", Q.x0 + 56, Q.y0 + 6);
+  c.strokeStyle = "#534AB7"; c.lineWidth = 1; c.setLineDash([3, 3]);
+  c.beginPath(); c.moveTo(Q.X(L3.x), Q.y0); c.lineTo(Q.X(L3.x), Q.y0 + Q.h); c.stroke();
+  c.setLineDash([]);
 }
 
 /* ==================== 实验 04：逐次逼近 ==================== */
@@ -1104,274 +1104,274 @@ var L4 = { alpha: 1.0, T0: 1.2, n: 8, eta: 0.05 };
 var L4D = 0.04, L4XI0 = -2.64, L4NG = 133;
 
 function l4phi(k, x){
- if (k === 0) return Math.exp(-x * x);
- return 0.5 * Math.exp(-Math.pow(x - 0.3, 2));
+  if (k === 0) return Math.exp(-x * x);
+  return 0.5 * Math.exp(-Math.pow(x - 0.3, 2));
 }
 function l4Nodes(){
- var pts = [], a, b, x, t, i, j;
- for (a = 0; a < 11; a++){
- for (b = 0; b < 9; b++){
- x = -1.2 + 2.4 * a / 10; t = L4.T0 * b / 8;
- i = Math.round((x - t - L4XI0) / L4D);
- j = Math.round((x + t - L4XI0) / L4D);
- if (i >= 0 && i < L4NG && j >= 0 && j < L4NG && j >= i) pts.push([i, j, x, t]);
- }
- }
- return pts;
+  var pts = [], a, b, x, t, i, j;
+  for (a = 0; a < 11; a++){
+    for (b = 0; b < 9; b++){
+      x = -1.2 + 2.4 * a / 10; t = L4.T0 * b / 8;
+      i = Math.round((x - t - L4XI0) / L4D);
+      j = Math.round((x + t - L4XI0) / L4D);
+      if (i >= 0 && i < L4NG && j >= 0 && j < L4NG && j >= i) pts.push([i, j, x, t]);
+    }
+  }
+  return pts;
 }
 function l4MaxDiff(A, B, pts){
- var m = 0;
- for (var k = 0; k < pts.length; k++){
- var idx = pts[k][0] * L4NG + pts[k][1];
- m = Math.max(m, Math.abs(A[0][idx] - B[0][idx]), Math.abs(A[1][idx] - B[1][idx]));
- }
- return m;
+  var m = 0;
+  for (var k = 0; k < pts.length; k++){
+    var idx = pts[k][0] * L4NG + pts[k][1];
+    m = Math.max(m, Math.abs(A[0][idx] - B[0][idx]), Math.abs(A[1][idx] - B[1][idx]));
+  }
+  return m;
 }
 function l4Solve(shift, nlev){
- var NG = L4NG, d = L4D, XI0 = L4XI0, i, j, S, lev;
- var V = [new Float64Array(NG * NG), new Float64Array(NG * NG)];
- for (i = 0; i < NG; i++){
- var xi = XI0 + i * d;
- for (j = 0; j < NG; j++){
- var eta = XI0 + j * d;
- V[0][i * NG + j] = l4phi(0, eta) + shift;
- V[1][i * NG + j] = l4phi(1, xi) + shift;
- }
- }
- var init = V, hist = [], al = L4.alpha;
- for (lev = 0; lev < nlev; lev++){
- var N0 = new Float64Array(NG * NG), N1 = new Float64Array(NG * NG);
- for (j = 0; j < NG; j++){
- var p0 = l4phi(0, XI0 + j * d) + shift;
- S = 0;
- for (i = j; i >= 0; i--){
- if (i < j) S += 0.5 * d * (V[1][(i + 1) * NG + j] + V[1][i * NG + j]);
- N0[i * NG + j] = p0 + 0.5 * al * S;
- }
- }
- for (i = 0; i < NG; i++){
- var p1 = l4phi(1, XI0 + i * d) + shift;
- S = 0;
- for (j = i; j < NG; j++){
- if (j > i) S += 0.5 * d * (V[0][i * NG + (j - 1)] + V[0][i * NG + j]);
- N1[i * NG + j] = p1 + 0.5 * al * S;
- }
- }
- var nv = [N0, N1];
- hist.push(l4MaxDiff(nv, V, l4Nodes()));
- V = nv;
- }
- return { V: V, init: init, hist: hist };
+  var NG = L4NG, d = L4D, XI0 = L4XI0, i, j, S, lev;
+  var V = [new Float64Array(NG * NG), new Float64Array(NG * NG)];
+  for (i = 0; i < NG; i++){
+    var xi = XI0 + i * d;
+    for (j = 0; j < NG; j++){
+      var eta = XI0 + j * d;
+      V[0][i * NG + j] = l4phi(0, eta) + shift;
+      V[1][i * NG + j] = l4phi(1, xi) + shift;
+    }
+  }
+  var init = V, hist = [], al = L4.alpha;
+  for (lev = 0; lev < nlev; lev++){
+    var N0 = new Float64Array(NG * NG), N1 = new Float64Array(NG * NG);
+    for (j = 0; j < NG; j++){
+      var p0 = l4phi(0, XI0 + j * d) + shift;
+      S = 0;
+      for (i = j; i >= 0; i--){
+        if (i < j) S += 0.5 * d * (V[1][(i + 1) * NG + j] + V[1][i * NG + j]);
+        N0[i * NG + j] = p0 + 0.5 * al * S;
+      }
+    }
+    for (i = 0; i < NG; i++){
+      var p1 = l4phi(1, XI0 + i * d) + shift;
+      S = 0;
+      for (j = i; j < NG; j++){
+        if (j > i) S += 0.5 * d * (V[0][i * NG + (j - 1)] + V[0][i * NG + j]);
+        N1[i * NG + j] = p1 + 0.5 * al * S;
+      }
+    }
+    var nv = [N0, N1];
+    hist.push(l4MaxDiff(nv, V, l4Nodes()));
+    V = nv;
+  }
+  return { V: V, init: init, hist: hist };
 }
 function l4Fact(n){ var r = 1; for (var i = 2; i <= n; i++) r *= i; return r; }
 
 function l4Update(){
- var pts = l4Nodes(), out = {};
- var A = L4.alpha, N = 2, T0 = L4.T0;
- var sol = l4Solve(0, L4.n);
- /* M = max(|V⁽⁰⁾|, |V⁽¹⁾|) */
- var M = 0, k;
- for (k = 0; k < pts.length; k++){
- var id = pts[k][0] * L4NG + pts[k][1];
- M = Math.max(M, Math.abs(sol.init[0][id]), Math.abs(sol.init[1][id]));
- }
- /* 第一层迭代的幅值也计入 M */
- var sol1 = l4Solve(0, 1);
- for (k = 0; k < pts.length; k++){
- var id1 = pts[k][0] * L4NG + pts[k][1];
- M = Math.max(M, Math.abs(sol1.V[0][id1]), Math.abs(sol1.V[1][id1]));
- }
- var n = L4.n;
- var d = sol.hist[sol.hist.length - 1];
- var bound = 2 * M * Math.pow(A * N * T0, n) / l4Fact(n);
- out.M = M; out.d = d; out.bound = bound;
- out.ratio = (bound > 0) ? d / bound : (d === 0 ? 0 : Infinity);
- out.hist = sol.hist;
- /* 稳定性：初值整体抬 η，比较解 */
- var nst = 16;
- var Va = l4Solve(0, nst), Vb = l4Solve(L4.eta, nst);
- var eps = l4MaxDiff(Va.V, Vb.V, pts);
- out.eps = eps;
- out.eb = L4.eta * Math.exp(A * N * T0);
- out.epsTheory = L4.eta * Math.exp(A * T0);
- out.ratio2 = (out.eb > 0) ? eps / out.eb : 0;
- /* 尾部相对残差 */
- var mx = 0;
- for (k = 0; k < pts.length; k++){
- var id2 = pts[k][0] * L4NG + pts[k][1];
- mx = Math.max(mx, Math.abs(sol.V[0][id2]), Math.abs(sol.V[1][id2]));
- }
- out.tail = d / (mx || 1);
- setTxt("e4-M", fx(M, 4));
- setTxt("e4-d", fx(d, 2));
- setTxt("e4-bd", fx(bound, 2));
- setTxt("e4-ratio", fx(out.ratio, 3));
- setTxt("e4-eps", fx(eps, 5));
- setTxt("e4-eb", fx(out.eb, 5));
- setTxt("e4-eps2", fx(eps / (out.epsTheory || 1), 4));
- setTxt("e4-tail", fx(out.tail, 2));
- setTxt("e4-note", "n = " + n + " 时相邻迭代差 " + fx(d, 2) + " ≤ 界 " + fx(bound, 2) +
- "，比值 " + fx(out.ratio, 3) + "。稳定性：初值同时抬 η = " + L4.eta.toFixed(2) +
- "，实测 ε = " + fx(eps, 5) + "，与闭式 η·e^{αT₀} = " + fx(out.epsTheory, 5) +
- " 相符；教材界 η·e^{ANT₀} = " + fx(out.eb, 5) + "（N=2 的粗化），实测比界小 " +
- fx(out.eb / (eps || 1), 3) + " 倍。");
- l4Draw(sol, Va, Vb, pts);
- return out;
+  var pts = l4Nodes(), out = {};
+  var A = L4.alpha, N = 2, T0 = L4.T0;
+  var sol = l4Solve(0, L4.n);
+  /* M = max(|V⁽⁰⁾|, |V⁽¹⁾|) */
+  var M = 0, k;
+  for (k = 0; k < pts.length; k++){
+    var id = pts[k][0] * L4NG + pts[k][1];
+    M = Math.max(M, Math.abs(sol.init[0][id]), Math.abs(sol.init[1][id]));
+  }
+  /* 第一层迭代的幅值也计入 M */
+  var sol1 = l4Solve(0, 1);
+  for (k = 0; k < pts.length; k++){
+    var id1 = pts[k][0] * L4NG + pts[k][1];
+    M = Math.max(M, Math.abs(sol1.V[0][id1]), Math.abs(sol1.V[1][id1]));
+  }
+  var n = L4.n;
+  var d = sol.hist[sol.hist.length - 1];
+  var bound = 2 * M * Math.pow(A * N * T0, n) / l4Fact(n);
+  out.M = M; out.d = d; out.bound = bound;
+  out.ratio = (bound > 0) ? d / bound : (d === 0 ? 0 : Infinity);
+  out.hist = sol.hist;
+  /* 稳定性：初值整体抬 η，比较解 */
+  var nst = 16;
+  var Va = l4Solve(0, nst), Vb = l4Solve(L4.eta, nst);
+  var eps = l4MaxDiff(Va.V, Vb.V, pts);
+  out.eps = eps;
+  out.eb = L4.eta * Math.exp(A * N * T0);
+  out.epsTheory = L4.eta * Math.exp(A * T0);
+  out.ratio2 = (out.eb > 0) ? eps / out.eb : 0;
+  /* 尾部相对残差 */
+  var mx = 0;
+  for (k = 0; k < pts.length; k++){
+    var id2 = pts[k][0] * L4NG + pts[k][1];
+    mx = Math.max(mx, Math.abs(sol.V[0][id2]), Math.abs(sol.V[1][id2]));
+  }
+  out.tail = d / (mx || 1);
+  setTxt("e4-M", fx(M, 4));
+  setTxt("e4-d", fx(d, 2));
+  setTxt("e4-bd", fx(bound, 2));
+  setTxt("e4-ratio", fx(out.ratio, 3));
+  setTxt("e4-eps", fx(eps, 5));
+  setTxt("e4-eb", fx(out.eb, 5));
+  setTxt("e4-eps2", fx(eps / (out.epsTheory || 1), 4));
+  setTxt("e4-tail", fx(out.tail, 2));
+  setTxt("e4-note", "n = " + n + " 时相邻迭代差 " + fx(d, 2) + " ≤ 界 " + fx(bound, 2) +
+    "，比值 " + fx(out.ratio, 3) + "。稳定性：初值同时抬 η = " + L4.eta.toFixed(2) +
+    "，实测 ε = " + fx(eps, 5) + "，与闭式 η·e^{αT₀} = " + fx(out.epsTheory, 5) +
+    " 相符；教材界 η·e^{ANT₀} = " + fx(out.eb, 5) + "（N=2 的粗化），实测比界小 " +
+    fx(out.eb / (eps || 1), 3) + " 倍。");
+  l4Draw(sol, Va, Vb, pts);
+  return out;
 }
 
 function l4Draw(sol, Va, Vb, pts){
- var c = cx("e4c"), W = $("e4c").width, H = $("e4c").height;
- c.clearRect(0, 0, W, H);
- var A = L4.alpha, T0 = L4.T0, M = 0, k;
- for (k = 0; k < pts.length; k++){
- var id = pts[k][0] * L4NG + pts[k][1];
- M = Math.max(M, Math.abs(sol.init[0][id]), Math.abs(sol.init[1][id]));
- }
- /* 左：收敛曲线（对数，纵轴按数据自适应） */
- var nmax = Math.max(L4.n, 1);
- var vals = [], i, pos = [];
- for (i = 0; i <= nmax; i++){
- var b = 2 * M * Math.pow(A * 2 * T0, i) / l4Fact(i);
- vals.push(b);
- if (b > 0) pos.push(b);
- }
- for (i = 0; i < sol.hist.length; i++) if (sol.hist[i] > 0) pos.push(sol.hist[i]);
- var lo = pos.length ? Math.min.apply(null, pos) : 1e-6;
- var hi = pos.length ? Math.max.apply(null, pos) : 1;
- var vmin = Math.max(1e-18, lo / 20), vmax = hi * 4;
- var l0 = Math.log10(vmin), l1 = Math.log10(vmax);
- var P = panel(70, 24, 330, H - 92, 0, nmax, l0, l1);
- frame(c, P, "n", "log₁₀");
- c.strokeStyle = "#eef0f2"; c.lineWidth = 1;
- c.fillStyle = "#8b949e"; c.font = "9.5px ui-monospace,monospace";
- c.textAlign = "right"; c.textBaseline = "middle";
- for (i = 0; i <= 4; i++){
- var lv = l0 + (l1 - l0) * i / 4;
- var yy = P.Y(lv);
- c.beginPath(); c.moveTo(P.x0, yy); c.lineTo(P.x0 + P.w, yy); c.stroke();
- c.fillText("1e" + Math.round(lv), P.x0 - 4, yy);
- }
- var drawLine = function(arr, col, lw, dots){
- c.beginPath();
- var started = false;
- for (var q = 0; q < arr.length; q++){
- var val = arr[q];
- if (!isFinite(val) || val <= 0) continue;
- var xx = P.X(q), yy = P.Y(Math.log10(val));
- if (!started){ c.moveTo(xx, yy); started = true; } else c.lineTo(xx, yy);
- }
- c.strokeStyle = col; c.lineWidth = lw; c.stroke();
- if (dots){
- for (var q2 = 0; q2 < arr.length; q2++){
- if (!isFinite(arr[q2]) || arr[q2] <= 0) continue;
- c.fillStyle = col; c.beginPath();
- c.arc(P.X(q2), P.Y(Math.log10(arr[q2])), 2.6, 0, 6.2832); c.fill();
- }
- }
- };
- drawLine(vals, "#0F6E56", 1.4, false);
- drawLine(sol.hist, "#D85A30", 1.8, true);
- c.font = "11px system-ui,sans-serif";
- c.textAlign = "left"; c.textBaseline = "top";
- c.fillStyle = "#712D17";
- c.fillText("红点 = 实测 |V⁽ⁿ⁺¹⁾−V⁽ⁿ⁾|", P.x0, P.y0 + P.h + 10);
- c.fillStyle = "#085041";
- c.fillText("绿线 = 教材界 2M(ANt)ⁿ/n!", P.x0, P.y0 + P.h + 26);
+  var c = cx("e4c"), W = $("e4c").width, H = $("e4c").height;
+  c.clearRect(0, 0, W, H);
+  var A = L4.alpha, T0 = L4.T0, M = 0, k;
+  for (k = 0; k < pts.length; k++){
+    var id = pts[k][0] * L4NG + pts[k][1];
+    M = Math.max(M, Math.abs(sol.init[0][id]), Math.abs(sol.init[1][id]));
+  }
+  /* 左：收敛曲线（对数，纵轴按数据自适应） */
+  var nmax = Math.max(L4.n, 1);
+  var vals = [], i, pos = [];
+  for (i = 0; i <= nmax; i++){
+    var b = 2 * M * Math.pow(A * 2 * T0, i) / l4Fact(i);
+    vals.push(b);
+    if (b > 0) pos.push(b);
+  }
+  for (i = 0; i < sol.hist.length; i++) if (sol.hist[i] > 0) pos.push(sol.hist[i]);
+  var lo = pos.length ? Math.min.apply(null, pos) : 1e-6;
+  var hi = pos.length ? Math.max.apply(null, pos) : 1;
+  var vmin = Math.max(1e-18, lo / 20), vmax = hi * 4;
+  var l0 = Math.log10(vmin), l1 = Math.log10(vmax);
+  var P = panel(70, 24, 330, H - 92, 0, nmax, l0, l1);
+  frame(c, P, "n", "log₁₀");
+  c.strokeStyle = "#eef0f2"; c.lineWidth = 1;
+  c.fillStyle = "#8b949e"; c.font = "9.5px ui-monospace,monospace";
+  c.textAlign = "right"; c.textBaseline = "middle";
+  for (i = 0; i <= 4; i++){
+    var lv = l0 + (l1 - l0) * i / 4;
+    var yy = P.Y(lv);
+    c.beginPath(); c.moveTo(P.x0, yy); c.lineTo(P.x0 + P.w, yy); c.stroke();
+    c.fillText("1e" + Math.round(lv), P.x0 - 4, yy);
+  }
+  var drawLine = function(arr, col, lw, dots){
+    c.beginPath();
+    var started = false;
+    for (var q = 0; q < arr.length; q++){
+      var val = arr[q];
+      if (!isFinite(val) || val <= 0) continue;
+      var xx = P.X(q), yy = P.Y(Math.log10(val));
+      if (!started){ c.moveTo(xx, yy); started = true; } else c.lineTo(xx, yy);
+    }
+    c.strokeStyle = col; c.lineWidth = lw; c.stroke();
+    if (dots){
+      for (var q2 = 0; q2 < arr.length; q2++){
+        if (!isFinite(arr[q2]) || arr[q2] <= 0) continue;
+        c.fillStyle = col; c.beginPath();
+        c.arc(P.X(q2), P.Y(Math.log10(arr[q2])), 2.6, 0, 6.2832); c.fill();
+      }
+    }
+  };
+  drawLine(vals, "#0F6E56", 1.4, false);
+  drawLine(sol.hist, "#D85A30", 1.8, true);
+  c.font = "11px system-ui,sans-serif";
+  c.textAlign = "left"; c.textBaseline = "top";
+  c.fillStyle = "#712D17";
+  c.fillText("红点 = 实测 |V⁽ⁿ⁺¹⁾−V⁽ⁿ⁾|", P.x0, P.y0 + P.h + 10);
+  c.fillStyle = "#085041";
+  c.fillText("绿线 = 教材界 2M(ANt)ⁿ/n!", P.x0, P.y0 + P.h + 26);
 
- /* 右：稳定性曲线 ε(t) 与两条界 */
- var Q = panel(500, 24, W - 540, H - 74, 0, T0, 0, Math.max(0.05, L4.eta * Math.exp(2 * A * T0) * 1.08));
- frame(c, Q, "t", "偏差");
- var epsAt = function(t){
- var m = 0;
- for (var a = 0; a < 11; a++){
- var x = -1.2 + 2.4 * a / 10;
- var ii = Math.round((x - t - L4XI0) / L4D), jj = Math.round((x + t - L4XI0) / L4D);
- if (ii < 0 || ii >= L4NG || jj < 0 || jj >= L4NG || jj < ii) continue;
- var id3 = ii * L4NG + jj;
- m = Math.max(m, Math.abs(Va.V[0][id3] - Vb.V[0][id3]), Math.abs(Va.V[1][id3] - Vb.V[1][id3]));
- }
- return m;
- };
- var ce = [], cb = [], ct = [], q;
- for (q = 0; q <= 40; q++){
- var tt = T0 * q / 40;
- ce.push([tt, epsAt(tt)]);
- cb.push([tt, L4.eta * Math.exp(2 * A * tt)]);
- ct.push([tt, L4.eta * Math.exp(A * tt)]);
- }
- var poly = function(arr, col, lw, dash){
- c.beginPath();
- for (var z = 0; z < arr.length; z++){
- var xx2 = Q.X(arr[z][0]), yy2 = Q.Y(arr[z][1]);
- if (z === 0) c.moveTo(xx2, yy2); else c.lineTo(xx2, yy2);
- }
- c.strokeStyle = col; c.lineWidth = lw;
- if (dash) c.setLineDash([4, 3]); else c.setLineDash([]);
- c.stroke(); c.setLineDash([]);
- };
- poly(cb, "#0F6E56", 1.3, true);
- poly(ct, "#534AB7", 1.3, true);
- poly(ce, "#D85A30", 1.9, false);
- /* 图例放在右下角（曲线在右上，左下从 η 起，右下角是空白区） */
- c.font = "11px system-ui,sans-serif";
- c.textAlign = "left"; c.textBaseline = "top";
- var lx = Q.x0 + Q.w - 128, ly = Q.y0 + Q.h - 62;
- c.strokeStyle = "#D85A30"; c.lineWidth = 1.9;
- c.beginPath(); c.moveTo(lx, ly + 5); c.lineTo(lx + 18, ly + 5); c.stroke();
- c.fillStyle = "#712D17"; c.fillText("实测 ε(t)", lx + 24, ly - 2);
- c.strokeStyle = "#0F6E56"; c.lineWidth = 1.3; c.setLineDash([4, 3]);
- c.beginPath(); c.moveTo(lx, ly + 25); c.lineTo(lx + 18, ly + 25); c.stroke();
- c.setLineDash([]);
- c.fillStyle = "#085041"; c.fillText("η e^{ANt}（教材界）", lx + 24, ly + 18);
- c.strokeStyle = "#534AB7"; c.setLineDash([4, 3]);
- c.beginPath(); c.moveTo(lx, ly + 45); c.lineTo(lx + 18, ly + 45); c.stroke();
- c.setLineDash([]);
- c.fillStyle = "#3C3489"; c.fillText("η e^{αt}（闭式解）", lx + 24, ly + 38);
- c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
- c.fillText("扰动增长 ε(t) 与两条上界", Q.x0, Q.y0 + Q.h + 10);
+  /* 右：稳定性曲线 ε(t) 与两条界 */
+  var Q = panel(500, 24, W - 540, H - 74, 0, T0, 0, Math.max(0.05, L4.eta * Math.exp(2 * A * T0) * 1.08));
+  frame(c, Q, "t", "偏差");
+  var epsAt = function(t){
+    var m = 0;
+    for (var a = 0; a < 11; a++){
+      var x = -1.2 + 2.4 * a / 10;
+      var ii = Math.round((x - t - L4XI0) / L4D), jj = Math.round((x + t - L4XI0) / L4D);
+      if (ii < 0 || ii >= L4NG || jj < 0 || jj >= L4NG || jj < ii) continue;
+      var id3 = ii * L4NG + jj;
+      m = Math.max(m, Math.abs(Va.V[0][id3] - Vb.V[0][id3]), Math.abs(Va.V[1][id3] - Vb.V[1][id3]));
+    }
+    return m;
+  };
+  var ce = [], cb = [], ct = [], q;
+  for (q = 0; q <= 40; q++){
+    var tt = T0 * q / 40;
+    ce.push([tt, epsAt(tt)]);
+    cb.push([tt, L4.eta * Math.exp(2 * A * tt)]);
+    ct.push([tt, L4.eta * Math.exp(A * tt)]);
+  }
+  var poly = function(arr, col, lw, dash){
+    c.beginPath();
+    for (var z = 0; z < arr.length; z++){
+      var xx2 = Q.X(arr[z][0]), yy2 = Q.Y(arr[z][1]);
+      if (z === 0) c.moveTo(xx2, yy2); else c.lineTo(xx2, yy2);
+    }
+    c.strokeStyle = col; c.lineWidth = lw;
+    if (dash) c.setLineDash([4, 3]); else c.setLineDash([]);
+    c.stroke(); c.setLineDash([]);
+  };
+  poly(cb, "#0F6E56", 1.3, true);
+  poly(ct, "#534AB7", 1.3, true);
+  poly(ce, "#D85A30", 1.9, false);
+  /* 图例放在右下角（曲线在右上，左下从 η 起，右下角是空白区） */
+  c.font = "11px system-ui,sans-serif";
+  c.textAlign = "left"; c.textBaseline = "top";
+  var lx = Q.x0 + Q.w - 128, ly = Q.y0 + Q.h - 62;
+  c.strokeStyle = "#D85A30"; c.lineWidth = 1.9;
+  c.beginPath(); c.moveTo(lx, ly + 5); c.lineTo(lx + 18, ly + 5); c.stroke();
+  c.fillStyle = "#712D17"; c.fillText("实测 ε(t)", lx + 24, ly - 2);
+  c.strokeStyle = "#0F6E56"; c.lineWidth = 1.3; c.setLineDash([4, 3]);
+  c.beginPath(); c.moveTo(lx, ly + 25); c.lineTo(lx + 18, ly + 25); c.stroke();
+  c.setLineDash([]);
+  c.fillStyle = "#085041"; c.fillText("η e^{ANt}（教材界）", lx + 24, ly + 18);
+  c.strokeStyle = "#534AB7"; c.setLineDash([4, 3]);
+  c.beginPath(); c.moveTo(lx, ly + 45); c.lineTo(lx + 18, ly + 45); c.stroke();
+  c.setLineDash([]);
+  c.fillStyle = "#3C3489"; c.fillText("η e^{αt}（闭式解）", lx + 24, ly + 38);
+  c.fillStyle = "#57606a"; c.font = "11px system-ui,sans-serif";
+  c.fillText("扰动增长 ε(t) 与两条上界", Q.x0, Q.y0 + Q.h + 10);
 }
 
 /* ==================== 交互绑定 ==================== */
 function bindModes(boxId, attr, cb){
- var box = $(boxId);
- if (!box) return;
- var kids = box.children;
- if (!kids || !kids.length){
- kids = (box.querySelectorAll ? box.querySelectorAll(".sf") : []) || [];
- }
- if (!kids.length) return;
- for (var i = 0; i < kids.length; i++){
- (function(el){
- el.addEventListener("click", function(){
- for (var k = 0; k < kids.length; k++) kids[k].className = "sf";
- el.className = "sf on";
- cb(el.getAttribute(attr));
- });
- })(kids[i]);
- }
+  var box = $(boxId);
+  if (!box) return;
+  var kids = box.children;
+  if (!kids || !kids.length){
+    kids = (box.querySelectorAll ? box.querySelectorAll(".sf") : []) || [];
+  }
+  if (!kids.length) return;
+  for (var i = 0; i < kids.length; i++){
+    (function(el){
+      el.addEventListener("click", function(){
+        for (var k = 0; k < kids.length; k++) kids[k].className = "sf";
+        el.className = "sf on";
+        cb(el.getAttribute(attr));
+      });
+    })(kids[i]);
+  }
 }
 bindModes("e1-modes", "data-m", function(m){
- L1.mode = m;
- var nl = $("e1-nl"); if (nl) nl.style.display = (m === "nonlin") ? "flex" : "none";
- l1Update();
+  L1.mode = m;
+  var nl = $("e1-nl"); if (nl) nl.style.display = (m === "nonlin") ? "flex" : "none";
+  l1Update();
 });
 bindModes("e2-modes", "data-m", function(m){
- var S = { ac: [0, 1, 1], cr: [0, -1, 1], el: [0, -1, -1], nil: [0, 1, 0] }[m];
- if (!S) return;
- L2.a = S[0]; L2.b = S[1]; L2.c = S[2];
- $("e2-a").value = S[0]; $("e2-b").value = S[1]; $("e2-c").value = S[2];
- setTxt("e2-av", S[0].toFixed(2)); setTxt("e2-bv", S[1].toFixed(2)); setTxt("e2-cv", S[2].toFixed(2));
- l2Update();
+  var S = { ac: [0, 1, 1], cr: [0, -1, 1], el: [0, -1, -1], nil: [0, 1, 0] }[m];
+  if (!S) return;
+  L2.a = S[0]; L2.b = S[1]; L2.c = S[2];
+  $("e2-a").value = S[0]; $("e2-b").value = S[1]; $("e2-c").value = S[2];
+  setTxt("e2-av", S[0].toFixed(2)); setTxt("e2-bv", S[1].toFixed(2)); setTxt("e2-cv", S[2].toFixed(2));
+  l2Update();
 });
 bindModes("e3-modes", "data-m", function(m){ L3.mode = m; l3Update(); });
 
 function onRange(id, valId, dec, fn){
- var el = $(id); if (!el) return;
- el.addEventListener("input", function(){
- var v = parseFloat(el.value);
- if (valId) setTxt(valId, v.toFixed(dec));
- fn(v);
- });
+  var el = $(id); if (!el) return;
+  el.addEventListener("input", function(){
+    var v = parseFloat(el.value);
+    if (valId) setTxt(valId, v.toFixed(dec));
+    fn(v);
+  });
 }
 onRange("e1-x", "e1-xv", 2, function(v){ L1.x0 = v; l1Update(); });
 onRange("e1-t", "e1-tv", 2, function(v){ L1.t0 = v; l1Update(); });
@@ -1389,20 +1389,20 @@ onRange("e4-n", "e4-nv", 0, function(v){ L4.n = Math.round(v); l4Update(); });
 onRange("e4-e", "e4-ev", 2, function(v){ L4.eta = v; l4Update(); });
 
 (function(){
- var cv = $("e3c");
- if (!cv || !cv.addEventListener) return;
- cv.addEventListener("click", function(ev){
- var rect = cv.getBoundingClientRect();
- var px = (ev.clientX - rect.left) * (cv.width / rect.width);
- var py = (ev.clientY - rect.top) * (cv.height / rect.height);
- var P = panel(48, 22, 380, cv.height - 70, -3, 3, 0, 2.0);
- var x = P.invX(px), t = P.invY(py);
- if (x < -3 || x > 3 || t < 0 || t > 2) return;
- L3.x = Math.max(-3, Math.min(3, x)); L3.t = Math.max(0, Math.min(2, t));
- $("e3-x").value = L3.x; $("e3-t").value = L3.t;
- setTxt("e3-xv", L3.x.toFixed(2)); setTxt("e3-tv", L3.t.toFixed(2));
- l3Update();
- });
+  var cv = $("e3c");
+  if (!cv || !cv.addEventListener) return;
+  cv.addEventListener("click", function(ev){
+    var rect = cv.getBoundingClientRect();
+    var px = (ev.clientX - rect.left) * (cv.width / rect.width);
+    var py = (ev.clientY - rect.top) * (cv.height / rect.height);
+    var P = panel(48, 22, 380, cv.height - 70, -3, 3, 0, 2.0);
+    var x = P.invX(px), t = P.invY(py);
+    if (x < -3 || x > 3 || t < 0 || t > 2) return;
+    L3.x = Math.max(-3, Math.min(3, x)); L3.t = Math.max(0, Math.min(2, t));
+    $("e3-x").value = L3.x; $("e3-t").value = L3.t;
+    setTxt("e3-xv", L3.x.toFixed(2)); setTxt("e3-tv", L3.t.toFixed(2));
+    l3Update();
+  });
 })();
 
 /* ==================== 首屏 ==================== */
@@ -1413,54 +1413,54 @@ l4Update();
 
 /* ==================== 闸门钩子 ==================== */
 window.PDE5 = {
- L1: {
- set: function(o){
- if (o.mode !== undefined) L1.mode = o.mode;
- if (o.a !== undefined) L1.a = o.a;
- if (o.k !== undefined) L1.k = o.k;
- if (o.eps !== undefined) L1.eps = o.eps;
- if (o.x0 !== undefined) L1.x0 = o.x0;
- if (o.t0 !== undefined) L1.t0 = o.t0;
- return l1Update();
- },
- get: function(){ return l1Update(); },
- path: l1Path
- },
- L2: {
- set: function(a, b, c){ L2.a = a; L2.b = b; L2.c = c; return l2Update(); },
- get: function(){ return l2Update(); }
- },
- L3: {
- set: function(o){
- if (o.mode !== undefined) L3.mode = o.mode;
- if (o.c0 !== undefined) L3.c0 = o.c0;
- if (o.rho0 !== undefined) L3.rho0 = o.rho0;
- if (o.t !== undefined) L3.t = o.t;
- if (o.x !== undefined) L3.x = o.x;
- return l3Update();
- },
- get: function(){ return l3Update(); },
- fields: function(x, t){ return { u: l3U(x, t), rho: l3Rho(x, t), v10: l3V10(x), v20: l3V20(x) }; }
- },
- L4: {
- set: function(o){
- if (o.alpha !== undefined) L4.alpha = o.alpha;
- if (o.T0 !== undefined) L4.T0 = o.T0;
- if (o.n !== undefined) L4.n = o.n;
- if (o.eta !== undefined) L4.eta = o.eta;
- return l4Update();
- },
- get: function(){ return l4Update(); },
- solve: l4Solve
- },
- util: { fx: fx, phi: l4phi, D: L4D, XI0: L4XI0, NG: L4NG }
+  L1: {
+    set: function(o){
+      if (o.mode !== undefined) L1.mode = o.mode;
+      if (o.a !== undefined) L1.a = o.a;
+      if (o.k !== undefined) L1.k = o.k;
+      if (o.eps !== undefined) L1.eps = o.eps;
+      if (o.x0 !== undefined) L1.x0 = o.x0;
+      if (o.t0 !== undefined) L1.t0 = o.t0;
+      return l1Update();
+    },
+    get: function(){ return l1Update(); },
+    path: l1Path
+  },
+  L2: {
+    set: function(a, b, c){ L2.a = a; L2.b = b; L2.c = c; return l2Update(); },
+    get: function(){ return l2Update(); }
+  },
+  L3: {
+    set: function(o){
+      if (o.mode !== undefined) L3.mode = o.mode;
+      if (o.c0 !== undefined) L3.c0 = o.c0;
+      if (o.rho0 !== undefined) L3.rho0 = o.rho0;
+      if (o.t !== undefined) L3.t = o.t;
+      if (o.x !== undefined) L3.x = o.x;
+      return l3Update();
+    },
+    get: function(){ return l3Update(); },
+    fields: function(x, t){ return { u: l3U(x, t), rho: l3Rho(x, t), v10: l3V10(x), v20: l3V20(x) }; }
+  },
+  L4: {
+    set: function(o){
+      if (o.alpha !== undefined) L4.alpha = o.alpha;
+      if (o.T0 !== undefined) L4.T0 = o.T0;
+      if (o.n !== undefined) L4.n = o.n;
+      if (o.eta !== undefined) L4.eta = o.eta;
+      return l4Update();
+    },
+    get: function(){ return l4Update(); },
+    solve: l4Solve
+  },
+  util: { fx: fx, phi: l4phi, D: L4D, XI0: L4XI0, NG: L4NG }
 };
 
 setTimeout(function(){
- var off = $("mjx-offline");
- var ok = false;
- try { ok = document.body.classList.contains("mjx-ready"); } catch (e){ ok = true; }
- if (off && !ok) off.hidden = false;
+  var off = $("mjx-offline");
+  var ok = false;
+  try { ok = document.body.classList.contains("mjx-ready"); } catch (e){ ok = true; }
+  if (off && !ok) off.hidden = false;
 }, 12000);
 
 })();

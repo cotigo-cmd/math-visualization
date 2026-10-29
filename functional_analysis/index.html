@@ -5,23 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>泛函分析 · 可视化系列</title>
 <!--
- 学科索引（泛函分析）。2026-10-25 由占位门牌重建为正式章节导航（五天冲刺计划）。
- 版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；实验台结构沿用全站约定。
- 加新页时：在对应章节把 .card.planned 改成 <a class="card"> 并填 href，图号接 FA-01 顺编。
- 验证脚本在工作区根（相对路径 ../../verify_formulas.js）；总导航 site/index.html 的卡片标签
- 在冲刺结束后由用户统一 flipping，自动化任务不要改总导航（避免并发写冲突）。
+  学科索引（泛函分析）。2026-10-25 由占位门牌重建为正式章节导航（五天冲刺计划）。
+  版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；实验台结构沿用全站约定。
+  加新页时：在对应章节把 .card.planned 改成 <a class="card"> 并填 href，图号接 FA-01 顺编。
+  对应教材《泛函分析》（ch01 距离线性空间 / ch02 Hilbert 空间 /
+  ch03 Banach 有界线性算子 / ch04 谱论 / ch05 广义函数论大意）。
+  引用位置精确到章节；公式引用前按上下文重组核对。
+  验证脚本在工作区根（相对路径 ../../verify_formulas.js）；总导航 site/index.html 的卡片标签
+  在冲刺结束后由用户统一 flipping，自动化任务不要改总导航（避免并发写冲突）。
 -->
 <style>
 :root{
- --paper:#f4f5fa; --sheet:#ffffff; --ink:#1e2440; --muted:#5a6078;
- --line:#d8dcee; --line-2:#b9c0dd;
- --indigo:#3d4fa3; --indigo-soft:#e9ecfa;
- --violet:#7a4fa3; --violet-soft:#f1eaf8;
- --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  --paper:#f4f5fa; --sheet:#ffffff; --ink:#1e2440; --muted:#5a6078;
+  --line:#d8dcee; --line-2:#b9c0dd;
+  --indigo:#3d4fa3; --indigo-soft:#e9ecfa;
+  --violet:#7a4fa3; --violet-soft:#f1eaf8;
+  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 body{margin:0;color:var(--ink);background:var(--paper);
- font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:820px;margin:0 auto;padding:60px 22px 70px}
 .crumb{font-size:13px;margin:0 0 18px}
 .crumb a{color:var(--indigo);text-decoration:none}
@@ -31,17 +34,17 @@ h1{font-size:28px;margin:8px 0 10px;font-weight:650;letter-spacing:-.01em}
 p.lead{color:#3c4260;font-size:15.5px;margin:0 0 10px;max-width:70ch}
 .meta{font-size:12.5px;color:var(--muted);margin:14px 0 0;font-family:var(--mono)}
 h2{font-size:13px;font-weight:600;color:var(--muted);margin:44px 0 14px;letter-spacing:.06em;
- text-transform:uppercase;border-bottom:1px solid var(--line-2);padding-bottom:8px;
- display:flex;justify-content:space-between;align-items:baseline}
+  text-transform:uppercase;border-bottom:1px solid var(--line-2);padding-bottom:8px;
+  display:flex;justify-content:space-between;align-items:baseline}
 h2 span{font-family:var(--mono);font-weight:400;letter-spacing:.02em;text-transform:none}
 a.card,.card{display:block;background:var(--sheet);border:1px solid var(--line);border-radius:12px;
- padding:16px 20px;margin:0 0 11px;text-decoration:none;color:var(--ink);position:relative}
+  padding:16px 20px;margin:0 0 11px;text-decoration:none;color:var(--ink);position:relative}
 a.card{border-left:3px solid var(--indigo)}
 a.card:hover{border-color:var(--indigo)}
 .card .t{font-size:16px;font-weight:650;margin:0 0 5px;color:#232a4e}
 .card .d{font-size:13.4px;color:var(--muted);margin:0;line-height:1.75}
 .tag{display:inline-block;font-family:var(--mono);font-size:11px;border-radius:999px;
- padding:1px 9px;margin-right:8px;vertical-align:2px;letter-spacing:.02em}
+  padding:1px 9px;margin-right:8px;vertical-align:2px;letter-spacing:.02em}
 .tag.live{background:var(--indigo-soft);color:var(--indigo);border:1px solid rgba(61,79,163,.3)}
 .tag.plan{background:#eef0f6;color:#6a7090;border:1px solid var(--line)}
 .tag.ch{background:var(--violet-soft);color:var(--violet);border:1px solid rgba(122,79,163,.3)}
@@ -49,7 +52,7 @@ a.card:hover{border-color:var(--indigo)}
 .card.planned .t{font-weight:600;color:#4a5080}
 footer{margin-top:52px;padding-top:16px;border-top:1px solid var(--line-2);font-size:12.6px;color:var(--muted)}
 footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var(--line);
- border-radius:4px;padding:0 5px;font-size:11.8px}
+  border-radius:4px;padding:0 5px;font-size:11.8px}
 @media(max-width:620px){h1{font-size:23px}.wrap{padding-top:44px}}
 </style>
 </head>
@@ -60,7 +63,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <p class="kicker">泛函分析 · 交互教学页</p>
 <h1>泛函分析 · 可视化系列</h1>
 <p class="lead">江泽坚、孙善利《泛函分析》的配套交互页。无限维空间里直觉何时失效、投影如何选出「最近的点」、算子的谱长什么样——每页一个可拖动的实验台，页内所有数字都由工作区脚本实测得出。 没学过实分析也能进：先看例子和反例，再回头看定义。</p>
-<p class="meta">教材 5 章 · 图号 FA-01 起顺编 · 2026-10-25 重建索引 · FA-01–FA-04 已上线 · 页面零依赖、可离线打开（公式渲染需联网）</p>
+<p class="meta">教材 5 章 · 图号 FA-01 起顺编 · 2026-10-25 重建索引 · FA-01–FA-03 已上线 · 页面零依赖、可离线打开（公式渲染需联网）</p>
 
 <h2>第 2 章 · Hilbert 空间 <span>ch02</span></h2>
 
@@ -81,8 +84,7 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <a class="card" href="算子范数与共轭空间.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">FA-03 · ch03</span>算子范数与共轭空间</p>
 <p class="d">五个实验台全部实测对账：01 单位球映成椭圆（拖探针走长轴端点，比值顶到 σ₁=1.75 就上不去；同一矩阵三种诱导范数 2 / 1.75 / 2，核对 ‖A‖₂ ≤ √(‖A‖₁‖A‖∞)；幂零 A²=0 时 ‖A‖=1 而谱半径 0）；02 有界 ⇔ 连续（微分算子 ‖Dxₙ‖/‖xₙ‖=n 沿 n 无界，积分算子 K=1/(1+s+t) 的比值封顶在 M=ln2=0.693147 且被 x≡1=sgn K 顶到）；03 Neumann 级数与谱半径（A=r[[1,k],[0,1]] 取 r=0.6,k=3 时 ‖A‖=1.98&gt;1 而 ρ=0.6，定理 1.1 前提失效却仍可逆，实测 ‖(I−A)⁻¹‖=11.78——顺手说明 1/(1−ρ) 不是界；k=0 时界精确取等；n=2000 时 ‖Aⁿ‖^{1/n}=0.603 贴住 ρ；Volterra 离散 σ₁/μ=0.6386→2/π，‖Vⁿ‖^{1/n} 单调掉到 1.11，故 I−V 对任意 μ 可逆）；04 共轭空间（Hölder 极值向量 x*=c/‖c‖₂ 使 f(x*)=‖c‖_q 精确取等，残差 2.2e−16；x* 与 ker f 的夹角只在 p=2 时是 90.00°，p=3 时 78.43°——Banach 空间没有正交的几何来源）；05 二次对偶与自反（τ 保范残差 0，c₀ 的截断列对常数 1 的距离恒为 1，故 τ(c₀) 不稠密、c₀ 非自反）。覆盖 §1 算子范数/逆算子/Neumann 级数/定理 1.2 与 §4 对偶/二次对偶/自反（定理 4.2–4.8）；c₀ 非自反为页内补充例。闸门 verify_readout_fa03.js 111 项。</p>
-<p>版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；实验台结构沿用全站约定。图号 FA-01 起顺编。</p>
-<p>校验：公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed；数值结论必须工作区根脚本实测。2026-10-25 由占位门牌重建；同日 FA-01 上线（verify_readout_fa01.js 134 项通过、公式 199 项 0 failed、链接 0 broken）。2026-10-26 FA-02 上线（第 1 章 §3–§7；verify_readout_fa02.js 155 项通过、公式 338 项 0 failed、smoke_dom 0 异常、链接 147 条 0 broken）。2026-10-27 FA-03 上线（第 3 章 §1、§4；verify_readout_fa03.js 111 项通过、公式 330 项 0 failed、smoke_dom 0 异常、链接 164 条 0 broken）。2026-10-29 FA-04 上线（第 4 章 §1、§3；verify_readout_fa04.js 92 项通过、公式 175 项 0 failed、smoke_dom 0 异常、链接 204 条 0 broken）。</p>
+</a>
 
 <h2>第 4 章 · 有界线性算子谱论 <span>ch04</span></h2>
 
@@ -91,6 +93,17 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <p class="d">预解式地图、单侧移位、乘法算子、紧算子：谱不等于特征值的四种样子。</p>
 </a>
 
+<h2>拓展 · 广义函数 <span>ch05</span></h2>
+
+<div class="card planned">
+<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">FA-05 · ch05</span>广义函数论大意</p>
+<p class="d">δ 函数作为连续线性泛函 · 基本解 · 与本站 PDE 学科「广义函数」页互为参照（同一素材的泛函视角）</p>
+</div>
+
+<footer>
+<p>教材：《泛函分析》（ch01–ch05，按章组织）。引用位置精确到章节；公式引用前按上下文重组核对。</p>
+<p>版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；实验台结构沿用全站约定。图号 FA-01 起顺编。</p>
+<p>校验：公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed；数值结论必须工作区根脚本实测。2026-10-25 由占位门牌重建；同日 FA-01 上线（verify_readout_fa01.js 134 项通过、公式 199 项 0 failed、链接 0 broken）。2026-10-26 FA-02 上线（第 1 章 §3–§7，书页 6–32；verify_readout_fa02.js 155 项通过、公式 338 项 0 failed、smoke_dom 0 异常、链接 147 条 0 broken）。2026-10-27 FA-03 上线（第 3 章 §1、§4，书页 73–78、105–116；verify_readout_fa03.js 111 项通过、公式 330 项 0 failed、smoke_dom 0 异常、链接 164 条 0 broken）。</p>
 </footer>
 
 </div>

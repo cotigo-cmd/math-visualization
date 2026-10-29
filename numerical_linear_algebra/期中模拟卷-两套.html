@@ -5,37 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>期中模拟卷 · 两套 · 数值线性代数</title>
 <!--
- 维护说明（给未来的自己）：
- 1. 本页 = 复习材料，图号 NLA-R2（R2 = 第二份复习材料，配套 NLA-R1 指南）。
- 2. 范围同指南：到最小二乘为止，条件数/浮点/对偶范数不考。两套各 7 题、100 分、100 分钟。
- 3. 全部答案数字由工作区根 verify_exam.js 实测核对，改题必须同步改脚本。
- 4. 设计原则：每套覆盖四模块（矩阵代数与范数 25 分 / SVD 20 分 / 投影与 QR 30 分 / 最小二乘与综合 25 分），
- 题型对位作业原题但换数字——不是原题照抄，避免背答案。
- 5. 打印：.paper 与 .ans 各有 page-break，题目和答案会自动分页。
+  维护说明（给未来的自己）：
+  1. 本页 = 复习材料，图号 NLA-R2（R2 = 第二份复习材料，配套 NLA-R1 指南）。
+  2. 范围同指南：到最小二乘为止，条件数/浮点/对偶范数不考。两套各 7 题、100 分、100 分钟。
+  3. 全部答案数字由工作区根 verify_exam.js 实测核对，改题必须同步改脚本。
+  4. 设计原则：每套覆盖四模块（矩阵代数与范数 25 分 / SVD 20 分 / 投影与 QR 30 分 / 最小二乘与综合 25 分），
+     题型对位作业原题但换数字——不是原题照抄，避免背答案。
+  5. 打印：.paper 与 .ans 各有 page-break，题目和答案会自动分页。
 -->
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "local" },
- options: { enableMenu: false }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
- --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
- --line:#CBD5DF; --grid:#E6EBF1;
- --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--steel);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
- overflow:hidden;margin:0 0 14px;background:var(--card)}
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -44,7 +44,7 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:72ch}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
- border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
 h3{font-size:15px;font-weight:680;margin:26px 0 8px}
 p{margin:10px 0}
@@ -52,9 +52,9 @@ ul,ol{margin:10px 0;padding-left:24px}
 li{margin:5px 0}
 .mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
 .eq{font-size:16.5px;text-align:center;margin:14px 0;padding:12px 14px;background:var(--card);
- border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:14px 0;
- border-radius:0 8px 8px 0;font-size:14px}
+  border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--steel);background:#EFF4F9}
 .note.g{border-left-color:var(--green);background:#EDF6F1}
 .note.a{border-left-color:var(--amber);background:#FBF6E7}
@@ -67,7 +67,7 @@ table.tb th{background:#F2F5F8;font-weight:650;text-align:center;white-space:now
 table.tb td.c{text-align:center}
 table.tb tr.hi td{background:#FBF1ED;font-weight:600}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
- font-size:13px;color:var(--ink2)}
+  font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:22px 0 0;flex-wrap:wrap}
 .pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
@@ -75,22 +75,22 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 
 /* 卷面 */
 .paper{border:1.5px solid var(--ink);border-radius:10px;padding:22px 24px 24px;
- background:var(--card);margin:22px 0}
+  background:var(--card);margin:22px 0}
 .paper .ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;
- gap:8px;border-bottom:1px dashed var(--line);padding-bottom:10px;margin-bottom:6px}
+  gap:8px;border-bottom:1px dashed var(--line);padding-bottom:10px;margin-bottom:6px}
 .paper .ph .ttl{font-size:17px;font-weight:680}
 .paper .ph .meta{font-size:12.5px;color:var(--ink2);font-family:ui-monospace,Consolas,monospace}
 .q{margin:20px 0 0;padding-top:4px}
 .q .qh{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
 .q .qn{font-weight:680;font-size:15px}
 .q .qs{font-size:12px;font-family:ui-monospace,Consolas,monospace;color:#fff;
- background:var(--ink);border-radius:4px;padding:1px 7px}
+  background:var(--ink);border-radius:4px;padding:1px 7px}
 .q .qm{font-size:12px;color:var(--ink2);font-family:ui-monospace,Consolas,monospace}
 .q .qb{font-size:14.8px}
 .q .qb ol{list-style:none;padding-left:0;counter-reset:sub}
 .q .qb ol > li{counter-increment:sub;padding-left:26px;position:relative}
 .q .qb ol > li::before{content:"(" counter(sub,lower-alpha) ")";position:absolute;left:0;
- font-family:ui-monospace,Consolas,monospace;color:var(--steel);font-size:13px}
+  font-family:ui-monospace,Consolas,monospace;color:var(--steel);font-size:13px}
 /* 操作步骤列表用数字，避免与小问的 (a)(b) 撞号 */
 .q .qb ol.ops{counter-reset:op}
 .q .qb ol.ops > li{counter-increment:op;padding-left:24px}
@@ -98,32 +98,32 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 
 /* 答案 */
 .ans{border-left:3px solid var(--green);background:#F4FAF6;border-radius:0 10px 10px 0;
- padding:16px 20px;margin:14px 0 0}
+  padding:16px 20px;margin:14px 0 0}
 .ans .ah{font-size:12.5px;font-weight:680;color:var(--green);letter-spacing:.06em;margin:0 0 8px;
- font-family:ui-monospace,Consolas,monospace}
+  font-family:ui-monospace,Consolas,monospace}
 .ans p{margin:8px 0}
 .ans .eq{background:#fff}
 .key{border-left:3px solid var(--amber);background:#FDF9EC;padding:8px 14px;margin:10px 0;
- border-radius:0 8px 8px 0;font-size:13.5px}
+  border-radius:0 8px 8px 0;font-size:13.5px}
 .key .h{font-weight:680;color:var(--amber)}
 .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:14px 0}
 .toc a{display:block;border:1px solid var(--line);border-radius:8px;padding:9px 13px;
- text-decoration:none;color:var(--ink);font-size:13.5px;background:var(--card)}
+  text-decoration:none;color:var(--ink);font-size:13.5px;background:var(--card)}
 .toc a:hover{border-color:var(--steel)}
 .toc a .n{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--cinn);display:block}
 
 @media print{
- body{background:#fff;font-size:11.5px}
- .wrap{max-width:none;padding:0 6mm}
- .crumb,.pager,footer,.noprint,.toc{display:none}
- h2{page-break-after:avoid;margin-top:16px}
- .paper{border:1px solid #999;padding:12px 14px;page-break-inside:auto}
- .q,.ans,.note,table.tb,.eq{page-break-inside:auto}
- .note,table.tb,.eq,.key{page-break-inside:avoid}
- .q .qh,.ah{page-break-after:avoid}
- .ans{page-break-before:auto;background:#f7f7f7;border-left-color:#888}
- .paper + h2{page-break-before:always}
- .eq{font-size:12px}
+  body{background:#fff;font-size:11.5px}
+  .wrap{max-width:none;padding:0 6mm}
+  .crumb,.pager,footer,.noprint,.toc{display:none}
+  h2{page-break-after:avoid;margin-top:16px}
+  .paper{border:1px solid #999;padding:12px 14px;page-break-inside:auto}
+  .q,.ans,.note,table.tb,.eq{page-break-inside:auto}
+  .note,table.tb,.eq,.key{page-break-inside:avoid}
+  .q .qh,.ah{page-break-after:avoid}
+  .ans{page-break-before:auto;background:#f7f7f7;border-left-color:#888}
+  .paper + h2{page-break-before:always}
+  .eq{font-size:12px}
 }
 </style>
 </head>
@@ -133,10 +133,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb noprint"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
 
 <div class="sheet">
- <div class="cell"><p class="k">图号</p><p class="v no">NLA-R2</p></div>
- <div class="cell" style="flex:2 1 240px"><p class="k">主题</p><p class="v">期中模拟卷 · 两套 + 详解</p></div>
- <div class="cell"><p class="k">规格</p><p class="v">各 7 题 · 100 分 · 100 分钟</p></div>
- <div class="cell"><p class="k">范围</p><p class="v">到最小二乘为止</p></div>
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-R2</p></div>
+  <div class="cell" style="flex:2 1 240px"><p class="k">主题</p><p class="v">期中模拟卷 · 两套 + 详解</p></div>
+  <div class="cell"><p class="k">规格</p><p class="v">各 7 题 · 100 分 · 100 分钟</p></div>
+  <div class="cell"><p class="k">范围</p><p class="v">到最小二乘为止</p></div>
 </div>
 
 <h1>期中模拟卷：两套，各 100 分钟</h1>
@@ -144,10 +144,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="hint">配套材料：知识点与题型见 <a href="./期中复习-指南.html">NLA-R1 期中复习指南</a>；可视化见 NLA-07/08/09。</p>
 
 <div class="toc noprint">
- <a href="#p1"><span class="n">SET 1</span>第一套 · 题目</a>
- <a href="#a1"><span class="n">SET 1</span>第一套 · 详解</a>
- <a href="#p2"><span class="n">SET 2</span>第二套 · 题目</a>
- <a href="#a2"><span class="n">SET 2</span>第二套 · 详解</a>
+  <a href="#p1"><span class="n">SET 1</span>第一套 · 题目</a>
+  <a href="#a1"><span class="n">SET 1</span>第一套 · 详解</a>
+  <a href="#p2"><span class="n">SET 2</span>第二套 · 题目</a>
+  <a href="#a2"><span class="n">SET 2</span>第二套 · 详解</a>
 </div>
 
 <div class="note b">
@@ -160,89 +160,89 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <h2><span class="no">01</span>第一套 · 题目</h2>
 
 <div class="paper" id="p1">
- <div class="ph">
- <span class="ttl">数值线性代数 · 期中模拟（一）</span>
- <span class="meta">100 分钟 · 满分 100 · 闭卷</span>
- </div>
- <p class="hint" style="margin:0">范围：范数 → SVD → QR → 最小二乘。条件数、浮点数不考。计算题保留根号，中途不要转小数。</p>
+  <div class="ph">
+    <span class="ttl">数值线性代数 · 期中模拟（一）</span>
+    <span class="meta">100 分钟 · 满分 100 · 闭卷</span>
+  </div>
+  <p class="hint" style="margin:0">范围：范数 → SVD → QR → 最小二乘。条件数、浮点数不考。计算题保留根号，中途不要转小数。</p>
 
- <div class="q">
- <div class="qh"><span class="qn">第 1 题</span><span class="qs">10 分</span><span class="qm">建议 8 分钟</span></div>
- <div class="qb">
- <p>设 \(B\in\mathbb{R}^{4\times4}\)，对它依次执行以下五个操作：</p>
- <ol class="ops">
- <li>交换第 2 行与第 4 行；</li>
- <li>将第 1 列乘以 \(3\)；</li>
- <li>把第 3 行加到第 1 行；</li>
- <li>删除第 3 列；</li>
- <li>交换第 1 列与第 2 列。</li>
- </ol>
- <p>（a）把最终结果写成含 \(B\) 的矩阵乘积（用初等阵、置换阵、对角阵、选择矩阵表示）。（6 分）<br>
- （b）合并成 \(ABC\) 的形式（\(B\) 为原矩阵），并写出 \(A\)、\(C\) 的阶数。（4 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 1 题</span><span class="qs">10 分</span><span class="qm">建议 8 分钟</span></div>
+    <div class="qb">
+      <p>设 \(B\in\mathbb{R}^{4\times4}\)，对它依次执行以下五个操作：</p>
+      <ol class="ops">
+        <li>交换第 2 行与第 4 行；</li>
+        <li>将第 1 列乘以 \(3\)；</li>
+        <li>把第 3 行加到第 1 行；</li>
+        <li>删除第 3 列；</li>
+        <li>交换第 1 列与第 2 列。</li>
+      </ol>
+      <p>（a）把最终结果写成含 \(B\) 的矩阵乘积（用初等阵、置换阵、对角阵、选择矩阵表示）。（6 分）<br>
+      （b）合并成 \(ABC\) 的形式（\(B\) 为原矩阵），并写出 \(A\)、\(C\) 的阶数。（4 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 2 题</span><span class="qs">15 分</span><span class="qm">建议 12 分钟</span></div>
- <div class="qb">
- <p>设 \(A=\begin{bmatrix}1&2&0\\0&1&2\\2&0&1\end{bmatrix}\)。</p>
- <p>（a）求 \(\|A\|_1,\ \|A\|_2,\ \|A\|_\infty,\ \|A\|_F\)。（8 分）<br>
- （b）验证 \(\|A\|_2\le\|A\|_F\le\sqrt{n}\,\|A\|_2\)（\(n\) 为列数）。（3 分）<br>
- （c）证明对任意 \(m\times n\) 矩阵有 \(\|A\|_1\le\sqrt{m}\,\|A\|_2\)，并构造一个 \(3\times n\) 矩阵使等号成立。（4 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 2 题</span><span class="qs">15 分</span><span class="qm">建议 12 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A=\begin{bmatrix}1&2&0\\0&1&2\\2&0&1\end{bmatrix}\)。</p>
+      <p>（a）求 \(\|A\|_1,\ \|A\|_2,\ \|A\|_\infty,\ \|A\|_F\)。（8 分）<br>
+      （b）验证 \(\|A\|_2\le\|A\|_F\le\sqrt{n}\,\|A\|_2\)（\(n\) 为列数）。（3 分）<br>
+      （c）证明对任意 \(m\times n\) 矩阵有 \(\|A\|_1\le\sqrt{m}\,\|A\|_2\)，并构造一个 \(3\times n\) 矩阵使等号成立。（4 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 3 题</span><span class="qs">20 分</span><span class="qm">建议 22 分钟</span></div>
- <div class="qb">
- <p>设 \(A=\begin{bmatrix}3&4\\0&5\end{bmatrix}\)。</p>
- <p>（a）求 \(A^{\mathrm{T}}A\) 的特征值与 \(A\) 的奇异值。（4 分）<br>
- （b）求完整的 SVD \(A=U\Sigma V^{\mathrm{T}}\)，并说明这是负号最少的形式。（8 分）<br>
- （c）求 \(\|A\|_1,\ \|A\|_2,\ \|A\|_\infty,\ \|A\|_F\)。（4 分）<br>
- （d）求 \(A\) 的特征值，验证 \(\det A=\sigma_1\sigma_2\)，并说明为什么这里 \(\sigma_1\ne|\lambda_1|\)。（4 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 3 题</span><span class="qs">20 分</span><span class="qm">建议 22 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A=\begin{bmatrix}3&4\\0&5\end{bmatrix}\)。</p>
+      <p>（a）求 \(A^{\mathrm{T}}A\) 的特征值与 \(A\) 的奇异值。（4 分）<br>
+      （b）求完整的 SVD \(A=U\Sigma V^{\mathrm{T}}\)，并说明这是负号最少的形式。（8 分）<br>
+      （c）求 \(\|A\|_1,\ \|A\|_2,\ \|A\|_\infty,\ \|A\|_F\)。（4 分）<br>
+      （d）求 \(A\) 的特征值，验证 \(\det A=\sigma_1\sigma_2\)，并说明为什么这里 \(\sigma_1\ne|\lambda_1|\)。（4 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 4 题</span><span class="qs">15 分</span><span class="qm">建议 14 分钟</span></div>
- <div class="qb">
- <p>设 \(P\in\mathbb{C}^{m\times m}\) 是非零投影（\(P^2=P\)），记 \(M=\mathcal{C}(P)\)、\(N=\mathcal{N}(P)\)。</p>
- <p>（a）证明 \(M\cap N=\{0\}\) 且 \(M\oplus N=\mathbb{C}^m\)。（5 分）<br>
- （b）证明 \(\|P\|_2\ge1\)。（4 分）<br>
- （c）证明 \(\|P\|_2=1\) 当且仅当 \(P\) 是正交投影。（6 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 4 题</span><span class="qs">15 分</span><span class="qm">建议 14 分钟</span></div>
+    <div class="qb">
+      <p>设 \(P\in\mathbb{C}^{m\times m}\) 是非零投影（\(P^2=P\)），记 \(M=\mathcal{C}(P)\)、\(N=\mathcal{N}(P)\)。</p>
+      <p>（a）证明 \(M\cap N=\{0\}\) 且 \(M\oplus N=\mathbb{C}^m\)。（5 分）<br>
+      （b）证明 \(\|P\|_2\ge1\)。（4 分）<br>
+      （c）证明 \(\|P\|_2=1\) 当且仅当 \(P\) 是正交投影。（6 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 5 题</span><span class="qs">15 分</span><span class="qm">建议 14 分钟</span></div>
- <div class="qb">
- <p>设 \(A=\begin{bmatrix}1&0&0\\1&1&0\\0&1&1\\0&0&1\end{bmatrix}\in\mathbb{R}^{4\times3}\)。</p>
- <p>（a）用改进的 Gram–Schmidt（MGS）求约化 QR 分解 \(A=\hat Q\hat R\)，结果保留根号。（10 分）<br>
- （b）验证 \(\hat Q^{\mathrm{T}}\hat Q=I_3\)。（3 分）<br>
- （c）若改用 Householder 变换，\(\hat R\) 的对角元会有什么不同？说明通常采用什么约定使之唯一。（2 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 5 题</span><span class="qs">15 分</span><span class="qm">建议 14 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A=\begin{bmatrix}1&0&0\\1&1&0\\0&1&1\\0&0&1\end{bmatrix}\in\mathbb{R}^{4\times3}\)。</p>
+      <p>（a）用改进的 Gram–Schmidt（MGS）求约化 QR 分解 \(A=\hat Q\hat R\)，结果保留根号。（10 分）<br>
+      （b）验证 \(\hat Q^{\mathrm{T}}\hat Q=I_3\)。（3 分）<br>
+      （c）若改用 Householder 变换，\(\hat R\) 的对角元会有什么不同？说明通常采用什么约定使之唯一。（2 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 6 题</span><span class="qs">15 分</span><span class="qm">建议 15 分钟</span></div>
- <div class="qb">
- <p>仍取第 5 题的 \(A\)，设 \(b=(1,2,3,4)^{\mathrm{T}}\)，考虑最小二乘问题 \(\min_x\|Ax-b\|_2\)。</p>
- <p>（a）用第 5 题得到的 \(\hat Q\hat R\) 求出最小二乘解 \(x\)。（8 分）<br>
- （b）求残差 \(r=b-Ax\) 与 \(\|r\|_2\)，并验证 \(A^{\mathrm{T}}r=0\)。（5 分）<br>
- （c）若改用正规方程 \(A^{\mathrm{T}}Ax=A^{\mathrm{T}}b\)，解是否相同？数值上有什么差别？（2 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 6 题</span><span class="qs">15 分</span><span class="qm">建议 15 分钟</span></div>
+    <div class="qb">
+      <p>仍取第 5 题的 \(A\)，设 \(b=(1,2,3,4)^{\mathrm{T}}\)，考虑最小二乘问题 \(\min_x\|Ax-b\|_2\)。</p>
+      <p>（a）用第 5 题得到的 \(\hat Q\hat R\) 求出最小二乘解 \(x\)。（8 分）<br>
+      （b）求残差 \(r=b-Ax\) 与 \(\|r\|_2\)，并验证 \(A^{\mathrm{T}}r=0\)。（5 分）<br>
+      （c）若改用正规方程 \(A^{\mathrm{T}}Ax=A^{\mathrm{T}}b\)，解是否相同？数值上有什么差别？（2 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 7 题</span><span class="qs">10 分</span><span class="qm">建议 10 分钟</span></div>
- <div class="qb">
- <p>设 \(A\in\mathbb{C}^{m\times m}\) 有 SVD \(A=U\Sigma V^*\)。考虑 \(2m\times2m\) 矩阵</p>
- <div class="eq" style="margin:10px 0">$$M=\begin{bmatrix}0&A^*\\A&0\end{bmatrix}.$$</div>
- <p>（a）证明 \(M\) 是 Hermitian。（2 分）<br>
- （b）求 \(M\) 的全部特征值与对应的特征向量（用 \(u_j,v_j,\sigma_j\) 表示）。（6 分）<br>
- （c）若 \(A=\begin{bmatrix}1&2\\2&1\end{bmatrix}\)，写出 \(M\) 的 4 个特征值。（2 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 7 题</span><span class="qs">10 分</span><span class="qm">建议 10 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A\in\mathbb{C}^{m\times m}\) 有 SVD \(A=U\Sigma V^*\)。考虑 \(2m\times2m\) 矩阵</p>
+      <div class="eq" style="margin:10px 0">$$M=\begin{bmatrix}0&A^*\\A&0\end{bmatrix}.$$</div>
+      <p>（a）证明 \(M\) 是 Hermitian。（2 分）<br>
+      （b）求 \(M\) 的全部特征值与对应的特征向量（用 \(u_j,v_j,\sigma_j\) 表示）。（6 分）<br>
+      （c）若 \(A=\begin{bmatrix}1&2\\2&1\end{bmatrix}\)，写出 \(M\) 的 4 个特征值。（2 分）</p>
+    </div>
+  </div>
 </div>
 
 <h2><span class="no">02</span>第一套 · 详解</h2>
@@ -421,81 +421,81 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt5}\cdot\frac{1}{\sqrt{10}}\begin{bmatrix
 <h2><span class="no">03</span>第二套 · 题目</h2>
 
 <div class="paper" id="p2">
- <div class="ph">
- <span class="ttl">数值线性代数 · 期中模拟（二）</span>
- <span class="meta">100 分钟 · 满分 100 · 闭卷</span>
- </div>
- <p class="hint" style="margin:0">比第一套稍难：Householder 手算量更大，第 7 题是纯证明。</p>
+  <div class="ph">
+    <span class="ttl">数值线性代数 · 期中模拟（二）</span>
+    <span class="meta">100 分钟 · 满分 100 · 闭卷</span>
+  </div>
+  <p class="hint" style="margin:0">比第一套稍难：Householder 手算量更大，第 7 题是纯证明。</p>
 
- <div class="q">
- <div class="qh"><span class="qn">第 1 题</span><span class="qs">10 分</span><span class="qm">建议 8 分钟</span></div>
- <div class="qb">
- <p>设 \(A\in\mathbb{C}^{m\times m}\) 满足 \(A^*=-A\)（称为斜 Hermitian 矩阵）。</p>
- <p>（a）证明 \(A\) 的特征值全为纯虚数。（4 分）<br>
- （b）证明对任意 \(x\in\mathbb{C}^m\)，\(\langle Ax,x\rangle\) 为纯虚数。（3 分）<br>
- （c）若 \(A\) 还是实矩阵，证明当 \(m\) 为奇数时 \(A\) 必奇异。（3 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 1 题</span><span class="qs">10 分</span><span class="qm">建议 8 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A\in\mathbb{C}^{m\times m}\) 满足 \(A^*=-A\)（称为斜 Hermitian 矩阵）。</p>
+      <p>（a）证明 \(A\) 的特征值全为纯虚数。（4 分）<br>
+      （b）证明对任意 \(x\in\mathbb{C}^m\)，\(\langle Ax,x\rangle\) 为纯虚数。（3 分）<br>
+      （c）若 \(A\) 还是实矩阵，证明当 \(m\) 为奇数时 \(A\) 必奇异。（3 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 2 题</span><span class="qs">15 分</span><span class="qm">建议 12 分钟</span></div>
- <div class="qb">
- <p>设 \(u=(1,2,2)^{\mathrm{T}}\in\mathbb{R}^3\)，\(v=(3,0,4)^{\mathrm{T}}\in\mathbb{R}^3\)，令 \(E=uv^{\mathrm{T}}\)。</p>
- <p>（a）写出 \(E\) 的四个基本子空间（含维数）。（4 分）<br>
- （b）证明 \(\|E\|_2=\|u\|_2\|v\|_2\)。（5 分）<br>
- （c）证明 \(\|E\|_F=\|u\|_2\|v\|_2\)，并说明为什么这与 (b) 不矛盾。（3 分）<br>
- （d）求 \(\operatorname{rank}E\) 与 \(\operatorname{tr}E\)。（3 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 2 题</span><span class="qs">15 分</span><span class="qm">建议 12 分钟</span></div>
+    <div class="qb">
+      <p>设 \(u=(1,2,2)^{\mathrm{T}}\in\mathbb{R}^3\)，\(v=(3,0,4)^{\mathrm{T}}\in\mathbb{R}^3\)，令 \(E=uv^{\mathrm{T}}\)。</p>
+      <p>（a）写出 \(E\) 的四个基本子空间（含维数）。（4 分）<br>
+      （b）证明 \(\|E\|_2=\|u\|_2\|v\|_2\)。（5 分）<br>
+      （c）证明 \(\|E\|_F=\|u\|_2\|v\|_2\)，并说明为什么这与 (b) 不矛盾。（3 分）<br>
+      （d）求 \(\operatorname{rank}E\) 与 \(\operatorname{tr}E\)。（3 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 3 题</span><span class="qs">20 分</span><span class="qm">建议 20 分钟</span></div>
- <div class="qb">
- <p>设 \(A=\begin{bmatrix}1&1\\1&-1\\1&0\end{bmatrix}\)。</p>
- <p>（a）求 \(A^{\mathrm{T}}A\) 的特征值与 \(A\) 的奇异值。（4 分）<br>
- （b）求 \(v_1,v_2,u_1,u_2\)，并把 \(u_1,u_2\) 补成 \(\mathbb{R}^3\) 的标准正交基得 \(u_3\)。（8 分）<br>
- （c）写出完全 SVD 并验算 \(U\Sigma V^{\mathrm{T}}=A\)。（4 分）<br>
- （d）求伪逆 \(A^+\)，并验证 \(A^+A=I_2\)。（4 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 3 题</span><span class="qs">20 分</span><span class="qm">建议 20 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A=\begin{bmatrix}1&1\\1&-1\\1&0\end{bmatrix}\)。</p>
+      <p>（a）求 \(A^{\mathrm{T}}A\) 的特征值与 \(A\) 的奇异值。（4 分）<br>
+      （b）求 \(v_1,v_2,u_1,u_2\)，并把 \(u_1,u_2\) 补成 \(\mathbb{R}^3\) 的标准正交基得 \(u_3\)。（8 分）<br>
+      （c）写出完全 SVD 并验算 \(U\Sigma V^{\mathrm{T}}=A\)。（4 分）<br>
+      （d）求伪逆 \(A^+\)，并验证 \(A^+A=I_2\)。（4 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 4 题</span><span class="qs">15 分</span><span class="qm">建议 12 分钟</span></div>
- <div class="qb">
- <p>设 \(P\in\mathbb{C}^{m\times m}\) 是正交投影，令 \(Q=I-2P\)。</p>
- <p>（a）证明 \(Q\) 是酉矩阵。（5 分）<br>
- （b）说明 \(Q\) 固定哪些向量、翻转哪些向量，并指出它是关于什么对象的镜面反射。（5 分）<br>
- （c）求 \(\det Q\)，用 \(\operatorname{rank}P\) 表示，并说明理由。（5 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 4 题</span><span class="qs">15 分</span><span class="qm">建议 12 分钟</span></div>
+    <div class="qb">
+      <p>设 \(P\in\mathbb{C}^{m\times m}\) 是正交投影，令 \(Q=I-2P\)。</p>
+      <p>（a）证明 \(Q\) 是酉矩阵。（5 分）<br>
+      （b）说明 \(Q\) 固定哪些向量、翻转哪些向量，并指出它是关于什么对象的镜面反射。（5 分）<br>
+      （c）求 \(\det Q\)，用 \(\operatorname{rank}P\) 表示，并说明理由。（5 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 5 题</span><span class="qs">15 分</span><span class="qm">建议 18 分钟</span></div>
- <div class="qb">
- <p>设 \(A=\begin{bmatrix}1&2\\2&1\\2&-2\end{bmatrix}\)。</p>
- <p>（a）用 Householder 变换求完全 QR 分解 \(A=QR\)，写出每一步的 \(H_k\)。（11 分）<br>
- （b）说明你的 \(R\) 对角元符号；若要求 \(r_{jj}>0\)，如何调整 \(Q\) 与 \(R\)？（4 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 5 题</span><span class="qs">15 分</span><span class="qm">建议 18 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A=\begin{bmatrix}1&2\\2&1\\2&-2\end{bmatrix}\)。</p>
+      <p>（a）用 Householder 变换求完全 QR 分解 \(A=QR\)，写出每一步的 \(H_k\)。（11 分）<br>
+      （b）说明你的 \(R\) 对角元符号；若要求 \(r_{jj}>0\)，如何调整 \(Q\) 与 \(R\)？（4 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 6 题</span><span class="qs">15 分</span><span class="qm">建议 14 分钟</span></div>
- <div class="qb">
- <p>仍取第 5 题的 \(A\)，设 \(b=(1,1,1)^{\mathrm{T}}\)，求 \(\min_x\|Ax-b\|_2\)。</p>
- <p>（a）用第 5 题的 QR 分解求最小二乘解 \(x\)。（8 分）<br>
- （b）求残差 \(r\) 与 \(\|r\|_2\)，验证 \(A^{\mathrm{T}}r=0\)。（5 分）<br>
- （c）\(A\) 是 \(3\times2\) 矩阵，能否取到 \(\|r\|_2=0\)？为什么？（2 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 6 题</span><span class="qs">15 分</span><span class="qm">建议 14 分钟</span></div>
+    <div class="qb">
+      <p>仍取第 5 题的 \(A\)，设 \(b=(1,1,1)^{\mathrm{T}}\)，求 \(\min_x\|Ax-b\|_2\)。</p>
+      <p>（a）用第 5 题的 QR 分解求最小二乘解 \(x\)。（8 分）<br>
+      （b）求残差 \(r\) 与 \(\|r\|_2\)，验证 \(A^{\mathrm{T}}r=0\)。（5 分）<br>
+      （c）\(A\) 是 \(3\times2\) 矩阵，能否取到 \(\|r\|_2=0\)？为什么？（2 分）</p>
+    </div>
+  </div>
 
- <div class="q">
- <div class="qh"><span class="qn">第 7 题</span><span class="qs">10 分</span><span class="qm">建议 12 分钟</span></div>
- <div class="qb">
- <p>设 \(A\in\mathbb{C}^{m\times n}\) 列满秩，且 \(A\) 的第 \(1,3,5,\dots\) 列与第 \(2,4,6,\dots\) 列两两正交。设 \(A=\hat Q\hat R\) 是约化 QR 分解。</p>
- <p>（a）证明：若 \(r_{ij}\ne0\)，则 \(i\) 与 \(j\) 的奇偶性相同。（7 分）<br>
- （b）当 \(m=n=4\) 时，\(\hat R\) 的严格上三角部分有几个位置必为零？（3 分）</p>
- </div>
- </div>
+  <div class="q">
+    <div class="qh"><span class="qn">第 7 题</span><span class="qs">10 分</span><span class="qm">建议 12 分钟</span></div>
+    <div class="qb">
+      <p>设 \(A\in\mathbb{C}^{m\times n}\) 列满秩，且 \(A\) 的第 \(1,3,5,\dots\) 列与第 \(2,4,6,\dots\) 列两两正交。设 \(A=\hat Q\hat R\) 是约化 QR 分解。</p>
+      <p>（a）证明：若 \(r_{ij}\ne0\)，则 \(i\) 与 \(j\) 的奇偶性相同。（7 分）<br>
+      （b）当 \(m=n=4\) 时，\(\hat R\) 的严格上三角部分有几个位置必为零？（3 分）</p>
+    </div>
+  </div>
 </div>
 
 <h2><span class="no">04</span>第二套 · 详解</h2>
@@ -695,8 +695,8 @@ r=b-Ax=\begin{bmatrix}\tfrac29\\-\tfrac29\\\tfrac19\end{bmatrix}.$$</div>
 </div>
 
 <div class="pager noprint">
- <a href="./期中复习-指南.html">← NLA-R1 期中复习指南</a>
- <a href="./index.html">返回章节导航</a>
+  <a href="./期中复习-指南.html">← NLA-R1 期中复习指南</a>
+  <a href="./index.html">返回章节导航</a>
 </div>
 
 <footer>

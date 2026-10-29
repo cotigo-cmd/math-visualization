@@ -5,35 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>条件数 · 几何与误差放大 · 数值线性代数</title>
 <!--
- 维护说明（给未来的自己）：
- 2. 版式身份「制图台」与全系列一致；公式规则、canvas 规则同 NLA-01 页注释。
- 3. 读数闸门：verify_readout_cond.js（工作区根）。2×2 的 σ₁/σ₂ 用 AᵀA 特征值闭式；
- 实验 03 的 A = R(θ)·diag(σ₁,σ₁/κ)·R(−φ) 独立重算，实测相对误差与 κ·ε 精确对账。
- 4. 本页回收 NLA-02 实验 03、NLA-03、NLA-06 各页埋下的 κ₂ 伏笔；条件数不在考试范围
+  维护说明（给未来的自己）：
+  2. 版式身份「制图台」与全系列一致；公式规则、canvas 规则同 NLA-01 页注释。
+  3. 读数闸门：verify_readout_cond.js（工作区根）。2×2 的 σ₁/σ₂ 用 AᵀA 特征值闭式；
+     实验 03 的 A = R(θ)·diag(σ₁,σ₁/κ)·R(−φ) 独立重算，实测相对误差与 κ·ε 精确对账。
+  4. 本页回收 NLA-02 实验 03、NLA-03、NLA-06 各页埋下的 κ₂ 伏笔；条件数不在考试范围
 -->
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "local" },
- options: { enableMenu: false }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
- --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
- --line:#CBD5DF; --grid:#E6EBF1;
- --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--steel);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
- overflow:hidden;margin:0 0 14px;background:var(--card)}
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -42,45 +42,45 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
 .tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
- border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
- background:#EEF3F8;color:var(--steel)}
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:#EEF3F8;color:var(--steel)}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
- border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
 p{margin:10px 0}
 ul,ol{margin:10px 0;padding-left:24px}
 li{margin:4px 0}
 .mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
 .lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
- margin:22px 0;padding:18px 20px 20px}
+  margin:22px 0;padding:18px 20px 20px}
 .lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
 .lab-head .t{font-size:15.5px;font-weight:680}
 .lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
- background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
 .lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
 canvas{display:block;width:100%;height:auto;background:var(--card);
- border:1px solid var(--line);border-radius:8px;touch-action:none}
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
 .ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
 .ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
 .ctrl label{color:var(--ink2);white-space:nowrap}
 .ctrl .nm{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
 input[type=range]{width:104px;accent-color:var(--cinn)}
 button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
- border-radius:7px;padding:5px 13px;cursor:pointer}
+  border-radius:7px;padding:5px 13px;cursor:pointer}
 button:hover{border-color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{border:none;border-radius:0;padding:5px 12px}
 .seg button.on{background:var(--steel);color:#fff}
 .readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
- display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 18px}
 .ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
- border-bottom:1px dotted var(--grid);padding:3px 0}
+  border-bottom:1px dotted var(--grid);padding:3px 0}
 .ro .k{color:var(--ink2)}
 .ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
 .eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
- border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
- border-radius:0 8px 8px 0;font-size:14px}
+  border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--steel);background:#EFF4F9}
 .note.g{border-left-color:var(--green);background:#EDF6F1}
 mjx-container[jax="SVG"]{max-width:100%}
@@ -90,7 +90,7 @@ table.tb td,table.tb th{border:1px solid var(--line);padding:5px 14px;text-align
 table.tb th{background:var(--card);font-weight:600}
 table.tb tr.hi td{background:#FBF1ED}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
- font-size:13px;color:var(--ink2)}
+  font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
 .pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
@@ -103,10 +103,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
 
 <div class="sheet">
- <div class="cell"><p class="k">图号</p><p class="v no">NLA-10</p></div>
- <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">条件数 · 几何与误差放大</p></div>
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-10</p></div>
+  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">条件数 · 几何与误差放大</p></div>
  <div class="cell"><p class="k">教材</p><p class="v">Lecture 12</p></div>
- <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
 </div>
 
 <h1>条件数：单位圆被抌扁多少，误差就放大多少</h1>
@@ -130,23 +130,23 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>第三个例子是全场唯一「会爆炸」的：\(x_1\approx x_2\) 时分子有限、分母趋于 0，\(\hat\kappa\to\infty\)——这就是<strong>抵消误差</strong>（cancellation）的数学形状。非线性世界里的病态更戏剧：\(\tan(10^{100})\) 的相对扰动可以任意大，实际上不可计算（12.4，Feynman《爱开玩笑的科学家》里的「幸运数字」故事）；Wilkinson 多项式 \(\prod_{i=1}^{20}(x-i)\) 最敏感的根 \(x=15\) 条件数高达 \(5.1\times 10^{13}\)（12.5）；非对称矩阵的特征值可以极度病态——\(\begin{psmallmatrix}1&amp;1\\0&amp;1\end{psmallmatrix}\) 与 \(\begin{psmallmatrix}1&amp;1\\0.001&amp;1\end{psmallmatrix}\) 的特征值从 \(\{1,1\}\) 跳到 \(\{0,2\}\)，而对称矩阵的特征值绝对条件数恰为 \(1\)（12.6）。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 01</span><span class="t">抵消的危险：拖动 x，看 κ 在 x₁→x₂ 时爆炸</span><span class="tag">Example 12.3</span></div>
- <p class="lab-sub">问题 \(f(x)=x_1-x_2\)，数据空间用 \(\infty\)-范数。拖动点 \(x\)（朱砂）；滑杆 \(\rho\) 给出相对扰动大小，页面自动取<strong>最坏方向</strong> \(\delta x=\rho\cdot\max\lvert x_i\rvert\cdot(-1,\,1)^{\mathrm{T}}\)（使 \(\lvert\delta f\rvert\) 最大）。读数量出实测相对变化并与 \(\hat\kappa\cdot\rho\) 对账——两者恒等。\(x\) 越靠近对角线 \(x_1=x_2\)，κ 越大；重合时相对误差没有定义（显示 ∞）。</p>
- <canvas id="cv-can" width="600" height="340"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>扰动相对大小 ρ = 10<sup>e</sup></label><input type="range" id="s-rho" min="-14" max="-2" step="1" value="-8"><span class="nm" id="v-rho"></span></div>
- <div class="ctrl"><label>x₁</label><span class="nm" id="v-x1"></span></div>
- <div class="ctrl"><label>x₂</label><span class="nm" id="v-x2"></span></div>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">f = x₁ − x₂</span><span class="v" id="ro-f"></span></div>
- <div class="ro"><span class="k">κ̂ = 2·max|xᵢ| / |x₁−x₂|</span><span class="v" id="ro-kap"></span></div>
- <div class="ro"><span class="k">实测 f 的相对变化</span><span class="v" id="ro-rel"></span></div>
- <div class="ro"><span class="k">预测最坏 κ̂·ρ</span><span class="v" id="ro-pred"></span></div>
- <div class="ro"><span class="k">实测 / 预测（恒为 1）</span><span class="v" id="ro-ratio"></span></div>
- <div class="ro"><span class="k">性态判定</span><span class="v" id="ro-verdict"></span></div>
- </div>
- <p class="hint">δx 本身只有 ρ 量级（默认 10⁻⁸），画出来看不见，图中按 0.3/ρ 倍放大显示，端点即「施加最坏扰动后的 x′」。</p>
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">抵消的危险：拖动 x，看 κ 在 x₁→x₂ 时爆炸</span><span class="tag">Example 12.3</span></div>
+  <p class="lab-sub">问题 \(f(x)=x_1-x_2\)，数据空间用 \(\infty\)-范数。拖动点 \(x\)（朱砂）；滑杆 \(\rho\) 给出相对扰动大小，页面自动取<strong>最坏方向</strong> \(\delta x=\rho\cdot\max\lvert x_i\rvert\cdot(-1,\,1)^{\mathrm{T}}\)（使 \(\lvert\delta f\rvert\) 最大）。读数量出实测相对变化并与 \(\hat\kappa\cdot\rho\) 对账——两者恒等。\(x\) 越靠近对角线 \(x_1=x_2\)，κ 越大；重合时相对误差没有定义（显示 ∞）。</p>
+  <canvas id="cv-can" width="600" height="340"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>扰动相对大小 ρ = 10<sup>e</sup></label><input type="range" id="s-rho" min="-14" max="-2" step="1" value="-8"><span class="nm" id="v-rho"></span></div>
+    <div class="ctrl"><label>x₁</label><span class="nm" id="v-x1"></span></div>
+    <div class="ctrl"><label>x₂</label><span class="nm" id="v-x2"></span></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">f = x₁ − x₂</span><span class="v" id="ro-f"></span></div>
+    <div class="ro"><span class="k">κ̂ = 2·max|xᵢ| / |x₁−x₂|</span><span class="v" id="ro-kap"></span></div>
+    <div class="ro"><span class="k">实测 f 的相对变化</span><span class="v" id="ro-rel"></span></div>
+    <div class="ro"><span class="k">预测最坏 κ̂·ρ</span><span class="v" id="ro-pred"></span></div>
+    <div class="ro"><span class="k">实测 / 预测（恒为 1）</span><span class="v" id="ro-ratio"></span></div>
+    <div class="ro"><span class="k">性态判定</span><span class="v" id="ro-verdict"></span></div>
+  </div>
+  <p class="hint">δx 本身只有 ρ 量级（默认 10⁻⁸），画出来看不见，图中按 0.3/ρ 倍放大显示，端点即「施加最坏扰动后的 x′」。</p>
 </section>
 <h2><span class="no">02</span>矩阵—向量乘积：\(\hat\kappa(x)=\|A\|\,\|x\|/\|Ax\|\)</h2>
 <p>现在进入数值线性代数里最重要的条件数：固定 \(A\)，从输入 \(x\) 计算 \(Ax\)。直接从定义推——相对扰动的放大倍率是</p>
@@ -160,30 +160,30 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>教材原话：这个比值就是 \(\mathbb{C}^m\) 单位球在 \(A\) 下的像——超椭圆——的<strong>偏心率</strong>（接图 4.1，即 NLA-03 三步透镜里那个椭圆）。矩形满秩（\(m&gt;n\)）时把 \(A^{-1}\) 换成伪逆 \(A^+\)，公式同款 \(\kappa(A)=\sigma_1/\sigma_n\)（12.17）。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 02</span><span class="t">椭圆实验台：拖矩阵、拖 x，看轴比 = κ₂</span><span class="tag">(12.9)(12.10)(12.16)</span></div>
- <p class="lab-sub">四个滑杆改 \(A\)。灰虚线圆 = 单位球 \(S\)，朱砂椭圆 = 像 \(A(S)\)，两条半轴正是 \(\sigma_1 u_1\)（绿）与 \(\sigma_2 u_2\)（钢青）；拖动点 \(x\)，实线箭头给出 \(x\) 与它的像 \(Ax\)。读数给出 \(\kappa_2(A)=\sigma_1/\sigma_2\)、当前点的 \(\hat\kappa(x)=\|A\|_2\|x\|_2/\|Ax\|_2\) 及其与上界的比值。把 \(x\) 放到 \(v_n\) 方向（最小右奇异向量）时 \(\hat\kappa=\kappa_2\) <strong>精确取等</strong>（Theorem 12.1）；放到 \(v_1\) 方向最稳。</p>
- <canvas id="cv-ell" width="620" height="420"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>a₁₁</label><input type="range" id="s-e11" min="-3" max="3" step="0.1" value="1.2"><span class="nm" id="v-e11"></span></div>
- <div class="ctrl"><label>a₁₂</label><input type="range" id="s-e12" min="-3" max="3" step="0.1" value="0.4"><span class="nm" id="v-e12"></span></div>
- <div class="ctrl"><label>a₂₁</label><input type="range" id="s-e21" min="-3" max="3" step="0.1" value="-0.9"><span class="nm" id="v-e21"></span></div>
- <div class="ctrl"><label>a₂₂</label><input type="range" id="s-e22" min="-3" max="3" step="0.1" value="1.1"><span class="nm" id="v-e22"></span></div>
- </div>
- <div class="ctrls">
- <button id="b-vn">x ← vₙ（κ̂ = κ₂ 取等）</button>
- <button id="b-v1">x ← v₁（最稳方向）</button>
- <button id="b-wc">预设：κ≈1（近正交）</button>
- <button id="b-ill">预设：κ≈100（近亏秩）</button>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">σ₁ / σ₂</span><span class="v" id="ro-sig"></span></div>
- <div class="ro"><span class="k">κ₂(A) = σ₁/σ₂</span><span class="v" id="ro-k2"></span></div>
- <div class="ro"><span class="k">κ̂(x) = ‖A‖₂‖x‖₂/‖Ax‖₂</span><span class="v" id="ro-kx"></span></div>
- <div class="ro"><span class="k">κ̂(x) / κ₂(A)（≤1）</span><span class="v" id="ro-kratio"></span></div>
- <div class="ro"><span class="k">∠(x, vₙ)</span><span class="v" id="ro-ang"></span></div>
- <div class="ro"><span class="k">取等判定</span><span class="v" id="ro-eq"></span></div>
- </div>
- <p class="hint">椭圆越扁，κ₂ 越大； preset「κ≈100」把矩阵压成 [[1,0],[0,0.01]]，椭圆退化成一条线段——视觉上的「扁」就是数值上的「放大」。</p>
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">椭圆实验台：拖矩阵、拖 x，看轴比 = κ₂</span><span class="tag">(12.9)(12.10)(12.16)</span></div>
+  <p class="lab-sub">四个滑杆改 \(A\)。灰虚线圆 = 单位球 \(S\)，朱砂椭圆 = 像 \(A(S)\)，两条半轴正是 \(\sigma_1 u_1\)（绿）与 \(\sigma_2 u_2\)（钢青）；拖动点 \(x\)，实线箭头给出 \(x\) 与它的像 \(Ax\)。读数给出 \(\kappa_2(A)=\sigma_1/\sigma_2\)、当前点的 \(\hat\kappa(x)=\|A\|_2\|x\|_2/\|Ax\|_2\) 及其与上界的比值。把 \(x\) 放到 \(v_n\) 方向（最小右奇异向量）时 \(\hat\kappa=\kappa_2\) <strong>精确取等</strong>（Theorem 12.1）；放到 \(v_1\) 方向最稳。</p>
+  <canvas id="cv-ell" width="620" height="420"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>a₁₁</label><input type="range" id="s-e11" min="-3" max="3" step="0.1" value="1.2"><span class="nm" id="v-e11"></span></div>
+    <div class="ctrl"><label>a₁₂</label><input type="range" id="s-e12" min="-3" max="3" step="0.1" value="0.4"><span class="nm" id="v-e12"></span></div>
+    <div class="ctrl"><label>a₂₁</label><input type="range" id="s-e21" min="-3" max="3" step="0.1" value="-0.9"><span class="nm" id="v-e21"></span></div>
+    <div class="ctrl"><label>a₂₂</label><input type="range" id="s-e22" min="-3" max="3" step="0.1" value="1.1"><span class="nm" id="v-e22"></span></div>
+  </div>
+  <div class="ctrls">
+    <button id="b-vn">x ← vₙ（κ̂ = κ₂ 取等）</button>
+    <button id="b-v1">x ← v₁（最稳方向）</button>
+    <button id="b-wc">预设：κ≈1（近正交）</button>
+    <button id="b-ill">预设：κ≈100（近亏秩）</button>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">σ₁ / σ₂</span><span class="v" id="ro-sig"></span></div>
+    <div class="ro"><span class="k">κ₂(A) = σ₁/σ₂</span><span class="v" id="ro-k2"></span></div>
+    <div class="ro"><span class="k">κ̂(x) = ‖A‖₂‖x‖₂/‖Ax‖₂</span><span class="v" id="ro-kx"></span></div>
+    <div class="ro"><span class="k">κ̂(x) / κ₂(A)（≤1）</span><span class="v" id="ro-kratio"></span></div>
+    <div class="ro"><span class="k">∠(x, vₙ)</span><span class="v" id="ro-ang"></span></div>
+    <div class="ro"><span class="k">取等判定</span><span class="v" id="ro-eq"></span></div>
+  </div>
+  <p class="hint">椭圆越扁，κ₂ 越大； preset「κ≈100」把矩阵压成 [[1,0],[0,0.01]]，椭圆退化成一条线段——视觉上的「扁」就是数值上的「放大」。</p>
 </section>
 
 <div class="note b"><strong>伏笔回收 · NLA-02</strong>：范数页实验 03 的读数里早就埋了 \(\sigma_1/\sigma_2/\kappa_2(A)\) 一栏，当时注「Lecture 12 回收」——就是这一页。<strong>NLA-03</strong> 说过正交矩阵的 \(\kappa=1\)（\(U,V\) 正交，抌圆不变形）；SVD 页的「轴比」与本页的 κ₂ 是同一个数。</div>
@@ -198,32 +198,32 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>两个定理合起来是数值线性代数的总闸门：<strong>\(\kappa(A)\) 大的方程组，注定要丢失约 \(\log_{10}\kappa(A)\) 位十进制数字</strong>。双精度约 16 位，所以 \(\kappa=10^8\) 时只剩 8 位可信。下面实验 03 把这句话实测出来：固定 \(A=R(\theta)\,\mathrm{diag}(\sigma_1,\sigma_1/\kappa)\,R(-\varphi)\)，把 \(b\) 放在最坏解方向，最坏方向的相对扰动 \(\delta b\) 解出的相对误差应当<strong>精确等于</strong> \(\kappa\cdot\varepsilon\)。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 03</span><span class="t">误差放大对账台：实测相对误差 = κ·ε</span><span class="tag">Theorem 12.1 / 12.2</span></div>
- <p class="lab-sub">\(A\) 由四个滑杆构造（奇异值 \(\sigma_1,\sigma_1/\kappa\)，两个旋转角）。取 \(b=2u_1\)（\(\sigma_1\) 对应的左奇异向量方向，即 Theorem 12.1 的取等方向），\(\varepsilon\) 为相对扰动大小。<strong>扰 b 模式</strong>：沿最坏方向 \(\delta b=2\varepsilon\, u_n\)，则 \(\delta x=A^{-1}\delta b\)，实测 \(\|\delta x\|/\|x\|\) 精确等于 \(\kappa\varepsilon\)；沿最稳方向 \(\delta b\parallel u_1\) 放大只有 \(\varepsilon\)。<strong>扰 A 模式</strong>（Theorem 12.2）：\(\delta A=\varepsilon\|A\|\,u_n (x/\|x\|)^{\mathrm{T}}\)，同样取等。</p>
- <canvas id="cv-amp" width="640" height="250"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>σ₁</label><input type="range" id="s-s1" min="0.2" max="3" step="0.1" value="1"><span class="nm" id="v-s1"></span></div>
- <div class="ctrl"><label>κ = 10<sup>k</sup></label><input type="range" id="s-kap" min="0" max="8" step="0.25" value="2"><span class="nm" id="v-kap"></span></div>
- <div class="ctrl"><label>θ</label><input type="range" id="s-th" min="0" max="360" step="1" value="20"><span class="nm" id="v-th"></span></div>
- <div class="ctrl"><label>φ</label><input type="range" id="s-phi" min="0" max="360" step="1" value="65"><span class="nm" id="v-phi"></span></div>
- <div class="ctrl"><label>ε = 10<sup>e</sup></label><input type="range" id="s-eps" min="-16" max="0" step="1" value="-8"><span class="nm" id="v-eps"></span></div>
- </div>
- <div class="ctrls">
- <span class="seg" id="seg-mode">
- <button data-m="b" class="on">扰动 b（12.14）</button><button data-m="A">扰动 A（12.18）</button>
- </span>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">σ₁ / σₙ / κ₂(A)</span><span class="v" id="ro-amp-sig"></span></div>
- <div class="ro"><span class="k">实测 ‖δx‖/‖x‖</span><span class="v" id="ro-meas"></span></div>
- <div class="ro"><span class="k">理论上界 κ·ε</span><span class="v" id="ro-bound"></span></div>
- <div class="ro"><span class="k">实测 / 上界（≈1 取等）</span><span class="v" id="ro-aratio"></span></div>
- <div class="ro"><span class="k">最稳方向（δb∥u₁）放大</span><span class="v" id="ro-best"></span></div>
- <div class="ro"><span class="k">丢失数字 log₁₀κ</span><span class="v" id="ro-lost"></span></div>
- <div class="ro"><span class="k">ε=ε_machine 时预期误差</span><span class="v" id="ro-mach"></span></div>
- <div class="ro"><span class="k">剩余可靠数字（共 16 位）</span><span class="v" id="ro-left"></span></div>
- </div>
- <p class="hint">δb、δx 与 ε 同量级，图中按 0.3/ε 倍放大显示偏移方向。把 κ 从 10² 拖到 10⁸：实测/上界始终为 1.000，而「剩余可靠数字」从 14 掉到 8——这就是「lose log₁₀κ digits」。</p>
+  <div class="lab-head"><span class="no">实验 03</span><span class="t">误差放大对账台：实测相对误差 = κ·ε</span><span class="tag">Theorem 12.1 / 12.2</span></div>
+  <p class="lab-sub">\(A\) 由四个滑杆构造（奇异值 \(\sigma_1,\sigma_1/\kappa\)，两个旋转角）。取 \(b=2u_1\)（\(\sigma_1\) 对应的左奇异向量方向，即 Theorem 12.1 的取等方向），\(\varepsilon\) 为相对扰动大小。<strong>扰 b 模式</strong>：沿最坏方向 \(\delta b=2\varepsilon\, u_n\)，则 \(\delta x=A^{-1}\delta b\)，实测 \(\|\delta x\|/\|x\|\) 精确等于 \(\kappa\varepsilon\)；沿最稳方向 \(\delta b\parallel u_1\) 放大只有 \(\varepsilon\)。<strong>扰 A 模式</strong>（Theorem 12.2）：\(\delta A=\varepsilon\|A\|\,u_n (x/\|x\|)^{\mathrm{T}}\)，同样取等。</p>
+  <canvas id="cv-amp" width="640" height="250"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>σ₁</label><input type="range" id="s-s1" min="0.2" max="3" step="0.1" value="1"><span class="nm" id="v-s1"></span></div>
+    <div class="ctrl"><label>κ = 10<sup>k</sup></label><input type="range" id="s-kap" min="0" max="8" step="0.25" value="2"><span class="nm" id="v-kap"></span></div>
+    <div class="ctrl"><label>θ</label><input type="range" id="s-th" min="0" max="360" step="1" value="20"><span class="nm" id="v-th"></span></div>
+    <div class="ctrl"><label>φ</label><input type="range" id="s-phi" min="0" max="360" step="1" value="65"><span class="nm" id="v-phi"></span></div>
+    <div class="ctrl"><label>ε = 10<sup>e</sup></label><input type="range" id="s-eps" min="-16" max="0" step="1" value="-8"><span class="nm" id="v-eps"></span></div>
+  </div>
+  <div class="ctrls">
+    <span class="seg" id="seg-mode">
+      <button data-m="b" class="on">扰动 b（12.14）</button><button data-m="A">扰动 A（12.18）</button>
+    </span>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">σ₁ / σₙ / κ₂(A)</span><span class="v" id="ro-amp-sig"></span></div>
+    <div class="ro"><span class="k">实测 ‖δx‖/‖x‖</span><span class="v" id="ro-meas"></span></div>
+    <div class="ro"><span class="k">理论上界 κ·ε</span><span class="v" id="ro-bound"></span></div>
+    <div class="ro"><span class="k">实测 / 上界（≈1 取等）</span><span class="v" id="ro-aratio"></span></div>
+    <div class="ro"><span class="k">最稳方向（δb∥u₁）放大</span><span class="v" id="ro-best"></span></div>
+    <div class="ro"><span class="k">丢失数字 log₁₀κ</span><span class="v" id="ro-lost"></span></div>
+    <div class="ro"><span class="k">ε=ε_machine 时预期误差</span><span class="v" id="ro-mach"></span></div>
+    <div class="ro"><span class="k">剩余可靠数字（共 16 位）</span><span class="v" id="ro-left"></span></div>
+  </div>
+  <p class="hint">δb、δx 与 ε 同量级，图中按 0.3/ε 倍放大显示偏移方向。把 κ 从 10² 拖到 10⁸：实测/上界始终为 1.000，而「剩余可靠数字」从 14 掉到 8——这就是「lose log₁₀κ digits」。</p>
 </section>
 
 <table class="tb">
@@ -233,18 +233,18 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 </table>
 <h2><span class="no">04</span>本页小结与互相引用</h2>
 <ul>
- <li><strong>条件数属于问题，不属于算法</strong>：\(\hat\kappa=\|J(x)\|/(\|f(x)\|/\|x\|)\)。线性问题 \(\hat\kappa(x)=\|A\|\,\|x\|/\|Ax\|\le\kappa(A)=\|A\|\|A^{-1}\|\)。</li>
- <li><strong>几何一句话</strong>：单位圆被抌成椭圆，轴比 \(\sigma_1/\sigma_n=\kappa_2(A)\)；椭圆越扁，误差放大越狠。这是全站最省字的一幅「误差地图」。</li>
- <li><strong>两个方向都跑不掉</strong>：扰 \(b\)（12.14）与扰 \(A\)（12.18）给出同一个界 \(\kappa(A)\)；实验 03 双模式实测都精确取等。</li>
- <li><strong>丢失数字</strong>：\(\kappa=10^8\) 的双精度计算只剩约 8 位可信；判据是先算 κ 再谈算法。</li>
+  <li><strong>条件数属于问题，不属于算法</strong>：\(\hat\kappa=\|J(x)\|/(\|f(x)\|/\|x\|)\)。线性问题 \(\hat\kappa(x)=\|A\|\,\|x\|/\|Ax\|\le\kappa(A)=\|A\|\|A^{-1}\|\)。</li>
+  <li><strong>几何一句话</strong>：单位圆被抌成椭圆，轴比 \(\sigma_1/\sigma_n=\kappa_2(A)\)；椭圆越扁，误差放大越狠。这是全站最省字的一幅「误差地图」。</li>
+  <li><strong>两个方向都跑不掉</strong>：扰 \(b\)（12.14）与扰 \(A\)（12.18）给出同一个界 \(\kappa(A)\)；实验 03 双模式实测都精确取等。</li>
+  <li><strong>丢失数字</strong>：\(\kappa=10^8\) 的双精度计算只剩约 8 位可信；判据是先算 κ 再谈算法。</li>
 </ul>
 <div class="note g"><strong>伏笔回收 · NLA-06</strong>：最小二乘页实验 03 的「构造解标度实验室」实测正规方程误差 \(\sim\varepsilon\kappa^2\)、QR/SVD \(\sim\varepsilon\kappa\)——那页的 \(\kappa\) 标度正是本页 \(\kappa\cdot\varepsilon\) 界的直接下游（正规方程把条件数平方，\(\kappa(A^{\mathrm{T}}A)=\kappa(A)^2\)）。「构造确切解已知的问题、用 \(\|x-x_{\mathrm{true}}\|\) 量纯舍入误差」的对账法与本页实验 03 同源。</div>
 <div class="note"><strong>科研连接</strong>：粗网格修正里「细网格误差经近似逆传播」的放大分析，线性原型就是本页的 \(\kappa\cdot\varepsilon\)——把「解一次 \(Ax=b\)」换成「解一次修正方程」，矩阵条件数就是误差放大倍率。Lecture 32–40 的共轭梯度与预条件子页（筹备中）会从这个角度再讲一遍：预条件子干的正是把椭圆的轴比压回 1。</div>
 <div class="note b"><strong>范围说明</strong>：本学期考试只到最小二乘，条件数不考；数值分析学科第 5.3 讲「矩阵的性态与条件数」按课件完整覆盖（含条件数估计与规避），与本站 NLA 页互为参照。本页服务科研与后续 Lecture（13–19 浮点与稳定性、32–40 CG）的误差语言。</div>
 
 <div class="pager">
- <a href="最小二乘-几何与三种解法.html">← 上一页 · 最小二乘（L11）</a>
- <span style="font-size:13px;color:var(--ink2)">下一页 · 浮点灾难与抵消（L13，筹备中）</span>
+  <a href="最小二乘-几何与三种解法.html">← 上一页 · 最小二乘（L11）</a>
+  <span style="font-size:13px;color:var(--ink2)">下一页 · 浮点灾难与抵消（L13，筹备中）</span>
 </div>
 
 <footer>
@@ -257,75 +257,75 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <script>
 "use strict";
 function fmt(x, d){ if(!isFinite(x)) return "∞"; d=(d===undefined)?3:d;
- if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
- return x.toFixed(d); }
+  if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
+  return x.toFixed(d); }
 function mapper(cv, cx, cy, s){
- return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
- x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
+  return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
+           x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
 }
 function grid(ctx, cx, cy, s, xmin, xmax, ymin, ymax){
- ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
- for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
- ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
- for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
- ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
- ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
- ctx.restore();
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
+    ctx.moveTo(cx+gx*s, cy+ymin*s); ctx.lineTo(cx+gx*s, cy+ymax*s); ctx.stroke(); }
+  for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
+    ctx.moveTo(cx+xmin*s, cy+gy*s); ctx.lineTo(cx+xmax*s, cy+gy*s); ctx.stroke(); }
+  ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
+  ctx.restore();
 }
 function arrow(ctx, x1, y1, x2, y2, color, w, dash){
- ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
- if(dash) ctx.setLineDash(dash);
- ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
- const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
- if(L>1){ const h=Math.min(9, L*0.28);
- ctx.beginPath(); ctx.moveTo(x2,y2);
- ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
- ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
- ctx.closePath(); ctx.fill(); }
- ctx.restore();
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+  const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
+  if(L>1){ const h=Math.min(9, L*0.28);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
+    ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
+    ctx.closePath(); ctx.fill(); }
+  ctx.restore();
 }
 function vec(ctx, m, v, color, w, dash){ arrow(ctx, m.X(0), m.Y(0), m.X(v[0]), m.Y(v[1]), color, w, dash); }
 function dot(ctx, x, y, color, r){ ctx.save(); ctx.fillStyle=color;
- ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
+  ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
 function label(ctx, txt, x, y, color, size, align){
- ctx.save(); ctx.fillStyle=color||"#22303F";
- ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
- ctx.textAlign=align||"left"; ctx.textBaseline="middle";
- ctx.fillText(txt, x, y); ctx.restore();
+  ctx.save(); ctx.fillStyle=color||"#22303F";
+  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+  ctx.fillText(txt, x, y); ctx.restore();
 }
 function pt2world(cv, m, e){
- const r = cv.getBoundingClientRect();
- return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
+  const r = cv.getBoundingClientRect();
+  return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
 }
 function makeDrag(cv, m, get, set){
- let dragging=false;
- cv.addEventListener("pointerdown", function(e){
- const w=pt2world(cv,m,e), g=get();
- if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.6){ dragging=true;
- cv.setPointerCapture(e.pointerId); set(w); }
- });
- cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
- cv.addEventListener("pointerup", function(){ dragging=false; });
- cv.addEventListener("pointerleave", function(){ dragging=false; });
+  let dragging=false;
+  cv.addEventListener("pointerdown", function(e){
+    const w=pt2world(cv,m,e), g=get();
+    if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.6){ dragging=true;
+      cv.setPointerCapture(e.pointerId); set(w); }
+  });
+  cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
+  cv.addEventListener("pointerup", function(){ dragging=false; });
+  cv.addEventListener("pointerleave", function(){ dragging=false; });
 }
 const $ = function(id){ return document.getElementById(id); };
 /* 2×2 奇异值/奇异向量闭式（AᵀA 特征值），附加正交补向量 */
 function svd2(A){
- const a=A[0][0], b=A[0][1], c=A[1][0], d=A[1][1];
- const m11=a*a+c*c, m12=a*b+c*d, m22=b*b+d*d;
- const tr=m11+m22, det=m11*m22-m12*m12;
- const disc=Math.max(0, tr*tr-4*det);
- const l1=(tr+Math.sqrt(disc))/2, l2=(tr-Math.sqrt(disc))/2;
- const s1=Math.sqrt(Math.max(0,l1)), s2=Math.sqrt(Math.max(0,l2));
- let v1=[m12, l1-m11];
- if(Math.hypot(v1[0],v1[1])<1e-14) v1=[1,0];
- const L=Math.hypot(v1[0],v1[1]); v1=[v1[0]/L, v1[1]/L];
- const v2=[-v1[1], v1[0]];
- const u1=[(a*v1[0]+b*v1[1])/(s1||1), (c*v1[0]+d*v1[1])/(s1||1)];
- const u2=[-u1[1], u1[0]];
- return {s1:s1, s2:s2, v1:v1, v2:v2, u1:u1, u2:u2};
+  const a=A[0][0], b=A[0][1], c=A[1][0], d=A[1][1];
+  const m11=a*a+c*c, m12=a*b+c*d, m22=b*b+d*d;
+  const tr=m11+m22, det=m11*m22-m12*m12;
+  const disc=Math.max(0, tr*tr-4*det);
+  const l1=(tr+Math.sqrt(disc))/2, l2=(tr-Math.sqrt(disc))/2;
+  const s1=Math.sqrt(Math.max(0,l1)), s2=Math.sqrt(Math.max(0,l2));
+  let v1=[m12, l1-m11];
+  if(Math.hypot(v1[0],v1[1])<1e-14) v1=[1,0];
+  const L=Math.hypot(v1[0],v1[1]); v1=[v1[0]/L, v1[1]/L];
+  const v2=[-v1[1], v1[0]];
+  const u1=[(a*v1[0]+b*v1[1])/(s1||1), (c*v1[0]+d*v1[1])/(s1||1)];
+  const u2=[-u1[1], u1[0]];
+  return {s1:s1, s2:s2, v1:v1, v2:v2, u1:u1, u2:u2};
 }
 
 /* ================= 实验 01 · 抵消的危险（Example 12.3） ================= */
@@ -333,238 +333,238 @@ const cvK = $("cv-can"), WK=600, HK=340;
 const mK = mapper(cvK, 300, 185, 100);
 const stateK = { x:[1.4, 1.0], e:-8 };
 function drawCan(){
- const ctx=cvK.getContext("2d"); ctx.clearRect(0,0,WK,HK);
- grid(ctx, mK.X(0), mK.Y(0), 100, -2.9, 2.9, -3.3, 3.3);
- const x=stateK.x, rho=Math.pow(10, stateK.e);
- const m=Math.max(Math.abs(x[0]), Math.abs(x[1]));
- const dx=[-rho*m, rho*m]; /* 最坏方向 (−1,1)ᵀ：|δf| = 2ρm 最大 */
- /* 对角线 x₁ = x₂ */
- ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.setLineDash([4,4]); ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(mK.X(-2.8), mK.Y(-2.8)); ctx.lineTo(mK.X(2.8), mK.Y(2.8)); ctx.stroke();
- ctx.restore();
- label(ctx, "x₁ = x₂（抵消线）", mK.X(-2.86), mK.Y(-2.52), "#9AA7B4", 12);
- /* 坐标投影虚线 */
- ctx.save(); ctx.strokeStyle="#CBD5DF"; ctx.setLineDash([5,4]); ctx.lineWidth=1.3;
- ctx.beginPath(); ctx.moveTo(mK.X(x[0]), mK.Y(0)); ctx.lineTo(mK.X(x[0]), mK.Y(x[1])); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(mK.X(0), mK.Y(x[1])); ctx.lineTo(mK.X(x[0]), mK.Y(x[1])); ctx.stroke();
- ctx.restore();
- /* x */
- vec(ctx, mK, x, "#2F5D8A", 3);
- dot(ctx, mK.X(x[0]), mK.Y(x[1]), "#B04A2F", 5.5);
- label(ctx, "x", mK.X(x[0])+9, mK.Y(x[1])-10, "#B04A2F", 13.5);
- /* 放大显示的 δx 与 x′ */
- const K=0.3/rho;
- const g=[x[0]+dx[0]*K, x[1]+dx[1]*K];
- arrow(ctx, mK.X(x[0]), mK.Y(x[1]), mK.X(g[0]), mK.Y(g[1]), "#8A6D1F", 2, [6,4]);
- dot(ctx, mK.X(g[0]), mK.Y(g[1]), "#8A6D1F", 4.5);
- label(ctx, "x′ = x + δx（放大显示）", mK.X(g[0])+9, mK.Y(g[1])+15, "#8A6D1F", 12);
- /* 读数：实测 = 真的把扰动施加到 f 上再量 */
- const f=x[0]-x[1];
- const f2=(x[0]+dx[0])-(x[1]+dx[1]);
- $("v-rho").textContent = "1e"+stateK.e;
- $("v-x1").textContent=fmt(x[0],3); $("v-x2").textContent=fmt(x[1],3);
- $("ro-f").textContent=fmt(f,4);
- if(Math.abs(f)<1e-12){
- $("ro-kap").textContent="∞"; $("ro-rel").textContent="—";
- $("ro-pred").textContent="∞"; $("ro-ratio").textContent="—";
- $("ro-verdict").textContent="完全抵消：相对误差无定义";
- } else {
- const kap=2*m/Math.abs(f), rel=Math.abs(f2-f)/Math.abs(f), pred=kap*rho;
- $("ro-kap").textContent=fmt(kap,3);
- $("ro-rel").textContent=fmt(rel,3);
- $("ro-pred").textContent=fmt(pred,3);
- $("ro-ratio").textContent=fmt(rel/pred,6);
- $("ro-verdict").textContent = kap<10 ? "好条件" :
- (kap<1e4 ? "勉强：丢 "+fmt(Math.log(kap)/Math.LN10,1)+" 位" : "病态：丢 "+fmt(Math.log(kap)/Math.LN10,1)+" 位");
- }
+  const ctx=cvK.getContext("2d"); ctx.clearRect(0,0,WK,HK);
+  grid(ctx, mK.X(0), mK.Y(0), 100, -2.9, 2.9, -3.3, 3.3);
+  const x=stateK.x, rho=Math.pow(10, stateK.e);
+  const m=Math.max(Math.abs(x[0]), Math.abs(x[1]));
+  const dx=[-rho*m, rho*m];                       /* 最坏方向 (−1,1)ᵀ：|δf| = 2ρm 最大 */
+  /* 对角线 x₁ = x₂ */
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.setLineDash([4,4]); ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(mK.X(-2.8), mK.Y(-2.8)); ctx.lineTo(mK.X(2.8), mK.Y(2.8)); ctx.stroke();
+  ctx.restore();
+  label(ctx, "x₁ = x₂（抵消线）", mK.X(-2.86), mK.Y(-2.52), "#9AA7B4", 12);
+  /* 坐标投影虚线 */
+  ctx.save(); ctx.strokeStyle="#CBD5DF"; ctx.setLineDash([5,4]); ctx.lineWidth=1.3;
+  ctx.beginPath(); ctx.moveTo(mK.X(x[0]), mK.Y(0)); ctx.lineTo(mK.X(x[0]), mK.Y(x[1])); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(mK.X(0), mK.Y(x[1])); ctx.lineTo(mK.X(x[0]), mK.Y(x[1])); ctx.stroke();
+  ctx.restore();
+  /* x */
+  vec(ctx, mK, x, "#2F5D8A", 3);
+  dot(ctx, mK.X(x[0]), mK.Y(x[1]), "#B04A2F", 5.5);
+  label(ctx, "x", mK.X(x[0])+9, mK.Y(x[1])-10, "#B04A2F", 13.5);
+  /* 放大显示的 δx 与 x′ */
+  const K=0.3/rho;
+  const g=[x[0]+dx[0]*K, x[1]+dx[1]*K];
+  arrow(ctx, mK.X(x[0]), mK.Y(x[1]), mK.X(g[0]), mK.Y(g[1]), "#8A6D1F", 2, [6,4]);
+  dot(ctx, mK.X(g[0]), mK.Y(g[1]), "#8A6D1F", 4.5);
+  label(ctx, "x′ = x + δx（放大显示）", mK.X(g[0])+9, mK.Y(g[1])+15, "#8A6D1F", 12);
+  /* 读数：实测 = 真的把扰动施加到 f 上再量 */
+  const f=x[0]-x[1];
+  const f2=(x[0]+dx[0])-(x[1]+dx[1]);
+  $("v-rho").textContent = "1e"+stateK.e;
+  $("v-x1").textContent=fmt(x[0],3); $("v-x2").textContent=fmt(x[1],3);
+  $("ro-f").textContent=fmt(f,4);
+  if(Math.abs(f)<1e-12){
+    $("ro-kap").textContent="∞"; $("ro-rel").textContent="—";
+    $("ro-pred").textContent="∞"; $("ro-ratio").textContent="—";
+    $("ro-verdict").textContent="完全抵消：相对误差无定义";
+  } else {
+    const kap=2*m/Math.abs(f), rel=Math.abs(f2-f)/Math.abs(f), pred=kap*rho;
+    $("ro-kap").textContent=fmt(kap,3);
+    $("ro-rel").textContent=fmt(rel,3);
+    $("ro-pred").textContent=fmt(pred,3);
+    $("ro-ratio").textContent=fmt(rel/pred,6);
+    $("ro-verdict").textContent = kap<10 ? "好条件" :
+      (kap<1e4 ? "勉强：丢 "+fmt(Math.log(kap)/Math.LN10,1)+" 位" : "病态：丢 "+fmt(Math.log(kap)/Math.LN10,1)+" 位");
+  }
 }
 $("s-rho").addEventListener("input", function(){ stateK.e=parseInt(this.value,10); drawCan(); });
 makeDrag(cvK, mK, function(){ return stateK.x; }, function(w){
- stateK.x=[Math.max(-2.8,Math.min(2.8,w[0])), Math.max(-2.8,Math.min(2.8,w[1]))]; drawCan(); });
+  stateK.x=[Math.max(-2.8,Math.min(2.8,w[0])), Math.max(-2.8,Math.min(2.8,w[1]))]; drawCan(); });
 $("v-rho").textContent="1e"+stateK.e; drawCan();
 /* ================= 实验 02 · 椭圆实验台 ================= */
 const cvE = $("cv-ell"), WE=620, HE=420;
 const mE = mapper(cvE, 310, 210, 33);
 const stateE = { e11:1.2, e12:0.4, e21:-0.9, e22:1.1, x:[0.6, 0.8] };
 function matE(){
- return [[stateE.e11, stateE.e12],[stateE.e21, stateE.e22]];
+  return [[stateE.e11, stateE.e12],[stateE.e21, stateE.e22]];
 }
 function drawEll(){
- const ctx=cvE.getContext("2d"); ctx.clearRect(0,0,WE,HE);
- grid(ctx, mE.X(0), mE.Y(0), 33, -9.3, 9.3, -6.3, 6.3);
- const A=matE(), sv=svd2(A), x=stateE.x;
- const kap=(sv.s2>1e-12)?(sv.s1/sv.s2):Infinity;
- /* 单位圆 */
- ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([6,5]); ctx.lineWidth=1.6;
- ctx.beginPath(); ctx.arc(mE.X(0), mE.Y(0), 33, 0, 7); ctx.stroke();
- ctx.setLineDash([]); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2.4;
- ctx.beginPath();
- for(let i=0;i<=120;i++){ const t=i/120*2*Math.PI;
- const px=A[0][0]*Math.cos(t)+A[0][1]*Math.sin(t), py=A[1][0]*Math.cos(t)+A[1][1]*Math.sin(t);
- if(i===0) ctx.moveTo(mE.X(px), mE.Y(py)); else ctx.lineTo(mE.X(px), mE.Y(py)); }
- ctx.stroke(); ctx.restore();
- label(ctx, "S（单位圆）", mE.X(0.76), mE.Y(-1.02), "#5A6B7C", 12);
- label(ctx, "A(S)（像椭圆）", mE.X(2.15), mE.Y(2.35), "#B04A2F", 12);
- /* 半轴 σ₁u₁、σ₂u₂ */
- vec(ctx, mE, [sv.s1*sv.u1[0], sv.s1*sv.u1[1]], "#1F7A4D", 2.2, [5,4]);
- label(ctx, "σ₁u₁", mE.X(sv.s1*sv.u1[0])+7, mE.Y(sv.s1*sv.u1[1])-10, "#1F7A4D", 12);
- vec(ctx, mE, [sv.s2*sv.u2[0], sv.s2*sv.u2[1]], "#2F5D8A", 2.2, [5,4]);
- label(ctx, "σ₂u₂", mE.X(sv.s2*sv.u2[0])+7, mE.Y(sv.s2*sv.u2[1])+14, "#2F5D8A", 12);
- /* vₙ 方向参考线 */
- ctx.save(); ctx.strokeStyle="#8A6D1F"; ctx.setLineDash([2,4]); ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(mE.X(-2.3*sv.v2[0]), mE.Y(-2.3*sv.v2[1]));
- ctx.lineTo(mE.X(2.3*sv.v2[0]), mE.Y(2.3*sv.v2[1])); ctx.stroke(); ctx.restore();
- label(ctx, "vₙ", mE.X(2.3*sv.v2[0])+6, mE.Y(2.3*sv.v2[1]), "#8A6D1F", 12);
- /* x 与 Ax */
- vec(ctx, mE, x, "#22303F", 3);
- dot(ctx, mE.X(x[0]), mE.Y(x[1]), "#22303F", 4.5);
- label(ctx, "x", mE.X(x[0])+8, mE.Y(x[1])-10, "#22303F", 13);
- const ax=[A[0][0]*x[0]+A[0][1]*x[1], A[1][0]*x[0]+A[1][1]*x[1]];
- vec(ctx, mE, ax, "#B04A2F", 3.2);
- dot(ctx, mE.X(ax[0]), mE.Y(ax[1]), "#B04A2F", 5);
- label(ctx, "Ax", mE.X(ax[0])+8, mE.Y(ax[1])+14, "#B04A2F", 13);
- /* 轴比批注 */
- label(ctx, "轴比 σ₁/σ₂ = κ₂(A) = "+fmt(kap,3), mE.X(-9.1), mE.Y(-6.0), "#B04A2F", 12.5);
- /* 读数 */
- const nx=Math.hypot(x[0],x[1]), nax=Math.hypot(ax[0],ax[1]);
- $("v-e11").textContent=fmt(stateE.e11,2); $("v-e12").textContent=fmt(stateE.e12,2);
- $("v-e21").textContent=fmt(stateE.e21,2); $("v-e22").textContent=fmt(stateE.e22,2);
- $("ro-sig").textContent=fmt(sv.s1,3)+" / "+fmt(sv.s2,3);
- $("ro-k2").textContent=isFinite(kap)?fmt(kap,3):"∞";
- if(nx<1e-9 || nax<1e-12){
- $("ro-kx").textContent="—"; $("ro-kratio").textContent="—";
- $("ro-ang").textContent="—"; $("ro-eq").textContent="x 在零空间/原点";
- } else {
- const kx=sv.s1*nx/nax;
- $("ro-kx").textContent=fmt(kx,3);
- $("ro-kratio").textContent=isFinite(kap)?fmt(kx/kap,4):"—";
- const cs=Math.abs(x[0]*sv.v2[0]+x[1]*sv.v2[1])/nx;
- const ang=Math.acos(Math.max(-1,Math.min(1,cs)))*180/Math.PI;
- $("ro-ang").textContent=fmt(ang,2)+"°";
- $("ro-eq").textContent = (ang<2) ? "x ∥ vₙ：κ̂ = κ₂ 取等 ✓" :
- (ang>88 ? "x ∥ v₁：最稳方向" : "中间方向");
- }
+  const ctx=cvE.getContext("2d"); ctx.clearRect(0,0,WE,HE);
+  grid(ctx, mE.X(0), mE.Y(0), 33, -9.3, 9.3, -6.3, 6.3);
+  const A=matE(), sv=svd2(A), x=stateE.x;
+  const kap=(sv.s2>1e-12)?(sv.s1/sv.s2):Infinity;
+  /* 单位圆 */
+  ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([6,5]); ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.arc(mE.X(0), mE.Y(0), 33, 0, 7); ctx.stroke();
+  ctx.setLineDash([]); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2.4;
+  ctx.beginPath();
+  for(let i=0;i<=120;i++){ const t=i/120*2*Math.PI;
+    const px=A[0][0]*Math.cos(t)+A[0][1]*Math.sin(t), py=A[1][0]*Math.cos(t)+A[1][1]*Math.sin(t);
+    if(i===0) ctx.moveTo(mE.X(px), mE.Y(py)); else ctx.lineTo(mE.X(px), mE.Y(py)); }
+  ctx.stroke(); ctx.restore();
+  label(ctx, "S（单位圆）", mE.X(0.76), mE.Y(-1.02), "#5A6B7C", 12);
+  label(ctx, "A(S)（像椭圆）", mE.X(2.15), mE.Y(2.35), "#B04A2F", 12);
+  /* 半轴 σ₁u₁、σ₂u₂ */
+  vec(ctx, mE, [sv.s1*sv.u1[0], sv.s1*sv.u1[1]], "#1F7A4D", 2.2, [5,4]);
+  label(ctx, "σ₁u₁", mE.X(sv.s1*sv.u1[0])+7, mE.Y(sv.s1*sv.u1[1])-10, "#1F7A4D", 12);
+  vec(ctx, mE, [sv.s2*sv.u2[0], sv.s2*sv.u2[1]], "#2F5D8A", 2.2, [5,4]);
+  label(ctx, "σ₂u₂", mE.X(sv.s2*sv.u2[0])+7, mE.Y(sv.s2*sv.u2[1])+14, "#2F5D8A", 12);
+  /* vₙ 方向参考线 */
+  ctx.save(); ctx.strokeStyle="#8A6D1F"; ctx.setLineDash([2,4]); ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(mE.X(-2.3*sv.v2[0]), mE.Y(-2.3*sv.v2[1]));
+  ctx.lineTo(mE.X(2.3*sv.v2[0]), mE.Y(2.3*sv.v2[1])); ctx.stroke(); ctx.restore();
+  label(ctx, "vₙ", mE.X(2.3*sv.v2[0])+6, mE.Y(2.3*sv.v2[1]), "#8A6D1F", 12);
+  /* x 与 Ax */
+  vec(ctx, mE, x, "#22303F", 3);
+  dot(ctx, mE.X(x[0]), mE.Y(x[1]), "#22303F", 4.5);
+  label(ctx, "x", mE.X(x[0])+8, mE.Y(x[1])-10, "#22303F", 13);
+  const ax=[A[0][0]*x[0]+A[0][1]*x[1], A[1][0]*x[0]+A[1][1]*x[1]];
+  vec(ctx, mE, ax, "#B04A2F", 3.2);
+  dot(ctx, mE.X(ax[0]), mE.Y(ax[1]), "#B04A2F", 5);
+  label(ctx, "Ax", mE.X(ax[0])+8, mE.Y(ax[1])+14, "#B04A2F", 13);
+  /* 轴比批注 */
+  label(ctx, "轴比 σ₁/σ₂ = κ₂(A) = "+fmt(kap,3), mE.X(-9.1), mE.Y(-6.0), "#B04A2F", 12.5);
+  /* 读数 */
+  const nx=Math.hypot(x[0],x[1]), nax=Math.hypot(ax[0],ax[1]);
+  $("v-e11").textContent=fmt(stateE.e11,2); $("v-e12").textContent=fmt(stateE.e12,2);
+  $("v-e21").textContent=fmt(stateE.e21,2); $("v-e22").textContent=fmt(stateE.e22,2);
+  $("ro-sig").textContent=fmt(sv.s1,3)+" / "+fmt(sv.s2,3);
+  $("ro-k2").textContent=isFinite(kap)?fmt(kap,3):"∞";
+  if(nx<1e-9 || nax<1e-12){
+    $("ro-kx").textContent="—"; $("ro-kratio").textContent="—";
+    $("ro-ang").textContent="—"; $("ro-eq").textContent="x 在零空间/原点";
+  } else {
+    const kx=sv.s1*nx/nax;
+    $("ro-kx").textContent=fmt(kx,3);
+    $("ro-kratio").textContent=isFinite(kap)?fmt(kx/kap,4):"—";
+    const cs=Math.abs(x[0]*sv.v2[0]+x[1]*sv.v2[1])/nx;
+    const ang=Math.acos(Math.max(-1,Math.min(1,cs)))*180/Math.PI;
+    $("ro-ang").textContent=fmt(ang,2)+"°";
+    $("ro-eq").textContent = (ang<2) ? "x ∥ vₙ：κ̂ = κ₂ 取等 ✓" :
+      (ang>88 ? "x ∥ v₁：最稳方向" : "中间方向");
+  }
 }
 [["s-e11","e11"],["s-e12","e12"],["s-e21","e21"],["s-e22","e22"]].forEach(function(p){
- $(p[0]).addEventListener("input", function(){ stateE[p[1]]=parseFloat(this.value); drawEll(); });
+  $(p[0]).addEventListener("input", function(){ stateE[p[1]]=parseFloat(this.value); drawEll(); });
 });
 function setXto(dir){ const sv=svd2(matE()); stateE.x=[dir[0], dir[1]]; drawEll(); }
 $("b-vn").onclick=function(){ setXto(svd2(matE()).v2); };
 $("b-v1").onclick=function(){ setXto(svd2(matE()).v1); };
 function presetE(a,b,c,d){
- stateE.e11=a; stateE.e12=b; stateE.e21=c; stateE.e22=d;
- $("s-e11").value=a; $("s-e12").value=b; $("s-e21").value=c; $("s-e22").value=d;
- stateE.x=[0.6,0.8]; drawEll();
+  stateE.e11=a; stateE.e12=b; stateE.e21=c; stateE.e22=d;
+  $("s-e11").value=a; $("s-e12").value=b; $("s-e21").value=c; $("s-e22").value=d;
+  stateE.x=[0.6,0.8]; drawEll();
 }
 $("b-wc").onclick=function(){ presetE(1.2,-0.7,0.7,1.2); };
 $("b-ill").onclick=function(){ presetE(1,0,0,0.01); };
 makeDrag(cvE, mE, function(){ return stateE.x; }, function(w){
- stateE.x=[Math.max(-4,Math.min(4,w[0])), Math.max(-4,Math.min(4,w[1]))]; drawEll(); });
+  stateE.x=[Math.max(-4,Math.min(4,w[0])), Math.max(-4,Math.min(4,w[1]))]; drawEll(); });
 drawEll();
 /* ================= 实验 03 · 误差放大对账台 ================= */
 const cvA = $("cv-amp"), WA=640, HA=250;
 const stateA = { s1:1, k:2, th:20, phi:65, e:-8, mode:"b" };
 function mul2(P, Q){
- return [[P[0][0]*Q[0][0]+P[0][1]*Q[1][0], P[0][0]*Q[0][1]+P[0][1]*Q[1][1]],
- [P[1][0]*Q[0][0]+P[1][1]*Q[1][0], P[1][0]*Q[0][1]+P[1][1]*Q[1][1]]];
+  return [[P[0][0]*Q[0][0]+P[0][1]*Q[1][0], P[0][0]*Q[0][1]+P[0][1]*Q[1][1]],
+          [P[1][0]*Q[0][0]+P[1][1]*Q[1][0], P[1][0]*Q[0][1]+P[1][1]*Q[1][1]]];
 }
 function inv2(A){
- const det=A[0][0]*A[1][1]-A[0][1]*A[1][0];
- return [[A[1][1]/det, -A[0][1]/det], [-A[1][0]/det, A[0][0]/det]];
+  const det=A[0][0]*A[1][1]-A[0][1]*A[1][0];
+  return [[A[1][1]/det, -A[0][1]/det], [-A[1][0]/det, A[0][0]/det]];
 }
 function buildA(){
- const s1=stateA.s1, kap=Math.pow(10, stateA.k), s2=s1/kap;
- const t=stateA.th*Math.PI/180, p=stateA.phi*Math.PI/180;
- const ct=Math.cos(t), st=Math.sin(t), cp=Math.cos(p), sp=Math.sin(p);
- const Rt=[[ct,-st],[st,ct]], D=[[s1,0],[0,s2]], RmT=[[cp,sp],[-sp,cp]];
- return { A:mul2(mul2(Rt,D),RmT), s1:s1, s2:s2, kap:kap,
- u1:[ct,st], u2:[-st,ct], v1:[cp,sp], v2:[-sp,cp] };
+  const s1=stateA.s1, kap=Math.pow(10, stateA.k), s2=s1/kap;
+  const t=stateA.th*Math.PI/180, p=stateA.phi*Math.PI/180;
+  const ct=Math.cos(t), st=Math.sin(t), cp=Math.cos(p), sp=Math.sin(p);
+  const Rt=[[ct,-st],[st,ct]], D=[[s1,0],[0,s2]], RmT=[[cp,sp],[-sp,cp]];
+  return { A:mul2(mul2(Rt,D),RmT), s1:s1, s2:s2, kap:kap,
+           u1:[ct,st], u2:[-st,ct], v1:[cp,sp], v2:[-sp,cp] };
 }
 function drawAmp(){
- const ctx=cvA.getContext("2d"); ctx.clearRect(0,0,WA,HA);
- const M=buildA(), A=M.A, eps=Math.pow(10, stateA.e);
- const Ai=inv2(A);
- const b=[2*M.u1[0], 2*M.u1[1]]; /* b = 2u₁：Theorem 12.1 取等方向 */
- const x=[Ai[0][0]*b[0]+Ai[0][1]*b[1], Ai[1][0]*b[0]+Ai[1][1]*b[1]];
- const nx=Math.hypot(x[0],x[1]), xh=[x[0]/nx, x[1]/nx];
- let dIn, dX; /* 输入侧扰动、解侧扰动 */
- if(stateA.mode==="b"){
- dIn=[2*eps*M.u2[0], 2*eps*M.u2[1]]; /* δb = 2ε·uₙ（最坏方向） */
- const bp=[b[0]+dIn[0], b[1]+dIn[1]];
- const xp=[Ai[0][0]*bp[0]+Ai[0][1]*bp[1], Ai[1][0]*bp[0]+Ai[1][1]*bp[1]];
- dX=[xp[0]-x[0], xp[1]-x[1]];
- } else {
- const nA=Math.sqrt(A[0][0]*A[0][0]+A[0][1]*A[0][1]+A[1][0]*A[1][0]+A[1][1]*A[1][1]);
- const dA=[[eps*nA*M.u2[0]*xh[0], eps*nA*M.u2[0]*xh[1]],
- [eps*nA*M.u2[1]*xh[0], eps*nA*M.u2[1]*xh[1]]]; /* δA = ε‖A‖·uₙx̂ᵀ */
- const Ap=[[A[0][0]+dA[0][0], A[0][1]+dA[0][1]],[A[1][0]+dA[1][0], A[1][1]+dA[1][1]]];
- const Api=inv2(Ap);
- const xp=[Api[0][0]*b[0]+Api[0][1]*b[1], Api[1][0]*b[0]+Api[1][1]*b[1]];
- dX=[xp[0]-x[0], xp[1]-x[1]];
- dIn=[0,0];
- }
- const meas=Math.hypot(dX[0],dX[1])/nx, bound=M.kap*eps;
- /* 最稳方向对照：δb∥u₁（或 δA = ε‖A‖·u₁x̂ᵀ）→ 放大恒为 ε */
- const best=eps;
- /* ---- 画布：左输入空间 / 右解空间 ---- */
- const K=0.3/eps;
- const bG=[b[0]+dIn[0]*K, b[1]+dIn[1]*K];
- const xG=[x[0]+dX[0]*K, x[1]+dX[1]*K];
- const nb=Math.max(Math.hypot(b[0],b[1]), Math.hypot(bG[0],bG[1]), 1e-9);
- const nxg=Math.max(nx, Math.hypot(xG[0],xG[1]), 1e-9);
- const sL=92/nb, sR=92/nxg;
- const cL={X:function(v){return 170+v*sL;}, Y:function(v){return 128-v*sL;}};
- const cR={X:function(v){return 470+v*sR;}, Y:function(v){return 128-v*sR;}};
- /* 左：输入 */
- label(ctx, "输入空间 · b"+(stateA.mode==="b"?" + δb":"（不动）"), 170, 16, "#5A6B7C", 12.5, "center");
- ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
- ctx.beginPath(); ctx.moveTo(30,128); ctx.lineTo(310,128); ctx.moveTo(170,20); ctx.lineTo(170,236); ctx.stroke(); ctx.restore();
- arrow(ctx, cL.X(0), cL.Y(0), cL.X(b[0]), cL.Y(b[1]), "#2F5D8A", 3);
- dot(ctx, cL.X(b[0]), cL.Y(b[1]), "#2F5D8A", 4.5);
- label(ctx, "b", cL.X(b[0])+8, cL.Y(b[1])-9, "#2F5D8A", 12.5);
- if(stateA.mode==="b"){
- arrow(ctx, cL.X(b[0]), cL.Y(b[1]), cL.X(bG[0]), cL.Y(bG[1]), "#8A6D1F", 1.8, [5,4]);
- arrow(ctx, cL.X(0), cL.Y(0), cL.X(bG[0]), cL.Y(bG[1]), "#B04A2F", 2.6);
- dot(ctx, cL.X(bG[0]), cL.Y(bG[1]), "#B04A2F", 4.5);
- label(ctx, "b+δb", cL.X(bG[0])+8, cL.Y(bG[1])+14, "#B04A2F", 12.5);
- } else {
- label(ctx, "δA 作用在 A 上", 170, 236, "#8A6D1F", 12, "center");
- }
- /* 右：解 */
- label(ctx, "解空间 · x 与 x+δx", 470, 16, "#5A6B7C", 12.5, "center");
- ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
- ctx.beginPath(); ctx.moveTo(330,128); ctx.lineTo(610,128); ctx.moveTo(470,20); ctx.lineTo(470,236); ctx.stroke(); ctx.restore();
- arrow(ctx, cR.X(0), cR.Y(0), cR.X(x[0]), cR.Y(x[1]), "#2F5D8A", 3);
- dot(ctx, cR.X(x[0]), cR.Y(x[1]), "#2F5D8A", 4.5);
- label(ctx, "x", cR.X(x[0])+8, cR.Y(x[1])-9, "#2F5D8A", 12.5);
- arrow(ctx, cR.X(x[0]), cR.Y(x[1]), cR.X(xG[0]), cR.Y(xG[1]), "#8A6D1F", 1.8, [5,4]);
- arrow(ctx, cR.X(0), cR.Y(0), cR.X(xG[0]), cR.Y(xG[1]), "#B04A2F", 2.6);
- dot(ctx, cR.X(xG[0]), cR.Y(xG[1]), "#B04A2F", 4.5);
- label(ctx, "x+δx", cR.X(xG[0])+8, cR.Y(xG[1])+14, "#B04A2F", 12.5);
- /* 读数 */
- $("v-s1").textContent=fmt(stateA.s1,2); $("v-kap").textContent=fmt(M.kap,2);
- $("v-th").textContent=stateA.th+"°"; $("v-phi").textContent=stateA.phi+"°";
- $("v-eps").textContent="1e"+stateA.e;
- $("ro-amp-sig").textContent=fmt(M.s1,3)+" / "+fmt(M.s2,4)+" / "+fmt(M.kap,2);
- $("ro-meas").textContent=fmt(meas,6);
- $("ro-bound").textContent=fmt(bound,6);
- $("ro-aratio").textContent=fmt(meas/bound,4);
- $("ro-best").textContent=fmt(best,6);
- $("ro-lost").textContent=fmt(Math.log(M.kap)/Math.LN10,2)+" 位";
- $("ro-mach").textContent=fmt(M.kap*2.22e-16,3);
- $("ro-left").textContent=fmt(Math.max(0, 16-Math.log(M.kap)/Math.LN10),1)+" 位";
+  const ctx=cvA.getContext("2d"); ctx.clearRect(0,0,WA,HA);
+  const M=buildA(), A=M.A, eps=Math.pow(10, stateA.e);
+  const Ai=inv2(A);
+  const b=[2*M.u1[0], 2*M.u1[1]];                       /* b = 2u₁：Theorem 12.1 取等方向 */
+  const x=[Ai[0][0]*b[0]+Ai[0][1]*b[1], Ai[1][0]*b[0]+Ai[1][1]*b[1]];
+  const nx=Math.hypot(x[0],x[1]), xh=[x[0]/nx, x[1]/nx];
+  let dIn, dX;                                           /* 输入侧扰动、解侧扰动 */
+  if(stateA.mode==="b"){
+    dIn=[2*eps*M.u2[0], 2*eps*M.u2[1]];                  /* δb = 2ε·uₙ（最坏方向） */
+    const bp=[b[0]+dIn[0], b[1]+dIn[1]];
+    const xp=[Ai[0][0]*bp[0]+Ai[0][1]*bp[1], Ai[1][0]*bp[0]+Ai[1][1]*bp[1]];
+    dX=[xp[0]-x[0], xp[1]-x[1]];
+  } else {
+    const nA=Math.sqrt(A[0][0]*A[0][0]+A[0][1]*A[0][1]+A[1][0]*A[1][0]+A[1][1]*A[1][1]);
+    const dA=[[eps*nA*M.u2[0]*xh[0], eps*nA*M.u2[0]*xh[1]],
+              [eps*nA*M.u2[1]*xh[0], eps*nA*M.u2[1]*xh[1]]];   /* δA = ε‖A‖·uₙx̂ᵀ */
+    const Ap=[[A[0][0]+dA[0][0], A[0][1]+dA[0][1]],[A[1][0]+dA[1][0], A[1][1]+dA[1][1]]];
+    const Api=inv2(Ap);
+    const xp=[Api[0][0]*b[0]+Api[0][1]*b[1], Api[1][0]*b[0]+Api[1][1]*b[1]];
+    dX=[xp[0]-x[0], xp[1]-x[1]];
+    dIn=[0,0];
+  }
+  const meas=Math.hypot(dX[0],dX[1])/nx, bound=M.kap*eps;
+  /* 最稳方向对照：δb∥u₁（或 δA = ε‖A‖·u₁x̂ᵀ）→ 放大恒为 ε */
+  const best=eps;
+  /* ---- 画布：左输入空间 / 右解空间 ---- */
+  const K=0.3/eps;
+  const bG=[b[0]+dIn[0]*K, b[1]+dIn[1]*K];
+  const xG=[x[0]+dX[0]*K, x[1]+dX[1]*K];
+  const nb=Math.max(Math.hypot(b[0],b[1]), Math.hypot(bG[0],bG[1]), 1e-9);
+  const nxg=Math.max(nx, Math.hypot(xG[0],xG[1]), 1e-9);
+  const sL=92/nb, sR=92/nxg;
+  const cL={X:function(v){return 170+v*sL;}, Y:function(v){return 128-v*sL;}};
+  const cR={X:function(v){return 470+v*sR;}, Y:function(v){return 128-v*sR;}};
+  /* 左：输入 */
+  label(ctx, "输入空间 · b"+(stateA.mode==="b"?" + δb":"（不动）"), 170, 16, "#5A6B7C", 12.5, "center");
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(30,128); ctx.lineTo(310,128); ctx.moveTo(170,20); ctx.lineTo(170,236); ctx.stroke(); ctx.restore();
+  arrow(ctx, cL.X(0), cL.Y(0), cL.X(b[0]), cL.Y(b[1]), "#2F5D8A", 3);
+  dot(ctx, cL.X(b[0]), cL.Y(b[1]), "#2F5D8A", 4.5);
+  label(ctx, "b", cL.X(b[0])+8, cL.Y(b[1])-9, "#2F5D8A", 12.5);
+  if(stateA.mode==="b"){
+    arrow(ctx, cL.X(b[0]), cL.Y(b[1]), cL.X(bG[0]), cL.Y(bG[1]), "#8A6D1F", 1.8, [5,4]);
+    arrow(ctx, cL.X(0), cL.Y(0), cL.X(bG[0]), cL.Y(bG[1]), "#B04A2F", 2.6);
+    dot(ctx, cL.X(bG[0]), cL.Y(bG[1]), "#B04A2F", 4.5);
+    label(ctx, "b+δb", cL.X(bG[0])+8, cL.Y(bG[1])+14, "#B04A2F", 12.5);
+  } else {
+    label(ctx, "δA 作用在 A 上", 170, 236, "#8A6D1F", 12, "center");
+  }
+  /* 右：解 */
+  label(ctx, "解空间 · x 与 x+δx", 470, 16, "#5A6B7C", 12.5, "center");
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(330,128); ctx.lineTo(610,128); ctx.moveTo(470,20); ctx.lineTo(470,236); ctx.stroke(); ctx.restore();
+  arrow(ctx, cR.X(0), cR.Y(0), cR.X(x[0]), cR.Y(x[1]), "#2F5D8A", 3);
+  dot(ctx, cR.X(x[0]), cR.Y(x[1]), "#2F5D8A", 4.5);
+  label(ctx, "x", cR.X(x[0])+8, cR.Y(x[1])-9, "#2F5D8A", 12.5);
+  arrow(ctx, cR.X(x[0]), cR.Y(x[1]), cR.X(xG[0]), cR.Y(xG[1]), "#8A6D1F", 1.8, [5,4]);
+  arrow(ctx, cR.X(0), cR.Y(0), cR.X(xG[0]), cR.Y(xG[1]), "#B04A2F", 2.6);
+  dot(ctx, cR.X(xG[0]), cR.Y(xG[1]), "#B04A2F", 4.5);
+  label(ctx, "x+δx", cR.X(xG[0])+8, cR.Y(xG[1])+14, "#B04A2F", 12.5);
+  /* 读数 */
+  $("v-s1").textContent=fmt(stateA.s1,2); $("v-kap").textContent=fmt(M.kap,2);
+  $("v-th").textContent=stateA.th+"°"; $("v-phi").textContent=stateA.phi+"°";
+  $("v-eps").textContent="1e"+stateA.e;
+  $("ro-amp-sig").textContent=fmt(M.s1,3)+" / "+fmt(M.s2,4)+" / "+fmt(M.kap,2);
+  $("ro-meas").textContent=fmt(meas,6);
+  $("ro-bound").textContent=fmt(bound,6);
+  $("ro-aratio").textContent=fmt(meas/bound,4);
+  $("ro-best").textContent=fmt(best,6);
+  $("ro-lost").textContent=fmt(Math.log(M.kap)/Math.LN10,2)+" 位";
+  $("ro-mach").textContent=fmt(M.kap*2.22e-16,3);
+  $("ro-left").textContent=fmt(Math.max(0, 16-Math.log(M.kap)/Math.LN10),1)+" 位";
 }
 [["s-s1","s1"],["s-th","th"],["s-phi","phi"]].forEach(function(p){
- $(p[0]).addEventListener("input", function(){ stateA[p[1]]=parseFloat(this.value); drawAmp(); });
+  $(p[0]).addEventListener("input", function(){ stateA[p[1]]=parseFloat(this.value); drawAmp(); });
 });
 $("s-kap").addEventListener("input", function(){ stateA.k=parseFloat(this.value); drawAmp(); });
 $("s-eps").addEventListener("input", function(){ stateA.e=parseInt(this.value,10); drawAmp(); });
 $("seg-mode").addEventListener("click", function(e){
- const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.m) return;
- stateA.mode=t.dataset.m;
- const kids=this.querySelectorAll?this.querySelectorAll("button"):[];
- kids.forEach(function(btn){ btn.classList.toggle("on", btn.dataset&&btn.dataset.m===stateA.mode); });
- drawAmp();
+  const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.m) return;
+  stateA.mode=t.dataset.m;
+  const kids=this.querySelectorAll?this.querySelectorAll("button"):[];
+  kids.forEach(function(btn){ btn.classList.toggle("on", btn.dataset&&btn.dataset.m===stateA.mode); });
+  drawAmp();
 });
 $("v-eps").textContent="1e"+stateA.e; drawAmp();
 </script>

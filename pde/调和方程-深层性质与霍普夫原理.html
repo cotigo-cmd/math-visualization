@@ -6,24 +6,24 @@
 <title>深层性质与霍普夫原理 — 第 3 章 §4–§5 可视化</title>
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "global" },
- options: { enableMenu: false },
- startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
- --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
- --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
- --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
- --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
@@ -36,19 +36,19 @@ p{margin:12px 0}
 .hero{padding:56px 0 8px}
 .hero p.lead{font-size:17px;color:var(--muted);max-width:780px;margin:0}
 nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
- border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
 nav .wrap{padding:10px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px}
 nav a{color:var(--muted)}
 nav a:hover{color:var(--accent);text-decoration:none}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
 .note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .thm{border-left:3px solid var(--teal);background:#E1F5EE;padding:12px 18px;
- border-radius:0 8px 8px 0;margin:18px 0;font-size:14.6px}
+  border-radius:0 8px 8px 0;margin:18px 0;font-size:14.6px}
 .thm .tag{font-family:var(--mono);font-size:12px;color:var(--teal);font-weight:600;margin-right:8px}
 table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
 th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
@@ -57,7 +57,7 @@ tr:nth-child(even) td{background:#fafbfc}
 .ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;font-size:14px}
 .ctl input[type=range]{flex:1;min-width:150px;accent-color:var(--accent)}
 button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
- border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
 button:hover{border-color:var(--accent);color:var(--accent)}
 button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
 .val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
@@ -426,10 +426,10 @@ $$\det=-\,\sigma_2-\frac{\sigma_1}{2}-\sigma_1\sigma_2\ln2=0\iff \sigma_2^{*}=-\
 function $(id){ return document.getElementById(id); }
 function clampr(v,a,b){ return v<a?a:(v>b?b:v); }
 function fmt(v){
- if(!isFinite(v))return "∞";
- var a=Math.abs(v);
- if(a!==0&&(a<1e-4||a>=1e5))return v.toExponential(3);
- return v.toFixed(6);
+  if(!isFinite(v))return "∞";
+  var a=Math.abs(v);
+  if(a!==0&&(a<1e-4||a>=1e5))return v.toExponential(3);
+  return v.toFixed(6);
 }
 function fmtE(v){ return isFinite(v)?v.toExponential(2):"—"; }
 function setTxt(id,s){ var e=$(id); if(e) e.textContent=s; }
@@ -437,761 +437,761 @@ function setCls(id,s){ var e=$(id); if(e) e.className=s; }
 
 /* 发散配色：暖=正、冷=负；scale>0 */
 function dcolArr(v,scale,out){
- var t=v/scale;
- if(t>1)t=1; else if(t<-1)t=-1;
- if(t>=0){ out[0]=255; out[1]=Math.round(255*(1-t*0.82)); out[2]=Math.round(255*(1-t*0.82)); }
- else { out[0]=Math.round(255*(1+t*0.82)); out[1]=Math.round(255*(1+t*0.82)); out[2]=255; }
- out[3]=255;
- return out;
+  var t=v/scale;
+  if(t>1)t=1; else if(t<-1)t=-1;
+  if(t>=0){ out[0]=255; out[1]=Math.round(255*(1-t*0.82)); out[2]=Math.round(255*(1-t*0.82)); }
+  else { out[0]=Math.round(255*(1+t*0.82)); out[1]=Math.round(255*(1+t*0.82)); out[2]=255; }
+  out[3]=255;
+  return out;
 }
 /* 顺序配色：白 → 珊瑚 */
 function scolArr(v,out){
- var t=v/(v+0.15); if(t>1)t=1; if(t<0)t=0;
- out[0]=Math.round(255-39*t); out[1]=Math.round(255-165*t); out[2]=Math.round(255-207*t); out[3]=255;
+  var t=v/(v+0.15); if(t>1)t=1; if(t<0)t=0;
+  out[0]=Math.round(255-39*t); out[1]=Math.round(255-165*t); out[2]=Math.round(255-207*t); out[3]=255;
 }
 /* 通用热图：fn(x,y) 给世界坐标值 */
 function paintHeat(ctx,dx,dy,dw,dh,cols,rows,x0,x1,y0,y1,fn,scale,seq){
- var off=document.createElement("canvas");
- off.width=cols; off.height=rows;
- var octx=off.getContext("2d");
- var img=octx.createImageData(cols,rows), d=img.data, out=[0,0,0,255], idx=0, i, j, v;
- for(j=0;j<rows;j++)for(i=0;i<cols;i++){
- v=fn(x0+(i+0.5)/cols*(x1-x0), y0+(j+0.5)/rows*(y1-y0));
- if(seq)scolArr(v,out);else dcolArr(v,scale,out);
- d[idx]=out[0]; d[idx+1]=out[1]; d[idx+2]=out[2]; d[idx+3]=out[3]; idx+=4;
- }
- octx.putImageData(img,0,0);
- ctx.imageSmoothingEnabled=true;
- ctx.drawImage(off,dx,dy,dw,dh);
+  var off=document.createElement("canvas");
+  off.width=cols; off.height=rows;
+  var octx=off.getContext("2d");
+  var img=octx.createImageData(cols,rows), d=img.data, out=[0,0,0,255], idx=0, i, j, v;
+  for(j=0;j<rows;j++)for(i=0;i<cols;i++){
+    v=fn(x0+(i+0.5)/cols*(x1-x0), y0+(j+0.5)/rows*(y1-y0));
+    if(seq)scolArr(v,out);else dcolArr(v,scale,out);
+    d[idx]=out[0]; d[idx+1]=out[1]; d[idx+2]=out[2]; d[idx+3]=out[3]; idx+=4;
+  }
+  octx.putImageData(img,0,0);
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(off,dx,dy,dw,dh);
 }
 function bindDrag(cv,onDrag){
- var active=false;
- cv.addEventListener("pointerdown",function(e){ active=true; if(cv.setPointerCapture&&e.pointerId!==undefined)cv.setPointerCapture(e.pointerId); onDrag(e); });
- cv.addEventListener("pointermove",function(e){ if(active)onDrag(e); });
- cv.addEventListener("pointerup",function(){ active=false; });
- cv.addEventListener("pointerleave",function(){ active=false; });
+  var active=false;
+  cv.addEventListener("pointerdown",function(e){ active=true; if(cv.setPointerCapture&&e.pointerId!==undefined)cv.setPointerCapture(e.pointerId); onDrag(e); });
+  cv.addEventListener("pointermove",function(e){ if(active)onDrag(e); });
+  cv.addEventListener("pointerup",function(){ active=false; });
+  cv.addEventListener("pointerleave",function(){ active=false; });
 }
 function evXY(cv,e){
- var r=cv.getBoundingClientRect();
- var sx=cv.width/r.width, sy=cv.height/r.height;
- return {x:((e.clientX||0)-r.left)*sx, y:((e.clientY||0)-r.top)*sy};
+  var r=cv.getBoundingClientRect();
+  var sx=cv.width/r.width, sy=cv.height/r.height;
+  return {x:((e.clientX||0)-r.left)*sx, y:((e.clientY||0)-r.top)*sy};
 }
 function arrow(ctx,x1,y1,x2,y2,col,w){
- ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=w||2;
- ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
- var a=Math.atan2(y2-y1,x2-x1), L=8;
- ctx.beginPath();
- ctx.moveTo(x2,y2);
- ctx.lineTo(x2-L*Math.cos(a-0.38),y2-L*Math.sin(a-0.38));
- ctx.lineTo(x2-L*Math.cos(a+0.38),y2-L*Math.sin(a+0.38));
- ctx.closePath(); ctx.fill();
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=w||2;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  var a=Math.atan2(y2-y1,x2-x1), L=8;
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-L*Math.cos(a-0.38),y2-L*Math.sin(a-0.38));
+  ctx.lineTo(x2-L*Math.cos(a+0.38),y2-L*Math.sin(a+0.38));
+  ctx.closePath(); ctx.fill();
 }
 
 /* ================= 01 哈纳克不等式 ================= */
 (function(){
- var W=840,H=500,cv=$("hk-canvas"),ctx=cv.getContext("2d");
- var X0=-1.7,X1=1.7,Z0=-1.7*H/W,Z1=1.7*H/W;
- function PX(x){return (x-X0)/(X1-X0)*W;}
- function PZ(z){return H-(z-Z0)/(Z1-Z0)*H;}
- var Pt={x:0.22,z:0.10}, R=0.45, rho=0.35, th=35*Math.PI/180, mode=0;
- var Ax=0,Az=1.70;
- function uval(x,z){
- if(mode===0)return Math.exp(x);
- if(mode===1)return 1+0.6*z;
- var dx=x-Ax,dz=z-Az; return 1/Math.sqrt(dx*dx+dz*dz);
- }
- function Qpos(){
- var s=Math.sin(th),c=Math.cos(th);
- return {x:Pt.x+rho*c, z:Pt.z+rho*s};
- }
- function clampP(){
- var r=Math.sqrt(Pt.x*Pt.x+Pt.z*Pt.z), rmax=Math.max(0.05,0.95-R-0.02);
- if(r>rmax){ Pt.x*=rmax/r; Pt.z*=rmax/r; }
- }
- function sync(){
- setTxt("hk-Rv",R.toFixed(2));
- setTxt("hk-rhov",rho.toFixed(2));
- setTxt("hk-thv",Math.round(th*180/Math.PI)+"°");
- }
- function readout(){
- var Q=Qpos(), up=uval(Pt.x,Pt.z), uq=uval(Q.x,Q.z);
- var lo=R*(R-rho)/((R+rho)*(R+rho))*up;
- var hi=R*(R+rho)/((R-rho)*(R-rho))*up;
- setTxt("hk-up",fmt(up)); setTxt("hk-uq",fmt(uq));
- setTxt("hk-lo",fmt(lo)); setTxt("hk-hi",fmt(hi));
- setTxt("hk-ratio",(uq/up).toFixed(6));
- var ok=(uq>=lo-1e-12&&uq<=hi+1e-12);
- setTxt("hk-ok",ok?"成立 ✓":"不成立 ✗");
- setCls("hk-ok","v "+(ok?"ok":"bad"));
- }
- function draw(){
- ctx.clearRect(0,0,W,H);
- /* 单位球截面热图（圆内裁剪） */
- ctx.save();
- ctx.beginPath(); ctx.arc(PX(0),PZ(0),(PX(1)-PX(0)),0,Math.PI*2); ctx.clip();
- var scale=(mode===0)?1.4:((mode===1)?1.2:0.9);
- paintHeat(ctx,0,0,W,H,72,44,X0,X1,Z1,Z0,uval,scale,true);
- ctx.restore();
- /* 单位球边界 */
- ctx.strokeStyle="#8c959f"; ctx.lineWidth=2;
- ctx.beginPath(); ctx.arc(PX(0),PZ(0),PX(1)-PX(0),0,Math.PI*2); ctx.stroke();
- /* B_R(P) */
- ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.8; ctx.setLineDash([7,6]);
- ctx.beginPath(); ctx.arc(PX(Pt.x),PZ(Pt.z),(PX(R)-PX(0)),0,Math.PI*2); ctx.stroke();
- ctx.setLineDash([]);
- var Q=Qpos();
- /* PQ 连线 */
- ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.5;
- ctx.beginPath(); ctx.moveTo(PX(Pt.x),PZ(Pt.z)); ctx.lineTo(PX(Q.x),PZ(Q.z)); ctx.stroke();
- /* 点 */
- ctx.fillStyle="#185FA5";
- ctx.beginPath(); ctx.arc(PX(Pt.x),PZ(Pt.z),5.5,0,Math.PI*2); ctx.fill();
- ctx.fillStyle="#D85A30";
- ctx.beginPath(); ctx.arc(PX(Q.x),PZ(Q.z),5.5,0,Math.PI*2); ctx.fill();
- /* 文字 */
- ctx.fillStyle="#1f2328"; ctx.font="14px ui-monospace,monospace";
- ctx.fillText("P",PX(Pt.x)+9,PZ(Pt.z)-9);
- ctx.fillText("Q",PX(Q.x)+9,PZ(Q.z)-9);
- ctx.fillStyle="#0C447C"; ctx.font="13px system-ui";
- ctx.fillText("R = "+R.toFixed(2)+" ρ = "+rho.toFixed(2)+" ρ/R = "+(rho/R).toFixed(2),16,22);
- ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
- ctx.fillText("灰圆：区域边界（单位球截面）　蓝虚线：以 P 为心、半径 R 的球",16,H-14);
- }
- function all(){ clampP(); rho=clampr(rho,R*0.05,R*0.93); sync(); readout(); draw(); }
- bindDrag(cv,function(e){
- var p=evXY(cv,e);
- var x=X0+p.x/W*(X1-X0), z=Z1-p.y/H*(Z1-Z0);
- var dP=Math.sqrt((x-Pt.x)*(x-Pt.x)+(z-Pt.z)*(z-Pt.z));
- var Q=Qpos(), dQ=Math.sqrt((x-Q.x)*(x-Q.x)+(z-Q.z)*(z-Q.z));
- if(dQ<dP){ th=Math.atan2(z-Pt.z,x-Pt.x); rho=clampr(dQ,R*0.05,R*0.93); }
- else { Pt.x=x; Pt.z=z; }
- all();
- });
- $("hk-R").addEventListener("input",function(){ R=clampr(parseFloat(this.value)/100,0.15,0.70); rho=Math.min(rho,R*0.93); all(); });
- $("hk-rho").addEventListener("input",function(){ rho=clampr(parseFloat(this.value)/100,R*0.05,R*0.93); all(); });
- $("hk-th").addEventListener("input",function(){ th=parseFloat(this.value)*Math.PI/180; all(); });
- function setMode(m){
- mode=m;
- $("hk-m0").className=(m===0?"on":""); $("hk-m1").className=(m===1?"on":""); $("hk-m2").className=(m===2?"on":"");
- all();
- }
- $("hk-m0").addEventListener("click",function(){setMode(0);});
- $("hk-m1").addEventListener("click",function(){setMode(1);});
- $("hk-m2").addEventListener("click",function(){setMode(2);});
- $("hk-reset").addEventListener("click",function(){ Pt.x=0.22;Pt.z=0.10;R=0.45;rho=0.35;th=35*Math.PI/180; $("hk-R").value="45"; $("hk-rho").value="35"; $("hk-th").value="35"; setMode(0); });
- all();
+  var W=840,H=500,cv=$("hk-canvas"),ctx=cv.getContext("2d");
+  var X0=-1.7,X1=1.7,Z0=-1.7*H/W,Z1=1.7*H/W;
+  function PX(x){return (x-X0)/(X1-X0)*W;}
+  function PZ(z){return H-(z-Z0)/(Z1-Z0)*H;}
+  var Pt={x:0.22,z:0.10}, R=0.45, rho=0.35, th=35*Math.PI/180, mode=0;
+  var Ax=0,Az=1.70;
+  function uval(x,z){
+    if(mode===0)return Math.exp(x);
+    if(mode===1)return 1+0.6*z;
+    var dx=x-Ax,dz=z-Az; return 1/Math.sqrt(dx*dx+dz*dz);
+  }
+  function Qpos(){
+    var s=Math.sin(th),c=Math.cos(th);
+    return {x:Pt.x+rho*c, z:Pt.z+rho*s};
+  }
+  function clampP(){
+    var r=Math.sqrt(Pt.x*Pt.x+Pt.z*Pt.z), rmax=Math.max(0.05,0.95-R-0.02);
+    if(r>rmax){ Pt.x*=rmax/r; Pt.z*=rmax/r; }
+  }
+  function sync(){
+    setTxt("hk-Rv",R.toFixed(2));
+    setTxt("hk-rhov",rho.toFixed(2));
+    setTxt("hk-thv",Math.round(th*180/Math.PI)+"°");
+  }
+  function readout(){
+    var Q=Qpos(), up=uval(Pt.x,Pt.z), uq=uval(Q.x,Q.z);
+    var lo=R*(R-rho)/((R+rho)*(R+rho))*up;
+    var hi=R*(R+rho)/((R-rho)*(R-rho))*up;
+    setTxt("hk-up",fmt(up)); setTxt("hk-uq",fmt(uq));
+    setTxt("hk-lo",fmt(lo)); setTxt("hk-hi",fmt(hi));
+    setTxt("hk-ratio",(uq/up).toFixed(6));
+    var ok=(uq>=lo-1e-12&&uq<=hi+1e-12);
+    setTxt("hk-ok",ok?"成立 ✓":"不成立 ✗");
+    setCls("hk-ok","v "+(ok?"ok":"bad"));
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    /* 单位球截面热图（圆内裁剪） */
+    ctx.save();
+    ctx.beginPath(); ctx.arc(PX(0),PZ(0),(PX(1)-PX(0)),0,Math.PI*2); ctx.clip();
+    var scale=(mode===0)?1.4:((mode===1)?1.2:0.9);
+    paintHeat(ctx,0,0,W,H,72,44,X0,X1,Z1,Z0,uval,scale,true);
+    ctx.restore();
+    /* 单位球边界 */
+    ctx.strokeStyle="#8c959f"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(PX(0),PZ(0),PX(1)-PX(0),0,Math.PI*2); ctx.stroke();
+    /* B_R(P) */
+    ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.8; ctx.setLineDash([7,6]);
+    ctx.beginPath(); ctx.arc(PX(Pt.x),PZ(Pt.z),(PX(R)-PX(0)),0,Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+    var Q=Qpos();
+    /* PQ 连线 */
+    ctx.strokeStyle="#534AB7"; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(PX(Pt.x),PZ(Pt.z)); ctx.lineTo(PX(Q.x),PZ(Q.z)); ctx.stroke();
+    /* 点 */
+    ctx.fillStyle="#185FA5";
+    ctx.beginPath(); ctx.arc(PX(Pt.x),PZ(Pt.z),5.5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#D85A30";
+    ctx.beginPath(); ctx.arc(PX(Q.x),PZ(Q.z),5.5,0,Math.PI*2); ctx.fill();
+    /* 文字 */
+    ctx.fillStyle="#1f2328"; ctx.font="14px ui-monospace,monospace";
+    ctx.fillText("P",PX(Pt.x)+9,PZ(Pt.z)-9);
+    ctx.fillText("Q",PX(Q.x)+9,PZ(Q.z)-9);
+    ctx.fillStyle="#0C447C"; ctx.font="13px system-ui";
+    ctx.fillText("R = "+R.toFixed(2)+"   ρ = "+rho.toFixed(2)+"   ρ/R = "+(rho/R).toFixed(2),16,22);
+    ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
+    ctx.fillText("灰圆：区域边界（单位球截面）　蓝虚线：以 P 为心、半径 R 的球",16,H-14);
+  }
+  function all(){ clampP(); rho=clampr(rho,R*0.05,R*0.93); sync(); readout(); draw(); }
+  bindDrag(cv,function(e){
+    var p=evXY(cv,e);
+    var x=X0+p.x/W*(X1-X0), z=Z1-p.y/H*(Z1-Z0);
+    var dP=Math.sqrt((x-Pt.x)*(x-Pt.x)+(z-Pt.z)*(z-Pt.z));
+    var Q=Qpos(), dQ=Math.sqrt((x-Q.x)*(x-Q.x)+(z-Q.z)*(z-Q.z));
+    if(dQ<dP){ th=Math.atan2(z-Pt.z,x-Pt.x); rho=clampr(dQ,R*0.05,R*0.93); }
+    else { Pt.x=x; Pt.z=z; }
+    all();
+  });
+  $("hk-R").addEventListener("input",function(){ R=clampr(parseFloat(this.value)/100,0.15,0.70); rho=Math.min(rho,R*0.93); all(); });
+  $("hk-rho").addEventListener("input",function(){ rho=clampr(parseFloat(this.value)/100,R*0.05,R*0.93); all(); });
+  $("hk-th").addEventListener("input",function(){ th=parseFloat(this.value)*Math.PI/180; all(); });
+  function setMode(m){
+    mode=m;
+    $("hk-m0").className=(m===0?"on":""); $("hk-m1").className=(m===1?"on":""); $("hk-m2").className=(m===2?"on":"");
+    all();
+  }
+  $("hk-m0").addEventListener("click",function(){setMode(0);});
+  $("hk-m1").addEventListener("click",function(){setMode(1);});
+  $("hk-m2").addEventListener("click",function(){setMode(2);});
+  $("hk-reset").addEventListener("click",function(){ Pt.x=0.22;Pt.z=0.10;R=0.45;rho=0.35;th=35*Math.PI/180; $("hk-R").value="45"; $("hk-rho").value="35"; $("hk-th").value="35"; setMode(0); });
+  all();
 })();
 
 /* ================= 02 哈纳克第二定理 ================= */
 (function(){
- var W=840,H=400,cv=$("hn-canvas"),ctx=cv.getContext("2d");
- var K=12,R=0.60,zP=-0.25;
- var LW=470, RX=520, RW=W-RX-20;
- var z0=-1.05,z1=1.05, u0=0.85,u1=2.35;
- function sfun(z){ return (1+z)/2.5; }
- function uk(z,k){ return 1+(1-1/k)*sfun(z); }
- function X(z){ return 20+(z-z0)/(z1-z0)*(LW-40); }
- function Y(u){ return H-40-(u-u0)/(u1-u0)*(H-80); }
- function readout(){
- var sP=sfun(zP), rho=Math.min(0.8*R,R*0.93);
- var sQ=(1+(zP+rho))/2.5;
- var vp=sP/(K*(K-1)), vq=sQ/(K*(K-1));
- var lo=R*(R-rho)/((R+rho)*(R+rho)), hi=R*(R+rho)/((R-rho)*(R-rho));
- setTxt("hn-kv",String(K));
- setTxt("hn-Rv",R.toFixed(2));
- setTxt("hn-Pv",zP.toFixed(2));
- setTxt("hn-vp",fmtE(vp));
- setTxt("hn-vq",fmtE(vq));
- setTxt("hn-ratio",(vq/vp).toFixed(6));
- setTxt("hn-lo",lo.toFixed(4));
- setTxt("hn-hi",hi.toFixed(4));
- setTxt("hn-tail",fmtE(sP/K));
- }
- function draw(){
- ctx.clearRect(0,0,W,H);
- /* 左：剖面族 */
- ctx.strokeStyle="#e5e7eb"; ctx.lineWidth=1;
- ctx.beginPath(); ctx.moveTo(X(-1),Y(u0)); ctx.lineTo(X(-1),Y(u1)); ctx.lineTo(X(1),Y(u1)); ctx.stroke();
- var ks=[2,3,5,10,K], cols=["#c7d7e8","#9dc0dd","#5f9ec9","#2f7fb5","#0C447C"];
- for(var i=0;i<ks.length;i++){
- var k=ks[i]; if(k<2)continue;
- ctx.strokeStyle=cols[i]; ctx.lineWidth=(k===K?2.4:1.3);
- ctx.beginPath();
- for(var t=0;t<=100;t++){
- var z=z0+(z1-z0)*t/100;
- var x=X(z), y=Y(uk(z,k));
- if(t===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
- }
- ctx.stroke();
- }
- ctx.fillStyle="#1f2328"; ctx.font="13px ui-monospace,monospace";
- ctx.fillText("u_k(z) k = 2,3,5,10,"+K,24,26);
- ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
- ctx.fillText("单调不减 ⟹ 增量 v_k ≥ 0；极限 u = 1 + (1+z)/2.5",24,H-14);
- ctx.strokeStyle="#D85A30"; ctx.setLineDash([5,4]); ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(X(zP),Y(u0)); ctx.lineTo(X(zP),Y(u1)); ctx.stroke();
- ctx.setLineDash([]);
- ctx.fillStyle="#D85A30"; ctx.beginPath(); ctx.arc(X(zP),Y(uk(zP,K)),5,0,Math.PI*2); ctx.fill();
- ctx.font="12px ui-monospace,monospace"; ctx.fillText("P",X(zP)+7,Y(uk(zP,K))-7);
- /* 右：比值 vs ρ/R（对数纵轴） */
- var bx=RX, by=30, bw=RW, bh=H-80;
- function LX(rr){ return bx+rr*0.95/bw*0+ (rr/0.95)*(bw); }
- function lx(rr){ return bx+(rr/0.95)*bw; }
- function ly(v){ var t=(Math.log10(v)+2)/4; return by+bh*(1-clampr(t,0,1)); }
- ctx.strokeStyle="#e5e7eb";
- for(var g=-2;g<=2;g++){ ctx.beginPath(); ctx.moveTo(bx,ly(Math.pow(10,g))); ctx.lineTo(bx+bw,ly(Math.pow(10,g))); ctx.stroke(); }
- ctx.strokeStyle="#8c959f"; ctx.strokeRect(bx,by,bw,bh);
- /* 上下界 */
- ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.6;
- ctx.beginPath();
- for(var i2=0;i2<=80;i2++){ var rr=0.93*i2/80, rho2=rr*R; var v=R*(R-rho2)/((R+rho2)*(R+rho2)); var x2=lx(rr),y2=ly(v); if(i2===0)ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2); }
- ctx.stroke();
- ctx.beginPath();
- for(var i3=0;i3<=80;i3++){ var rr3=0.93*i3/80, rho3=rr3*R; var v3=R*(R+rho3)/((R-rho3)*(R-rho3)); var x3=lx(rr3),y3=ly(v3); if(i3===0)ctx.moveTo(x3,y3); else ctx.lineTo(x3,y3); }
- ctx.stroke();
- /* 实测比值（水平线） */
- var ratio=sfun(zP+0.8*R)/sfun(zP);
- ctx.strokeStyle="#D85A30"; ctx.lineWidth=2.2;
- ctx.beginPath(); ctx.moveTo(bx,ly(ratio)); ctx.lineTo(bx+bw,ly(ratio)); ctx.stroke();
- ctx.fillStyle="#1f2328"; ctx.font="12px ui-monospace,monospace";
- ctx.fillText("v_k(Q)/v_k(P)",bx+4,by-8);
- ctx.fillStyle="#185FA5"; ctx.fillText("(4.3) 上下界",bx+4,by+bh+18);
- ctx.fillStyle="#D85A30"; ctx.fillText("实测 "+ratio.toFixed(4)+"（与 k 无关）",bx+120,ly(ratio)-6);
- ctx.fillStyle="#57606a"; ctx.font="11.5px system-ui";
- ctx.fillText("横轴 ρ/R ∈ [0,0.93]，纵轴 log10",bx+4,by+bh+34);
- }
- $("hn-k").addEventListener("input",function(){ K=Math.max(2,parseInt(this.value,10)); readout(); draw(); });
- $("hn-R").addEventListener("input",function(){ R=clampr(parseFloat(this.value)/100,0.2,0.85); readout(); draw(); });
- $("hn-P").addEventListener("input",function(){ zP=clampr(parseFloat(this.value)/100,-0.6,0.6); readout(); draw(); });
- var timer=null;
- $("hn-play").addEventListener("click",function(){
- if(timer){ clearInterval(timer); timer=null; this.className=""; this.textContent="播放 k"; return; }
- this.className="on"; this.textContent="暂停";
- var self=this;
- timer=setInterval(function(){
- K=K>=200?2:K+3;
- $("hn-k").value=String(K);
- readout(); draw();
- },60);
- });
- readout(); draw();
+  var W=840,H=400,cv=$("hn-canvas"),ctx=cv.getContext("2d");
+  var K=12,R=0.60,zP=-0.25;
+  var LW=470, RX=520, RW=W-RX-20;
+  var z0=-1.05,z1=1.05, u0=0.85,u1=2.35;
+  function sfun(z){ return (1+z)/2.5; }
+  function uk(z,k){ return 1+(1-1/k)*sfun(z); }
+  function X(z){ return 20+(z-z0)/(z1-z0)*(LW-40); }
+  function Y(u){ return H-40-(u-u0)/(u1-u0)*(H-80); }
+  function readout(){
+    var sP=sfun(zP), rho=Math.min(0.8*R,R*0.93);
+    var sQ=(1+(zP+rho))/2.5;
+    var vp=sP/(K*(K-1)), vq=sQ/(K*(K-1));
+    var lo=R*(R-rho)/((R+rho)*(R+rho)), hi=R*(R+rho)/((R-rho)*(R-rho));
+    setTxt("hn-kv",String(K));
+    setTxt("hn-Rv",R.toFixed(2));
+    setTxt("hn-Pv",zP.toFixed(2));
+    setTxt("hn-vp",fmtE(vp));
+    setTxt("hn-vq",fmtE(vq));
+    setTxt("hn-ratio",(vq/vp).toFixed(6));
+    setTxt("hn-lo",lo.toFixed(4));
+    setTxt("hn-hi",hi.toFixed(4));
+    setTxt("hn-tail",fmtE(sP/K));
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    /* 左：剖面族 */
+    ctx.strokeStyle="#e5e7eb"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(X(-1),Y(u0)); ctx.lineTo(X(-1),Y(u1)); ctx.lineTo(X(1),Y(u1)); ctx.stroke();
+    var ks=[2,3,5,10,K], cols=["#c7d7e8","#9dc0dd","#5f9ec9","#2f7fb5","#0C447C"];
+    for(var i=0;i<ks.length;i++){
+      var k=ks[i]; if(k<2)continue;
+      ctx.strokeStyle=cols[i]; ctx.lineWidth=(k===K?2.4:1.3);
+      ctx.beginPath();
+      for(var t=0;t<=100;t++){
+        var z=z0+(z1-z0)*t/100;
+        var x=X(z), y=Y(uk(z,k));
+        if(t===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+    ctx.fillStyle="#1f2328"; ctx.font="13px ui-monospace,monospace";
+    ctx.fillText("u_k(z)   k = 2,3,5,10,"+K,24,26);
+    ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
+    ctx.fillText("单调不减 ⟹ 增量 v_k ≥ 0；极限 u = 1 + (1+z)/2.5",24,H-14);
+    ctx.strokeStyle="#D85A30"; ctx.setLineDash([5,4]); ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(X(zP),Y(u0)); ctx.lineTo(X(zP),Y(u1)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#D85A30"; ctx.beginPath(); ctx.arc(X(zP),Y(uk(zP,K)),5,0,Math.PI*2); ctx.fill();
+    ctx.font="12px ui-monospace,monospace"; ctx.fillText("P",X(zP)+7,Y(uk(zP,K))-7);
+    /* 右：比值 vs ρ/R（对数纵轴） */
+    var bx=RX, by=30, bw=RW, bh=H-80;
+    function LX(rr){ return bx+rr*0.95/bw*0+ (rr/0.95)*(bw); }
+    function lx(rr){ return bx+(rr/0.95)*bw; }
+    function ly(v){ var t=(Math.log10(v)+2)/4; return by+bh*(1-clampr(t,0,1)); }
+    ctx.strokeStyle="#e5e7eb";
+    for(var g=-2;g<=2;g++){ ctx.beginPath(); ctx.moveTo(bx,ly(Math.pow(10,g))); ctx.lineTo(bx+bw,ly(Math.pow(10,g))); ctx.stroke(); }
+    ctx.strokeStyle="#8c959f"; ctx.strokeRect(bx,by,bw,bh);
+    /* 上下界 */
+    ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.6;
+    ctx.beginPath();
+    for(var i2=0;i2<=80;i2++){ var rr=0.93*i2/80, rho2=rr*R; var v=R*(R-rho2)/((R+rho2)*(R+rho2)); var x2=lx(rr),y2=ly(v); if(i2===0)ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2); }
+    ctx.stroke();
+    ctx.beginPath();
+    for(var i3=0;i3<=80;i3++){ var rr3=0.93*i3/80, rho3=rr3*R; var v3=R*(R+rho3)/((R-rho3)*(R-rho3)); var x3=lx(rr3),y3=ly(v3); if(i3===0)ctx.moveTo(x3,y3); else ctx.lineTo(x3,y3); }
+    ctx.stroke();
+    /* 实测比值（水平线） */
+    var ratio=sfun(zP+0.8*R)/sfun(zP);
+    ctx.strokeStyle="#D85A30"; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.moveTo(bx,ly(ratio)); ctx.lineTo(bx+bw,ly(ratio)); ctx.stroke();
+    ctx.fillStyle="#1f2328"; ctx.font="12px ui-monospace,monospace";
+    ctx.fillText("v_k(Q)/v_k(P)",bx+4,by-8);
+    ctx.fillStyle="#185FA5"; ctx.fillText("(4.3) 上下界",bx+4,by+bh+18);
+    ctx.fillStyle="#D85A30"; ctx.fillText("实测 "+ratio.toFixed(4)+"（与 k 无关）",bx+120,ly(ratio)-6);
+    ctx.fillStyle="#57606a"; ctx.font="11.5px system-ui";
+    ctx.fillText("横轴 ρ/R ∈ [0,0.93]，纵轴 log10",bx+4,by+bh+34);
+  }
+  $("hn-k").addEventListener("input",function(){ K=Math.max(2,parseInt(this.value,10)); readout(); draw(); });
+  $("hn-R").addEventListener("input",function(){ R=clampr(parseFloat(this.value)/100,0.2,0.85); readout(); draw(); });
+  $("hn-P").addEventListener("input",function(){ zP=clampr(parseFloat(this.value)/100,-0.6,0.6); readout(); draw(); });
+  var timer=null;
+  $("hn-play").addEventListener("click",function(){
+    if(timer){ clearInterval(timer); timer=null; this.className=""; this.textContent="播放 k"; return; }
+    this.className="on"; this.textContent="暂停";
+    var self=this;
+    timer=setInterval(function(){
+      K=K>=200?2:K+3;
+      $("hn-k").value=String(K);
+      readout(); draw();
+    },60);
+  });
+  readout(); draw();
 })();
 
 /* ================= 03 奇点标尺 ================= */
 (function(){
- var W=840,H=420,cv=$("sg-canvas"),ctx=cv.getContext("2d");
- var dim=3, fam=0, p=1.0;
- var LW=440, RX=520, RW=W-RX-24;
- function uval(r){
- if(fam===0){ return dim===3 ? (1+p/r) : (1+p*Math.log(1/r)); }
- return Math.pow(r,-p);
- }
- function crit(r){
- var u=uval(r);
- if(dim===3) return r*u;
- return u/Math.log(1/r);
- }
- var rmin=1e-6, rmax=1;
- function lg(r){ return (Math.log(r)-Math.log(rmin))/(Math.log(rmax)-Math.log(rmin)); }
- function Ylog(v,lo,hi){ var t=(Math.log(Math.max(v,1e-30))-Math.log(lo))/(Math.log(hi)-Math.log(lo)); return t; }
- function panel(x0,w,vals,lo,hi,title,color,extra){
- var y0=36,y1=H-52;
- ctx.strokeStyle="#e5e7eb"; ctx.lineWidth=1;
- for(var g=-6;g<=0;g++){
- var v=Math.pow(10,g); if(v<lo||v>hi)continue;
- var y=y0+(1-Ylog(v,lo,hi))*(y1-y0);
- ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
- ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
- ctx.fillText("1e"+g,x0-2,y-3);
- }
- ctx.strokeStyle="#8c959f"; ctx.strokeRect(x0,y0,w,y1-y0);
- ctx.fillStyle="#1f2328"; ctx.font="12px system-ui"; ctx.fillText(title,x0,y0-12);
- ctx.strokeStyle=color; ctx.lineWidth=2;
- ctx.beginPath();
- for(var i=0;i<=120;i++){
- var t=i/120, rr=Math.exp(Math.log(rmin)+t*(Math.log(rmax)-Math.log(rmin)));
- var vv=vals(rr);
- var x=x0+t*w, y=y0+(1-clampr(Ylog(vv,lo,hi),0,1))*(y1-y0);
- if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
- }
- ctx.stroke();
- if(extra)extra(x0,w,y0,y1);
- }
- function readout(){
- var c1=Math.abs(crit(1e-1)), c3=Math.abs(crit(1e-3)), c6=Math.abs(crit(1e-6));
- setTxt("sg-pv",p.toFixed(2));
- setTxt("sg-c1",c1<1e-4?c1.toExponential(2):c1.toFixed(6));
- setTxt("sg-c3",c3<1e-4?c3.toExponential(2):c3.toFixed(6));
- setTxt("sg-c6",c6<1e-4?c6.toExponential(2):c6.toFixed(6));
- var removable=c6<1e-3;
- var s=removable?"可去（判据 →0）":"不可去（判据 ≠ 0）";
- if(fam===1) s="标尺族："+(p<1?"判据 →0，若调和则可去":(p>1?"判据 →∞，比 1/r 更坏":"判据恒为 1，恰为临界"));
- setTxt("sg-verdict",s);
- setCls("sg-verdict","v "+(removable?"ok":"bad"));
- }
- function draw(){
- ctx.clearRect(0,0,W,H);
- panel(56,LW,function(r){return Math.abs(uval(r));},1e-3,1e4,
- (dim===3?"三维":"二维")+" |u(r)|（双对数）","#D85A30");
- panel(RX,RW,function(r){return Math.abs(crit(r));},1e-6,1e2,
- dim===3?"判据 r|u|":"判据 |u| / ln(1/r)","#185FA5",
- function(x0,w,y0,y1){
- /* 临界线 c=1 与 c=0 参考 */
- var yc=y0+(1-Ylog(1,1e-6,1e2))*(y1-y0);
- ctx.strokeStyle="#534AB7"; ctx.setLineDash([5,4]); ctx.lineWidth=1.3;
- ctx.beginPath(); ctx.moveTo(x0,yc); ctx.lineTo(x0+w,yc); ctx.stroke();
- ctx.setLineDash([]);
- ctx.fillStyle="#534AB7"; ctx.font="11px ui-monospace,monospace";
- ctx.fillText("c = 1（临界：仍不可去）",x0+6,yc-5);
- });
- ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
- ctx.fillText("横轴 r ∈ [1e−6, 1]（对数）　左端 r→0：判据是否趋于 0 决定奇点可去/不可去",56,H-16);
- }
- function setDim(d){ dim=d; $("sg-d3").className=(d===3?"on":""); $("sg-d2").className=(d===2?"on":""); readout(); draw(); }
- function setFam(f){ fam=f; $("sg-fam0").className=(f===0?"on":""); $("sg-fam1").className=(f===1?"on":""); readout(); draw(); }
- $("sg-d3").addEventListener("click",function(){setDim(3);});
- $("sg-d2").addEventListener("click",function(){setDim(2);});
- $("sg-fam0").addEventListener("click",function(){setFam(0);});
- $("sg-fam1").addEventListener("click",function(){setFam(1);});
- $("sg-p").addEventListener("input",function(){ p=parseFloat(this.value)/100; readout(); draw(); });
- readout(); draw();
+  var W=840,H=420,cv=$("sg-canvas"),ctx=cv.getContext("2d");
+  var dim=3, fam=0, p=1.0;
+  var LW=440, RX=520, RW=W-RX-24;
+  function uval(r){
+    if(fam===0){ return dim===3 ? (1+p/r) : (1+p*Math.log(1/r)); }
+    return Math.pow(r,-p);
+  }
+  function crit(r){
+    var u=uval(r);
+    if(dim===3) return r*u;
+    return u/Math.log(1/r);
+  }
+  var rmin=1e-6, rmax=1;
+  function lg(r){ return (Math.log(r)-Math.log(rmin))/(Math.log(rmax)-Math.log(rmin)); }
+  function Ylog(v,lo,hi){ var t=(Math.log(Math.max(v,1e-30))-Math.log(lo))/(Math.log(hi)-Math.log(lo)); return t; }
+  function panel(x0,w,vals,lo,hi,title,color,extra){
+    var y0=36,y1=H-52;
+    ctx.strokeStyle="#e5e7eb"; ctx.lineWidth=1;
+    for(var g=-6;g<=0;g++){
+      var v=Math.pow(10,g); if(v<lo||v>hi)continue;
+      var y=y0+(1-Ylog(v,lo,hi))*(y1-y0);
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
+      ctx.fillText("1e"+g,x0-2,y-3);
+    }
+    ctx.strokeStyle="#8c959f"; ctx.strokeRect(x0,y0,w,y1-y0);
+    ctx.fillStyle="#1f2328"; ctx.font="12px system-ui"; ctx.fillText(title,x0,y0-12);
+    ctx.strokeStyle=color; ctx.lineWidth=2;
+    ctx.beginPath();
+    for(var i=0;i<=120;i++){
+      var t=i/120, rr=Math.exp(Math.log(rmin)+t*(Math.log(rmax)-Math.log(rmin)));
+      var vv=vals(rr);
+      var x=x0+t*w, y=y0+(1-clampr(Ylog(vv,lo,hi),0,1))*(y1-y0);
+      if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    if(extra)extra(x0,w,y0,y1);
+  }
+  function readout(){
+    var c1=Math.abs(crit(1e-1)), c3=Math.abs(crit(1e-3)), c6=Math.abs(crit(1e-6));
+    setTxt("sg-pv",p.toFixed(2));
+    setTxt("sg-c1",c1<1e-4?c1.toExponential(2):c1.toFixed(6));
+    setTxt("sg-c3",c3<1e-4?c3.toExponential(2):c3.toFixed(6));
+    setTxt("sg-c6",c6<1e-4?c6.toExponential(2):c6.toFixed(6));
+    var removable=c6<1e-3;
+    var s=removable?"可去（判据 →0）":"不可去（判据 ≠ 0）";
+    if(fam===1) s="标尺族："+(p<1?"判据 →0，若调和则可去":(p>1?"判据 →∞，比 1/r 更坏":"判据恒为 1，恰为临界"));
+    setTxt("sg-verdict",s);
+    setCls("sg-verdict","v "+(removable?"ok":"bad"));
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    panel(56,LW,function(r){return Math.abs(uval(r));},1e-3,1e4,
+      (dim===3?"三维":"二维")+" |u(r)|（双对数）","#D85A30");
+    panel(RX,RW,function(r){return Math.abs(crit(r));},1e-6,1e2,
+      dim===3?"判据 r|u|":"判据 |u| / ln(1/r)","#185FA5",
+      function(x0,w,y0,y1){
+        /* 临界线 c=1 与 c=0 参考 */
+        var yc=y0+(1-Ylog(1,1e-6,1e2))*(y1-y0);
+        ctx.strokeStyle="#534AB7"; ctx.setLineDash([5,4]); ctx.lineWidth=1.3;
+        ctx.beginPath(); ctx.moveTo(x0,yc); ctx.lineTo(x0+w,yc); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle="#534AB7"; ctx.font="11px ui-monospace,monospace";
+        ctx.fillText("c = 1（临界：仍不可去）",x0+6,yc-5);
+      });
+    ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
+    ctx.fillText("横轴 r ∈ [1e−6, 1]（对数）　左端 r→0：判据是否趋于 0 决定奇点可去/不可去",56,H-16);
+  }
+  function setDim(d){ dim=d; $("sg-d3").className=(d===3?"on":""); $("sg-d2").className=(d===2?"on":""); readout(); draw(); }
+  function setFam(f){ fam=f; $("sg-fam0").className=(f===0?"on":""); $("sg-fam1").className=(f===1?"on":""); readout(); draw(); }
+  $("sg-d3").addEventListener("click",function(){setDim(3);});
+  $("sg-d2").addEventListener("click",function(){setDim(2);});
+  $("sg-fam0").addEventListener("click",function(){setFam(0);});
+  $("sg-fam1").addEventListener("click",function(){setFam(1);});
+  $("sg-p").addEventListener("input",function(){ p=parseFloat(this.value)/100; readout(); draw(); });
+  readout(); draw();
 })();
 
 /* ================= 04 解析性 ================= */
 (function(){
- var W=840,H=400,cv=$("ps-canvas"),ctx=cv.getContext("2d");
- var d=1.60, rho=0.60, N=12;
- function leg(n,x){ if(n===0)return 1; if(n===1)return x; var a=1,b=x,c=0; for(var k=2;k<=n;k++){ c=((2*k-1)*x*b-(k-1)*a)/k; a=b; b=c; } return b; }
- function exactG0(){ return 1/(d-rho); }
- function exactG90(){ return 1/Math.sqrt(d*d+rho*rho); }
- function partG(cosg,nmax){ var s=0; for(var n=0;n<=nmax;n++) s+=Math.pow(rho,n)/Math.pow(d,n+1)*leg(n,cosg); return s; }
- function theory(){ var q=rho/d; return Math.pow(q,N+1)/(d*(1-q)); }
- function readout(){
- var ex=exactG0(), pa=partG(1,N), er=ex-pa;
- setTxt("ps-dv",d.toFixed(2)); setTxt("ps-rhov",rho.toFixed(2)); setTxt("ps-Nv",String(N));
- setTxt("ps-ratio",(rho/d).toFixed(6));
- setTxt("ps-exact",ex.toFixed(9));
- setTxt("ps-part",pa.toFixed(9));
- setTxt("ps-err",fmtE(er));
- setTxt("ps-theory",fmtE(theory()));
- setTxt("ps-decay",(rho/d).toFixed(6)+"（每项固定）");
- }
- function draw(){
- ctx.clearRect(0,0,W,H);
- var x0=70,x1=W-30,y0=40,y1=H-60;
- /* 纵轴 log 误差：1e-16 .. 1e2 */
- function Y(v){ var t=(Math.log10(Math.max(v,1e-16))+16)/18; return y1-clampr(t,0,1)*(y1-y0); }
- function X(n){ return x0+(n-1)/60*(x1-x0); }
- ctx.strokeStyle="#e5e7eb";
- for(var g=-16;g<=2;g+=2){
- ctx.beginPath(); ctx.moveTo(x0,Y(Math.pow(10,g))); ctx.lineTo(x1,Y(Math.pow(10,g))); ctx.stroke();
- ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
- ctx.fillText("1e"+g,x0-38,Y(Math.pow(10,g))+4);
- }
- ctx.strokeStyle="#8c959f"; ctx.strokeRect(x0,y0,x1-x0,y1-y0);
- /* 实测曲线 γ=0 */
- ctx.strokeStyle="#D85A30"; ctx.lineWidth=2.2; ctx.beginPath();
- for(var n=1;n<=60;n++){
- var e=exactG0()-partG(1,n);
- var x=X(n),y=Y(Math.abs(e));
- if(n===1)ctx.moveTo(x,y); else ctx.lineTo(x,y);
- }
- ctx.stroke();
- /* γ=90° */
- ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.8; ctx.setLineDash([6,4]); ctx.beginPath();
- for(var n2=1;n2<=60;n2++){
- var e2=Math.abs(exactG90()-partG(0,n2));
- var x2=X(n2),y2=Y(e2);
- if(n2===1)ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2);
- }
- ctx.stroke(); ctx.setLineDash([]);
- /* 公式线（与实测重合，用虚线点验证） */
- ctx.strokeStyle="#0F6E56"; ctx.lineWidth=1.2; ctx.setLineDash([2,4]); ctx.beginPath();
- for(var n3=1;n3<=60;n3++){
- var q=rho/d, th=Math.pow(q,n3+1)/(d*(1-q));
- var x3=X(n3),y3=Y(th);
- if(n3===1)ctx.moveTo(x3,y3); else ctx.lineTo(x3,y3);
- }
- ctx.stroke(); ctx.setLineDash([]);
- /* 当前 N 标记 */
- ctx.strokeStyle="#534AB7"; ctx.setLineDash([4,4]);
- ctx.beginPath(); ctx.moveTo(X(N),y0); ctx.lineTo(X(N),y1); ctx.stroke(); ctx.setLineDash([]);
- ctx.fillStyle="#1f2328"; ctx.font="12.5px system-ui";
- ctx.fillText("余项 E_N（双对数）　ρ/d = "+(rho/d).toFixed(4)+"　截断 N = "+N,x0,24);
- ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
- ctx.fillText("实线：γ=0 实测　蓝虚线：γ=90° 实测　绿点线：公式 (ρ/d)^(N+1)/(d(1−ρ/d))",x0,H-18);
- ctx.fillStyle="#D85A30"; ctx.fillText("γ=0",x1-120,Y(Math.abs(exactG0()-partG(1,N)))-8);
- ctx.fillStyle="#185FA5"; ctx.fillText("γ=90°",x1-120,Y(Math.abs(exactG90()-partG(0,N)))+16);
- }
- $("ps-d").addEventListener("input",function(){ d=clampr(parseFloat(this.value)/100,1.05,3.0); if(rho>d*0.99)rho=d*0.99; $("ps-rho").value=String(Math.round(rho*100)); readout(); draw(); });
- $("ps-rho").addEventListener("input",function(){ rho=clampr(parseFloat(this.value)/100,0.05,d*0.99); readout(); draw(); });
- $("ps-N").addEventListener("input",function(){ N=parseInt(this.value,10); readout(); draw(); });
- readout(); draw();
+  var W=840,H=400,cv=$("ps-canvas"),ctx=cv.getContext("2d");
+  var d=1.60, rho=0.60, N=12;
+  function leg(n,x){ if(n===0)return 1; if(n===1)return x; var a=1,b=x,c=0; for(var k=2;k<=n;k++){ c=((2*k-1)*x*b-(k-1)*a)/k; a=b; b=c; } return b; }
+  function exactG0(){ return 1/(d-rho); }
+  function exactG90(){ return 1/Math.sqrt(d*d+rho*rho); }
+  function partG(cosg,nmax){ var s=0; for(var n=0;n<=nmax;n++) s+=Math.pow(rho,n)/Math.pow(d,n+1)*leg(n,cosg); return s; }
+  function theory(){ var q=rho/d; return Math.pow(q,N+1)/(d*(1-q)); }
+  function readout(){
+    var ex=exactG0(), pa=partG(1,N), er=ex-pa;
+    setTxt("ps-dv",d.toFixed(2)); setTxt("ps-rhov",rho.toFixed(2)); setTxt("ps-Nv",String(N));
+    setTxt("ps-ratio",(rho/d).toFixed(6));
+    setTxt("ps-exact",ex.toFixed(9));
+    setTxt("ps-part",pa.toFixed(9));
+    setTxt("ps-err",fmtE(er));
+    setTxt("ps-theory",fmtE(theory()));
+    setTxt("ps-decay",(rho/d).toFixed(6)+"（每项固定）");
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var x0=70,x1=W-30,y0=40,y1=H-60;
+    /* 纵轴 log 误差：1e-16 .. 1e2 */
+    function Y(v){ var t=(Math.log10(Math.max(v,1e-16))+16)/18; return y1-clampr(t,0,1)*(y1-y0); }
+    function X(n){ return x0+(n-1)/60*(x1-x0); }
+    ctx.strokeStyle="#e5e7eb";
+    for(var g=-16;g<=2;g+=2){
+      ctx.beginPath(); ctx.moveTo(x0,Y(Math.pow(10,g))); ctx.lineTo(x1,Y(Math.pow(10,g))); ctx.stroke();
+      ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
+      ctx.fillText("1e"+g,x0-38,Y(Math.pow(10,g))+4);
+    }
+    ctx.strokeStyle="#8c959f"; ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+    /* 实测曲线 γ=0 */
+    ctx.strokeStyle="#D85A30"; ctx.lineWidth=2.2; ctx.beginPath();
+    for(var n=1;n<=60;n++){
+      var e=exactG0()-partG(1,n);
+      var x=X(n),y=Y(Math.abs(e));
+      if(n===1)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    /* γ=90° */
+    ctx.strokeStyle="#185FA5"; ctx.lineWidth=1.8; ctx.setLineDash([6,4]); ctx.beginPath();
+    for(var n2=1;n2<=60;n2++){
+      var e2=Math.abs(exactG90()-partG(0,n2));
+      var x2=X(n2),y2=Y(e2);
+      if(n2===1)ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+    /* 公式线（与实测重合，用虚线点验证） */
+    ctx.strokeStyle="#0F6E56"; ctx.lineWidth=1.2; ctx.setLineDash([2,4]); ctx.beginPath();
+    for(var n3=1;n3<=60;n3++){
+      var q=rho/d, th=Math.pow(q,n3+1)/(d*(1-q));
+      var x3=X(n3),y3=Y(th);
+      if(n3===1)ctx.moveTo(x3,y3); else ctx.lineTo(x3,y3);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+    /* 当前 N 标记 */
+    ctx.strokeStyle="#534AB7"; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(X(N),y0); ctx.lineTo(X(N),y1); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle="#1f2328"; ctx.font="12.5px system-ui";
+    ctx.fillText("余项 E_N（双对数）　ρ/d = "+(rho/d).toFixed(4)+"　截断 N = "+N,x0,24);
+    ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
+    ctx.fillText("实线：γ=0 实测　蓝虚线：γ=90° 实测　绿点线：公式 (ρ/d)^(N+1)/(d(1−ρ/d))",x0,H-18);
+    ctx.fillStyle="#D85A30"; ctx.fillText("γ=0",x1-120,Y(Math.abs(exactG0()-partG(1,N)))-8);
+    ctx.fillStyle="#185FA5"; ctx.fillText("γ=90°",x1-120,Y(Math.abs(exactG90()-partG(0,N)))+16);
+  }
+  $("ps-d").addEventListener("input",function(){ d=clampr(parseFloat(this.value)/100,1.05,3.0); if(rho>d*0.99)rho=d*0.99; $("ps-rho").value=String(Math.round(rho*100)); readout(); draw(); });
+  $("ps-rho").addEventListener("input",function(){ rho=clampr(parseFloat(this.value)/100,0.05,d*0.99); readout(); draw(); });
+  $("ps-N").addEventListener("input",function(){ N=parseInt(this.value,10); readout(); draw(); });
+  readout(); draw();
 })();
 
 /* ================= 05 霍普夫方向导数 ================= */
 (function(){
- var W=840,H=470,cv=$("hp-canvas"),ctx=cv.getContext("2d");
- var GW=560; /* 几何区宽 */
- var al=90*Math.PI/180, be=0, mode=0;
- var X0=-1.55,X1=1.55, Z0=-1.55*H/GW, Z1=1.55*H/GW;
- function PX(x){ return (x-X0)/(X1-X0)*GW; }
- function PZ(z){ return H-(z-Z0)/(Z1-Z0)*H; }
- function nvec(){ return {x:Math.cos(al),z:Math.sin(al)}; }
- function uval(x,z){
- if(mode===0) return 2-z;
- var n=nvec(), ax=-2*n.x, az=-2*n.z;
- var dx=x-ax,dz=z-az;
- return 1/Math.sqrt(dx*dx+dz*dz);
- }
- function gradu(x,z){
- if(mode===0) return {x:0,z:-1};
- var n=nvec(), ax=-2*n.x, az=-2*n.z;
- var dx=x-ax,dz=z-az,r=Math.sqrt(dx*dx+dz*dz),r3=r*r*r;
- return {x:-dx/r3, z:-dz/r3};
- }
- function readout(){
- var n=nvec(), ni={x:-n.x,z:-n.z};
- /* ν 由内法线绕逆时针转 be */
- var base=Math.atan2(ni.z,ni.x)+be;
- var nu={x:Math.cos(base),z:Math.sin(base)};
- var g=gradu(n.x,n.z);
- var cs=nu.x*ni.x+nu.z*ni.z;
- var gm=Math.sqrt(g.x*g.x+g.z*g.z);
- var du=g.x*nu.x+g.z*nu.z;
- setTxt("hp-alv",Math.round(al*180/Math.PI)+"°");
- setTxt("hp-bev",Math.round(be*180/Math.PI)+"°");
- setTxt("hp-cos",cs.toFixed(6));
- setTxt("hp-grad",gm.toFixed(6));
- setTxt("hp-du",du.toFixed(6));
- setTxt("hp-umin",uval(n.x,n.z).toFixed(6));
- setTxt("hp-gap",(mode===0?2:(1-1/3)).toFixed(6));
- var ok=du>0, verdict;
- if(Math.abs(cs)<1e-12) verdict="切向：导数为 0（定理不管）";
- else if(cs>0) verdict="锐角 → ∂u/∂ν = "+du.toFixed(4)+(ok?" > 0 ✓":" ✗");
- else verdict="钝角（朝外）→ "+du.toFixed(4);
- setTxt("hp-verdict",verdict);
- setCls("hp-verdict","v "+(ok?"ok":"bad"));
- }
- function draw(){
- ctx.clearRect(0,0,W,H);
- var n=nvec(), ni={x:-n.x,z:-n.z};
- /* 球截面 */
- ctx.strokeStyle="#8c959f"; ctx.lineWidth=2;
- ctx.beginPath(); ctx.arc(PX(0),PZ(0),PX(1)-PX(0),0,Math.PI*2); ctx.stroke();
- ctx.fillStyle="#fbfcfd";
- ctx.beginPath(); ctx.arc(PX(0),PZ(0),PX(1)-PX(0),0,Math.PI*2); ctx.fill();
- /* 切平面 */
- var t={x:-n.z,z:n.x};
- ctx.strokeStyle="#0F6E56"; ctx.setLineDash([6,5]); ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(PX(n.x-t.x*0.9),PZ(n.z-t.z*0.9)); ctx.lineTo(PX(n.x+t.x*0.9),PZ(n.z+t.z*0.9)); ctx.stroke();
- ctx.setLineDash([]);
- /* 内法线 */
- ctx.strokeStyle="#8c959f"; ctx.setLineDash([4,4]); ctx.lineWidth=1.3;
- ctx.beginPath(); ctx.moveTo(PX(n.x),PZ(n.z)); ctx.lineTo(PX(n.x+ni.x*0.55),PZ(n.z+ni.z*0.55)); ctx.stroke();
- ctx.setLineDash([]);
- /* ∇u */
- var g=gradu(n.x,n.z), gm=Math.sqrt(g.x*g.x+g.z*g.z);
- var gl=Math.min(0.62,0.30+0.30*Math.min(gm,1)/1);
- arrow(ctx,PX(n.x),PZ(n.z),PX(n.x+g.x/gm*gl),PZ(n.z+g.z/gm*gl),"#185FA5",2.4);
- /* ν */
- var base=Math.atan2(ni.z,ni.x)+be;
- var nu={x:Math.cos(base),z:Math.sin(base)};
- arrow(ctx,PX(n.x),PZ(n.z),PX(n.x+nu.x*0.72),PZ(n.z+nu.z*0.72),"#D85A30",2.6);
- /* M0、A */
- ctx.fillStyle="#1f2328";
- ctx.beginPath(); ctx.arc(PX(n.x),PZ(n.z),6,0,Math.PI*2); ctx.fill();
- ctx.font="14px ui-monospace,monospace";
- ctx.fillText("M₀",PX(n.x)+10,PZ(n.z)-10);
- if(mode===1){
- ctx.fillStyle="#534AB7";
- ctx.beginPath(); ctx.arc(PX(-2*n.x),PZ(-2*n.z),5,0,Math.PI*2); ctx.fill();
- ctx.fillText("A",PX(-2*n.x)+9,PZ(-2*n.z)-9);
- }
- ctx.fillStyle="#0C447C"; ctx.font="12.5px ui-monospace,monospace";
- ctx.fillText("α = "+Math.round(al*180/Math.PI)+"° β = "+Math.round(be*180/Math.PI)+"° u = "+(mode===0?"2 − z":"1/|M−A|"),16,24);
- ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
- ctx.fillText("蓝箭头 ∇u　橙箭头 ν　绿虚线 球面切向　灰虚线 内法向（M₀ 可在圆上拖动，ν 用滑杆）",16,H-14);
- /* 右侧剖面 */
- var rx=GW+22, rw=W-rx-18, ry=52, rh=H-120;
- ctx.strokeStyle="#e5e7eb"; ctx.strokeRect(rx,ry,rw,rh);
- /* u(M0 + t ν) 曲线，t ∈ [−0.5,0.5] */
- var vals=[], mn=1e9,mx=-1e9;
- for(var i=0;i<=60;i++){
- var t=(i/60-0.5)*1.0;
- var x=n.x+nu.x*t, z=n.z+nu.z*t;
- var v=uval(x,z);
- if(Math.abs(x*x+z*z-1)<0.02) { /* 边界附近不取样 */ }
- vals.push({t:t,v:v});
- if(v<mn)mn=v; if(v>mx)mx=v;
- }
- var pad=(mx-mn)*0.15+1e-9; mn-=pad; mx+=pad;
- ctx.strokeStyle="#D85A30"; ctx.lineWidth=2; ctx.beginPath();
- for(var j=0;j<vals.length;j++){
- var X2=rx+(vals[j].t+0.5)/1.0*rw, Y2=ry+rh-(vals[j].v-mn)/(mx-mn)*rh;
- if(j===0)ctx.moveTo(X2,Y2); else ctx.lineTo(X2,Y2);
- }
- ctx.stroke();
- /* t=0 处切线（斜率 = ∂u/∂ν） */
- var g2=gradu(n.x,n.z), du2=g2.x*nu.x+g2.z*nu.z, u0=uval(n.x,n.z);
- var Xa=rx+(0+0.5)*rw, Ya=ry+rh-(u0-mn)/(mx-mn)*rh;
- var Xb=rx+(0.18+0.5)*rw, Yb=ry+rh-((u0+0.18*du2)-mn)/(mx-mn)*rh;
- ctx.strokeStyle="#534AB7"; ctx.setLineDash([5,4]); ctx.lineWidth=1.5;
- ctx.beginPath(); ctx.moveTo(Xa,Ya); ctx.lineTo(Xb,Yb); ctx.stroke(); ctx.setLineDash([]);
- ctx.fillStyle="#1f2328"; ctx.font="12px system-ui";
- ctx.fillText("u(M₀+tν) 在 t=0 的斜率 = ∂u/∂ν",rx,ry-10);
- ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
- ctx.fillText("t = −0.5",rx,ry+rh+16);
- ctx.fillText("t = 0",Xa-12,ry+rh+16);
- ctx.fillText("t = 0.5",rx+rw-40,ry+rh+16);
- }
- function setMode(m){ mode=m; $("hp-m0").className=(m===0?"on":""); $("hp-m1").className=(m===1?"on":""); readout(); draw(); }
- $("hp-m0").addEventListener("click",function(){setMode(0);});
- $("hp-m1").addEventListener("click",function(){setMode(1);});
- $("hp-al").addEventListener("input",function(){ al=parseFloat(this.value)*Math.PI/180; readout(); draw(); });
- $("hp-be").addEventListener("input",function(){ be=parseFloat(this.value)*Math.PI/180; readout(); draw(); });
- bindDrag(cv,function(e){
- var p=evXY(cv,e);
- if(p.x>GW)return;
- var x=X0+p.x/GW*(X1-X0), z=Z1-p.y/H*(Z1-Z0);
- al=Math.atan2(z,x); $("hp-al").value=String(Math.round(((al*180/Math.PI)%360+360)%360));
- readout(); draw();
- });
- readout(); draw();
+  var W=840,H=470,cv=$("hp-canvas"),ctx=cv.getContext("2d");
+  var GW=560; /* 几何区宽 */
+  var al=90*Math.PI/180, be=0, mode=0;
+  var X0=-1.55,X1=1.55, Z0=-1.55*H/GW, Z1=1.55*H/GW;
+  function PX(x){ return (x-X0)/(X1-X0)*GW; }
+  function PZ(z){ return H-(z-Z0)/(Z1-Z0)*H; }
+  function nvec(){ return {x:Math.cos(al),z:Math.sin(al)}; }
+  function uval(x,z){
+    if(mode===0) return 2-z;
+    var n=nvec(), ax=-2*n.x, az=-2*n.z;
+    var dx=x-ax,dz=z-az;
+    return 1/Math.sqrt(dx*dx+dz*dz);
+  }
+  function gradu(x,z){
+    if(mode===0) return {x:0,z:-1};
+    var n=nvec(), ax=-2*n.x, az=-2*n.z;
+    var dx=x-ax,dz=z-az,r=Math.sqrt(dx*dx+dz*dz),r3=r*r*r;
+    return {x:-dx/r3, z:-dz/r3};
+  }
+  function readout(){
+    var n=nvec(), ni={x:-n.x,z:-n.z};
+    /* ν 由内法线绕逆时针转 be */
+    var base=Math.atan2(ni.z,ni.x)+be;
+    var nu={x:Math.cos(base),z:Math.sin(base)};
+    var g=gradu(n.x,n.z);
+    var cs=nu.x*ni.x+nu.z*ni.z;
+    var gm=Math.sqrt(g.x*g.x+g.z*g.z);
+    var du=g.x*nu.x+g.z*nu.z;
+    setTxt("hp-alv",Math.round(al*180/Math.PI)+"°");
+    setTxt("hp-bev",Math.round(be*180/Math.PI)+"°");
+    setTxt("hp-cos",cs.toFixed(6));
+    setTxt("hp-grad",gm.toFixed(6));
+    setTxt("hp-du",du.toFixed(6));
+    setTxt("hp-umin",uval(n.x,n.z).toFixed(6));
+    setTxt("hp-gap",(mode===0?2:(1-1/3)).toFixed(6));
+    var ok=du>0, verdict;
+    if(Math.abs(cs)<1e-12) verdict="切向：导数为 0（定理不管）";
+    else if(cs>0) verdict="锐角 → ∂u/∂ν = "+du.toFixed(4)+(ok?" > 0 ✓":" ✗");
+    else verdict="钝角（朝外）→ "+du.toFixed(4);
+    setTxt("hp-verdict",verdict);
+    setCls("hp-verdict","v "+(ok?"ok":"bad"));
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var n=nvec(), ni={x:-n.x,z:-n.z};
+    /* 球截面 */
+    ctx.strokeStyle="#8c959f"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(PX(0),PZ(0),PX(1)-PX(0),0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle="#fbfcfd";
+    ctx.beginPath(); ctx.arc(PX(0),PZ(0),PX(1)-PX(0),0,Math.PI*2); ctx.fill();
+    /* 切平面 */
+    var t={x:-n.z,z:n.x};
+    ctx.strokeStyle="#0F6E56"; ctx.setLineDash([6,5]); ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(PX(n.x-t.x*0.9),PZ(n.z-t.z*0.9)); ctx.lineTo(PX(n.x+t.x*0.9),PZ(n.z+t.z*0.9)); ctx.stroke();
+    ctx.setLineDash([]);
+    /* 内法线 */
+    ctx.strokeStyle="#8c959f"; ctx.setLineDash([4,4]); ctx.lineWidth=1.3;
+    ctx.beginPath(); ctx.moveTo(PX(n.x),PZ(n.z)); ctx.lineTo(PX(n.x+ni.x*0.55),PZ(n.z+ni.z*0.55)); ctx.stroke();
+    ctx.setLineDash([]);
+    /* ∇u */
+    var g=gradu(n.x,n.z), gm=Math.sqrt(g.x*g.x+g.z*g.z);
+    var gl=Math.min(0.62,0.30+0.30*Math.min(gm,1)/1);
+    arrow(ctx,PX(n.x),PZ(n.z),PX(n.x+g.x/gm*gl),PZ(n.z+g.z/gm*gl),"#185FA5",2.4);
+    /* ν */
+    var base=Math.atan2(ni.z,ni.x)+be;
+    var nu={x:Math.cos(base),z:Math.sin(base)};
+    arrow(ctx,PX(n.x),PZ(n.z),PX(n.x+nu.x*0.72),PZ(n.z+nu.z*0.72),"#D85A30",2.6);
+    /* M0、A */
+    ctx.fillStyle="#1f2328";
+    ctx.beginPath(); ctx.arc(PX(n.x),PZ(n.z),6,0,Math.PI*2); ctx.fill();
+    ctx.font="14px ui-monospace,monospace";
+    ctx.fillText("M₀",PX(n.x)+10,PZ(n.z)-10);
+    if(mode===1){
+      ctx.fillStyle="#534AB7";
+      ctx.beginPath(); ctx.arc(PX(-2*n.x),PZ(-2*n.z),5,0,Math.PI*2); ctx.fill();
+      ctx.fillText("A",PX(-2*n.x)+9,PZ(-2*n.z)-9);
+    }
+    ctx.fillStyle="#0C447C"; ctx.font="12.5px ui-monospace,monospace";
+    ctx.fillText("α = "+Math.round(al*180/Math.PI)+"°   β = "+Math.round(be*180/Math.PI)+"°   u = "+(mode===0?"2 − z":"1/|M−A|"),16,24);
+    ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
+    ctx.fillText("蓝箭头 ∇u　橙箭头 ν　绿虚线 球面切向　灰虚线 内法向（M₀ 可在圆上拖动，ν 用滑杆）",16,H-14);
+    /* 右侧剖面 */
+    var rx=GW+22, rw=W-rx-18, ry=52, rh=H-120;
+    ctx.strokeStyle="#e5e7eb"; ctx.strokeRect(rx,ry,rw,rh);
+    /* u(M0 + t ν) 曲线，t ∈ [−0.5,0.5] */
+    var vals=[], mn=1e9,mx=-1e9;
+    for(var i=0;i<=60;i++){
+      var t=(i/60-0.5)*1.0;
+      var x=n.x+nu.x*t, z=n.z+nu.z*t;
+      var v=uval(x,z);
+      if(Math.abs(x*x+z*z-1)<0.02) { /* 边界附近不取样 */ }
+      vals.push({t:t,v:v});
+      if(v<mn)mn=v; if(v>mx)mx=v;
+    }
+    var pad=(mx-mn)*0.15+1e-9; mn-=pad; mx+=pad;
+    ctx.strokeStyle="#D85A30"; ctx.lineWidth=2; ctx.beginPath();
+    for(var j=0;j<vals.length;j++){
+      var X2=rx+(vals[j].t+0.5)/1.0*rw, Y2=ry+rh-(vals[j].v-mn)/(mx-mn)*rh;
+      if(j===0)ctx.moveTo(X2,Y2); else ctx.lineTo(X2,Y2);
+    }
+    ctx.stroke();
+    /* t=0 处切线（斜率 = ∂u/∂ν） */
+    var g2=gradu(n.x,n.z), du2=g2.x*nu.x+g2.z*nu.z, u0=uval(n.x,n.z);
+    var Xa=rx+(0+0.5)*rw, Ya=ry+rh-(u0-mn)/(mx-mn)*rh;
+    var Xb=rx+(0.18+0.5)*rw, Yb=ry+rh-((u0+0.18*du2)-mn)/(mx-mn)*rh;
+    ctx.strokeStyle="#534AB7"; ctx.setLineDash([5,4]); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(Xa,Ya); ctx.lineTo(Xb,Yb); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle="#1f2328"; ctx.font="12px system-ui";
+    ctx.fillText("u(M₀+tν) 在 t=0 的斜率 = ∂u/∂ν",rx,ry-10);
+    ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
+    ctx.fillText("t = −0.5",rx,ry+rh+16);
+    ctx.fillText("t = 0",Xa-12,ry+rh+16);
+    ctx.fillText("t = 0.5",rx+rw-40,ry+rh+16);
+  }
+  function setMode(m){ mode=m; $("hp-m0").className=(m===0?"on":""); $("hp-m1").className=(m===1?"on":""); readout(); draw(); }
+  $("hp-m0").addEventListener("click",function(){setMode(0);});
+  $("hp-m1").addEventListener("click",function(){setMode(1);});
+  $("hp-al").addEventListener("input",function(){ al=parseFloat(this.value)*Math.PI/180; readout(); draw(); });
+  $("hp-be").addEventListener("input",function(){ be=parseFloat(this.value)*Math.PI/180; readout(); draw(); });
+  bindDrag(cv,function(e){
+    var p=evXY(cv,e);
+    if(p.x>GW)return;
+    var x=X0+p.x/GW*(X1-X0), z=Z1-p.y/H*(Z1-Z0);
+    al=Math.atan2(z,x); $("hp-al").value=String(Math.round(((al*180/Math.PI)%360+360)%360));
+    readout(); draw();
+  });
+  readout(); draw();
 })();
 
 /* ================= 06 辅助函数 ================= */
 (function(){
- var W=840,H=380,cv=$("aux-canvas"),ctx=cv.getContext("2d");
- var R=1.0, a=6.0;
- var LW=390, RX=450, RW=W-RX-24;
- function vfun(r){ return Math.exp(-a*r*r)-Math.exp(-a*R*R); }
- function lap(r){ return (-6*a+4*a*a*r*r)*Math.exp(-a*r*r); }
- function readout(){
- var astar=6/(R*R);
- var rlo=R/2, rhi=R, mn=1e9;
- for(var i=0;i<=200;i++){ var r=rlo+(rhi-rlo)*i/200; var v=lap(r); if(v<mn)mn=v; }
- setTxt("aux-Rv",R.toFixed(2));
- setTxt("aux-av",a.toFixed(2));
- setTxt("aux-astar",astar.toFixed(4));
- setTxt("aux-dmin",fmtE(mn));
- var st=mn>1e-12?1:(mn<-1e-12?-1:0);
- setTxt("aux-ok",st===1?"恒正 ✓":(st===-1?"存在负值 ✗":"恰为 0（临界）"));
- setCls("aux-ok","v "+(st===1?"ok":"bad"));
- setTxt("aux-vhalf",fmt(-vfun(R/2)));
- setTxt("aux-dv",(2*a*R*Math.exp(-a*R*R)).toFixed(6));
- /* ε 上限：u=2−z，在 r=R/2 球面最小值为 2−R/2 */
- setTxt("aux-eps",((2-R/2)/vfun(R/2)).toFixed(4));
- }
- function panel(x0,w,fn,y0v,y1v,title,color,mark){
- var y0=40,y1=H-52;
- ctx.strokeStyle="#e5e7eb"; ctx.lineWidth=1;
- ctx.beginPath(); ctx.moveTo(x0,y0+(y1-y0)*(1-(0-y0v)/(y1v-y0v))); ctx.lineTo(x0+w,y0+(y1-y0)*(1-(0-y0v)/(y1v-y0v))); ctx.stroke();
- ctx.strokeStyle="#8c959f"; ctx.strokeRect(x0,y0,w,y1-y0);
- ctx.fillStyle="#1f2328"; ctx.font="12px system-ui"; ctx.fillText(title,x0,y0-12);
- ctx.strokeStyle=color; ctx.lineWidth=2; ctx.beginPath();
- var rlo=(mark?R/2:0), rhi=R;
- for(var i=0;i<=160;i++){
- var r=rlo+(rhi-rlo)*i/160, v=fn(r);
- var x=x0+(r-rlo)/(rhi-rlo)*w;
- var y=y0+(1-(v-y0v)/(y1v-y0v))*(y1-y0);
- if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
- }
- ctx.stroke();
- if(mark){
- ctx.strokeStyle="#534AB7"; ctx.setLineDash([5,4]); ctx.lineWidth=1.3;
- ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y1); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(x0+w,y0); ctx.lineTo(x0+w,y1); ctx.stroke();
- ctx.setLineDash([]);
- ctx.fillStyle="#534AB7"; ctx.font="11px ui-monospace,monospace";
- ctx.fillText("r=R/2",x0+3,y1-6); ctx.fillText("r=R",x0+w-30,y1-6);
- }
- }
- function draw(){
- ctx.clearRect(0,0,W,H);
- var vmax=Math.max(vfun(0),vfun(R/2));
- panel(56,LW,vfun,0,vmax*1.15,"v(r) = e^(−a r²) − e^(−a R²)","#D85A30",false);
- var lmax=1e-12;
- for(var i=0;i<=100;i++){ var r=(R/2)+(R/2)*i/100; lmax=Math.max(lmax,Math.abs(lap(r))); }
- panel(RX,RW,lap,-lmax*0.35,lmax*1.2,"Δv(r) 在 D=[R/2,R] 上","#185FA5",true);
- ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
- ctx.fillText("左：v 在球面上为 0、向内为正且严格单调下降　右：Δv>0 才能保证 w=u−εv 的极值原理",56,H-16);
- }
- $("aux-R").addEventListener("input",function(){ R=clampr(parseFloat(this.value)/100,0.5,2.0); readout(); draw(); });
- $("aux-a").addEventListener("input",function(){ a=clampr(parseFloat(this.value)/100,0.5,25); readout(); draw(); });
- readout(); draw();
+  var W=840,H=380,cv=$("aux-canvas"),ctx=cv.getContext("2d");
+  var R=1.0, a=6.0;
+  var LW=390, RX=450, RW=W-RX-24;
+  function vfun(r){ return Math.exp(-a*r*r)-Math.exp(-a*R*R); }
+  function lap(r){ return (-6*a+4*a*a*r*r)*Math.exp(-a*r*r); }
+  function readout(){
+    var astar=6/(R*R);
+    var rlo=R/2, rhi=R, mn=1e9;
+    for(var i=0;i<=200;i++){ var r=rlo+(rhi-rlo)*i/200; var v=lap(r); if(v<mn)mn=v; }
+    setTxt("aux-Rv",R.toFixed(2));
+    setTxt("aux-av",a.toFixed(2));
+    setTxt("aux-astar",astar.toFixed(4));
+    setTxt("aux-dmin",fmtE(mn));
+    var st=mn>1e-12?1:(mn<-1e-12?-1:0);
+    setTxt("aux-ok",st===1?"恒正 ✓":(st===-1?"存在负值 ✗":"恰为 0（临界）"));
+    setCls("aux-ok","v "+(st===1?"ok":"bad"));
+    setTxt("aux-vhalf",fmt(-vfun(R/2)));
+    setTxt("aux-dv",(2*a*R*Math.exp(-a*R*R)).toFixed(6));
+    /* ε 上限：u=2−z，在 r=R/2 球面最小值为 2−R/2 */
+    setTxt("aux-eps",((2-R/2)/vfun(R/2)).toFixed(4));
+  }
+  function panel(x0,w,fn,y0v,y1v,title,color,mark){
+    var y0=40,y1=H-52;
+    ctx.strokeStyle="#e5e7eb"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x0,y0+(y1-y0)*(1-(0-y0v)/(y1v-y0v))); ctx.lineTo(x0+w,y0+(y1-y0)*(1-(0-y0v)/(y1v-y0v))); ctx.stroke();
+    ctx.strokeStyle="#8c959f"; ctx.strokeRect(x0,y0,w,y1-y0);
+    ctx.fillStyle="#1f2328"; ctx.font="12px system-ui"; ctx.fillText(title,x0,y0-12);
+    ctx.strokeStyle=color; ctx.lineWidth=2; ctx.beginPath();
+    var rlo=(mark?R/2:0), rhi=R;
+    for(var i=0;i<=160;i++){
+      var r=rlo+(rhi-rlo)*i/160, v=fn(r);
+      var x=x0+(r-rlo)/(rhi-rlo)*w;
+      var y=y0+(1-(v-y0v)/(y1v-y0v))*(y1-y0);
+      if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    if(mark){
+      ctx.strokeStyle="#534AB7"; ctx.setLineDash([5,4]); ctx.lineWidth=1.3;
+      ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y1); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x0+w,y0); ctx.lineTo(x0+w,y1); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle="#534AB7"; ctx.font="11px ui-monospace,monospace";
+      ctx.fillText("r=R/2",x0+3,y1-6); ctx.fillText("r=R",x0+w-30,y1-6);
+    }
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var vmax=Math.max(vfun(0),vfun(R/2));
+    panel(56,LW,vfun,0,vmax*1.15,"v(r) = e^(−a r²) − e^(−a R²)","#D85A30",false);
+    var lmax=1e-12;
+    for(var i=0;i<=100;i++){ var r=(R/2)+(R/2)*i/100; lmax=Math.max(lmax,Math.abs(lap(r))); }
+    panel(RX,RW,lap,-lmax*0.35,lmax*1.2,"Δv(r) 在 D=[R/2,R] 上","#185FA5",true);
+    ctx.fillStyle="#57606a"; ctx.font="12px system-ui";
+    ctx.fillText("左：v 在球面上为 0、向内为正且严格单调下降　右：Δv>0 才能保证 w=u−εv 的极值原理",56,H-16);
+  }
+  $("aux-R").addEventListener("input",function(){ R=clampr(parseFloat(this.value)/100,0.5,2.0); readout(); draw(); });
+  $("aux-a").addEventListener("input",function(){ a=clampr(parseFloat(this.value)/100,0.5,25); readout(); draw(); });
+  readout(); draw();
 })();
 
 /* ================= 07 诺伊曼解族 ================= */
 (function(){
- var W=840,H=430,cv=$("neu-canvas"),ctx=cv.getContext("2d");
- var c=0;
- var LW=380, RX=430, RW=W-RX-24;
- function uval(x,y){ return x+c; }
- function readout(){
- /* E = ∫|∇u|² = π（解析）；flux = ∮u ∂u/∂n = π；数值用极坐标中点 */
- var Nr=120,Nt=360, E=0, flux=0;
- for(var i=0;i<Nr;i++){
- var r=(i+0.5)/Nr, dr=1/Nr;
- for(var j=0;j<Nt;j++){ var dth=2*Math.PI/Nt; E+=r*dr*dth; }
- }
- for(var j2=0;j2<Nt;j2++){
- var th=(j2+0.5)/Nt*2*Math.PI;
- flux+=uval(Math.cos(th),Math.sin(th))*Math.cos(th)*(2*Math.PI/Nt);
- }
- setTxt("neu-cv",c.toFixed(2));
- setTxt("neu-span",(2).toFixed(6));
- setTxt("neu-E",E.toFixed(6));
- setTxt("neu-flux",flux.toFixed(6));
- setTxt("neu-gap",fmtE(Math.abs(E-flux)));
- var mnD=1e9,mxD=-1e9;
- for(var j3=0;j3<200;j3++){
- var th3=j3/200*2*Math.PI;
- var dn=(uval((1+1e-6)*Math.cos(th3),0)-uval((1-1e-6)*Math.cos(th3),0))/2e-6;
- if(dn<mnD)mnD=dn; if(dn>mxD)mxD=dn;
- }
- setTxt("neu-dn",(mxD-mnD).toFixed(6));
- setTxt("neu-sens","1.000000（u(P)=x(P)+c）");
- }
- function draw(){
- ctx.clearRect(0,0,W,H);
- var cx=LW/2+10, cy=H/2, rad=Math.min(LW, H)*0.40;
- /* 固定色标 [-3,3]：平移必须可见 */
- ctx.save();
- ctx.beginPath(); ctx.arc(cx,cy,rad,0,Math.PI*2); ctx.clip();
- paintHeat(ctx,cx-rad,cy-rad,rad*2,rad*2,80,80,-1,1,1,-1,uval,3,false);
- ctx.restore();
- ctx.strokeStyle="#57606a"; ctx.lineWidth=1.8;
- ctx.beginPath(); ctx.arc(cx,cy,rad,0,Math.PI*2); ctx.stroke();
- ctx.fillStyle="#1f2328"; ctx.font="12.5px system-ui";
- ctx.fillText("色标固定 [−3, 3]：滑 c 可见整体平移",16,24);
- /* 右上：剖面 */
- var px=RX, py=48, pw=RW, ph=150;
- ctx.strokeStyle="#e5e7eb"; ctx.strokeRect(px,py,pw,ph);
- ctx.strokeStyle="#D85A30"; ctx.lineWidth=2; ctx.beginPath();
- for(var i=0;i<=100;i++){
- var x=-1+2*i/100, u=x+c;
- var X2=px+(x+1)/2*pw, Y2=py+ph-(u+3)/6*ph;
- if(i===0)ctx.moveTo(X2,Y2); else ctx.lineTo(X2,Y2);
- }
- ctx.stroke();
- ctx.fillStyle="#1f2328"; ctx.font="12px system-ui"; ctx.fillText("u(x, 0) = x + c",px,py-8);
- /* 右下：边界法向导数 */
- var qy=py+ph+62, qh=H-qy-70;
- ctx.strokeStyle="#e5e7eb"; ctx.strokeRect(px,qy,pw,qh);
- ctx.strokeStyle="#185FA5"; ctx.lineWidth=2; ctx.beginPath();
- for(var j=0;j<=120;j++){
- var th=j/120*2*Math.PI, v=Math.cos(th);
- var X3=px+j/120*pw, Y3=qy+qh/2-v*qh*0.42;
- if(j===0)ctx.moveTo(X3,Y3); else ctx.lineTo(X3,Y3);
- }
- ctx.stroke();
- ctx.fillStyle="#1f2328"; ctx.fillText("∂u/∂n = cos θ（与 c 无关）",px,qy-8);
- ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
- ctx.fillText("θ=0",px,qy+qh+14); ctx.fillText("θ=2π",px+pw-30,qy+qh+14);
- }
- $("neu-c").addEventListener("input",function(){ c=parseFloat(this.value)/10; readout(); draw(); });
- $("neu-reset").addEventListener("click",function(){ c=0; $("neu-c").value="0"; readout(); draw(); });
- readout(); draw();
+  var W=840,H=430,cv=$("neu-canvas"),ctx=cv.getContext("2d");
+  var c=0;
+  var LW=380, RX=430, RW=W-RX-24;
+  function uval(x,y){ return x+c; }
+  function readout(){
+    /* E = ∫|∇u|² = π（解析）；flux = ∮u ∂u/∂n = π；数值用极坐标中点 */
+    var Nr=120,Nt=360, E=0, flux=0;
+    for(var i=0;i<Nr;i++){
+      var r=(i+0.5)/Nr, dr=1/Nr;
+      for(var j=0;j<Nt;j++){ var dth=2*Math.PI/Nt; E+=r*dr*dth; }
+    }
+    for(var j2=0;j2<Nt;j2++){
+      var th=(j2+0.5)/Nt*2*Math.PI;
+      flux+=uval(Math.cos(th),Math.sin(th))*Math.cos(th)*(2*Math.PI/Nt);
+    }
+    setTxt("neu-cv",c.toFixed(2));
+    setTxt("neu-span",(2).toFixed(6));
+    setTxt("neu-E",E.toFixed(6));
+    setTxt("neu-flux",flux.toFixed(6));
+    setTxt("neu-gap",fmtE(Math.abs(E-flux)));
+    var mnD=1e9,mxD=-1e9;
+    for(var j3=0;j3<200;j3++){
+      var th3=j3/200*2*Math.PI;
+      var dn=(uval((1+1e-6)*Math.cos(th3),0)-uval((1-1e-6)*Math.cos(th3),0))/2e-6;
+      if(dn<mnD)mnD=dn; if(dn>mxD)mxD=dn;
+    }
+    setTxt("neu-dn",(mxD-mnD).toFixed(6));
+    setTxt("neu-sens","1.000000（u(P)=x(P)+c）");
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var cx=LW/2+10, cy=H/2, rad=Math.min(LW, H)*0.40;
+    /* 固定色标 [-3,3]：平移必须可见 */
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,rad,0,Math.PI*2); ctx.clip();
+    paintHeat(ctx,cx-rad,cy-rad,rad*2,rad*2,80,80,-1,1,1,-1,uval,3,false);
+    ctx.restore();
+    ctx.strokeStyle="#57606a"; ctx.lineWidth=1.8;
+    ctx.beginPath(); ctx.arc(cx,cy,rad,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle="#1f2328"; ctx.font="12.5px system-ui";
+    ctx.fillText("色标固定 [−3, 3]：滑 c 可见整体平移",16,24);
+    /* 右上：剖面 */
+    var px=RX, py=48, pw=RW, ph=150;
+    ctx.strokeStyle="#e5e7eb"; ctx.strokeRect(px,py,pw,ph);
+    ctx.strokeStyle="#D85A30"; ctx.lineWidth=2; ctx.beginPath();
+    for(var i=0;i<=100;i++){
+      var x=-1+2*i/100, u=x+c;
+      var X2=px+(x+1)/2*pw, Y2=py+ph-(u+3)/6*ph;
+      if(i===0)ctx.moveTo(X2,Y2); else ctx.lineTo(X2,Y2);
+    }
+    ctx.stroke();
+    ctx.fillStyle="#1f2328"; ctx.font="12px system-ui"; ctx.fillText("u(x, 0) = x + c",px,py-8);
+    /* 右下：边界法向导数 */
+    var qy=py+ph+62, qh=H-qy-70;
+    ctx.strokeStyle="#e5e7eb"; ctx.strokeRect(px,qy,pw,qh);
+    ctx.strokeStyle="#185FA5"; ctx.lineWidth=2; ctx.beginPath();
+    for(var j=0;j<=120;j++){
+      var th=j/120*2*Math.PI, v=Math.cos(th);
+      var X3=px+j/120*pw, Y3=qy+qh/2-v*qh*0.42;
+      if(j===0)ctx.moveTo(X3,Y3); else ctx.lineTo(X3,Y3);
+    }
+    ctx.stroke();
+    ctx.fillStyle="#1f2328"; ctx.fillText("∂u/∂n = cos θ（与 c 无关）",px,qy-8);
+    ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
+    ctx.fillText("θ=0",px,qy+qh+14); ctx.fillText("θ=2π",px+pw-30,qy+qh+14);
+  }
+  $("neu-c").addEventListener("input",function(){ c=parseFloat(this.value)/10; readout(); draw(); });
+  $("neu-reset").addEventListener("click",function(){ c=0; $("neu-c").value="0"; readout(); draw(); });
+  readout(); draw();
 })();
 
 /* ================= 08 环形 Robin ================= */
 (function(){
- var W=840,H=430,cv=$("rb-canvas"),ctx=cv.getContext("2d");
- var s1=1.0, s2=-0.15, g1=1.0, g2=0.40;
- var LN2=Math.log(2);
- var LW=430, RX=490, RW=W-RX-24;
- function det(){ return -s2 - s1*(0.5 + s2*LN2); }
- function s2star(){ return -s1/(2*(1+s1*LN2)); }
- function solve(){
- var D=det();
- if(Math.abs(D)<1e-6) return null;
- var A=(g1*s2 - s1*g2)/D;
- var B=(-g2 - (0.5+s2*LN2)*g1)/D;
- return {A:A,B:B};
- }
- function readout(){
- var D=det(), sol=solve();
- setTxt("rb-s1v",s1.toFixed(2)); setTxt("rb-s2v",s2.toFixed(2));
- setTxt("rb-g1v",g1.toFixed(2)); setTxt("rb-g2v",g2.toFixed(2));
- setTxt("rb-det",fmtE(D));
- setTxt("rb-s2star",s2star().toFixed(6));
- setTxt("rb-A",sol?fmt(sol.A):"—");
- setTxt("rb-B",sol?fmt(sol.B):"—");
- if(sol) setTxt("rb-mm",fmt(sol.A*LN2+sol.B)+" / "+fmt(sol.B));
- else setTxt("rb-mm","u₀=ln r+1 的任意倍数");
- var uniq=Math.abs(D)>1e-6 && (s1>0&&s2>0);
- setTxt("rb-uniq",(Math.abs(D)>1e-6)?"唯一（差常数）":"退化：不唯一");
- setCls("rb-uniq","v "+((Math.abs(D)>1e-6)?"ok":"bad"));
- }
- function draw(){
- ctx.clearRect(0,0,W,H);
- /* 左：u(r) */
- var x0=60,x1=LW,y0=44,y1=H-64;
- var sol=solve();
- var vals=[];
- if(sol){ for(var i=0;i<=100;i++){ var r=1+ i/100; vals.push(sol.A*Math.log(r)+sol.B); } }
- else { for(var i2=0;i2<=100;i2++){ var r2=1+i2/100; vals.push(Math.log(r2)+1); } }
- var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
- var pad=Math.max((mx-mn)*0.2,0.3); mn-=pad; mx+=pad;
- function Y(v){ return y1-(v-mn)/(mx-mn)*(y1-y0); }
- ctx.strokeStyle="#e5e7eb";
- for(var g=0;g<=4;g++){
- var yy=y0+(y1-y0)*g/4;
- ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
- }
- ctx.strokeStyle="#8c959f"; ctx.strokeRect(x0,y0,x1-x0,y1-y0);
- ctx.strokeStyle="#D85A30"; ctx.lineWidth=2.4; ctx.beginPath();
- for(var j=0;j<vals.length;j++){
- var X=x0+j/100*(x1-x0);
- if(j===0)ctx.moveTo(X,Y(vals[j])); else ctx.lineTo(X,Y(vals[j]));
- }
- ctx.stroke();
- ctx.fillStyle="#1f2328"; ctx.font="12.5px system-ui";
- ctx.fillText("u(r) = A ln r + B ，r ∈ [1,2]",x0,y0-12);
- ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
- ctx.fillText("r=1",x0-6,y1+16); ctx.fillText("r=2",x1-20,y1+16);
- /* 右：det vs σ2 */
- var bx=RX,by=60,bw=RW,bh=H-140;
- function LY(v){ return by+bh/2 - clampr(v,-2.5,2.5)/2.5*(bh/2); }
- function BX(v){ return bx+((v+2)/4)*bw; }
- ctx.strokeStyle="#e5e7eb";
- ctx.beginPath(); ctx.moveTo(bx,LY(0)); ctx.lineTo(bx+bw,LY(0)); ctx.stroke();
- ctx.strokeStyle="#8c959f"; ctx.strokeRect(bx,by,bw,bh);
- ctx.strokeStyle="#185FA5"; ctx.lineWidth=2; ctx.beginPath();
- for(var k=0;k<=160;k++){
- var sv=-2+4*k/160;
- var dd=-sv - s1*(0.5+sv*LN2);
- var X4=BX(sv), Y4=LY(dd);
- if(k===0)ctx.moveTo(X4,Y4); else ctx.lineTo(X4,Y4);
- }
- ctx.stroke();
- /* 零点与当前点 */
- var zs=s2star();
- ctx.strokeStyle="#534AB7"; ctx.setLineDash([5,4]); ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(BX(zs),by); ctx.lineTo(BX(zs),by+bh); ctx.stroke();
- ctx.setLineDash([]);
- ctx.fillStyle="#534AB7"; ctx.font="11.5px ui-monospace,monospace";
- ctx.fillText("σ₂* = "+zs.toFixed(4),BX(zs)+5,by+14);
- ctx.fillStyle="#D85A30";
- ctx.beginPath(); ctx.arc(BX(s2),LY(det()),5,0,Math.PI*2); ctx.fill();
- ctx.fillStyle="#1f2328"; ctx.font="12.5px system-ui";
- ctx.fillText("det(σ₁,σ₂) 随 σ₂（σ₁ = "+s1.toFixed(2)+"）",bx,by-12);
- ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
- ctx.fillText("σ₂=−2",bx,by+bh+16); ctx.fillText("σ₂=2",bx+bw-40,by+bh+16);
- ctx.fillText("det=0 ⟹ 齐次问题有非零解 ⟹ 不唯一",bx,by+bh+34);
- }
- $("rb-s1").addEventListener("input",function(){ s1=parseFloat(this.value)/10; readout(); draw(); });
- $("rb-s2").addEventListener("input",function(){ s2=parseFloat(this.value)/10; readout(); draw(); });
- $("rb-g1").addEventListener("input",function(){ g1=parseFloat(this.value)/10; readout(); draw(); });
- $("rb-g2").addEventListener("input",function(){ g2=parseFloat(this.value)/10; readout(); draw(); });
- readout(); draw();
+  var W=840,H=430,cv=$("rb-canvas"),ctx=cv.getContext("2d");
+  var s1=1.0, s2=-0.15, g1=1.0, g2=0.40;
+  var LN2=Math.log(2);
+  var LW=430, RX=490, RW=W-RX-24;
+  function det(){ return -s2 - s1*(0.5 + s2*LN2); }
+  function s2star(){ return -s1/(2*(1+s1*LN2)); }
+  function solve(){
+    var D=det();
+    if(Math.abs(D)<1e-6) return null;
+    var A=(g1*s2 - s1*g2)/D;
+    var B=(-g2 - (0.5+s2*LN2)*g1)/D;
+    return {A:A,B:B};
+  }
+  function readout(){
+    var D=det(), sol=solve();
+    setTxt("rb-s1v",s1.toFixed(2)); setTxt("rb-s2v",s2.toFixed(2));
+    setTxt("rb-g1v",g1.toFixed(2)); setTxt("rb-g2v",g2.toFixed(2));
+    setTxt("rb-det",fmtE(D));
+    setTxt("rb-s2star",s2star().toFixed(6));
+    setTxt("rb-A",sol?fmt(sol.A):"—");
+    setTxt("rb-B",sol?fmt(sol.B):"—");
+    if(sol) setTxt("rb-mm",fmt(sol.A*LN2+sol.B)+" / "+fmt(sol.B));
+    else setTxt("rb-mm","u₀=ln r+1 的任意倍数");
+    var uniq=Math.abs(D)>1e-6 && (s1>0&&s2>0);
+    setTxt("rb-uniq",(Math.abs(D)>1e-6)?"唯一（差常数）":"退化：不唯一");
+    setCls("rb-uniq","v "+((Math.abs(D)>1e-6)?"ok":"bad"));
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    /* 左：u(r) */
+    var x0=60,x1=LW,y0=44,y1=H-64;
+    var sol=solve();
+    var vals=[];
+    if(sol){ for(var i=0;i<=100;i++){ var r=1+ i/100; vals.push(sol.A*Math.log(r)+sol.B); } }
+    else { for(var i2=0;i2<=100;i2++){ var r2=1+i2/100; vals.push(Math.log(r2)+1); } }
+    var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+    var pad=Math.max((mx-mn)*0.2,0.3); mn-=pad; mx+=pad;
+    function Y(v){ return y1-(v-mn)/(mx-mn)*(y1-y0); }
+    ctx.strokeStyle="#e5e7eb";
+    for(var g=0;g<=4;g++){
+      var yy=y0+(y1-y0)*g/4;
+      ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
+    }
+    ctx.strokeStyle="#8c959f"; ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+    ctx.strokeStyle="#D85A30"; ctx.lineWidth=2.4; ctx.beginPath();
+    for(var j=0;j<vals.length;j++){
+      var X=x0+j/100*(x1-x0);
+      if(j===0)ctx.moveTo(X,Y(vals[j])); else ctx.lineTo(X,Y(vals[j]));
+    }
+    ctx.stroke();
+    ctx.fillStyle="#1f2328"; ctx.font="12.5px system-ui";
+    ctx.fillText("u(r) = A ln r + B ，r ∈ [1,2]",x0,y0-12);
+    ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
+    ctx.fillText("r=1",x0-6,y1+16); ctx.fillText("r=2",x1-20,y1+16);
+    /* 右：det vs σ2 */
+    var bx=RX,by=60,bw=RW,bh=H-140;
+    function LY(v){ return by+bh/2 - clampr(v,-2.5,2.5)/2.5*(bh/2); }
+    function BX(v){ return bx+((v+2)/4)*bw; }
+    ctx.strokeStyle="#e5e7eb";
+    ctx.beginPath(); ctx.moveTo(bx,LY(0)); ctx.lineTo(bx+bw,LY(0)); ctx.stroke();
+    ctx.strokeStyle="#8c959f"; ctx.strokeRect(bx,by,bw,bh);
+    ctx.strokeStyle="#185FA5"; ctx.lineWidth=2; ctx.beginPath();
+    for(var k=0;k<=160;k++){
+      var sv=-2+4*k/160;
+      var dd=-sv - s1*(0.5+sv*LN2);
+      var X4=BX(sv), Y4=LY(dd);
+      if(k===0)ctx.moveTo(X4,Y4); else ctx.lineTo(X4,Y4);
+    }
+    ctx.stroke();
+    /* 零点与当前点 */
+    var zs=s2star();
+    ctx.strokeStyle="#534AB7"; ctx.setLineDash([5,4]); ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(BX(zs),by); ctx.lineTo(BX(zs),by+bh); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#534AB7"; ctx.font="11.5px ui-monospace,monospace";
+    ctx.fillText("σ₂* = "+zs.toFixed(4),BX(zs)+5,by+14);
+    ctx.fillStyle="#D85A30";
+    ctx.beginPath(); ctx.arc(BX(s2),LY(det()),5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#1f2328"; ctx.font="12.5px system-ui";
+    ctx.fillText("det(σ₁,σ₂) 随 σ₂（σ₁ = "+s1.toFixed(2)+"）",bx,by-12);
+    ctx.fillStyle="#8c959f"; ctx.font="10.5px ui-monospace,monospace";
+    ctx.fillText("σ₂=−2",bx,by+bh+16); ctx.fillText("σ₂=2",bx+bw-40,by+bh+16);
+    ctx.fillText("det=0 ⟹ 齐次问题有非零解 ⟹ 不唯一",bx,by+bh+34);
+  }
+  $("rb-s1").addEventListener("input",function(){ s1=parseFloat(this.value)/10; readout(); draw(); });
+  $("rb-s2").addEventListener("input",function(){ s2=parseFloat(this.value)/10; readout(); draw(); });
+  $("rb-g1").addEventListener("input",function(){ g1=parseFloat(this.value)/10; readout(); draw(); });
+  $("rb-g2").addEventListener("input",function(){ g2=parseFloat(this.value)/10; readout(); draw(); });
+  readout(); draw();
 })();
 
 /* MathJax 离线提示 */
 setTimeout(function(){
- var el=$("mjx-offline");
- if(el && !document.body.classList.contains("mjx-ready")) el.hidden=false;
+  var el=$("mjx-offline");
+  if(el && !document.body.classList.contains("mjx-ready")) el.hidden=false;
 },3500);
 </script>
 

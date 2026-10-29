@@ -6,25 +6,25 @@
 <title>二阶线性方程的分类 — 第 4 章可视化</title>
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "global" },
- options: { enableMenu: false },
- startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
- --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
- --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
- --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
- --teal:#0F6E56; --teal-soft:#E1F5EE; --amber:#854F0B; --amber-soft:#FDF6EC;
- --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  --bg:#ffffff; --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --coral:#D85A30; --coral-soft:#FAECE7; --purple:#534AB7; --purple-soft:#EEEDFE;
+  --teal:#0F6E56; --teal-soft:#E1F5EE; --amber:#854F0B; --amber-soft:#FDF6EC;
+  --card:#f6f8fa; --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
@@ -38,19 +38,19 @@ p{margin:12px 0}
 .crumb{font-size:13px;margin:0 0 18px;color:var(--muted)}
 .crumb a{color:var(--accent)}
 nav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
- border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
+  border-bottom:1px solid var(--border);z-index:10;margin:24px 0 0}
 nav .wrap{padding:10px 20px;display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px}
 nav a{color:var(--muted)}
 nav a:hover{color:var(--accent);text-decoration:none}
 .eq{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;text-align:center;
- margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
+  margin:20px 0;padding:14px 16px;background:var(--card);border-radius:8px;overflow-x:auto}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
 .note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .warn{border-left:3px solid var(--coral);background:var(--coral-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 .key{border-left:3px solid var(--purple);background:var(--purple-soft);padding:10px 16px;
- border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}
 table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
 table.fix{table-layout:fixed}
 th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
@@ -61,7 +61,7 @@ tr.hi td{background:var(--coral-soft)}
 .ctl input[type=range]{flex:1;min-width:150px;accent-color:var(--accent)}
 .ctl .lb{white-space:nowrap;color:var(--muted)}
 button{font:inherit;font-size:13.5px;padding:5px 14px;border:1px solid var(--border);
- border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
+  border-radius:7px;background:#fff;color:var(--text);cursor:pointer}
 button:hover{border-color:var(--accent);color:var(--accent)}
 button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:500}
 .val{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
@@ -93,10 +93,10 @@ p mjx-container>svg,li mjx-container>svg,td mjx-container>svg,h4 mjx-container>s
 footer{margin-top:80px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
 ul.tight li{margin:6px 0}
 @media print{
- nav,.ctl,button,#mjx-offline{display:none!important}
- h2{page-break-after:avoid;break-after:avoid}
- figure,.card,.note,.warn,.key,table,.kv,.std3{page-break-inside:avoid;break-inside:avoid}
- body{font-size:12.5px}
+  nav,.ctl,button,#mjx-offline{display:none!important}
+  h2{page-break-after:avoid;break-after:avoid}
+  figure,.card,.note,.warn,.key,table,.kv,.std3{page-break-inside:avoid;break-inside:avoid}
+  body{font-size:12.5px}
 }
 </style>
 </head>
@@ -482,43 +482,43 @@ $$u_n(x,t)=\frac{1}{n^k}\sin\frac{n\pi x}{l}\exp\Big[-\Big(\frac{n\pi a}{l}\Big)
 function $(id){ return document.getElementById(id); }
 function qsa(sel){ return (document.querySelectorAll ? document.querySelectorAll(sel) : []); }
 function nf(x, d){
- if (x === null || x === undefined || !isFinite(x)) return "—";
- if (Math.abs(x) < 5e-7) x = 0;
- return x.toFixed(d === undefined ? 3 : d);
+  if (x === null || x === undefined || !isFinite(x)) return "—";
+  if (Math.abs(x) < 5e-7) x = 0;
+  return x.toFixed(d === undefined ? 3 : d);
 }
 function nfe(x){
- if (x === null || x === undefined || !isFinite(x)) return "—";
- if (x === 0) return "0";
- var a = Math.abs(x), e = Math.floor(Math.log10(a));
- if (e >= -3 && e <= 4) return String(Number(x.toPrecision(4)));
- return x.toExponential(2);
+  if (x === null || x === undefined || !isFinite(x)) return "—";
+  if (x === 0) return "0";
+  var a = Math.abs(x), e = Math.floor(Math.log10(a));
+  if (e >= -3 && e <= 4) return String(Number(x.toPrecision(4)));
+  return x.toExponential(2);
 }
 var CVS = {};
 function cx(id){ if (!CVS[id]) CVS[id] = $(id).getContext("2d"); return CVS[id]; }
 function seg(p, c, s, col, dash, lw){
- c.save(); c.beginPath();
- c.setLineDash(dash || []);
- c.strokeStyle = col; c.lineWidth = lw || 1.4;
- if (!isFinite(s)){ c.moveTo(p.X(0), p.y0); c.lineTo(p.X(0), p.y0 + p.h); }
- else { c.moveTo(p.X(p.xmin), p.Y(s * p.xmin)); c.lineTo(p.X(p.xmax), p.Y(s * p.xmax)); }
- c.stroke(); c.restore();
+  c.save(); c.beginPath();
+  c.setLineDash(dash || []);
+  c.strokeStyle = col; c.lineWidth = lw || 1.4;
+  if (!isFinite(s)){ c.moveTo(p.X(0), p.y0); c.lineTo(p.X(0), p.y0 + p.h); }
+  else { c.moveTo(p.X(p.xmin), p.Y(s * p.xmin)); c.lineTo(p.X(p.xmax), p.Y(s * p.xmax)); }
+  c.stroke(); c.restore();
 }
 function labBox(c, x, y, t, col, size, align){
- c.save();
- var fs = size || 12;
- c.font = fs + "px system-ui,sans-serif";
- var w = (c.measureText ? c.measureText(t).width : t.length * fs * 0.6) || t.length * fs * 0.6;
- var ax = x;
- if (align === "right") ax = x - w; else if (align === "center") ax = x - w / 2;
- c.fillStyle = "rgba(255,255,255,.88)";
- c.fillRect(ax - 4, y - fs - 1, w + 8, fs + 7);
- c.fillStyle = col || "#57606a"; c.textAlign = "left"; c.fillText(t, ax, y);
- c.restore();
+  c.save();
+  var fs = size || 12;
+  c.font = fs + "px system-ui,sans-serif";
+  var w = (c.measureText ? c.measureText(t).width : t.length * fs * 0.6) || t.length * fs * 0.6;
+  var ax = x;
+  if (align === "right") ax = x - w; else if (align === "center") ax = x - w / 2;
+  c.fillStyle = "rgba(255,255,255,.88)";
+  c.fillRect(ax - 4, y - fs - 1, w + 8, fs + 7);
+  c.fillStyle = col || "#57606a"; c.textAlign = "left"; c.fillText(t, ax, y);
+  c.restore();
 }
 function lab(c, x, y, t, col, size, align){
- c.save(); c.fillStyle = col || "#57606a";
- c.font = (size || 11) + "px ui-monospace,monospace";
- c.textAlign = align || "left"; c.fillText(t, x, y); c.restore();
+  c.save(); c.fillStyle = col || "#57606a";
+  c.font = (size || 11) + "px ui-monospace,monospace";
+  c.textAlign = align || "left"; c.fillText(t, x, y); c.restore();
 }
 
 /* ==================== 实验 1：二次型分类沙盘 ==================== */
@@ -526,479 +526,479 @@ var E1 = { a11: 1, a12: 0, a22: 1 };
 function e1Type(d){ return d > 1e-12 ? "hyp" : (d < -1e-12 ? "ell" : "par"); }
 function e1Disc(a11, a12, a22){ return a12 * a12 - a11 * a22; }
 function e1Slopes(a11, a12, a22){
- var d = e1Disc(a11, a12, a22), out = [];
- if (Math.abs(a11) > 1e-12){
- if (d > 1e-12){ out.push((a12 + Math.sqrt(d)) / a11); out.push((a12 - Math.sqrt(d)) / a11); }
- else if (d >= -1e-12){ out.push(a12 / a11); }
- } else if (Math.abs(a12) > 1e-12){
- out.push(a22 / (2 * a12)); out.push(Infinity);
- }
- return out;
+  var d = e1Disc(a11, a12, a22), out = [];
+  if (Math.abs(a11) > 1e-12){
+    if (d > 1e-12){ out.push((a12 + Math.sqrt(d)) / a11); out.push((a12 - Math.sqrt(d)) / a11); }
+    else if (d >= -1e-12){ out.push(a12 / a11); }
+  } else if (Math.abs(a12) > 1e-12){
+    out.push(a22 / (2 * a12)); out.push(Infinity);
+  }
+  return out;
 }
 function e1Normal(a11, a12, a22){
- var d = e1Disc(a11, a12, a22), out = [];
- if (Math.abs(a22) > 1e-12){
- if (d >= 0){ out.push((-a12 + Math.sqrt(d)) / a22); out.push((-a12 - Math.sqrt(d)) / a22); }
- } else if (Math.abs(a12) > 1e-12){
- out.push(-a11 / (2 * a12)); out.push(Infinity);
- }
- return out;
+  var d = e1Disc(a11, a12, a22), out = [];
+  if (Math.abs(a22) > 1e-12){
+    if (d >= 0){ out.push((-a12 + Math.sqrt(d)) / a22); out.push((-a12 - Math.sqrt(d)) / a22); }
+  } else if (Math.abs(a12) > 1e-12){
+    out.push(-a11 / (2 * a12)); out.push(Infinity);
+  }
+  return out;
 }
 function e1Eig(a11, a12, a22){
- var tr = a11 + a22, det = a11 * a22 - a12 * a12, dd = tr * tr - 4 * det;
- if (dd < 0) return [NaN, NaN];
- var r = Math.sqrt(dd);
- return [(tr + r) / 2, (tr - r) / 2];
+  var tr = a11 + a22, det = a11 * a22 - a12 * a12, dd = tr * tr - 4 * det;
+  if (dd < 0) return [NaN, NaN];
+  var r = Math.sqrt(dd);
+  return [(tr + r) / 2, (tr - r) / 2];
 }
 function e1Draw(){
- var c = cx("e1c"), W = $("e1c").width, H = $("e1c").height;
- c.clearRect(0, 0, W, H);
- var p1 = panelXY(18, 24, 330, 330, -2.3, 2.3, -2.3, 2.3);
- var p2 = panelXY(492, 24, 330, 330, -2.3, 2.3, -2.3, 2.3);
- var a11 = E1.a11, a12 = E1.a12, a22 = E1.a22;
+  var c = cx("e1c"), W = $("e1c").width, H = $("e1c").height;
+  c.clearRect(0, 0, W, H);
+  var p1 = panelXY(18, 24, 330, 330, -2.3, 2.3, -2.3, 2.3);
+  var p2 = panelXY(492, 24, 330, 330, -2.3, 2.3, -2.3, 2.3);
+  var a11 = E1.a11, a12 = E1.a12, a22 = E1.a22;
 
- p1.frame(c); p1.clip(c); p1.axes(c);
- c.save(); c.beginPath(); c.setLineDash([3, 4]); c.strokeStyle = "#b9c2cc"; c.lineWidth = 1;
- c.arc(p1.X(0), p1.Y(0), p1.sx, 0, 2 * Math.PI); c.stroke(); c.restore();
- var ns = e1Normal(a11, a12, a22);
- for (var i = 0; i < ns.length; i++) seg(p1, c, ns[i], "#D85A30", [5, 4], 1.6);
- var open = false;
- c.save(); c.beginPath(); c.strokeStyle = "#185FA5"; c.lineWidth = 2.2;
- for (var k = 0; k <= 1440; k++){
- var th = k / 1440 * 2 * Math.PI, cl = Math.cos(th), sm = Math.sin(th);
- var Q = a11 * cl * cl + 2 * a12 * cl * sm + a22 * sm * sm;
- if (Q > 1e-9){
- var r = 1 / Math.sqrt(Q);
- if (r <= 4.2){
- if (!open){ c.moveTo(p1.X(r * cl), p1.Y(r * sm)); open = true; }
- else c.lineTo(p1.X(r * cl), p1.Y(r * sm));
- } else open = false;
- } else open = false;
- }
- c.stroke(); c.restore();
- p1.done(c);
- lab(c, p1.x0 + 6, p1.y0 + 14, "方向空间 (l, m)：蓝线 Q=1，珊瑚虚线 Q=0", "#57606a", 11);
- lab(c, p1.X(2.16), p1.Y(0) - 6, "l", "#57606a", 12);
- lab(c, p1.X(0) + 6, p1.Y(2.18), "m", "#57606a", 12);
+  p1.frame(c); p1.clip(c); p1.axes(c);
+  c.save(); c.beginPath(); c.setLineDash([3, 4]); c.strokeStyle = "#b9c2cc"; c.lineWidth = 1;
+  c.arc(p1.X(0), p1.Y(0), p1.sx, 0, 2 * Math.PI); c.stroke(); c.restore();
+  var ns = e1Normal(a11, a12, a22);
+  for (var i = 0; i < ns.length; i++) seg(p1, c, ns[i], "#D85A30", [5, 4], 1.6);
+  var open = false;
+  c.save(); c.beginPath(); c.strokeStyle = "#185FA5"; c.lineWidth = 2.2;
+  for (var k = 0; k <= 1440; k++){
+    var th = k / 1440 * 2 * Math.PI, cl = Math.cos(th), sm = Math.sin(th);
+    var Q = a11 * cl * cl + 2 * a12 * cl * sm + a22 * sm * sm;
+    if (Q > 1e-9){
+      var r = 1 / Math.sqrt(Q);
+      if (r <= 4.2){
+        if (!open){ c.moveTo(p1.X(r * cl), p1.Y(r * sm)); open = true; }
+        else c.lineTo(p1.X(r * cl), p1.Y(r * sm));
+      } else open = false;
+    } else open = false;
+  }
+  c.stroke(); c.restore();
+  p1.done(c);
+  lab(c, p1.x0 + 6, p1.y0 + 14, "方向空间 (l, m)：蓝线 Q=1，珊瑚虚线 Q=0", "#57606a", 11);
+  lab(c, p1.X(2.16), p1.Y(0) - 6, "l", "#57606a", 12);
+  lab(c, p1.X(0) + 6, p1.Y(2.18), "m", "#57606a", 12);
 
- p2.frame(c); p2.clip(c); p2.axes(c);
- var ss = e1Slopes(a11, a12, a22), t = e1Type(e1Disc(a11, a12, a22));
- if (ss.length){
- for (var j = 0; j < ss.length; j++){
- for (var q = -4; q <= 4; q += 0.5){
- if (!isFinite(ss[j])) continue;
- c.save(); c.beginPath(); c.strokeStyle = (j === 0 ? "#2F5D8A" : "#8A6D1F"); c.lineWidth = 1.2;
- var xa = p2.xmin, xb = p2.xmax;
- c.moveTo(p2.X(xa), p2.Y(ss[j] * xa + q));
- c.lineTo(p2.X(xb), p2.Y(ss[j] * xb + q));
- c.stroke(); c.restore();
- }
- if (!isFinite(ss[j])){
- for (var q2 = -5; q2 <= 5; q2 += 1){
- c.save(); c.beginPath(); c.strokeStyle = "#8A6D1F"; c.lineWidth = 1.2;
- c.moveTo(p2.X(q2), p2.y0); c.lineTo(p2.X(q2), p2.y0 + p2.h); c.stroke(); c.restore();
- }
- }
- }
- } else {
- for (var g = -2; g <= 2; g += 0.5){
- c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
- c.moveTo(p2.X(g), p2.y0); c.lineTo(p2.X(g), p2.y0 + p2.h);
- c.moveTo(p2.x0, p2.Y(g)); c.lineTo(p2.x0 + p2.w, p2.Y(g)); c.stroke(); c.restore();
- }
- }
- p2.done(c);
- lab(c, p2.x0 + 6, p2.y0 + 14, t === "ell" ? "物理平面：无实特征线（虚线 = 复特征的实/虚部）"
- : "物理平面：特征线族 y = s·x + c", "#57606a", 11);
- lab(c, p2.X(2.16), p2.Y(0) - 6, "x", "#57606a", 12);
- lab(c, p2.X(0) + 6, p2.Y(2.18), "y", "#57606a", 12);
- /* 中间：从代数到几何的一支箭头 */
- c.save();
- c.strokeStyle = "#185FA5"; c.lineWidth = 1.6;
- c.beginPath(); c.moveTo(360, 190); c.lineTo(476, 190); c.stroke();
- c.beginPath(); c.moveTo(482, 190); c.lineTo(470, 184); c.lineTo(470, 196); c.closePath();
- c.fillStyle = "#185FA5"; c.fill(); c.restore();
- lab(c, 418, 178, "同一组 (a₁₁, a₁₂, a₂₂)", "#185FA5", 11, "center");
- lab(c, 418, 210, "代数 → 几何", "#57606a", 11, "center");
- lab(c, W / 2, 14, "左：判别式的代数来源　　右：它带来的几何", "#57606a", 12, "center");
+  p2.frame(c); p2.clip(c); p2.axes(c);
+  var ss = e1Slopes(a11, a12, a22), t = e1Type(e1Disc(a11, a12, a22));
+  if (ss.length){
+    for (var j = 0; j < ss.length; j++){
+      for (var q = -4; q <= 4; q += 0.5){
+        if (!isFinite(ss[j])) continue;
+        c.save(); c.beginPath(); c.strokeStyle = (j === 0 ? "#2F5D8A" : "#8A6D1F"); c.lineWidth = 1.2;
+        var xa = p2.xmin, xb = p2.xmax;
+        c.moveTo(p2.X(xa), p2.Y(ss[j] * xa + q));
+        c.lineTo(p2.X(xb), p2.Y(ss[j] * xb + q));
+        c.stroke(); c.restore();
+      }
+      if (!isFinite(ss[j])){
+        for (var q2 = -5; q2 <= 5; q2 += 1){
+          c.save(); c.beginPath(); c.strokeStyle = "#8A6D1F"; c.lineWidth = 1.2;
+          c.moveTo(p2.X(q2), p2.y0); c.lineTo(p2.X(q2), p2.y0 + p2.h); c.stroke(); c.restore();
+        }
+      }
+    }
+  } else {
+    for (var g = -2; g <= 2; g += 0.5){
+      c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
+      c.moveTo(p2.X(g), p2.y0); c.lineTo(p2.X(g), p2.y0 + p2.h);
+      c.moveTo(p2.x0, p2.Y(g)); c.lineTo(p2.x0 + p2.w, p2.Y(g)); c.stroke(); c.restore();
+    }
+  }
+  p2.done(c);
+  lab(c, p2.x0 + 6, p2.y0 + 14, t === "ell" ? "物理平面：无实特征线（虚线 = 复特征的实/虚部）"
+    : "物理平面：特征线族 y = s·x + c", "#57606a", 11);
+  lab(c, p2.X(2.16), p2.Y(0) - 6, "x", "#57606a", 12);
+  lab(c, p2.X(0) + 6, p2.Y(2.18), "y", "#57606a", 12);
+  /* 中间：从代数到几何的一支箭头 */
+  c.save();
+  c.strokeStyle = "#185FA5"; c.lineWidth = 1.6;
+  c.beginPath(); c.moveTo(360, 190); c.lineTo(476, 190); c.stroke();
+  c.beginPath(); c.moveTo(482, 190); c.lineTo(470, 184); c.lineTo(470, 196); c.closePath();
+  c.fillStyle = "#185FA5"; c.fill(); c.restore();
+  lab(c, 418, 178, "同一组 (a₁₁, a₁₂, a₂₂)", "#185FA5", 11, "center");
+  lab(c, 418, 210, "代数 → 几何", "#57606a", 11, "center");
+  lab(c, W / 2, 14, "左：判别式的代数来源　　右：它带来的几何", "#57606a", 12, "center");
 }
 function e1Update(){
- var a11 = E1.a11, a12 = E1.a12, a22 = E1.a22;
- var d = e1Disc(a11, a12, a22), t = e1Type(d);
- var ss = e1Slopes(a11, a12, a22), ns = e1Normal(a11, a12, a22), ev = e1Eig(a11, a12, a22);
- $("e1-a11v").textContent = nf(a11, 1);
- $("e1-a12v").textContent = nf(a12, 1);
- $("e1-a22v").textContent = nf(a22, 1);
- $("e1-d").textContent = nf(d, 3);
- $("e1-type").textContent = t === "hyp" ? "双曲型（Δ > 0）" : (t === "ell" ? "椭圆型（Δ < 0）" : "抛物型（Δ = 0）");
- $("e1-conic").textContent = t === "hyp" ? "双曲线" : (t === "ell" ? "椭圆" : "退化抛物线");
- $("e1-s").textContent = ss.length ? ss.map(function(v){ return isFinite(v) ? nf(v, 3) : "∞"; }).join(" , ") : "无实解";
- $("e1-n").textContent = ns.length ? ns.map(function(v){ return isFinite(v) ? nf(v, 3) : "∞"; }).join(" , ") : "无实解";
- $("e1-eig").textContent = isFinite(ev[0]) ? (nf(ev[0], 2) + " , " + nf(ev[1], 2)) : "复共轭";
- var box = $("e1-stdbox").children || [];
- for (var i = 0; i < box.length; i++)
- box[i].classList.toggle("on", box[i].getAttribute("data-t") === t);
- e1Draw();
- return { d: d, type: t, s1: ss.length ? ss[0] : NaN, s2: ss.length > 1 ? ss[1] : NaN,
- n1: ns.length ? ns[0] : NaN, n2: ns.length > 1 ? ns[1] : NaN,
- l1: ev[0], l2: ev[1], nslopes: ss.length };
+  var a11 = E1.a11, a12 = E1.a12, a22 = E1.a22;
+  var d = e1Disc(a11, a12, a22), t = e1Type(d);
+  var ss = e1Slopes(a11, a12, a22), ns = e1Normal(a11, a12, a22), ev = e1Eig(a11, a12, a22);
+  $("e1-a11v").textContent = nf(a11, 1);
+  $("e1-a12v").textContent = nf(a12, 1);
+  $("e1-a22v").textContent = nf(a22, 1);
+  $("e1-d").textContent = nf(d, 3);
+  $("e1-type").textContent = t === "hyp" ? "双曲型（Δ > 0）" : (t === "ell" ? "椭圆型（Δ < 0）" : "抛物型（Δ = 0）");
+  $("e1-conic").textContent = t === "hyp" ? "双曲线" : (t === "ell" ? "椭圆" : "退化抛物线");
+  $("e1-s").textContent = ss.length ? ss.map(function(v){ return isFinite(v) ? nf(v, 3) : "∞"; }).join(" , ") : "无实解";
+  $("e1-n").textContent = ns.length ? ns.map(function(v){ return isFinite(v) ? nf(v, 3) : "∞"; }).join(" , ") : "无实解";
+  $("e1-eig").textContent = isFinite(ev[0]) ? (nf(ev[0], 2) + " , " + nf(ev[1], 2)) : "复共轭";
+  var box = $("e1-stdbox").children || [];
+  for (var i = 0; i < box.length; i++)
+    box[i].classList.toggle("on", box[i].getAttribute("data-t") === t);
+  e1Draw();
+  return { d: d, type: t, s1: ss.length ? ss[0] : NaN, s2: ss.length > 1 ? ss[1] : NaN,
+    n1: ns.length ? ns[0] : NaN, n2: ns.length > 1 ? ns[1] : NaN,
+    l1: ev[0], l2: ev[1], nslopes: ss.length };
 }
 var E1P = { lap: [1, 0, 1], wave: [-1, 0, 1], heat: [-1, 0, 0], obl: [1, 1, 0] };
 function e1Preset(k){
- var v = E1P[k]; if (!v) return;
- E1.a11 = v[0]; E1.a12 = v[1]; E1.a22 = v[2];
- $("e1-a11").value = String(Math.round(v[0] * 10));
- $("e1-a12").value = String(Math.round(v[1] * 10));
- $("e1-a22").value = String(Math.round(v[2] * 10));
- e1Update();
+  var v = E1P[k]; if (!v) return;
+  E1.a11 = v[0]; E1.a12 = v[1]; E1.a22 = v[2];
+  $("e1-a11").value = String(Math.round(v[0] * 10));
+  $("e1-a12").value = String(Math.round(v[1] * 10));
+  $("e1-a22").value = String(Math.round(v[2] * 10));
+  e1Update();
 }
 $("e1-a11").addEventListener("input", function(){ E1.a11 = Number(this.value) / 10; e1Update(); });
 $("e1-a12").addEventListener("input", function(){ E1.a12 = Number(this.value) / 10; e1Update(); });
 $("e1-a22").addEventListener("input", function(){ E1.a22 = Number(this.value) / 10; e1Update(); });
 Array.prototype.forEach.call(qsa(".e1p"), function(b){
- b.addEventListener("click", function(){
- Array.prototype.forEach.call(qsa(".e1p"), function(x){ x.classList.remove("on"); });
- b.classList.add("on"); e1Preset(b.getAttribute("data-p"));
- });
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(qsa(".e1p"), function(x){ x.classList.remove("on"); });
+    b.classList.add("on"); e1Preset(b.getAttribute("data-p"));
+  });
 });
 
 /* ==================== 实验 2：特征线族与标准形对账 ==================== */
 function panelXY(x0, y0, w, h, xmin, xmax, ymin, ymax){
- var sx = w / (xmax - xmin), sy = h / (ymax - ymin);
- return {
- x0: x0, y0: y0, w: w, h: h, xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax, sx: sx, sy: sy,
- X: function(x){ return x0 + (x - xmin) * sx; },
- Y: function(y){ return y0 + h - (y - ymin) * sy; },
- clip: function(c){ c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip(); },
- done: function(c){ c.restore(); },
- frame: function(c){ c.strokeStyle = "#d0d7de"; c.lineWidth = 1; c.strokeRect(x0 + .5, y0 + .5, w - 1, h - 1); },
- axes: function(c){
- c.strokeStyle = "#e6e9ec"; c.lineWidth = 1;
- c.beginPath(); c.moveTo(x0, this.Y(0)); c.lineTo(x0 + w, this.Y(0));
- c.moveTo(this.X(0), y0); c.lineTo(this.X(0), y0 + h); c.stroke();
- }
- };
+  var sx = w / (xmax - xmin), sy = h / (ymax - ymin);
+  return {
+    x0: x0, y0: y0, w: w, h: h, xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax, sx: sx, sy: sy,
+    X: function(x){ return x0 + (x - xmin) * sx; },
+    Y: function(y){ return y0 + h - (y - ymin) * sy; },
+    clip: function(c){ c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip(); },
+    done: function(c){ c.restore(); },
+    frame: function(c){ c.strokeStyle = "#d0d7de"; c.lineWidth = 1; c.strokeRect(x0 + .5, y0 + .5, w - 1, h - 1); },
+    axes: function(c){
+      c.strokeStyle = "#e6e9ec"; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(x0, this.Y(0)); c.lineTo(x0 + w, this.Y(0));
+      c.moveTo(this.X(0), y0); c.lineTo(this.X(0), y0 + h); c.stroke();
+    }
+  };
 }
 var E2P = {
- wave: { a11: -1, a12: 0, a22: 1, nm: "u_yy − u_xx = 0", xi: "ξ = x + y", eta: "η = x − y",
- fx: function(x, y){ return x + y; }, fy: function(x, y){ return x - y; } },
- heat: { a11: -1, a12: 0, a22: 0, nm: "u_y − u_xx = 0", xi: "ξ = y", eta: "η = x",
- fx: function(x, y){ return y; }, fy: function(x, y){ return x; } },
- laplace: { a11: 1, a12: 0, a22: 1, nm: "u_xx + u_yy = 0", xi: "ξ = x", eta: "η = y",
- fx: function(x, y){ return x; }, fy: function(x, y){ return y; } },
- obl: { a11: 1, a12: 1, a22: 0, nm: "u_xx + 2u_xy = 0", xi: "ξ = y − 2x", eta: "η = y",
- fx: function(x, y){ return y - 2 * x; }, fy: function(x, y){ return y; } }
+  wave: { a11: -1, a12: 0, a22: 1, nm: "u_yy − u_xx = 0", xi: "ξ = x + y", eta: "η = x − y",
+    fx: function(x, y){ return x + y; }, fy: function(x, y){ return x - y; } },
+  heat: { a11: -1, a12: 0, a22: 0, nm: "u_y − u_xx = 0", xi: "ξ = y", eta: "η = x",
+    fx: function(x, y){ return y; }, fy: function(x, y){ return x; } },
+  laplace: { a11: 1, a12: 0, a22: 1, nm: "u_xx + u_yy = 0", xi: "ξ = x", eta: "η = y",
+    fx: function(x, y){ return x; }, fy: function(x, y){ return y; } },
+  obl: { a11: 1, a12: 1, a22: 0, nm: "u_xx + 2u_xy = 0", xi: "ξ = y − 2x", eta: "η = y",
+    fx: function(x, y){ return y - 2 * x; }, fy: function(x, y){ return y; } }
 };
 var E2 = { p: "wave", X0: 0.3, Y0: 0.2 };
 function e2Deriv(f, x, y, axis){
- var h = 1e-5;
- return axis === 0 ? (f(x + h, y) - f(x - h, y)) / (2 * h) : (f(x, y + h) - f(x, y - h)) / (2 * h);
+  var h = 1e-5;
+  return axis === 0 ? (f(x + h, y) - f(x - h, y)) / (2 * h) : (f(x, y + h) - f(x, y - h)) / (2 * h);
 }
 function e2Bar(a11, a12, a22, fx, fy, x0, y0){
- var xix = e2Deriv(fx, x0, y0, 0), xiy = e2Deriv(fx, x0, y0, 1);
- var etx = e2Deriv(fy, x0, y0, 0), ety = e2Deriv(fy, x0, y0, 1);
- return {
- b11: a11 * xix * xix + 2 * a12 * xix * xiy + a22 * xiy * xiy,
- b12: a11 * xix * etx + a12 * (xix * ety + xiy * etx) + a22 * xiy * ety,
- b22: a11 * etx * etx + 2 * a12 * etx * ety + a22 * ety * ety,
- jac: xix * ety - xiy * etx
- };
+  var xix = e2Deriv(fx, x0, y0, 0), xiy = e2Deriv(fx, x0, y0, 1);
+  var etx = e2Deriv(fy, x0, y0, 0), ety = e2Deriv(fy, x0, y0, 1);
+  return {
+    b11: a11 * xix * xix + 2 * a12 * xix * xiy + a22 * xiy * xiy,
+    b12: a11 * xix * etx + a12 * (xix * ety + xiy * etx) + a22 * xiy * ety,
+    b22: a11 * etx * etx + 2 * a12 * etx * ety + a22 * ety * ety,
+    jac: xix * ety - xiy * etx
+  };
 }
 function e2Draw(){
- var c = cx("e2c"), W = $("e2c").width, H = $("e2c").height;
- c.clearRect(0, 0, W, H);
- var P = E2P[E2.p], p = panelXY(24, 28, 792, 372, -5.6, 5.6, -2.6, 2.6);
- var d = e1Disc(P.a11, P.a12, P.a22), t = e1Type(d), ss = e1Slopes(P.a11, P.a12, P.a22);
- p.frame(c); p.clip(c); p.axes(c);
- if (ss.length){
- for (var j = 0; j < ss.length; j++){
- var col = (j === 0 ? "#2F5D8A" : "#8A6D1F");
- for (var q = -8.4; q <= 8.41; q += 0.7){
- c.save(); c.beginPath(); c.strokeStyle = col; c.lineWidth = 1.3; c.globalAlpha = .85;
- if (!isFinite(ss[j])){
- c.moveTo(p.X(q), p.y0); c.lineTo(p.X(q), p.y0 + p.h);
- } else {
- c.moveTo(p.X(p.xmin), p.Y(ss[j] * p.xmin + q));
- c.lineTo(p.X(p.xmax), p.Y(ss[j] * p.xmax + q));
- }
- c.stroke(); c.restore();
- }
- }
- } else {
- for (var g = -5; g <= 5.001; g += 1){
- c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
- c.moveTo(p.X(g), p.y0); c.lineTo(p.X(g), p.y0 + p.h); c.stroke(); c.restore();
- }
- for (var g2 = -2; g2 <= 2.001; g2 += 0.5){
- c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
- c.moveTo(p.x0, p.Y(g2)); c.lineTo(p.x0 + p.w, p.Y(g2)); c.stroke(); c.restore();
- }
- }
- p.done(c);
- lab(c, p.x0 + 8, p.y0 + 16, P.nm, "#22303F", 12.5);
- lab(c, p.x0 + 8, p.y0 + 34, "特征线 " + (ss.length === 0 ? "（无实特征线，虚线为复特征坐标线）"
- : (ss.length === 1 ? "y = " + nf(ss[0], 2) + "·x + c" : "y = " + nf(ss[0], 2) + "·x + c 与 y = " + nf(ss[1], 2) + "·x + c")),
- "#57606a", 11.5);
- lab(c, p.X(5.4), p.Y(0) - 6, "x", "#57606a", 12);
- lab(c, p.X(0) + 6, p.Y(2.42), "y", "#57606a", 12);
- lab(c, W / 2, 16, "物理平面：特征线族（同族线不相交、不同族相交）", "#57606a", 12, "center");
+  var c = cx("e2c"), W = $("e2c").width, H = $("e2c").height;
+  c.clearRect(0, 0, W, H);
+  var P = E2P[E2.p], p = panelXY(24, 28, 792, 372, -5.6, 5.6, -2.6, 2.6);
+  var d = e1Disc(P.a11, P.a12, P.a22), t = e1Type(d), ss = e1Slopes(P.a11, P.a12, P.a22);
+  p.frame(c); p.clip(c); p.axes(c);
+  if (ss.length){
+    for (var j = 0; j < ss.length; j++){
+      var col = (j === 0 ? "#2F5D8A" : "#8A6D1F");
+      for (var q = -8.4; q <= 8.41; q += 0.7){
+        c.save(); c.beginPath(); c.strokeStyle = col; c.lineWidth = 1.3; c.globalAlpha = .85;
+        if (!isFinite(ss[j])){
+          c.moveTo(p.X(q), p.y0); c.lineTo(p.X(q), p.y0 + p.h);
+        } else {
+          c.moveTo(p.X(p.xmin), p.Y(ss[j] * p.xmin + q));
+          c.lineTo(p.X(p.xmax), p.Y(ss[j] * p.xmax + q));
+        }
+        c.stroke(); c.restore();
+      }
+    }
+  } else {
+    for (var g = -5; g <= 5.001; g += 1){
+      c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
+      c.moveTo(p.X(g), p.y0); c.lineTo(p.X(g), p.y0 + p.h); c.stroke(); c.restore();
+    }
+    for (var g2 = -2; g2 <= 2.001; g2 += 0.5){
+      c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
+      c.moveTo(p.x0, p.Y(g2)); c.lineTo(p.x0 + p.w, p.Y(g2)); c.stroke(); c.restore();
+    }
+  }
+  p.done(c);
+  lab(c, p.x0 + 8, p.y0 + 16, P.nm, "#22303F", 12.5);
+  lab(c, p.x0 + 8, p.y0 + 34, "特征线 " + (ss.length === 0 ? "（无实特征线，虚线为复特征坐标线）"
+    : (ss.length === 1 ? "y = " + nf(ss[0], 2) + "·x + c" : "y = " + nf(ss[0], 2) + "·x + c 与 y = " + nf(ss[1], 2) + "·x + c")),
+    "#57606a", 11.5);
+  lab(c, p.X(5.4), p.Y(0) - 6, "x", "#57606a", 12);
+  lab(c, p.X(0) + 6, p.Y(2.42), "y", "#57606a", 12);
+  lab(c, W / 2, 16, "物理平面：特征线族（同族线不相交、不同族相交）", "#57606a", 12, "center");
 }
 function e2Update(){
- var P = E2P[E2.p];
- var d = e1Disc(P.a11, P.a12, P.a22), t = e1Type(d), ss = e1Slopes(P.a11, P.a12, P.a22);
- var b = e2Bar(P.a11, P.a12, P.a22, P.fx, P.fy, E2.X0, E2.Y0);
- $("e2-coef").textContent = "(" + nf(P.a11, 1) + ", " + nf(P.a12, 1) + ", " + nf(P.a22, 1) + ")";
- $("e2-d").textContent = nf(d, 3);
- $("e2-type").textContent = t === "hyp" ? "双曲型" : (t === "ell" ? "椭圆型" : "抛物型");
- $("e2-s").textContent = ss.length ? ss.map(function(v){ return isFinite(v) ? nf(v, 3) : "∞"; }).join(" , ") : "无实解";
- $("e2-tr").textContent = P.xi + " ， " + P.eta;
- $("e2-b11").textContent = nf(b.b11, 3);
- $("e2-b12").textContent = nf(b.b12, 3);
- $("e2-b22").textContent = nf(b.b22, 3);
- var box = $("e2-stdbox").children || [];
- for (var i = 0; i < box.length; i++)
- box[i].classList.toggle("on", box[i].getAttribute("data-t") === t);
- e2Draw();
- return { d: d, type: t, s1: ss.length ? ss[0] : NaN, s2: ss.length > 1 ? ss[1] : NaN,
- b11: b.b11, b12: b.b12, b22: b.b22, jac: b.jac, nslopes: ss.length };
+  var P = E2P[E2.p];
+  var d = e1Disc(P.a11, P.a12, P.a22), t = e1Type(d), ss = e1Slopes(P.a11, P.a12, P.a22);
+  var b = e2Bar(P.a11, P.a12, P.a22, P.fx, P.fy, E2.X0, E2.Y0);
+  $("e2-coef").textContent = "(" + nf(P.a11, 1) + ", " + nf(P.a12, 1) + ", " + nf(P.a22, 1) + ")";
+  $("e2-d").textContent = nf(d, 3);
+  $("e2-type").textContent = t === "hyp" ? "双曲型" : (t === "ell" ? "椭圆型" : "抛物型");
+  $("e2-s").textContent = ss.length ? ss.map(function(v){ return isFinite(v) ? nf(v, 3) : "∞"; }).join(" , ") : "无实解";
+  $("e2-tr").textContent = P.xi + " ， " + P.eta;
+  $("e2-b11").textContent = nf(b.b11, 3);
+  $("e2-b12").textContent = nf(b.b12, 3);
+  $("e2-b22").textContent = nf(b.b22, 3);
+  var box = $("e2-stdbox").children || [];
+  for (var i = 0; i < box.length; i++)
+    box[i].classList.toggle("on", box[i].getAttribute("data-t") === t);
+  e2Draw();
+  return { d: d, type: t, s1: ss.length ? ss[0] : NaN, s2: ss.length > 1 ? ss[1] : NaN,
+    b11: b.b11, b12: b.b12, b22: b.b22, jac: b.jac, nslopes: ss.length };
 }
 Array.prototype.forEach.call(qsa(".e2p"), function(b){
- b.addEventListener("click", function(){
- Array.prototype.forEach.call(qsa(".e2p"), function(x){ x.classList.remove("on"); });
- b.classList.add("on"); E2.p = b.getAttribute("data-p"); e2Update();
- });
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(qsa(".e2p"), function(x){ x.classList.remove("on"); });
+    b.classList.add("on"); E2.p = b.getAttribute("data-p"); e2Update();
+  });
 });
 
 /* ==================== 实验 3：Tricomi 判别式场 ==================== */
 var E3 = { x: 0.4, y: -0.36, pan: null };
 function e3Draw(){
- var c = cx("e3c"), W = $("e3c").width, H = $("e3c").height;
- c.clearRect(0, 0, W, H);
- var p = panelXY(30, 28, 780, 360, -3.9, 3.9, -1.8, 1.8);
- E3.pan = p;
- p.frame(c); p.clip(c);
- /* 区域底色 */
- c.fillStyle = "#E1F5EE"; c.fillRect(p.x0, p.y0, p.w, p.Y(0) - p.y0);
- c.fillStyle = "#FAECE7"; c.fillRect(p.x0, p.Y(0), p.w, p.y0 + p.h - p.Y(0));
- p.axes(c);
- /* y=0 抛物分界 */
- c.save(); c.beginPath(); c.setLineDash([7, 5]); c.strokeStyle = "#534AB7"; c.lineWidth = 2;
- c.moveTo(p.x0, p.Y(0)); c.lineTo(p.x0 + p.w, p.Y(0)); c.stroke(); c.restore();
- /* 双曲区特征线：x = c ∓ (2/3)(-y)^{3/2} */
- for (var ci = -13; ci <= 13; ci++){
- var cc = ci * 0.7;
- for (var sgn = -1; sgn <= 1; sgn += 2){
- c.save(); c.beginPath(); c.strokeStyle = (sgn < 0 ? "#D85A30" : "#8A6D1F");
- c.lineWidth = 1.5; c.globalAlpha = .9;
- var started = false;
- for (var yy = 0; yy >= p.ymin; yy -= 0.02){
- var xx = cc + sgn * (2 / 3) * Math.pow(-yy, 1.5);
- if (xx < p.xmin - .2 || xx > p.xmax + .2){ started = false; continue; }
- if (!started){ c.moveTo(p.X(xx), p.Y(yy)); started = true; }
- else c.lineTo(p.X(xx), p.Y(yy));
- }
- c.stroke(); c.restore();
- }
- }
- /* 椭圆区：复特征实/虚部等值线（虚线） */
- for (var g = -3.5; g <= 3.51; g += 0.7){
- c.save(); c.beginPath(); c.setLineDash([3, 5]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
- c.moveTo(p.X(g), p.y0); c.lineTo(p.X(g), p.Y(0)); c.stroke(); c.restore();
- }
- for (var g2 = 0.3; g2 <= 1.51; g2 += 0.3){
- c.save(); c.beginPath(); c.setLineDash([3, 5]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
- c.moveTo(p.x0, p.Y(g2)); c.lineTo(p.x0 + p.w, p.Y(g2)); c.stroke(); c.restore();
- }
- /* 探针 */
- var px = p.X(E3.x), py = p.Y(E3.y);
- c.save();
- c.beginPath(); c.arc(px, py, 6, 0, 2 * Math.PI);
- c.fillStyle = "#185FA5"; c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 2; c.stroke();
- c.beginPath(); c.setLineDash([2, 3]); c.strokeStyle = "#185FA5"; c.lineWidth = 1;
- c.moveTo(p.x0, py); c.lineTo(p.x0 + p.w, py);
- c.moveTo(px, p.y0); c.lineTo(px, p.y0 + p.h); c.stroke();
- c.restore();
- p.done(c);
- labBox(c, p.x0 + 10, p.y0 + 20, "椭圆区 y > 0：Δ = −y < 0（无实特征线）", "#085041", 12);
- labBox(c, p.x0 + 10, p.y0 + p.h - 12, "双曲区 y < 0：Δ = −y > 0，两族特征线 x ± ⅔(−y)^{3/2} = c", "#A04A22", 12);
- labBox(c, p.x0 + p.w - 10, p.Y(0) - 8, "y = 0：抛物分界（两族特征线在此重合成一族）", "#26215C", 11.5, "right");
- lab(c, p.X(3.72), p.Y(0) - 6, "x", "#57606a", 12);
- lab(c, p.X(0) + 6, p.Y(1.68), "y", "#57606a", 12);
- lab(c, W / 2, 16, "Tricomi 方程 y·u_xx + u_yy = 0 的类型分布（拖动探针）", "#57606a", 12, "center");
+  var c = cx("e3c"), W = $("e3c").width, H = $("e3c").height;
+  c.clearRect(0, 0, W, H);
+  var p = panelXY(30, 28, 780, 360, -3.9, 3.9, -1.8, 1.8);
+  E3.pan = p;
+  p.frame(c); p.clip(c);
+  /* 区域底色 */
+  c.fillStyle = "#E1F5EE"; c.fillRect(p.x0, p.y0, p.w, p.Y(0) - p.y0);
+  c.fillStyle = "#FAECE7"; c.fillRect(p.x0, p.Y(0), p.w, p.y0 + p.h - p.Y(0));
+  p.axes(c);
+  /* y=0 抛物分界 */
+  c.save(); c.beginPath(); c.setLineDash([7, 5]); c.strokeStyle = "#534AB7"; c.lineWidth = 2;
+  c.moveTo(p.x0, p.Y(0)); c.lineTo(p.x0 + p.w, p.Y(0)); c.stroke(); c.restore();
+  /* 双曲区特征线：x = c ∓ (2/3)(-y)^{3/2} */
+  for (var ci = -13; ci <= 13; ci++){
+    var cc = ci * 0.7;
+    for (var sgn = -1; sgn <= 1; sgn += 2){
+      c.save(); c.beginPath(); c.strokeStyle = (sgn < 0 ? "#D85A30" : "#8A6D1F");
+      c.lineWidth = 1.5; c.globalAlpha = .9;
+      var started = false;
+      for (var yy = 0; yy >= p.ymin; yy -= 0.02){
+        var xx = cc + sgn * (2 / 3) * Math.pow(-yy, 1.5);
+        if (xx < p.xmin - .2 || xx > p.xmax + .2){ started = false; continue; }
+        if (!started){ c.moveTo(p.X(xx), p.Y(yy)); started = true; }
+        else c.lineTo(p.X(xx), p.Y(yy));
+      }
+      c.stroke(); c.restore();
+    }
+  }
+  /* 椭圆区：复特征实/虚部等值线（虚线） */
+  for (var g = -3.5; g <= 3.51; g += 0.7){
+    c.save(); c.beginPath(); c.setLineDash([3, 5]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
+    c.moveTo(p.X(g), p.y0); c.lineTo(p.X(g), p.Y(0)); c.stroke(); c.restore();
+  }
+  for (var g2 = 0.3; g2 <= 1.51; g2 += 0.3){
+    c.save(); c.beginPath(); c.setLineDash([3, 5]); c.strokeStyle = "#9bb0c4"; c.lineWidth = 1;
+    c.moveTo(p.x0, p.Y(g2)); c.lineTo(p.x0 + p.w, p.Y(g2)); c.stroke(); c.restore();
+  }
+  /* 探针 */
+  var px = p.X(E3.x), py = p.Y(E3.y);
+  c.save();
+  c.beginPath(); c.arc(px, py, 6, 0, 2 * Math.PI);
+  c.fillStyle = "#185FA5"; c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 2; c.stroke();
+  c.beginPath(); c.setLineDash([2, 3]); c.strokeStyle = "#185FA5"; c.lineWidth = 1;
+  c.moveTo(p.x0, py); c.lineTo(p.x0 + p.w, py);
+  c.moveTo(px, p.y0); c.lineTo(px, p.y0 + p.h); c.stroke();
+  c.restore();
+  p.done(c);
+  labBox(c, p.x0 + 10, p.y0 + 20, "椭圆区 y > 0：Δ = −y < 0（无实特征线）", "#085041", 12);
+  labBox(c, p.x0 + 10, p.y0 + p.h - 12, "双曲区 y < 0：Δ = −y > 0，两族特征线 x ± ⅔(−y)^{3/2} = c", "#A04A22", 12);
+  labBox(c, p.x0 + p.w - 10, p.Y(0) - 8, "y = 0：抛物分界（两族特征线在此重合成一族）", "#26215C", 11.5, "right");
+  lab(c, p.X(3.72), p.Y(0) - 6, "x", "#57606a", 12);
+  lab(c, p.X(0) + 6, p.Y(1.68), "y", "#57606a", 12);
+  lab(c, W / 2, 16, "Tricomi 方程 y·u_xx + u_yy = 0 的类型分布（拖动探针）", "#57606a", 12, "center");
 }
 function e3Update(){
- var y = E3.y, d = -y;
- var t = d > 1e-9 ? "hyp" : (d < -1e-9 ? "ell" : "par");
- $("e3-pt").textContent = "x₀ = " + nf(E3.x, 3) + "，y₀ = " + nf(y, 3);
- $("e3-d").textContent = nf(d, 3);
- $("e3-type").textContent = t === "hyp" ? "双曲型" : (t === "ell" ? "椭圆型" : "抛物型（分界）");
- var p1 = NaN, p2 = NaN, sl = NaN, eta = NaN;
- if (y < 0){
- var A = (2 / 3) * Math.pow(-y, 1.5);
- p1 = E3.x + A; p2 = E3.x - A; sl = Math.sqrt(-y);
- $("e3-p1").textContent = nf(p1, 4);
- $("e3-p2").textContent = nf(p2, 4);
- $("e3-slope").textContent = "+" + nf(sl, 3) + " / −" + nf(sl, 3);
- $("e3-eta").textContent = "—（该公式在 y < 0 不适用）";
- } else {
- eta = (2 / 3) * Math.pow(y, 1.5);
- $("e3-p1").textContent = "—（y ≥ 0 无实特征线）";
- $("e3-p2").textContent = "—（y ≥ 0 无实特征线）";
- $("e3-slope").textContent = "—";
- $("e3-eta").textContent = nf(eta, 4);
- }
- e3Draw();
- return { d: d, type: t, p1: p1, p2: p2, slope: sl, eta: eta };
+  var y = E3.y, d = -y;
+  var t = d > 1e-9 ? "hyp" : (d < -1e-9 ? "ell" : "par");
+  $("e3-pt").textContent = "x₀ = " + nf(E3.x, 3) + "，y₀ = " + nf(y, 3);
+  $("e3-d").textContent = nf(d, 3);
+  $("e3-type").textContent = t === "hyp" ? "双曲型" : (t === "ell" ? "椭圆型" : "抛物型（分界）");
+  var p1 = NaN, p2 = NaN, sl = NaN, eta = NaN;
+  if (y < 0){
+    var A = (2 / 3) * Math.pow(-y, 1.5);
+    p1 = E3.x + A; p2 = E3.x - A; sl = Math.sqrt(-y);
+    $("e3-p1").textContent = nf(p1, 4);
+    $("e3-p2").textContent = nf(p2, 4);
+    $("e3-slope").textContent = "+" + nf(sl, 3) + " / −" + nf(sl, 3);
+    $("e3-eta").textContent = "—（该公式在 y < 0 不适用）";
+  } else {
+    eta = (2 / 3) * Math.pow(y, 1.5);
+    $("e3-p1").textContent = "—（y ≥ 0 无实特征线）";
+    $("e3-p2").textContent = "—（y ≥ 0 无实特征线）";
+    $("e3-slope").textContent = "—";
+    $("e3-eta").textContent = nf(eta, 4);
+  }
+  e3Draw();
+  return { d: d, type: t, p1: p1, p2: p2, slope: sl, eta: eta };
 }
 (function(){
- var cv = $("e3c");
- function toWorld(ev){
- var p = E3.pan, r = cv.getBoundingClientRect();
- var x = (ev.clientX - r.left) * (cv.width / r.width);
- var yy = (ev.clientY - r.top) * (cv.height / r.height);
- return { x: p.xmin + (x - p.x0) / p.sx, y: p.ymin + (p.y0 + p.h - yy) / p.sy };
- }
- function pick(ev){
- if (!E3.pan) return;
- var w = toWorld(ev);
- E3.x = Math.max(E3.pan.xmin + .1, Math.min(E3.pan.xmax - .1, w.x));
- E3.y = Math.max(E3.pan.ymin + .05, Math.min(E3.pan.ymax - .05, w.y));
- e3Update();
- }
- var dragging = false;
- cv.addEventListener("pointerdown", function(ev){ dragging = true; pick(ev); });
- cv.addEventListener("pointermove", function(ev){ if (dragging) pick(ev); });
- cv.addEventListener("pointerup", function(){ dragging = false; });
- cv.addEventListener("pointerleave", function(){ dragging = false; });
+  var cv = $("e3c");
+  function toWorld(ev){
+    var p = E3.pan, r = cv.getBoundingClientRect();
+    var x = (ev.clientX - r.left) * (cv.width / r.width);
+    var yy = (ev.clientY - r.top) * (cv.height / r.height);
+    return { x: p.xmin + (x - p.x0) / p.sx, y: p.ymin + (p.y0 + p.h - yy) / p.sy };
+  }
+  function pick(ev){
+    if (!E3.pan) return;
+    var w = toWorld(ev);
+    E3.x = Math.max(E3.pan.xmin + .1, Math.min(E3.pan.xmax - .1, w.x));
+    E3.y = Math.max(E3.pan.ymin + .05, Math.min(E3.pan.ymax - .05, w.y));
+    e3Update();
+  }
+  var dragging = false;
+  cv.addEventListener("pointerdown", function(ev){ dragging = true; pick(ev); });
+  cv.addEventListener("pointermove", function(ev){ if (dragging) pick(ev); });
+  cv.addEventListener("pointerup", function(){ dragging = false; });
+  cv.addEventListener("pointerleave", function(){ dragging = false; });
 })();
 
 /* ==================== 实验 4：方向空间 ↔ 物理空间 ==================== */
 var E4 = { p: "wave", a: 1.0 };
 var E4P = {
- wave: { axx: -1, att: 1, nm: "二维波动 u_tt − a²(u_xx+u_yy) = 0" },
- heat: { axx: -1, att: 0, nm: "热传导 u_t − a²u_xx = 0" },
- lap: { axx: 1, att: 1, nm: "拉普拉斯 u_xx + u_yy = 0" }
+  wave: { axx: -1, att: 1, nm: "二维波动 u_tt − a²(u_xx+u_yy) = 0" },
+  heat: { axx: -1, att: 0, nm: "热传导 u_t − a²u_xx = 0" },
+  lap: { axx: 1, att: 1, nm: "拉普拉斯 u_xx + u_yy = 0" }
 };
 function e4Coeff(){
- var P = E4P[E4.p];
- if (E4.p === "wave") return { axx: -E4.a * E4.a, att: 1 };
- return { axx: P.axx, att: P.att };
+  var P = E4P[E4.p];
+  if (E4.p === "wave") return { axx: -E4.a * E4.a, att: 1 };
+  return { axx: P.axx, att: P.att };
 }
 function e4Data(){
- var cf = e4Coeff(), a = E4.a;
- var ang = NaN, cone = NaN, cnt = 0, pts = [];
- if (E4.p === "wave"){
- var s = 1 / Math.sqrt(1 + a * a);
- pts = [[s, a * s], [-s, a * s], [s, -a * s], [-s, -a * s]];
- cnt = 4;
- ang = Math.atan(1 / a) * 180 / Math.PI;
- cone = Math.atan(a) * 180 / Math.PI;
- } else if (E4.p === "heat"){
- pts = [[0, 1], [0, -1]];
- cnt = 2; ang = 0;
- }
- return { cnt: cnt, ang: ang, cone: cone, pts: pts, cf: cf };
+  var cf = e4Coeff(), a = E4.a;
+  var ang = NaN, cone = NaN, cnt = 0, pts = [];
+  if (E4.p === "wave"){
+    var s = 1 / Math.sqrt(1 + a * a);
+    pts = [[s, a * s], [-s, a * s], [s, -a * s], [-s, -a * s]];
+    cnt = 4;
+    ang = Math.atan(1 / a) * 180 / Math.PI;
+    cone = Math.atan(a) * 180 / Math.PI;
+  } else if (E4.p === "heat"){
+    pts = [[0, 1], [0, -1]];
+    cnt = 2; ang = 0;
+  }
+  return { cnt: cnt, ang: ang, cone: cone, pts: pts, cf: cf };
 }
 function e4Draw(){
- var c = cx("e4c"), W = $("e4c").width, H = $("e4c").height;
- c.clearRect(0, 0, W, H);
- var d = e4Data(), cf = d.cf;
- var p1 = panelXY(36, 30, 264, 264, -1.3, 1.3, -1.3, 1.3);
- var p2 = panelXY(470, 30, 317, 264, -2.4, 2.4, -2.0, 2.0);
+  var c = cx("e4c"), W = $("e4c").width, H = $("e4c").height;
+  c.clearRect(0, 0, W, H);
+  var d = e4Data(), cf = d.cf;
+  var p1 = panelXY(36, 30, 264, 264, -1.3, 1.3, -1.3, 1.3);
+  var p2 = panelXY(470, 30, 317, 264, -2.4, 2.4, -2.0, 2.0);
 
- /* 左：方向空间 (α_x, α_t) */
- p1.frame(c); p1.clip(c); p1.axes(c);
- c.save(); c.beginPath(); c.setLineDash([3, 4]); c.strokeStyle = "#b9c2cc"; c.lineWidth = 1;
- c.arc(p1.X(0), p1.Y(0), p1.sx, 0, 2 * Math.PI); c.stroke(); c.restore();
- if (E4.p === "wave"){
- var a = E4.a;
- for (var sgn = -1; sgn <= 1; sgn += 2){
- c.save(); c.beginPath(); c.setLineDash([5, 4]); c.strokeStyle = "#D85A30"; c.lineWidth = 1.6;
- c.moveTo(p1.X(-1.3), p1.Y(sgn * a * -1.3)); c.lineTo(p1.X(1.3), p1.Y(sgn * a * 1.3));
- c.stroke(); c.restore();
- }
- } else if (E4.p === "heat"){
- c.save(); c.beginPath(); c.setLineDash([5, 4]); c.strokeStyle = "#D85A30"; c.lineWidth = 1.6;
- c.moveTo(p1.X(0), p1.Y(-1.3)); c.lineTo(p1.X(0), p1.Y(1.3)); c.stroke(); c.restore();
- }
- for (var i = 0; i < d.pts.length; i++){
- var P = d.pts[i];
- c.save();
- c.beginPath(); c.arc(p1.X(P[0]), p1.Y(P[1]), 5, 0, 2 * Math.PI);
- c.fillStyle = "#D85A30"; c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 1.5; c.stroke();
- c.beginPath(); c.strokeStyle = "#D85A30"; c.lineWidth = 1.3;
- c.moveTo(p1.X(0), p1.Y(0)); c.lineTo(p1.X(P[0]), p1.Y(P[1])); c.stroke();
- c.restore();
- }
- if (E4.p === "wave" && isFinite(d.ang)){
- var s0 = 1 / Math.sqrt(1 + E4.a * E4.a);
- c.save(); c.beginPath(); c.setLineDash([2, 3]); c.strokeStyle = "#0C447C"; c.lineWidth = 1;
- c.moveTo(p1.X(0), p1.Y(0)); c.lineTo(p1.X(0), p1.Y(1.15)); c.stroke();
- c.beginPath(); c.arc(p1.X(0), p1.Y(0), 42, -Math.PI / 2, -Math.PI / 2 + Math.atan2(E4.a * s0, s0));
- c.stroke(); c.restore();
- lab(c, p1.X(0) + 10, p1.Y(0.95), "α", "#0C447C", 11.5);
- }
- p1.done(c);
- labBox(c, p1.x0 + 6, p1.y0 + p1.h - 8, "方向空间：单位圆 + 零方向 Q(α)=0", "#57606a", 11);
- lab(c, p1.X(1.12), p1.Y(0) - 6, "α_x", "#57606a", 11.5);
- lab(c, p1.X(0) + 6, p1.Y(1.2), "α_t", "#57606a", 11.5);
+  /* 左：方向空间 (α_x, α_t) */
+  p1.frame(c); p1.clip(c); p1.axes(c);
+  c.save(); c.beginPath(); c.setLineDash([3, 4]); c.strokeStyle = "#b9c2cc"; c.lineWidth = 1;
+  c.arc(p1.X(0), p1.Y(0), p1.sx, 0, 2 * Math.PI); c.stroke(); c.restore();
+  if (E4.p === "wave"){
+    var a = E4.a;
+    for (var sgn = -1; sgn <= 1; sgn += 2){
+      c.save(); c.beginPath(); c.setLineDash([5, 4]); c.strokeStyle = "#D85A30"; c.lineWidth = 1.6;
+      c.moveTo(p1.X(-1.3), p1.Y(sgn * a * -1.3)); c.lineTo(p1.X(1.3), p1.Y(sgn * a * 1.3));
+      c.stroke(); c.restore();
+    }
+  } else if (E4.p === "heat"){
+    c.save(); c.beginPath(); c.setLineDash([5, 4]); c.strokeStyle = "#D85A30"; c.lineWidth = 1.6;
+    c.moveTo(p1.X(0), p1.Y(-1.3)); c.lineTo(p1.X(0), p1.Y(1.3)); c.stroke(); c.restore();
+  }
+  for (var i = 0; i < d.pts.length; i++){
+    var P = d.pts[i];
+    c.save();
+    c.beginPath(); c.arc(p1.X(P[0]), p1.Y(P[1]), 5, 0, 2 * Math.PI);
+    c.fillStyle = "#D85A30"; c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 1.5; c.stroke();
+    c.beginPath(); c.strokeStyle = "#D85A30"; c.lineWidth = 1.3;
+    c.moveTo(p1.X(0), p1.Y(0)); c.lineTo(p1.X(P[0]), p1.Y(P[1])); c.stroke();
+    c.restore();
+  }
+  if (E4.p === "wave" && isFinite(d.ang)){
+    var s0 = 1 / Math.sqrt(1 + E4.a * E4.a);
+    c.save(); c.beginPath(); c.setLineDash([2, 3]); c.strokeStyle = "#0C447C"; c.lineWidth = 1;
+    c.moveTo(p1.X(0), p1.Y(0)); c.lineTo(p1.X(0), p1.Y(1.15)); c.stroke();
+    c.beginPath(); c.arc(p1.X(0), p1.Y(0), 42, -Math.PI / 2, -Math.PI / 2 + Math.atan2(E4.a * s0, s0));
+    c.stroke(); c.restore();
+    lab(c, p1.X(0) + 10, p1.Y(0.95), "α", "#0C447C", 11.5);
+  }
+  p1.done(c);
+  labBox(c, p1.x0 + 6, p1.y0 + p1.h - 8, "方向空间：单位圆 + 零方向 Q(α)=0", "#57606a", 11);
+  lab(c, p1.X(1.12), p1.Y(0) - 6, "α_x", "#57606a", 11.5);
+  lab(c, p1.X(0) + 6, p1.Y(1.2), "α_t", "#57606a", 11.5);
 
- /* 右：物理空间 */
- p2.frame(c); p2.clip(c); p2.axes(c);
- if (E4.p === "wave"){
- var a2 = E4.a;
- for (var kk = -3; kk <= 3; kk++){
- var cc = kk * 0.7;
- for (var sg = -1; sg <= 1; sg += 2){
- c.save(); c.beginPath(); c.strokeStyle = (sg < 0 ? "#2F5D8A" : "#8A6D1F"); c.lineWidth = 1.4;
- var tmin = p2.ymin, tmax = p2.ymax;
- c.moveTo(p2.X(sg * a2 * tmin + cc), p2.Y(tmin));
- c.lineTo(p2.X(sg * a2 * tmax + cc), p2.Y(tmax));
- c.stroke(); c.restore();
- }
- }
- labBox(c, p2.X(-2.3), p2.Y(1.72), "x = a·t + c", "#2F5D8A", 11.5);
- labBox(c, p2.X(2.3), p2.Y(1.72), "x = −a·t + c", "#8A6D1F", 11.5, "right");
- } else if (E4.p === "heat"){
- for (var q = -1.8; q <= 1.8; q += 0.4){
- c.save(); c.beginPath(); c.strokeStyle = "#2F5D8A"; c.lineWidth = 1.4;
- c.moveTo(p2.x0, p2.Y(q)); c.lineTo(p2.x0 + p2.w, p2.Y(q)); c.stroke(); c.restore();
- }
- labBox(c, p2.X(-2.3), p2.Y(1.72), "特征面 t = c（初始面 t=0 即其中之一）", "#0C447C", 11.5);
- } else {
- lab(c, p2.X(-2.0), p2.Y(0.6), "无实特征曲线：椭圆型方程", "#085041", 12.5);
- lab(c, p2.X(-2.0), p2.Y(0.2), "（复特征 φ=x+iy 给出坐标线 ξ=x, η=y）", "#57606a", 11.5);
- }
- p2.done(c);
- labBox(c, p2.x0 + 6, p2.y0 + p2.h - 8, "物理空间：特征曲线（法向与 t 轴夹角 = 左图 α）", "#57606a", 11);
- lab(c, p2.X(2.25), p2.Y(0) - 6, "x", "#57606a", 12);
- lab(c, p2.X(0) + 6, p2.Y(1.9), "t", "#57606a", 12);
- lab(c, W / 2, 16, "左：特征方向（法向）　　右：它生成的曲面", "#57606a", 12, "center");
+  /* 右：物理空间 */
+  p2.frame(c); p2.clip(c); p2.axes(c);
+  if (E4.p === "wave"){
+    var a2 = E4.a;
+    for (var kk = -3; kk <= 3; kk++){
+      var cc = kk * 0.7;
+      for (var sg = -1; sg <= 1; sg += 2){
+        c.save(); c.beginPath(); c.strokeStyle = (sg < 0 ? "#2F5D8A" : "#8A6D1F"); c.lineWidth = 1.4;
+        var tmin = p2.ymin, tmax = p2.ymax;
+        c.moveTo(p2.X(sg * a2 * tmin + cc), p2.Y(tmin));
+        c.lineTo(p2.X(sg * a2 * tmax + cc), p2.Y(tmax));
+        c.stroke(); c.restore();
+      }
+    }
+    labBox(c, p2.X(-2.3), p2.Y(1.72), "x = a·t + c", "#2F5D8A", 11.5);
+    labBox(c, p2.X(2.3), p2.Y(1.72), "x = −a·t + c", "#8A6D1F", 11.5, "right");
+  } else if (E4.p === "heat"){
+    for (var q = -1.8; q <= 1.8; q += 0.4){
+      c.save(); c.beginPath(); c.strokeStyle = "#2F5D8A"; c.lineWidth = 1.4;
+      c.moveTo(p2.x0, p2.Y(q)); c.lineTo(p2.x0 + p2.w, p2.Y(q)); c.stroke(); c.restore();
+    }
+    labBox(c, p2.X(-2.3), p2.Y(1.72), "特征面 t = c（初始面 t=0 即其中之一）", "#0C447C", 11.5);
+  } else {
+    lab(c, p2.X(-2.0), p2.Y(0.6), "无实特征曲线：椭圆型方程", "#085041", 12.5);
+    lab(c, p2.X(-2.0), p2.Y(0.2), "（复特征 φ=x+iy 给出坐标线 ξ=x, η=y）", "#57606a", 11.5);
+  }
+  p2.done(c);
+  labBox(c, p2.x0 + 6, p2.y0 + p2.h - 8, "物理空间：特征曲线（法向与 t 轴夹角 = 左图 α）", "#57606a", 11);
+  lab(c, p2.X(2.25), p2.Y(0) - 6, "x", "#57606a", 12);
+  lab(c, p2.X(0) + 6, p2.Y(1.9), "t", "#57606a", 12);
+  lab(c, W / 2, 16, "左：特征方向（法向）　　右：它生成的曲面", "#57606a", 12, "center");
 }
 function e4Update(){
- var d = e4Data();
- $("e4-av").textContent = "a = " + nf(E4.a, 1);
- $("e4-cnt").textContent = String(d.cnt);
- $("e4-ang").textContent = isFinite(d.ang) ? (nf(d.ang, 3) + "°") : "—（无实方向）";
- $("e4-cone").textContent = isFinite(d.cone) ? (nf(d.cone, 3) + "°") : "—";
- if (E4.p === "wave"){
- $("e4-curve").textContent = "两条直线 x = ±a·t + c（特征锥的母线）";
- $("e4-iso").textContent = "不是（α_t ≠ 0），柯西资料可给在 t = 0";
- } else if (E4.p === "heat"){
- $("e4-curve").textContent = "水平线 t = c（超平面 t = 常数）";
- $("e4-iso").textContent = "是（α_x = 0, α_t = ±1）——资料恰给在特征面上";
- } else {
- $("e4-curve").textContent = "无实特征曲线";
- $("e4-iso").textContent = "—（没有时间方向）";
- }
- e4Draw();
- return { cnt: d.cnt, ang: d.ang, cone: d.cone, axx: d.cf.axx, att: d.cf.att };
+  var d = e4Data();
+  $("e4-av").textContent = "a = " + nf(E4.a, 1);
+  $("e4-cnt").textContent = String(d.cnt);
+  $("e4-ang").textContent = isFinite(d.ang) ? (nf(d.ang, 3) + "°") : "—（无实方向）";
+  $("e4-cone").textContent = isFinite(d.cone) ? (nf(d.cone, 3) + "°") : "—";
+  if (E4.p === "wave"){
+    $("e4-curve").textContent = "两条直线 x = ±a·t + c（特征锥的母线）";
+    $("e4-iso").textContent = "不是（α_t ≠ 0），柯西资料可给在 t = 0";
+  } else if (E4.p === "heat"){
+    $("e4-curve").textContent = "水平线 t = c（超平面 t = 常数）";
+    $("e4-iso").textContent = "是（α_x = 0, α_t = ±1）——资料恰给在特征面上";
+  } else {
+    $("e4-curve").textContent = "无实特征曲线";
+    $("e4-iso").textContent = "—（没有时间方向）";
+  }
+  e4Draw();
+  return { cnt: d.cnt, ang: d.ang, cone: d.cone, axx: d.cf.axx, att: d.cf.att };
 }
 Array.prototype.forEach.call(qsa(".e4p"), function(b){
- b.addEventListener("click", function(){
- Array.prototype.forEach.call(qsa(".e4p"), function(x){ x.classList.remove("on"); });
- b.classList.add("on"); E4.p = b.getAttribute("data-p"); e4Update();
- });
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(qsa(".e4p"), function(x){ x.classList.remove("on"); });
+    b.classList.add("on"); E4.p = b.getAttribute("data-p"); e4Update();
+  });
 });
 $("e4-a").addEventListener("input", function(){ E4.a = Number(this.value) / 10; e4Update(); });
 
@@ -1006,113 +1006,113 @@ $("e4-a").addEventListener("input", function(){ E4.a = Number(this.value) / 10; 
 var E5 = { mode: "had", n: 6, k: 1, t: 0.5 };
 var LN10 = Math.log(10);
 function e5Param(){
- return E5.mode === "had" ? E5.t : E5.t / 10;
+  return E5.mode === "had" ? E5.t : E5.t / 10;
 }
 function e5Data(n, k, tp){
- var logData = -k * Math.log10(n), logSol;
- if (E5.mode === "had"){
- var sh = Math.sinh(n * tp);
- logSol = Math.log10(sh) - (k + 1) * Math.log10(n);
- } else {
- logSol = -k * Math.log10(n) + (n * n * Math.PI * Math.PI * tp) / LN10;
- }
- return { logData: logData, logSol: logSol };
+  var logData = -k * Math.log10(n), logSol;
+  if (E5.mode === "had"){
+    var sh = Math.sinh(n * tp);
+    logSol = Math.log10(sh) - (k + 1) * Math.log10(n);
+  } else {
+    logSol = -k * Math.log10(n) + (n * n * Math.PI * Math.PI * tp) / LN10;
+  }
+  return { logData: logData, logSol: logSol };
 }
 function e5Draw(){
- var c = cx("e5c"), W = $("e5c").width, H = $("e5c").height;
- c.clearRect(0, 0, W, H);
- var tp = e5Param(), k = E5.k, NMAX = 12, ser = [];
- var lo = -1, hi = 2;
- for (var n = 1; n <= NMAX; n++){
- var v = e5Data(n, k, tp);
- ser.push({ n: n, ld: v.logData, ls: v.logSol });
- lo = Math.min(lo, v.logData, v.logSol);
- hi = Math.max(hi, v.logData, v.logSol);
- }
- lo = Math.max(-6, Math.floor(lo) - 1);
- hi = Math.min(70, Math.ceil(hi) + 1);
- var p = panelXY(64, 26, 750, 252, 0.4, NMAX + 0.6, lo, hi);
- p.frame(c); p.clip(c);
- /* 网格 */
- c.save(); c.strokeStyle = "#eef1f4"; c.lineWidth = 1;
- var step = (hi - lo) > 40 ? 10 : ((hi - lo) > 12 ? 5 : 2), ticks = [];
- for (var yv = Math.ceil(lo / step) * step; yv <= hi; yv += step){
- c.beginPath(); c.moveTo(p.x0, p.Y(yv)); c.lineTo(p.x0 + p.w, p.Y(yv)); c.stroke();
- ticks.push(yv);
- }
- c.restore();
- p.axes(c);
- function line(key, col){
- c.save(); c.beginPath(); c.strokeStyle = col; c.lineWidth = 2.2;
- for (var i = 0; i < ser.length; i++){
- var X = p.X(ser[i].n), Y = p.Y(Math.max(lo, Math.min(hi, ser[i][key])));
- if (i === 0) c.moveTo(X, Y); else c.lineTo(X, Y);
- }
- c.stroke();
- for (var j = 0; j < ser.length; j++){
- var X2 = p.X(ser[j].n), Y2 = p.Y(Math.max(lo, Math.min(hi, ser[j][key])));
- c.beginPath(); c.arc(X2, Y2, 2.6, 0, 2 * Math.PI); c.fillStyle = col; c.fill();
- }
- c.restore();
- }
- line("ld", "#185FA5"); line("ls", "#D85A30");
- var cur = null;
- for (var i2 = 0; i2 < ser.length; i2++) if (ser[i2].n === E5.n) cur = ser[i2];
- if (cur){
- c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#b9c2cc"; c.lineWidth = 1;
- c.moveTo(p.X(cur.n), p.y0); c.lineTo(p.X(cur.n), p.y0 + p.h); c.stroke(); c.restore();
- lab(c, p.X(cur.n) + 5, p.y0 + 14, "n = " + cur.n, "#22303F", 11.5);
- }
- p.done(c);
- ticks.forEach(function(v){ lab(c, p.x0 - 8, p.Y(v) + 3, String(v), "#57606a", 10.5, "right"); });
- [1, 3, 6, 9, 12].forEach(function(v){ lab(c, p.X(v), p.y0 + p.h + 16, String(v), "#57606a", 10.5, "center"); });
- lab(c, p.x0 - 52, p.y0 - 8, "log₁₀", "#57606a", 11);
- lab(c, p.x0 + 4, p.y0 + p.h + 34, "模态 n →", "#57606a", 11);
- lab(c, p.x0 + p.w - 150, p.y0 + 16, "蓝：初始资料 sup", "#185FA5", 11.5);
- lab(c, p.x0 + p.w - 150, p.y0 + 34, "珊瑚：解 sup", "#D85A30", 11.5);
- lab(c, W / 2, 16, E5.mode === "had" ? "阿达马模式：资料 n^(−k) 对 解 sh(ny*)/n^(k+1)"
- : "逆时向热传导：资料 n^(−k) 对 解 e^(n²π²|t*|)/n^(k)", "#57606a", 12, "center");
+  var c = cx("e5c"), W = $("e5c").width, H = $("e5c").height;
+  c.clearRect(0, 0, W, H);
+  var tp = e5Param(), k = E5.k, NMAX = 12, ser = [];
+  var lo = -1, hi = 2;
+  for (var n = 1; n <= NMAX; n++){
+    var v = e5Data(n, k, tp);
+    ser.push({ n: n, ld: v.logData, ls: v.logSol });
+    lo = Math.min(lo, v.logData, v.logSol);
+    hi = Math.max(hi, v.logData, v.logSol);
+  }
+  lo = Math.max(-6, Math.floor(lo) - 1);
+  hi = Math.min(70, Math.ceil(hi) + 1);
+  var p = panelXY(64, 26, 750, 252, 0.4, NMAX + 0.6, lo, hi);
+  p.frame(c); p.clip(c);
+  /* 网格 */
+  c.save(); c.strokeStyle = "#eef1f4"; c.lineWidth = 1;
+  var step = (hi - lo) > 40 ? 10 : ((hi - lo) > 12 ? 5 : 2), ticks = [];
+  for (var yv = Math.ceil(lo / step) * step; yv <= hi; yv += step){
+    c.beginPath(); c.moveTo(p.x0, p.Y(yv)); c.lineTo(p.x0 + p.w, p.Y(yv)); c.stroke();
+    ticks.push(yv);
+  }
+  c.restore();
+  p.axes(c);
+  function line(key, col){
+    c.save(); c.beginPath(); c.strokeStyle = col; c.lineWidth = 2.2;
+    for (var i = 0; i < ser.length; i++){
+      var X = p.X(ser[i].n), Y = p.Y(Math.max(lo, Math.min(hi, ser[i][key])));
+      if (i === 0) c.moveTo(X, Y); else c.lineTo(X, Y);
+    }
+    c.stroke();
+    for (var j = 0; j < ser.length; j++){
+      var X2 = p.X(ser[j].n), Y2 = p.Y(Math.max(lo, Math.min(hi, ser[j][key])));
+      c.beginPath(); c.arc(X2, Y2, 2.6, 0, 2 * Math.PI); c.fillStyle = col; c.fill();
+    }
+    c.restore();
+  }
+  line("ld", "#185FA5"); line("ls", "#D85A30");
+  var cur = null;
+  for (var i2 = 0; i2 < ser.length; i2++) if (ser[i2].n === E5.n) cur = ser[i2];
+  if (cur){
+    c.save(); c.beginPath(); c.setLineDash([4, 4]); c.strokeStyle = "#b9c2cc"; c.lineWidth = 1;
+    c.moveTo(p.X(cur.n), p.y0); c.lineTo(p.X(cur.n), p.y0 + p.h); c.stroke(); c.restore();
+    lab(c, p.X(cur.n) + 5, p.y0 + 14, "n = " + cur.n, "#22303F", 11.5);
+  }
+  p.done(c);
+  ticks.forEach(function(v){ lab(c, p.x0 - 8, p.Y(v) + 3, String(v), "#57606a", 10.5, "right"); });
+  [1, 3, 6, 9, 12].forEach(function(v){ lab(c, p.X(v), p.y0 + p.h + 16, String(v), "#57606a", 10.5, "center"); });
+  lab(c, p.x0 - 52, p.y0 - 8, "log₁₀", "#57606a", 11);
+  lab(c, p.x0 + 4, p.y0 + p.h + 34, "模态 n →", "#57606a", 11);
+  lab(c, p.x0 + p.w - 150, p.y0 + 16, "蓝：初始资料 sup", "#185FA5", 11.5);
+  lab(c, p.x0 + p.w - 150, p.y0 + 34, "珊瑚：解 sup", "#D85A30", 11.5);
+  lab(c, W / 2, 16, E5.mode === "had" ? "阿达马模式：资料 n^(−k) 对 解 sh(ny*)/n^(k+1)"
+    : "逆时向热传导：资料 n^(−k) 对 解 e^(n²π²|t*|)/n^(k)", "#57606a", 12, "center");
 }
 function e5Update(){
- var n = E5.n, k = E5.k, tp = e5Param();
- var data = Math.pow(n, -k);
- var sol, ratio, l2 = NaN, logSol;
- if (E5.mode === "had"){
- sol = Math.sinh(n * tp) / Math.pow(n, k + 1);
- ratio = Math.sinh(n * tp) / n;
- l2 = Math.PI * (Math.sinh(2 * n * tp) - 2 * n * tp) / (8 * Math.pow(n, 2 * k + 3));
- } else {
- logSol = -k * Math.log10(n) + (n * n * Math.PI * Math.PI * tp) / LN10;
- sol = logSol > 300 ? Infinity : Math.pow(10, logSol);
- ratio = Math.exp(n * n * Math.PI * Math.PI * tp);
- }
- $("e5-nv").textContent = "n = " + n;
- $("e5-kv").textContent = "k = " + k;
- $("e5-tl").textContent = E5.mode === "had" ? "观测高度 y*" : "逆推时间 |t*|";
- $("e5-tv").textContent = E5.mode === "had" ? ("y* = " + nf(tp, 2)) : ("|t*| = " + nf(tp, 3));
- $("e5-data").textContent = nfe(data);
- $("e5-sol").textContent = isFinite(sol) ? nfe(sol) : ">1e300";
- $("e5-ratio").textContent = isFinite(ratio) ? nfe(ratio) : ">1e300";
- $("e5-l2").textContent = E5.mode === "had" ? nfe(l2) : "—（热传导模式不计）";
- var v;
- if (!isFinite(ratio) || ratio > 1e4) v = "强烈放大：资料几乎为零，解已完全不可用";
- else if (ratio > 100) v = "明显放大：资料缩小 2 个量级以上，解反而更大";
- else if (ratio > 10) v = "放大超过一个量级";
- else if (ratio > 1) v = "略有放大（加大 n 会拉开差距）";
- else v = "暂未放大：资料还大于解";
- $("e5-verdict").textContent = v;
- e5Draw();
- return { data: data, sol: sol, ratio: ratio, l2: l2, tp: tp, mode: E5.mode };
+  var n = E5.n, k = E5.k, tp = e5Param();
+  var data = Math.pow(n, -k);
+  var sol, ratio, l2 = NaN, logSol;
+  if (E5.mode === "had"){
+    sol = Math.sinh(n * tp) / Math.pow(n, k + 1);
+    ratio = Math.sinh(n * tp) / n;
+    l2 = Math.PI * (Math.sinh(2 * n * tp) - 2 * n * tp) / (8 * Math.pow(n, 2 * k + 3));
+  } else {
+    logSol = -k * Math.log10(n) + (n * n * Math.PI * Math.PI * tp) / LN10;
+    sol = logSol > 300 ? Infinity : Math.pow(10, logSol);
+    ratio = Math.exp(n * n * Math.PI * Math.PI * tp);
+  }
+  $("e5-nv").textContent = "n = " + n;
+  $("e5-kv").textContent = "k = " + k;
+  $("e5-tl").textContent = E5.mode === "had" ? "观测高度 y*" : "逆推时间 |t*|";
+  $("e5-tv").textContent = E5.mode === "had" ? ("y* = " + nf(tp, 2)) : ("|t*| = " + nf(tp, 3));
+  $("e5-data").textContent = nfe(data);
+  $("e5-sol").textContent = isFinite(sol) ? nfe(sol) : ">1e300";
+  $("e5-ratio").textContent = isFinite(ratio) ? nfe(ratio) : ">1e300";
+  $("e5-l2").textContent = E5.mode === "had" ? nfe(l2) : "—（热传导模式不计）";
+  var v;
+  if (!isFinite(ratio) || ratio > 1e4) v = "强烈放大：资料几乎为零，解已完全不可用";
+  else if (ratio > 100) v = "明显放大：资料缩小 2 个量级以上，解反而更大";
+  else if (ratio > 10) v = "放大超过一个量级";
+  else if (ratio > 1) v = "略有放大（加大 n 会拉开差距）";
+  else v = "暂未放大：资料还大于解";
+  $("e5-verdict").textContent = v;
+  e5Draw();
+  return { data: data, sol: sol, ratio: ratio, l2: l2, tp: tp, mode: E5.mode };
 }
 Array.prototype.forEach.call(qsa(".e5m"), function(b){
- b.addEventListener("click", function(){
- Array.prototype.forEach.call(qsa(".e5m"), function(x){ x.classList.remove("on"); });
- b.classList.add("on");
- E5.mode = b.getAttribute("data-m");
- $("e5-t").value = E5.mode === "had" ? "50" : "50";
- E5.t = 0.5;
- e5Update();
- });
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(qsa(".e5m"), function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    E5.mode = b.getAttribute("data-m");
+    $("e5-t").value = E5.mode === "had" ? "50" : "50";
+    E5.t = 0.5;
+    e5Update();
+  });
 });
 $("e5-n").addEventListener("input", function(){ E5.n = Number(this.value); e5Update(); });
 $("e5-k").addEventListener("input", function(){ E5.k = Number(this.value); e5Update(); });
@@ -1122,20 +1122,20 @@ $("e5-t").addEventListener("input", function(){ E5.t = Number(this.value) / 100;
 e1Update(); e2Update(); e3Update(); e4Update(); e5Update();
 
 window.PDE4 = {
- E1: { set: function(a11, a12, a22){ E1.a11 = a11; E1.a12 = a12; E1.a22 = a22; return e1Update(); }, get: function(){ return e1Update(); } },
- E2: { set: function(p){ E2.p = p; return e2Update(); }, get: function(){ return e2Update(); } },
- E3: { set: function(x, y){ E3.x = x; E3.y = y; return e3Update(); }, get: function(){ return e3Update(); } },
- E4: { set: function(p, a){ E4.p = p; if (a !== undefined) E4.a = a; return e4Update(); }, get: function(){ return e4Update(); } },
- E5: { set: function(mode, n, k, t){ E5.mode = mode; E5.n = n; E5.k = k; E5.t = t; return e5Update(); }, get: function(){ return e5Update(); } },
- util: { disc: e1Disc, slopes: e1Slopes, normal: e1Normal, eig: e1Eig, type: e1Type,
- bar: e2Bar, nf: nf, nfe: nfe }
+  E1: { set: function(a11, a12, a22){ E1.a11 = a11; E1.a12 = a12; E1.a22 = a22; return e1Update(); }, get: function(){ return e1Update(); } },
+  E2: { set: function(p){ E2.p = p; return e2Update(); }, get: function(){ return e2Update(); } },
+  E3: { set: function(x, y){ E3.x = x; E3.y = y; return e3Update(); }, get: function(){ return e3Update(); } },
+  E4: { set: function(p, a){ E4.p = p; if (a !== undefined) E4.a = a; return e4Update(); }, get: function(){ return e4Update(); } },
+  E5: { set: function(mode, n, k, t){ E5.mode = mode; E5.n = n; E5.k = k; E5.t = t; return e5Update(); }, get: function(){ return e5Update(); } },
+  util: { disc: e1Disc, slopes: e1Slopes, normal: e1Normal, eig: e1Eig, type: e1Type,
+    bar: e2Bar, nf: nf, nfe: nfe }
 };
 
 setTimeout(function(){
- var off = $("mjx-offline");
- var ok = false;
- try { ok = document.body.classList.contains("mjx-ready"); } catch (e) { ok = true; }
- if (off && !ok) off.hidden = false;
+  var off = $("mjx-offline");
+  var ok = false;
+  try { ok = document.body.classList.contains("mjx-ready"); } catch (e) { ok = true; }
+  if (off && !ok) off.hidden = false;
 }, 12000);
 </script>
 </body>

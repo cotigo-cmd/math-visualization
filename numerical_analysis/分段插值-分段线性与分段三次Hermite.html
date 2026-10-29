@@ -5,65 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>分段插值 · 数值分析 第 2.5 讲</title>
 <!--
- 维护说明（给未来的自己）：
- 定义 1 分段线性 + 基函数 l_{n,i}（p.6/p.7）、定理 1 及证明（p.8/p.9，|f−φ_h| ≤ M h²/8）、
- 定义 2 分段三次 Hermite（p.10）、H₃ 的回忆式（p.11）、基函数 (3.1)–(3.6)（p.11–p.13）、
- 图 3.3–3.5 基函数形状、定理 2 与证明（p.17，h⁴/384·M）、例 p.18–p.19（y = sin 8x，n=8 与 n=20）、
- p.20 导数逼近（n=20）、图 3.6 支集对插值的影响（p.21）。
- 每页首行「课程考核方式」是幻灯片模板侧栏，不是正文。
- 不照抄位图。p.3 的引例位图只给曲线不给数据，页内按「三点 x=−1,0,1，把中间那个值改成 0.5」复现，
- 并在页内注明这一取法（趋势一致：两端不动、中段整体下沉）。
- 3. 页内每个数字都由工作区根目录 verify_na25.js 实测（vm 执行本页脚本 + 独立重算参考值），改算例必须重跑。
- 4. 公式改动后跑 `node ../../verify_formulas.js 分段插值-分段线性与分段三次Hermite.html`（要求 0 failed）；
- 行间公式只能用 $$（配置只注册 $$ 与 \(\)），公式内 < 写成 &lt;。
- 5. 与邻页分工：分段线性部分在「Lagrange 插值」页只测过一个收敛阶 1.97，本页从基函数与支集讲起；
- 三次 Hermite 的单区间余项界与「重结点差商」在 2.4 讲页，本页只做分段版本与定理 2；
- 三次样条（C²、三对角追赶法）留到 2.6 讲。
+  维护说明（给未来的自己）：
+  1. 对应第 2.5 讲 分段插值。引用：定义 1 分段线性 + 基函数 l_{n,i}（p.6/p.7）、定理 1 及证明（p.8/p.9，|f−φ_h| ≤ M h²/8）、
+     定义 2 分段三次 Hermite（p.10）、H₃ 的回忆式（p.11）、基函数 (3.1)–(3.6)（p.11–p.13）、
+     图 3.3–3.5 基函数形状、定理 2 与证明（p.17，h⁴/384·M）、例 p.18–p.19（y = sin 8x，n=8 与 n=20）、
+     p.20 导数逼近（n=20）、图 3.6 支集对插值的影响（p.21）。
+     每页首行「课程考核方式」是幻灯片模板侧栏，不是正文。
+     不照抄位图。p.3 的引例位图只给曲线不给数据，页内按「三点 x=−1,0,1，把中间那个值改成 0.5」复现，
+     并在页内注明这一取法（趋势一致：两端不动、中段整体下沉）。
+  3. 页内每个数字都由工作区根目录 verify_na25.js 实测（vm 执行本页脚本 + 独立重算参考值），改算例必须重跑。
+  4. 公式改动后跑 `node ../../verify_formulas.js 分段插值-分段线性与分段三次Hermite.html`（要求 0 failed）；
+     行间公式只能用 $$（配置只注册 $$ 与 \(\)），公式内 < 写成 &lt;。
+  5. 与邻页分工：分段线性部分在「Lagrange 插值」页只测过一个收敛阶 1.97，本页从基函数与支集讲起；
+     三次 Hermite 的单区间余项界与「重结点差商」在 2.4 讲页，本页只做分段版本与定理 2；
+     三次样条（C²、三对角追赶法）留到 2.6 讲。
 -->
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "global" },
- options: { enableMenu: false },
- startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
 };
 </script>
 <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
 <style>
 :root{
- --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
- --line:#e3dccd; --line-2:#cfc6b2;
- --orange:#c2531f; --orange-soft:#fbeee5;
- --teal:#0d6b5d; --teal-soft:#e7f3ef;
- --ch:#7d5a24; --ch-soft:#f4ecda;
- --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
- --ghost:rgba(160,148,124,.16);
+  --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
+  --line:#e3dccd; --line-2:#cfc6b2;
+  --orange:#c2531f; --orange-soft:#fbeee5;
+  --teal:#0d6b5d; --teal-soft:#e7f3ef;
+  --ch:#7d5a24; --ch-soft:#f4ecda;
+  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  --ghost:rgba(160,148,124,.16);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;color:var(--ink);
- background:
- linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
- linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
- var(--paper);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  background:
+    linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
+    linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
+    var(--paper);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:900px;margin:0 auto;padding:0 22px 90px}
 a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(13,107,93,.3)}
 a:hover{border-bottom-color:var(--teal)}
 h1{font-size:29px;line-height:1.3;margin:0 0 10px;font-weight:650;letter-spacing:-.01em}
 h2{font-size:21px;margin:66px 0 14px;font-weight:650;display:flex;align-items:baseline;gap:12px}
 h2 .no{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ch);
- border:1px solid rgba(125,90,36,.36);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
+  border:1px solid rgba(125,90,36,.36);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
 h3{font-size:16.5px;margin:32px 0 8px;font-weight:650}
 p{margin:12px 0;max-width:74ch}
 .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
 .hero{padding:58px 0 6px}
 .hero p.lead{font-size:16.5px;color:#4a4438;max-width:74ch}
 #mjx-offline{display:none;margin:0 0 4px;padding:9px 16px;background:#fff4d6;border:1px solid #e8cf92;
- border-radius:8px;font-size:13.5px;color:#6b5417}
+  border-radius:8px;font-size:13.5px;color:#6b5417}
 body:not(.mjx-ready) #mjx-offline{display:block}
 nav{position:sticky;top:0;z-index:20;margin:26px 0 0;
- background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 nav .inner{max-width:900px;margin:0 auto;padding:9px 22px;display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
 nav a{color:var(--muted);border:0}
 nav a:hover{color:var(--ch)}
@@ -77,7 +77,7 @@ nav a:hover{color:var(--ch)}
 .glance .c b{color:var(--ch)}
 
 .lab{background:var(--sheet);border:1px solid var(--line);border-radius:14px;
- padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
+  padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
 .lab-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .lab-head .t{font-size:12.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted)}
 canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px solid var(--line)}
@@ -91,20 +91,20 @@ canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px sol
 .ctrls .grp{display:flex;align-items:center;gap:9px}
 .ctrls .grp .lbl{color:var(--muted);font-size:12.5px;font-family:var(--mono)}
 input[type=range]{-webkit-appearance:none;appearance:none;width:150px;height:3px;border-radius:3px;
- background:var(--line-2);outline:none}
+  background:var(--line-2);outline:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
- background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
+  background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
 input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--orange);
- border:2px solid #fff;cursor:pointer}
+  border:2px solid #fff;cursor:pointer}
 .seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
 .seg button{font:inherit;font-size:13px;padding:5px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .seg button+button{border-left:1px solid var(--line-2)}
 .seg button[aria-pressed=true]{background:var(--ch-soft);color:var(--ch);font-weight:600}
 .btn{font:inherit;font-size:13px;padding:5px 14px;border:1px solid var(--line-2);border-radius:8px;
- background:#fff;color:var(--ink);cursor:pointer}
+  background:#fff;color:var(--ink);cursor:pointer}
 .btn:hover{border-color:var(--ch);color:var(--ch)}
 .reads{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
- border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
 .reads div{background:#fffdf8;padding:10px 12px}
 .reads .k{font-size:11.5px;color:var(--muted)}
 .reads .v{font-family:var(--mono);font-size:15.5px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
@@ -122,12 +122,12 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 .hint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
 
 .eq{font-size:17px;text-align:center;margin:18px 0;padding:12px 16px;background:var(--sheet);
- border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 mjx-container[jax="SVG"]{max-width:100%}
 mjx-assistive-mml{position:absolute!important;width:1px;height:1px;overflow:hidden!important;clip:rect(1px,1px,1px,1px)}
 mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
 .note{border-left:3px solid var(--orange);background:var(--orange-soft);padding:10px 16px;margin:16px 0;
- border-radius:0 8px 8px 0;font-size:14.5px}
+  border-radius:0 8px 8px 0;font-size:14.5px}
 .note.teal{border-left-color:var(--teal);background:var(--teal-soft)}
 .note.ch{border-left-color:var(--ch);background:var(--ch-soft)}
 .note p{margin:6px 0}
@@ -141,15 +141,15 @@ ul,ol{max-width:74ch}
 li{margin:5px 0}
 footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line-2);font-size:12.8px;color:var(--muted)}
 footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var(--line);
- border-radius:4px;padding:0 5px;font-size:12px}
+  border-radius:4px;padding:0 5px;font-size:12px}
 @media (max-width:680px){
- #cv-a{height:300px} #cv-b{height:270px} #cv-c{height:290px}
- #cv-d{height:280px} #cv-e{height:320px} #cv-f{height:310px}
- .glance{grid-template-columns:1fr}
- .reads{grid-template-columns:repeat(2,1fr)}
- h1{font-size:24px}
- table{font-size:12.1px}
- th,td{padding:6px 6px}
+  #cv-a{height:300px} #cv-b{height:270px} #cv-c{height:290px}
+  #cv-d{height:280px} #cv-e{height:320px} #cv-f{height:310px}
+  .glance{grid-template-columns:1fr}
+  .reads{grid-template-columns:repeat(2,1fr)}
+  h1{font-size:24px}
+  table{font-size:12.1px}
+  th,td{padding:6px 6px}
 }
 </style>
 </head>
@@ -164,9 +164,9 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <div id="mjx-offline">公式渲染脚本未加载（离线打开时 MathJax 需要联网）。本页正文与读数不受影响。</div>
 
 <div class="glance">
- <div class="a"><b>6.6×10⁶</b><span>等距全局插值 \(n=30\) 的 Lebesgue 常数（\([-1,1]\)，实测）</span></div>
- <div class="b"><b>1</b><span>分段线性的 Lebesgue 常数——基函数非负且构成单位分解，恒等于 1</span></div>
- <div class="c"><b>h² → h⁴</b><span>分段线性 \(Mh^2/8\) 与分段三次 Hermite \(Mh^4/384\) 的误差标度</span></div>
+  <div class="a"><b>6.6×10⁶</b><span>等距全局插值 \(n=30\) 的 Lebesgue 常数（\([-1,1]\)，实测）</span></div>
+  <div class="b"><b>1</b><span>分段线性的 Lebesgue 常数——基函数非负且构成单位分解，恒等于 1</span></div>
+  <div class="c"><b>h² → h⁴</b><span>分段线性 \(Mh^2/8\) 与分段三次 Hermite \(Mh^4/384\) 的误差标度</span></div>
 </div>
 
 <nav><div class="inner">
@@ -187,31 +187,31 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 </p>
 
 <div class="lab">
- <div class="lab-head">
- <span class="t">实验 01 · 课件引例：改一个数据值，看整条抛物线怎么动</span>
- <span class="t" id="a-state">y₁ = 0.50</span>
- </div>
- <canvas id="cv-a" aria-label="e^x 的三点二次插值：真实数据与改动一个数据值后的抛物线"></canvas>
- <div class="legend">
- <span><i class="graydash"></i>f(x) = eˣ</span>
- <span><i></i>真实数据的二次插值（y₁ = 1）</span>
- <span><i class="teal"></i>把 y₁ 改成当前值后的二次插值</span>
- <span><i class="dot"></i>结点</span>
- </div>
- <div class="ctrls">
- <div class="grp">
- <span class="lbl">中间数据值 y₁</span>
- <input type="range" id="a-y" min="0.30" max="1.70" step="0.01" value="0.50" aria-label="中间结点的数据值">
- <span class="lbl" id="a-yv">0.50</span>
- </div>
- </div>
- <div class="reads">
- <div><div class="k">max|f − p|（当前数据）</div><div class="v teal" id="a-e1">0.5135</div></div>
- <div><div class="k">max|f − p|（真实数据）</div><div class="v ch" id="a-e0">0.0785</div></div>
- <div><div class="k">两条抛物线的最大差</div><div class="v orange" id="a-dd">0.5000</div></div>
- <div><div class="k">放大倍数（最大差 / |δ|）</div><div class="v orange" id="a-amp">1.0000</div></div>
- </div>
- <p class="hint">拖 \(y_1\) 到 1.00 两条曲线重合成一条（\(\delta=0\)）。注意「放大倍数」为什么恒为 1：二次插值的基函数 \(l_1(x)=1-x^2\) 在 \(x=0\) 处取到最大值 1，所以数据误差 \(\delta\) 原样搬到曲线上——但它是<strong>搬到了整段</strong>上，\(x=\pm0.5\) 处也移动了 \(0.75\,\delta\)。课件位图只画曲线没给数据，页内取 \(y_1=0.5\) 复现（红曲线与课件图逐点一致：\(p(-0.5)=0.5482\)、\(p(0.5)=1.7234\)）。</p>
+  <div class="lab-head">
+    <span class="t">实验 01 · 课件引例：改一个数据值，看整条抛物线怎么动</span>
+    <span class="t" id="a-state">y₁ = 0.50</span>
+  </div>
+  <canvas id="cv-a" aria-label="e^x 的三点二次插值：真实数据与改动一个数据值后的抛物线"></canvas>
+  <div class="legend">
+    <span><i class="graydash"></i>f(x) = eˣ</span>
+    <span><i></i>真实数据的二次插值（y₁ = 1）</span>
+    <span><i class="teal"></i>把 y₁ 改成当前值后的二次插值</span>
+    <span><i class="dot"></i>结点</span>
+  </div>
+  <div class="ctrls">
+    <div class="grp">
+      <span class="lbl">中间数据值 y₁</span>
+      <input type="range" id="a-y" min="0.30" max="1.70" step="0.01" value="0.50" aria-label="中间结点的数据值">
+      <span class="lbl" id="a-yv">0.50</span>
+    </div>
+  </div>
+  <div class="reads">
+    <div><div class="k">max|f − p|（当前数据）</div><div class="v teal" id="a-e1">0.5135</div></div>
+    <div><div class="k">max|f − p|（真实数据）</div><div class="v ch" id="a-e0">0.0785</div></div>
+    <div><div class="k">两条抛物线的最大差</div><div class="v orange" id="a-dd">0.5000</div></div>
+    <div><div class="k">放大倍数（最大差 / |δ|）</div><div class="v orange" id="a-amp">1.0000</div></div>
+  </div>
+  <p class="hint">拖 \(y_1\) 到 1.00 两条曲线重合成一条（\(\delta=0\)）。注意「放大倍数」为什么恒为 1：二次插值的基函数 \(l_1(x)=1-x^2\) 在 \(x=0\) 处取到最大值 1，所以数据误差 \(\delta\) 原样搬到曲线上——但它是<strong>搬到了整段</strong>上，\(x=\pm0.5\) 处也移动了 \(0.75\,\delta\)。课件位图只画曲线没给数据，页内取 \(y_1=0.5\) 复现（红曲线与课件图逐点一致：\(p(-0.5)=0.5482\)、\(p(0.5)=1.7234\)）。</p>
 </div>
 
 <p>
@@ -253,35 +253,35 @@ $$l_{n,i}(x)=\begin{cases}\dfrac{x-x_{i-1}}{x_i-x_{i-1}}, & x\in[x_{i-1},x_i],\\
 </ul>
 
 <div class="lab">
- <div class="lab-head">
- <span class="t">实验 02 · 同一个结点上的两个基函数：全局 vs 分段</span>
- <span class="t" id="b-state">n = 8 · j = 4</span>
- </div>
- <canvas id="cv-b" aria-label="全局 Lagrange 基函数与分段线性基函数的支撑对照"></canvas>
- <div class="legend">
- <span><i></i>全局 \(l_j\)（\(n+1\) 个等距结点）</span>
- <span><i class="teal"></i>分段线性 \(l_{n,j}\)（帽函数）</span>
- <span><i class="graydash"></i>结点位置</span>
- </div>
- <div class="ctrls">
- <div class="grp">
- <span class="lbl">结点数 n</span>
- <input type="range" id="b-n" min="2" max="12" step="1" value="8" aria-label="区间个数">
- <span class="lbl" id="b-nv">8</span>
- </div>
- <div class="grp">
- <span class="lbl">结点序号 j</span>
- <input type="range" id="b-j" min="0" max="12" step="1" value="4" aria-label="结点序号">
- <span class="lbl" id="b-jv">4</span>
- </div>
- </div>
- <div class="reads">
- <div><div class="k">Lebesgue 常数 Λₙ</div><div class="v orange" id="b-leb">10.946</div></div>
- <div><div class="k">全局 max|lⱼ|</div><div class="v orange" id="b-mj">2.3196</div></div>
- <div><div class="k">分段 max|lₙ,ⱼ|</div><div class="v teal" id="b-mp">1.0000</div></div>
- <div><div class="k">支撑宽度（全局 / 分段）</div><div class="v ch" id="b-sup">2.000 / 0.500</div></div>
- </div>
- <p class="hint">纵轴会随全局峰值自动伸缩，青色虚线是 \(y=1\)——分段帽函数的峰值永远钉在这条线上。拖 \(n\)：全局基函数的峰值一路涨（\(n=12\)、\(j=6\) 时 \(18.34\)，是帽函数的 18 倍），而分段帽函数的支撑永远是 \(2h=2/n\)。拖 \(j\) 换位置：<strong>越靠区间中部，全局 \(l_j\) 的峰值越大</strong>（\(n=12\) 时 \(j=0\) 峰值只有 1.000、\(j=6\) 有 17.652、\(j=5\) 有 18.340），两端的基函数反而最老实。这也解释了 Runge 现象的失控为什么总在端点附近：那里是 \(\sum_i|l_i|\) 的峰值，虽然单个 \(|l_j|\) 不大。</p>
+  <div class="lab-head">
+    <span class="t">实验 02 · 同一个结点上的两个基函数：全局 vs 分段</span>
+    <span class="t" id="b-state">n = 8 · j = 4</span>
+  </div>
+  <canvas id="cv-b" aria-label="全局 Lagrange 基函数与分段线性基函数的支撑对照"></canvas>
+  <div class="legend">
+    <span><i></i>全局 \(l_j\)（\(n+1\) 个等距结点）</span>
+    <span><i class="teal"></i>分段线性 \(l_{n,j}\)（帽函数）</span>
+    <span><i class="graydash"></i>结点位置</span>
+  </div>
+  <div class="ctrls">
+    <div class="grp">
+      <span class="lbl">结点数 n</span>
+      <input type="range" id="b-n" min="2" max="12" step="1" value="8" aria-label="区间个数">
+      <span class="lbl" id="b-nv">8</span>
+    </div>
+    <div class="grp">
+      <span class="lbl">结点序号 j</span>
+      <input type="range" id="b-j" min="0" max="12" step="1" value="4" aria-label="结点序号">
+      <span class="lbl" id="b-jv">4</span>
+    </div>
+  </div>
+  <div class="reads">
+    <div><div class="k">Lebesgue 常数 Λₙ</div><div class="v orange" id="b-leb">10.946</div></div>
+    <div><div class="k">全局 max|lⱼ|</div><div class="v orange" id="b-mj">2.3196</div></div>
+    <div><div class="k">分段 max|lₙ,ⱼ|</div><div class="v teal" id="b-mp">1.0000</div></div>
+    <div><div class="k">支撑宽度（全局 / 分段）</div><div class="v ch" id="b-sup">2.000 / 0.500</div></div>
+  </div>
+  <p class="hint">纵轴会随全局峰值自动伸缩，青色虚线是 \(y=1\)——分段帽函数的峰值永远钉在这条线上。拖 \(n\)：全局基函数的峰值一路涨（\(n=12\)、\(j=6\) 时 \(18.34\)，是帽函数的 18 倍），而分段帽函数的支撑永远是 \(2h=2/n\)。拖 \(j\) 换位置：<strong>越靠区间中部，全局 \(l_j\) 的峰值越大</strong>（\(n=12\) 时 \(j=0\) 峰值只有 1.000、\(j=6\) 有 17.652、\(j=5\) 有 18.340），两端的基函数反而最老实。这也解释了 Runge 现象的失控为什么总在端点附近：那里是 \(\sum_i|l_i|\) 的峰值，虽然单个 \(|l_j|\) 不大。</p>
 </div>
 
 <table>
@@ -318,36 +318,36 @@ $$L_1(x)=y_i\cdot\frac{x-x_{i-1}}{x_i-x_{i-1}}+y_{i-1}\cdot\frac{x-x_i}{x_{i-1}-
 </p>
 
 <div class="lab">
- <div class="lab-head">
- <span class="t">实验 03 · 分段线性折线：误差、基函数与结点处的导数跃变</span>
- <span class="t" id="c-state">n = 8 · x* = 0.44</span>
- </div>
- <canvas id="cv-c" aria-label="e^x 的分段线性插值折线、当前段的基函数与结点尖点"></canvas>
- <div class="legend">
- <span><i class="graydash"></i>f(x) = eˣ</span>
- <span><i class="ch"></i>φ_h（分段线性）</span>
- <span><i class="teal"></i>当前段的基函数 lₙ,ⱼ</span>
- <span><i class="dot"></i>结点</span>
- </div>
- <div class="ctrls">
- <div class="grp">
- <span class="lbl">区间个数 n</span>
- <input type="range" id="c-n" min="1" max="40" step="1" value="8" aria-label="区间个数">
- <span class="lbl" id="c-nv">8</span>
- </div>
- <div class="grp">
- <span class="lbl">查询点 x*</span>
- <input type="range" id="c-x" min="0" max="1" step="0.005" value="0.44" aria-label="查询点">
- <span class="lbl" id="c-xv">0.440</span>
- </div>
- </div>
- <div class="reads">
- <div><div class="k">max|f − φ_h|（2 万点）</div><div class="v ch" id="c-emax">4.9896e−3</div></div>
- <div><div class="k">定理 1 的界 M h²/8</div><div class="v teal" id="c-bound">5.3091e−3</div></div>
- <div><div class="k">实测 / 界</div><div class="v orange" id="c-ratio">0.9398</div></div>
- <div><div class="k">最近结点的导数跃变</div><div class="v orange" id="c-jump">0.1821</div></div>
- </div>
- <p class="hint">把 \(n\) 拖到 1（两个结点、一条弦）：折线退化成割线，误差 \(6.66\times10^{-2}\)。\(n\) 越大误差越小，但<strong>「实测/界」一路从 0.78 爬到 0.998</strong>——界是紧的，只是要到 \(h\to0\) 才取满（原因在下一节）。导数跃变那一栏取的是离 \(x^*\) 最近的内部结点（默认 \(x^*=0.44\)、\(n=8\) 落在 \(x=0.5\)）：左右斜率 \(1.5498\) 对 \(1.7562\)，跳 \(0.2064\)，而 \(f'(0.5)=1.6487\) 正好夹在中间。折线的导数分段常数，所以这个跃变 \(\approx|f''|h\)，随 \(h\) 线性缩小，永远不会消失。</p>
+  <div class="lab-head">
+    <span class="t">实验 03 · 分段线性折线：误差、基函数与结点处的导数跃变</span>
+    <span class="t" id="c-state">n = 8 · x* = 0.44</span>
+  </div>
+  <canvas id="cv-c" aria-label="e^x 的分段线性插值折线、当前段的基函数与结点尖点"></canvas>
+  <div class="legend">
+    <span><i class="graydash"></i>f(x) = eˣ</span>
+    <span><i class="ch"></i>φ_h（分段线性）</span>
+    <span><i class="teal"></i>当前段的基函数 lₙ,ⱼ</span>
+    <span><i class="dot"></i>结点</span>
+  </div>
+  <div class="ctrls">
+    <div class="grp">
+      <span class="lbl">区间个数 n</span>
+      <input type="range" id="c-n" min="1" max="40" step="1" value="8" aria-label="区间个数">
+      <span class="lbl" id="c-nv">8</span>
+    </div>
+    <div class="grp">
+      <span class="lbl">查询点 x*</span>
+      <input type="range" id="c-x" min="0" max="1" step="0.005" value="0.44" aria-label="查询点">
+      <span class="lbl" id="c-xv">0.440</span>
+    </div>
+  </div>
+  <div class="reads">
+    <div><div class="k">max|f − φ_h|（2 万点）</div><div class="v ch" id="c-emax">4.9896e−3</div></div>
+    <div><div class="k">定理 1 的界 M h²/8</div><div class="v teal" id="c-bound">5.3091e−3</div></div>
+    <div><div class="k">实测 / 界</div><div class="v orange" id="c-ratio">0.9398</div></div>
+    <div><div class="k">最近结点的导数跃变</div><div class="v orange" id="c-jump">0.1821</div></div>
+  </div>
+  <p class="hint">把 \(n\) 拖到 1（两个结点、一条弦）：折线退化成割线，误差 \(6.66\times10^{-2}\)。\(n\) 越大误差越小，但<strong>「实测/界」一路从 0.78 爬到 0.998</strong>——界是紧的，只是要到 \(h\to0\) 才取满（原因在下一节）。导数跃变那一栏取的是离 \(x^*\) 最近的内部结点（默认 \(x^*=0.44\)、\(n=8\) 落在 \(x=0.5\)）：左右斜率 \(1.5498\) 对 \(1.7562\)，跳 \(0.2064\)，而 \(f'(0.5)=1.6487\) 正好夹在中间。折线的导数分段常数，所以这个跃变 \(\approx|f''|h\)，随 \(h\) 线性缩小，永远不会消失。</p>
 </div>
 
 <p>
@@ -370,30 +370,30 @@ $$|f(x)-\varphi_h(x)|=\frac{1}{2}|f''(\xi)|\,|(x-x_{i-1})(x-x_i)|\le\frac{1}{2}M
 </p>
 
 <div class="lab">
- <div class="lab-head">
- <span class="t">实验 04 · 双对数：实测误差贴着 h² 走，比值收敛到 1</span>
- <span class="t" id="d-state">n = 8 · h = 1.25e−1</span>
- </div>
- <canvas id="cv-d" aria-label="分段线性误差与 h²/8 界的双对数对照"></canvas>
- <div class="legend">
- <span><i class="ch"></i>实测 max|f − φ_h|</span>
- <span><i class="teal"></i>界 M h²/8</span>
- <span><i class="graydash"></i>斜率 2 的参考线</span>
- </div>
- <div class="ctrls">
- <div class="grp">
- <span class="lbl">细分档位 2^k</span>
- <input type="range" id="d-k" min="1" max="8" step="1" value="3" aria-label="细分档位">
- <span class="lbl" id="d-kv">k = 3（n = 8）</span>
- </div>
- </div>
- <div class="reads">
- <div><div class="k">当前档误差</div><div class="v ch" id="d-e">4.9896e−3</div></div>
- <div><div class="k">实测收敛阶（相邻两档）</div><div class="v orange" id="d-ord">1.955</div></div>
- <div><div class="k">理论阶</div><div class="v teal" id="d-th">2</div></div>
- <div><div class="k">实测 / 界</div><div class="v orange" id="d-r">0.9398</div></div>
- </div>
- <p class="hint">两条线几乎平行：\(h\) 减半，误差降到 1/4（阶 \(1.83\to2.00\)）。但实测线始终在界的<strong>下方约 0.94 倍</strong>——不是界错了，而是界里的两处放缩（\(|f''|\le M\) 与 \(|(x-x_{i-1})(x-x_i)|\le h^2/4\)）<strong>不能同时取等</strong>：前者在 \(x=1\) 处取等（\(e^x\) 单调），后者在格中点取等。\(h\to0\) 时这两个位置趋于重合，比值才爬到 0.998。</p>
+  <div class="lab-head">
+    <span class="t">实验 04 · 双对数：实测误差贴着 h² 走，比值收敛到 1</span>
+    <span class="t" id="d-state">n = 8 · h = 1.25e−1</span>
+  </div>
+  <canvas id="cv-d" aria-label="分段线性误差与 h²/8 界的双对数对照"></canvas>
+  <div class="legend">
+    <span><i class="ch"></i>实测 max|f − φ_h|</span>
+    <span><i class="teal"></i>界 M h²/8</span>
+    <span><i class="graydash"></i>斜率 2 的参考线</span>
+  </div>
+  <div class="ctrls">
+    <div class="grp">
+      <span class="lbl">细分档位 2^k</span>
+      <input type="range" id="d-k" min="1" max="8" step="1" value="3" aria-label="细分档位">
+      <span class="lbl" id="d-kv">k = 3（n = 8）</span>
+    </div>
+  </div>
+  <div class="reads">
+    <div><div class="k">当前档误差</div><div class="v ch" id="d-e">4.9896e−3</div></div>
+    <div><div class="k">实测收敛阶（相邻两档）</div><div class="v orange" id="d-ord">1.955</div></div>
+    <div><div class="k">理论阶</div><div class="v teal" id="d-th">2</div></div>
+    <div><div class="k">实测 / 界</div><div class="v orange" id="d-r">0.9398</div></div>
+  </div>
+  <p class="hint">两条线几乎平行：\(h\) 减半，误差降到 1/4（阶 \(1.83\to2.00\)）。但实测线始终在界的<strong>下方约 0.94 倍</strong>——不是界错了，而是界里的两处放缩（\(|f''|\le M\) 与 \(|(x-x_{i-1})(x-x_i)|\le h^2/4\)）<strong>不能同时取等</strong>：前者在 \(x=1\) 处取等（\(e^x\) 单调），后者在格中点取等。\(h\to0\) 时这两个位置趋于重合，比值才爬到 0.998。</p>
 </div>
 
 <table>
@@ -440,31 +440,31 @@ $$h_i(x_j)=\delta_{ij},\quad h_i'(x_j)=0,\quad \hat h_i(x_j)=0,\quad \hat h_i'(x
 </div>
 
 <div class="lab">
- <div class="lab-head">
- <span class="t">实验 05 · 三条曲线同台：分段线性 / 分段三次 Hermite / 全局 Lagrange</span>
- <span class="t" id="e-state">n = 8 · h = 0.1250</span>
- </div>
- <canvas id="cv-e" aria-label="e^x 的分段线性、分段三次 Hermite 与全局 Lagrange 插值对照"></canvas>
- <div class="legend">
- <span><i class="graydash"></i>f(x) = eˣ</span>
- <span><i class="teal"></i>分段线性 φ_h</span>
- <span><i class="ch"></i>分段三次 Hermite H_h</span>
- <span><i></i>全局 Lagrange（n+1 个结点）</span>
- </div>
- <div class="ctrls">
- <div class="grp">
- <span class="lbl">区间个数 n</span>
- <input type="range" id="e-n" min="2" max="16" step="1" value="8" aria-label="区间个数">
- <span class="lbl" id="e-nv">8</span>
- </div>
- </div>
- <div class="reads">
- <div><div class="k">分段线性 max|f−φ|</div><div class="v teal" id="e-lin">4.9896e−3</div></div>
- <div><div class="k">分段 H 的 max|f−H|</div><div class="v ch" id="e-her">1.6240e−6</div></div>
- <div><div class="k">全局 Lagrange 的 max|f−L|</div><div class="v orange" id="e-lag">1.7565e−10</div></div>
- <div><div class="k">定理 2 界 h⁴M/384 · 实测/界</div><div class="v orange" id="e-bd">1.7282e−6 · 0.9397</div></div>
- </div>
- <p class="hint">\(n=8\) 时分段 Hermite 已经把误差压到 \(1.62\times10^{-6}\)，是分段线性的 \(1/3073\)——同样的结点、同样只用函数值，多给了一列导数就换来两个数量级的阶。而全局 Lagrange 在 \(e^x\) 上更猛（\(1.76\times10^{-10}\)），但<strong>它是靠不住的</strong>：拖到 \(n=16\) 还是 \(4.7\times10^{-13}\)，到 \(n=64\) 直接崩到 \(26.8\)（见下表）。分段 Hermite 没有这个悬崖，误差一直跟着 \(h^4\) 走。</p>
+  <div class="lab-head">
+    <span class="t">实验 05 · 三条曲线同台：分段线性 / 分段三次 Hermite / 全局 Lagrange</span>
+    <span class="t" id="e-state">n = 8 · h = 0.1250</span>
+  </div>
+  <canvas id="cv-e" aria-label="e^x 的分段线性、分段三次 Hermite 与全局 Lagrange 插值对照"></canvas>
+  <div class="legend">
+    <span><i class="graydash"></i>f(x) = eˣ</span>
+    <span><i class="teal"></i>分段线性 φ_h</span>
+    <span><i class="ch"></i>分段三次 Hermite H_h</span>
+    <span><i></i>全局 Lagrange（n+1 个结点）</span>
+  </div>
+  <div class="ctrls">
+    <div class="grp">
+      <span class="lbl">区间个数 n</span>
+      <input type="range" id="e-n" min="2" max="16" step="1" value="8" aria-label="区间个数">
+      <span class="lbl" id="e-nv">8</span>
+    </div>
+  </div>
+  <div class="reads">
+    <div><div class="k">分段线性 max|f−φ|</div><div class="v teal" id="e-lin">4.9896e−3</div></div>
+    <div><div class="k">分段 H 的 max|f−H|</div><div class="v ch" id="e-her">1.6240e−6</div></div>
+    <div><div class="k">全局 Lagrange 的 max|f−L|</div><div class="v orange" id="e-lag">1.7565e−10</div></div>
+    <div><div class="k">定理 2 界 h⁴M/384 · 实测/界</div><div class="v orange" id="e-bd">1.7282e−6 · 0.9397</div></div>
+  </div>
+  <p class="hint">\(n=8\) 时分段 Hermite 已经把误差压到 \(1.62\times10^{-6}\)，是分段线性的 \(1/3073\)——同样的结点、同样只用函数值，多给了一列导数就换来两个数量级的阶。而全局 Lagrange 在 \(e^x\) 上更猛（\(1.76\times10^{-10}\)），但<strong>它是靠不住的</strong>：拖到 \(n=16\) 还是 \(4.7\times10^{-13}\)，到 \(n=64\) 直接崩到 \(26.8\)（见下表）。分段 Hermite 没有这个悬崖，误差一直跟着 \(h^4\) 走。</p>
 </div>
 
 <table>
@@ -499,52 +499,52 @@ $$f'(x)-H_h'(x)=\frac{f^{(4)}(\xi)}{4!}\cdot\frac{d}{dx}\bigl[(x-x_i)^2(x-x_{i+1
 </p>
 
 <div class="lab">
- <div class="lab-head">
- <span class="t">实验 06 · 导数逼近 / 支集（两个模式）</span>
- <span class="t" id="f-state">导数模式 · n = 8</span>
- </div>
- <div class="seg" style="margin:0 0 10px">
- <button id="f-m0" aria-pressed="true">导数逼近</button>
- <button id="f-m1" aria-pressed="false">支集（课件图 3.6）</button>
- </div>
- <canvas id="cv-f" aria-label="分段 Hermite 的导数逼近与支集实验"></canvas>
- <div class="legend" id="f-legend">
- <span><i class="graydash"></i>f′(x) = eˣ</span>
- <span><i class="ch"></i>H′_h（连续，分段二次）</span>
- <span><i class="teal"></i>φ′_h（分段常数，结点处跳变）</span>
- </div>
- <div class="ctrls" id="f-ctrls-deriv">
- <div class="grp">
- <span class="lbl">区间个数 n</span>
- <input type="range" id="f-n" min="2" max="64" step="1" value="8" aria-label="区间个数">
- <span class="lbl" id="f-nv">8</span>
- </div>
- </div>
- <div class="ctrls" id="f-ctrls-sup" style="display:none">
- <div class="grp">
- <span class="lbl">改动的结点 k</span>
- <input type="range" id="f-k" min="0" max="6" step="1" value="3" aria-label="改动的结点">
- <span class="lbl" id="f-kv">k = 3（x = 0）</span>
- </div>
- <div class="grp">
- <span class="lbl">改动量 δ</span>
- <input type="range" id="f-d" min="-0.8" max="0.8" step="0.05" value="0.5" aria-label="改动量">
- <span class="lbl" id="f-dv">+0.50</span>
- </div>
- </div>
- <div class="reads" id="f-reads-deriv">
- <div><div class="k">max|f′ − H′_h|</div><div class="v ch" id="f-e1">4.0150e−5</div></div>
- <div><div class="k">导数实测阶（n 与 n/2）</div><div class="v orange" id="f-o1">2.916</div></div>
- <div><div class="k">max|f′ − φ′_h|（分段线性）</div><div class="v teal" id="f-e2">1.6303e−1</div></div>
- <div><div class="k">分段线性导数阶</div><div class="v teal" id="f-o2">0.970</div></div>
- </div>
- <div class="reads" id="f-reads-sup" style="display:none">
- <div><div class="k">分段 H 的影响半宽</div><div class="v ch" id="f-s1">2.000</div></div>
- <div><div class="k">全局 Lagrange 的影响半宽</div><div class="v orange" id="f-s2">3.000</div></div>
- <div><div class="k">分段 max|ΔH|</div><div class="v ch" id="f-s3">0.5000</div></div>
- <div><div class="k">全局 max|ΔL|</div><div class="v orange" id="f-s4">0.5000</div></div>
- </div>
- <p class="hint" id="f-hint">拖 \(n\)：\(H'_h\) 的误差按 \(h^3\) 掉（阶 \(2.84\to2.99\)），而分段线性的阶梯导数只按 \(h\) 掉（阶 \(0.97\)）。两条曲线贴在一起时看不出差别，把 \(n\) 拖回 4 就看得出：\(H'_h\) 是光滑的二次曲线，\(\varphi'_h\) 是台阶。</p>
+  <div class="lab-head">
+    <span class="t">实验 06 · 导数逼近 / 支集（两个模式）</span>
+    <span class="t" id="f-state">导数模式 · n = 8</span>
+  </div>
+  <div class="seg" style="margin:0 0 10px">
+    <button id="f-m0" aria-pressed="true">导数逼近</button>
+    <button id="f-m1" aria-pressed="false">支集（课件图 3.6）</button>
+  </div>
+  <canvas id="cv-f" aria-label="分段 Hermite 的导数逼近与支集实验"></canvas>
+  <div class="legend" id="f-legend">
+    <span><i class="graydash"></i>f′(x) = eˣ</span>
+    <span><i class="ch"></i>H′_h（连续，分段二次）</span>
+    <span><i class="teal"></i>φ′_h（分段常数，结点处跳变）</span>
+  </div>
+  <div class="ctrls" id="f-ctrls-deriv">
+    <div class="grp">
+      <span class="lbl">区间个数 n</span>
+      <input type="range" id="f-n" min="2" max="64" step="1" value="8" aria-label="区间个数">
+      <span class="lbl" id="f-nv">8</span>
+    </div>
+  </div>
+  <div class="ctrls" id="f-ctrls-sup" style="display:none">
+    <div class="grp">
+      <span class="lbl">改动的结点 k</span>
+      <input type="range" id="f-k" min="0" max="6" step="1" value="3" aria-label="改动的结点">
+      <span class="lbl" id="f-kv">k = 3（x = 0）</span>
+    </div>
+    <div class="grp">
+      <span class="lbl">改动量 δ</span>
+      <input type="range" id="f-d" min="-0.8" max="0.8" step="0.05" value="0.5" aria-label="改动量">
+      <span class="lbl" id="f-dv">+0.50</span>
+    </div>
+  </div>
+  <div class="reads" id="f-reads-deriv">
+    <div><div class="k">max|f′ − H′_h|</div><div class="v ch" id="f-e1">4.0150e−5</div></div>
+    <div><div class="k">导数实测阶（n 与 n/2）</div><div class="v orange" id="f-o1">2.916</div></div>
+    <div><div class="k">max|f′ − φ′_h|（分段线性）</div><div class="v teal" id="f-e2">1.6303e−1</div></div>
+    <div><div class="k">分段线性导数阶</div><div class="v teal" id="f-o2">0.970</div></div>
+  </div>
+  <div class="reads" id="f-reads-sup" style="display:none">
+    <div><div class="k">分段 H 的影响半宽</div><div class="v ch" id="f-s1">2.000</div></div>
+    <div><div class="k">全局 Lagrange 的影响半宽</div><div class="v orange" id="f-s2">3.000</div></div>
+    <div><div class="k">分段 max|ΔH|</div><div class="v ch" id="f-s3">0.5000</div></div>
+    <div><div class="k">全局 max|ΔL|</div><div class="v orange" id="f-s4">0.5000</div></div>
+  </div>
+  <p class="hint" id="f-hint">拖 \(n\)：\(H'_h\) 的误差按 \(h^3\) 掉（阶 \(2.84\to2.99\)），而分段线性的阶梯导数只按 \(h\) 掉（阶 \(0.97\)）。两条曲线贴在一起时看不出差别，把 \(n\) 拖回 4 就看得出：\(H'_h\) 是光滑的二次曲线，\(\varphi'_h\) 是台阶。</p>
 </div>
 
 <p>
@@ -603,562 +603,562 @@ $$f'(x)-H_h'(x)=\frac{f^{(4)}(\xi)}{4!}\cdot\frac{d}{dx}\bigl[(x-x_i)^2(x-x_{i+1
 var $ = function(id){ return document.getElementById(id); };
 
 /* ============================================================
- 格式
- ============================================================ */
+   格式
+   ============================================================ */
 var MINUS = '\u2212';
 function fixed(v, d){
- if (!isFinite(v)) return '—';
- var s = Math.abs(v).toFixed(d);
- return (v < 0 ? MINUS : '') + s;
+  if (!isFinite(v)) return '—';
+  var s = Math.abs(v).toFixed(d);
+  return (v < 0 ? MINUS : '') + s;
 }
 function exs(v, d){
- if (!isFinite(v)) return '—';
- if (v === 0) return '0';
- d = (d === undefined) ? 3 : d;
- var e = Math.floor(Math.log10(Math.abs(v)));
- var m = v / Math.pow(10, e);
- if (Math.abs(m) >= 10){ m /= 10; e += 1; }
- if (Math.abs(m) < 1){ m *= 10; e -= 1; }
- return (m < 0 ? MINUS : '') + Math.abs(m).toFixed(d) + 'e' + (e < 0 ? MINUS : '') + Math.abs(e);
+  if (!isFinite(v)) return '—';
+  if (v === 0) return '0';
+  d = (d === undefined) ? 3 : d;
+  var e = Math.floor(Math.log10(Math.abs(v)));
+  var m = v / Math.pow(10, e);
+  if (Math.abs(m) >= 10){ m /= 10; e += 1; }
+  if (Math.abs(m) < 1){ m *= 10; e -= 1; }
+  return (m < 0 ? MINUS : '') + Math.abs(m).toFixed(d) + 'e' + (e < 0 ? MINUS : '') + Math.abs(e);
 }
 function num(v){
- if (!isFinite(v)) return '—';
- var a = Math.abs(v);
- if (a !== 0 && (a < 1e-3 || a >= 1e5)) return exs(v, 3);
- return fixed(v, 4);
+  if (!isFinite(v)) return '—';
+  var a = Math.abs(v);
+  if (a !== 0 && (a < 1e-3 || a >= 1e5)) return exs(v, 3);
+  return fixed(v, 4);
 }
 function setText(id, s){ var el = $(id); if (el) el.textContent = s; }
 function clamp(v, a, b){ return v < a ? a : (v > b ? b : v); }
 
 /* ============================================================
- 画布工具
- ============================================================ */
+   画布工具
+   ============================================================ */
 function fit(cv){
- var dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
- var r = cv.getBoundingClientRect();
- var w = Math.round(r.width) || 600, h = Math.round(r.height) || 340;
- cv.width = w * dpr; cv.height = h * dpr;
- var g = cv.getContext('2d');
- g.setTransform(dpr, 0, 0, dpr, 0, 0);
- g.clearRect(0, 0, w, h);
- return { g: g, w: w, h: h };
+  var dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+  var r = cv.getBoundingClientRect();
+  var w = Math.round(r.width) || 600, h = Math.round(r.height) || 340;
+  cv.width = w * dpr; cv.height = h * dpr;
+  var g = cv.getContext('2d');
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, w, h);
+  return { g: g, w: w, h: h };
 }
 function mkMap(w, h, pad, xr, yr){
- var iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
- return {
- X: function(x){ return pad.l + (x - xr[0]) / (xr[1] - xr[0]) * iw; },
- Y: function(y){ return pad.t + (yr[1] - y) / (yr[1] - yr[0]) * ih; },
- xr: xr, yr: yr, pad: pad, iw: iw, ih: ih
- };
+  var iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  return {
+    X: function(x){ return pad.l + (x - xr[0]) / (xr[1] - xr[0]) * iw; },
+    Y: function(y){ return pad.t + (yr[1] - y) / (yr[1] - yr[0]) * ih; },
+    xr: xr, yr: yr, pad: pad, iw: iw, ih: ih
+  };
 }
 function grid(g, M, nx, ny, col){
- g.strokeStyle = col || '#eee7d8'; g.lineWidth = 1;
- var i;
- for (i = 0; i <= nx; i++){
- var x = M.pad.l + M.iw * i / nx;
- g.beginPath(); g.moveTo(x, M.pad.t); g.lineTo(x, M.pad.t + M.ih); g.stroke();
- }
- for (i = 0; i <= ny; i++){
- var y = M.pad.t + M.ih * i / ny;
- g.beginPath(); g.moveTo(M.pad.l, y); g.lineTo(M.pad.l + M.iw, y); g.stroke();
- }
+  g.strokeStyle = col || '#eee7d8'; g.lineWidth = 1;
+  var i;
+  for (i = 0; i <= nx; i++){
+    var x = M.pad.l + M.iw * i / nx;
+    g.beginPath(); g.moveTo(x, M.pad.t); g.lineTo(x, M.pad.t + M.ih); g.stroke();
+  }
+  for (i = 0; i <= ny; i++){
+    var y = M.pad.t + M.ih * i / ny;
+    g.beginPath(); g.moveTo(M.pad.l, y); g.lineTo(M.pad.l + M.iw, y); g.stroke();
+  }
 }
 function frame(g, M){
- g.strokeStyle = '#cfc6b2'; g.lineWidth = 1;
- g.strokeRect(M.pad.l, M.pad.t, M.iw, M.ih);
+  g.strokeStyle = '#cfc6b2'; g.lineWidth = 1;
+  g.strokeRect(M.pad.l, M.pad.t, M.iw, M.ih);
 }
 function label(g, s, x, y, col, align, size){
- g.fillStyle = col || '#6d665a';
- g.font = (size || 11) + 'px ui-monospace,SFMono-Regular,Consolas,monospace';
- g.textAlign = align || 'left';
- g.textBaseline = 'middle';
- g.fillText(s, x, y);
+  g.fillStyle = col || '#6d665a';
+  g.font = (size || 11) + 'px ui-monospace,SFMono-Regular,Consolas,monospace';
+  g.textAlign = align || 'left';
+  g.textBaseline = 'middle';
+  g.fillText(s, x, y);
 }
 function clipPlot(g, M){
- g.save();
- g.beginPath(); g.rect(M.pad.l, M.pad.t, M.iw, M.ih); g.clip();
+  g.save();
+  g.beginPath(); g.rect(M.pad.l, M.pad.t, M.iw, M.ih); g.clip();
 }
 function unclip(g){ g.restore(); }
 function curve(g, M, f, a, b, col, width, dash, n){
- var i, N = n || 400;
- g.strokeStyle = col; g.lineWidth = width || 2;
- g.setLineDash(dash || []);
- g.beginPath();
- for (i = 0; i <= N; i++){
- var x = a + (b - a) * i / N, y = f(x);
- if (!isFinite(y)) continue;
- if (i === 0) g.moveTo(M.X(x), M.Y(y)); else g.lineTo(M.X(x), M.Y(y));
- }
- g.stroke(); g.setLineDash([]);
+  var i, N = n || 400;
+  g.strokeStyle = col; g.lineWidth = width || 2;
+  g.setLineDash(dash || []);
+  g.beginPath();
+  for (i = 0; i <= N; i++){
+    var x = a + (b - a) * i / N, y = f(x);
+    if (!isFinite(y)) continue;
+    if (i === 0) g.moveTo(M.X(x), M.Y(y)); else g.lineTo(M.X(x), M.Y(y));
+  }
+  g.stroke(); g.setLineDash([]);
 }
 /* 折线（分段线性插值本体） */
 function polyline(g, M, xs, ys, col, width){
- var i;
- g.strokeStyle = col; g.lineWidth = width || 2; g.setLineDash([]);
- g.beginPath();
- for (i = 0; i < xs.length; i++){
- if (i === 0) g.moveTo(M.X(xs[i]), M.Y(ys[i])); else g.lineTo(M.X(xs[i]), M.Y(ys[i]));
- }
- g.stroke();
+  var i;
+  g.strokeStyle = col; g.lineWidth = width || 2; g.setLineDash([]);
+  g.beginPath();
+  for (i = 0; i < xs.length; i++){
+    if (i === 0) g.moveTo(M.X(xs[i]), M.Y(ys[i])); else g.lineTo(M.X(xs[i]), M.Y(ys[i]));
+  }
+  g.stroke();
 }
 /* 台阶曲线（分段常数）：xs 为各段起点，ys 为各段的常值，step 为段宽 */
 function stepCurve(g, M, xs, ys, step, col, width){
- var i, x0, x1;
- g.strokeStyle = col; g.lineWidth = width || 2; g.setLineDash([]);
- g.beginPath();
- for (i = 0; i < xs.length; i++){
- x0 = xs[i]; x1 = xs[i] + step;
- if (i === 0) g.moveTo(M.X(x0), M.Y(ys[i])); else g.lineTo(M.X(x0), M.Y(ys[i]));
- g.lineTo(M.X(x1), M.Y(ys[i]));
- }
- g.stroke();
+  var i, x0, x1;
+  g.strokeStyle = col; g.lineWidth = width || 2; g.setLineDash([]);
+  g.beginPath();
+  for (i = 0; i < xs.length; i++){
+    x0 = xs[i]; x1 = xs[i] + step;
+    if (i === 0) g.moveTo(M.X(x0), M.Y(ys[i])); else g.lineTo(M.X(x0), M.Y(ys[i]));
+    g.lineTo(M.X(x1), M.Y(ys[i]));
+  }
+  g.stroke();
 }
 function dot(g, M, x, y, r, fill){
- g.beginPath(); g.arc(M.X(x), M.Y(y), r || 3.2, 0, Math.PI * 2);
- g.fillStyle = fill || '#c2531f'; g.fill();
- g.strokeStyle = '#fff'; g.lineWidth = 1.2; g.stroke();
+  g.beginPath(); g.arc(M.X(x), M.Y(y), r || 3.2, 0, Math.PI * 2);
+  g.fillStyle = fill || '#c2531f'; g.fill();
+  g.strokeStyle = '#fff'; g.lineWidth = 1.2; g.stroke();
 }
 
 /* ============================================================
- 数值核心（闸门 verify_na25.js 通过 window.NA25 复核）
- ============================================================ */
+   数值核心（闸门 verify_na25.js 通过 window.NA25 复核）
+   ============================================================ */
 var PI = Math.PI;
 function F(x){ return Math.exp(x); }
 function DF(x){ return Math.exp(x); }
 
 function uni(a, b, n){
- var xs = [], i;
- for (i = 0; i <= n; i++) xs.push(a + (b - a) * i / n);
- return xs;
+  var xs = [], i;
+  for (i = 0; i <= n; i++) xs.push(a + (b - a) * i / n);
+  return xs;
 }
 function lagBasis(xs, i, x){
- var p = 1, j;
- for (j = 0; j < xs.length; j++) if (j !== i) p *= (x - xs[j]) / (xs[i] - xs[j]);
- return p;
+  var p = 1, j;
+  for (j = 0; j < xs.length; j++) if (j !== i) p *= (x - xs[j]) / (xs[i] - xs[j]);
+  return p;
 }
 function lagEval(xs, ys, x){
- var s = 0, i;
- for (i = 0; i < xs.length; i++) s += ys[i] * lagBasis(xs, i, x);
- return s;
+  var s = 0, i;
+  for (i = 0; i < xs.length; i++) s += ys[i] * lagBasis(xs, i, x);
+  return s;
 }
 function lebConst(xs, N){
- var m = 0, at = 0, k, i, x, s;
- for (k = 0; k <= N; k++){
- x = xs[0] + (xs[xs.length - 1] - xs[0]) * k / N;
- s = 0;
- for (i = 0; i < xs.length; i++) s += Math.abs(lagBasis(xs, i, x));
- if (s > m){ m = s; at = x; }
- }
- return { L: m, at: at };
+  var m = 0, at = 0, k, i, x, s;
+  for (k = 0; k <= N; k++){
+    x = xs[0] + (xs[xs.length - 1] - xs[0]) * k / N;
+    s = 0;
+    for (i = 0; i < xs.length; i++) s += Math.abs(lagBasis(xs, i, x));
+    if (s > m){ m = s; at = x; }
+  }
+  return { L: m, at: at };
 }
 /* 分段线性（课件定义 1） */
 function segIndex(xs, x){
- var n = xs.length - 1, i = 0;
- if (x <= xs[0]) return 0;
- if (x >= xs[n]) return n - 1;
- while (i < n - 1 && x > xs[i + 1]) i++;
- return i;
+  var n = xs.length - 1, i = 0;
+  if (x <= xs[0]) return 0;
+  if (x >= xs[n]) return n - 1;
+  while (i < n - 1 && x > xs[i + 1]) i++;
+  return i;
 }
 function pwLin(xs, ys, x){
- var i = segIndex(xs, x), h = xs[i + 1] - xs[i];
- return ys[i] * (xs[i + 1] - x) / h + ys[i + 1] * (x - xs[i]) / h;
+  var i = segIndex(xs, x), h = xs[i + 1] - xs[i];
+  return ys[i] * (xs[i + 1] - x) / h + ys[i + 1] * (x - xs[i]) / h;
 }
 /* 帽函数 l_{n,j}（j 为结点序号） */
 function hatBasis(xs, j, x){
- var n = xs.length - 1, h;
- if (j > 0 && x >= xs[j - 1] && x <= xs[j]){
- h = xs[j] - xs[j - 1];
- return (x - xs[j - 1]) / h;
- }
- if (j < n && x > xs[j] && x <= xs[j + 1]){
- h = xs[j + 1] - xs[j];
- return (xs[j + 1] - x) / h;
- }
- return 0;
+  var n = xs.length - 1, h;
+  if (j > 0 && x >= xs[j - 1] && x <= xs[j]){
+    h = xs[j] - xs[j - 1];
+    return (x - xs[j - 1]) / h;
+  }
+  if (j < n && x > xs[j] && x <= xs[j + 1]){
+    h = xs[j + 1] - xs[j];
+    return (xs[j + 1] - x) / h;
+  }
+  return 0;
 }
 /* 分段三次 Hermite（课件 (3.1)–(3.6)） */
 function pwHerm(xs, ys, ms, x){
- var i = segIndex(xs, x), h = xs[i + 1] - xs[i], t = (x - xs[i]) / h, t2 = t * t, t3 = t2 * t;
- return (2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h * ms[i]
- + (-2 * t3 + 3 * t2) * ys[i + 1] + (t3 - t2) * h * ms[i + 1];
+  var i = segIndex(xs, x), h = xs[i + 1] - xs[i], t = (x - xs[i]) / h, t2 = t * t, t3 = t2 * t;
+  return (2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h * ms[i]
+       + (-2 * t3 + 3 * t2) * ys[i + 1] + (t3 - t2) * h * ms[i + 1];
 }
 function dPwHerm(xs, ys, ms, x){
- var i = segIndex(xs, x), h = xs[i + 1] - xs[i], t = (x - xs[i]) / h, t2 = t * t;
- return ((6 * t2 - 6 * t) * ys[i] + (3 * t2 - 4 * t + 1) * h * ms[i]
- + (-6 * t2 + 6 * t) * ys[i + 1] + (3 * t2 - 2 * t) * h * ms[i + 1]) / h;
+  var i = segIndex(xs, x), h = xs[i + 1] - xs[i], t = (x - xs[i]) / h, t2 = t * t;
+  return ((6 * t2 - 6 * t) * ys[i] + (3 * t2 - 4 * t + 1) * h * ms[i]
+        + (-6 * t2 + 6 * t) * ys[i + 1] + (3 * t2 - 2 * t) * h * ms[i + 1]) / h;
 }
 function dPwLin(xs, ys, x){
- var i = segIndex(xs, x);
- return (ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]);
+  var i = segIndex(xs, x);
+  return (ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]);
 }
 /* 中心差分导数估计（端点单侧） */
 function ders(xs, ys){
- var n = xs.length - 1, m = [], i;
- for (i = 0; i <= n; i++){
- if (i === 0) m.push((ys[1] - ys[0]) / (xs[1] - xs[0]));
- else if (i === n) m.push((ys[n] - ys[n - 1]) / (xs[n] - xs[n - 1]));
- else m.push((ys[i + 1] - ys[i - 1]) / (xs[i + 1] - xs[i - 1]));
- }
- return m;
+  var n = xs.length - 1, m = [], i;
+  for (i = 0; i <= n; i++){
+    if (i === 0) m.push((ys[1] - ys[0]) / (xs[1] - xs[0]));
+    else if (i === n) m.push((ys[n] - ys[n - 1]) / (xs[n] - xs[n - 1]));
+    else m.push((ys[i + 1] - ys[i - 1]) / (xs[i + 1] - xs[i - 1]));
+  }
+  return m;
 }
 function maxErr(f, g, a, b, N){
- var e = 0, at = a, k, x, v;
- for (k = 0; k <= N; k++){
- x = a + (b - a) * k / N; v = Math.abs(f(x) - g(x));
- if (v > e){ e = v; at = x; }
- }
- return { e: e, at: at };
+  var e = 0, at = a, k, x, v;
+  for (k = 0; k <= N; k++){
+    x = a + (b - a) * k / N; v = Math.abs(f(x) - g(x));
+    if (v > e){ e = v; at = x; }
+  }
+  return { e: e, at: at };
 }
 
 /* ============================================================
- 实验 01 · 引例
- ============================================================ */
+   实验 01 · 引例
+   ============================================================ */
 var A_XS = [-1, 0, 1];
 var A_Y0 = [Math.exp(-1), 1, Math.exp(1)];
 function aQuad(y1, x){ return lagEval(A_XS, [Math.exp(-1), y1, Math.exp(1)], x); }
 function aDraw(){
- var y1 = clamp(parseFloat($('a-y').value) || 0.5, 0.40, 1.60);
- var p0 = function(x){ return aQuad(1, x); };
- var p1 = function(x){ return aQuad(y1, x); };
- var e1 = maxErr(F, p1, -1, 1, 20000);
- var e0 = maxErr(F, p0, -1, 1, 20000);
- var dd = maxErr(p0, p1, -1, 1, 20000);
- var del = Math.abs(y1 - 1);
- var amp = del > 1e-12 ? dd.e / del : 1;
+  var y1 = clamp(parseFloat($('a-y').value) || 0.5, 0.40, 1.60);
+  var p0 = function(x){ return aQuad(1, x); };
+  var p1 = function(x){ return aQuad(y1, x); };
+  var e1 = maxErr(F, p1, -1, 1, 20000);
+  var e0 = maxErr(F, p0, -1, 1, 20000);
+  var dd = maxErr(p0, p1, -1, 1, 20000);
+  var del = Math.abs(y1 - 1);
+  var amp = del > 1e-12 ? dd.e / del : 1;
 
- var cv = $('cv-a'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
- var M = mkMap(w, h, { l: 44, r: 16, t: 16, b: 30 }, [-1, 1], [-0.25, 3.95]);
- grid(g, M, 8, 8); frame(g, M);
- var t;
- for (t = -1; t <= 1.001; t += 0.5) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
- for (t = 0; t <= 3.5; t += 0.5) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
+  var cv = $('cv-a'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+  var M = mkMap(w, h, { l: 44, r: 16, t: 16, b: 30 }, [-1, 1], [-0.25, 3.95]);
+  grid(g, M, 8, 8); frame(g, M);
+  var t;
+  for (t = -1; t <= 1.001; t += 0.5) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
+  for (t = 0; t <= 3.5; t += 0.5) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
 
- clipPlot(g, M);
- curve(g, M, F, -1, 1, '#b8b0a0', 1.4, [5, 4], 500);
- curve(g, M, p0, -1, 1, '#c2531f', 2.2, [], 500);
- curve(g, M, p1, -1, 1, '#0d6b5d', 2.0, [], 500);
- unclip(g);
- dot(g, M, -1, A_Y0[0]); dot(g, M, 0, A_Y0[1]); dot(g, M, 1, A_Y0[2]);
- dot(g, M, 0, y1, 3.6, '#0d6b5d');
- g.strokeStyle = 'rgba(13,107,93,.55)'; g.lineWidth = 1; g.setLineDash([3, 3]);
- g.beginPath(); g.moveTo(M.X(0), M.Y(y1)); g.lineTo(M.X(0), M.Y(A_Y0[1])); g.stroke();
- g.setLineDash([]);
- label(g, '\u03b4', M.X(0) + 6, (M.Y(y1) + M.Y(A_Y0[1])) / 2, '#0d6b5d', 'left', 11);
+  clipPlot(g, M);
+  curve(g, M, F, -1, 1, '#b8b0a0', 1.4, [5, 4], 500);
+  curve(g, M, p0, -1, 1, '#c2531f', 2.2, [], 500);
+  curve(g, M, p1, -1, 1, '#0d6b5d', 2.0, [], 500);
+  unclip(g);
+  dot(g, M, -1, A_Y0[0]); dot(g, M, 0, A_Y0[1]); dot(g, M, 1, A_Y0[2]);
+  dot(g, M, 0, y1, 3.6, '#0d6b5d');
+  g.strokeStyle = 'rgba(13,107,93,.55)'; g.lineWidth = 1; g.setLineDash([3, 3]);
+  g.beginPath(); g.moveTo(M.X(0), M.Y(y1)); g.lineTo(M.X(0), M.Y(A_Y0[1])); g.stroke();
+  g.setLineDash([]);
+  label(g, '\u03b4', M.X(0) + 6, (M.Y(y1) + M.Y(A_Y0[1])) / 2, '#0d6b5d', 'left', 11);
 
- setText('a-yv', y1.toFixed(2));
- setText('a-state', 'y\u2081 = ' + y1.toFixed(2) + ' · \u03b4 = ' + (y1 - 1 >= 0 ? '+' : MINUS) + Math.abs(y1 - 1).toFixed(2));
- setText('a-e1', num(e1.e));
- setText('a-e0', num(e0.e));
- setText('a-dd', num(dd.e));
- setText('a-amp', fixed(amp, 4));
- return { y1: y1, e1: e1.e, e0: e0.e, dd: dd.e, amp: amp };
+  setText('a-yv', y1.toFixed(2));
+  setText('a-state', 'y\u2081 = ' + y1.toFixed(2) + ' · \u03b4 = ' + (y1 - 1 >= 0 ? '+' : MINUS) + Math.abs(y1 - 1).toFixed(2));
+  setText('a-e1', num(e1.e));
+  setText('a-e0', num(e0.e));
+  setText('a-dd', num(dd.e));
+  setText('a-amp', fixed(amp, 4));
+  return { y1: y1, e1: e1.e, e0: e0.e, dd: dd.e, amp: amp };
 }
 
 /* ============================================================
- 实验 02 · 支集与 Lebesgue
- ============================================================ */
+   实验 02 · 支集与 Lebesgue
+   ============================================================ */
 function bDraw(){
- var n = clamp(parseInt($('b-n').value, 10) || 8, 2, 12);
- var j = clamp(parseInt($('b-j').value, 10) || 0, 0, n);
- var xs = uni(-1, 1, n);
- var leb = lebConst(xs, 4000);
- var mj = maxErr(function(x){ return lagBasis(xs, j, x); }, function(){ return 0; }, -1, 1, 8000).e;
- var hh = 2 / n;
- var supP = (j === 0 || j === n) ? hh : 2 * hh;
+  var n = clamp(parseInt($('b-n').value, 10) || 8, 2, 12);
+  var j = clamp(parseInt($('b-j').value, 10) || 0, 0, n);
+  var xs = uni(-1, 1, n);
+  var leb = lebConst(xs, 4000);
+  var mj = maxErr(function(x){ return lagBasis(xs, j, x); }, function(){ return 0; }, -1, 1, 8000).e;
+  var hh = 2 / n;
+  var supP = (j === 0 || j === n) ? hh : 2 * hh;
 
- var cv = $('cv-b'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
- var top = Math.max(1.15, mj * 1.08);
- var M = mkMap(w, h, { l: 44, r: 16, t: 16, b: 30 }, [-1, 1], [-0.10 * top, top]);
- grid(g, M, 8, 6); frame(g, M);
- var t;
- for (t = -1; t <= 1.001; t += 0.5) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
- for (t = 0; t <= top; t += Math.max(1, Math.round(top / 5))) label(g, t.toFixed(0), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
+  var cv = $('cv-b'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+  var top = Math.max(1.15, mj * 1.08);
+  var M = mkMap(w, h, { l: 44, r: 16, t: 16, b: 30 }, [-1, 1], [-0.10 * top, top]);
+  grid(g, M, 8, 6); frame(g, M);
+  var t;
+  for (t = -1; t <= 1.001; t += 0.5) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
+  for (t = 0; t <= top; t += Math.max(1, Math.round(top / 5))) label(g, t.toFixed(0), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
 
- clipPlot(g, M);
- g.strokeStyle = 'rgba(109,102,90,.35)'; g.lineWidth = 1; g.setLineDash([3, 4]);
- var i;
- for (i = 0; i <= n; i++){
- g.beginPath(); g.moveTo(M.X(xs[i]), M.pad.t); g.lineTo(M.X(xs[i]), M.pad.t + M.ih); g.stroke();
- }
- g.setLineDash([]);
- /* y = 1 参考线：帽函数的峰值恒为 1 */
- g.strokeStyle = 'rgba(13,107,93,.55)'; g.lineWidth = 1.2; g.setLineDash([5, 4]);
- g.beginPath(); g.moveTo(M.pad.l, M.Y(1)); g.lineTo(M.pad.l + M.iw, M.Y(1)); g.stroke();
- g.setLineDash([]);
- curve(g, M, function(x){ return lagBasis(xs, j, x); }, -1, 1, '#c2531f', 2.1, [], 700);
- curve(g, M, function(x){ return hatBasis(xs, j, x); }, -1, 1, '#0d6b5d', 2.6, [], 900);
- unclip(g);
- dot(g, M, xs[j], 1, 3.6, '#0d6b5d');
- label(g, '1', M.pad.l + M.iw - 4, M.Y(1) - 9, '#0d6b5d', 'right', 10);
+  clipPlot(g, M);
+  g.strokeStyle = 'rgba(109,102,90,.35)'; g.lineWidth = 1; g.setLineDash([3, 4]);
+  var i;
+  for (i = 0; i <= n; i++){
+    g.beginPath(); g.moveTo(M.X(xs[i]), M.pad.t); g.lineTo(M.X(xs[i]), M.pad.t + M.ih); g.stroke();
+  }
+  g.setLineDash([]);
+  /* y = 1 参考线：帽函数的峰值恒为 1 */
+  g.strokeStyle = 'rgba(13,107,93,.55)'; g.lineWidth = 1.2; g.setLineDash([5, 4]);
+  g.beginPath(); g.moveTo(M.pad.l, M.Y(1)); g.lineTo(M.pad.l + M.iw, M.Y(1)); g.stroke();
+  g.setLineDash([]);
+  curve(g, M, function(x){ return lagBasis(xs, j, x); }, -1, 1, '#c2531f', 2.1, [], 700);
+  curve(g, M, function(x){ return hatBasis(xs, j, x); }, -1, 1, '#0d6b5d', 2.6, [], 900);
+  unclip(g);
+  dot(g, M, xs[j], 1, 3.6, '#0d6b5d');
+  label(g, '1', M.pad.l + M.iw - 4, M.Y(1) - 9, '#0d6b5d', 'right', 10);
 
- setText('b-nv', String(n));
- setText('b-jv', String(j));
- setText('b-leb', n <= 12 ? fixed(leb.L, 3) : num(leb.L));
- setText('b-mj', fixed(mj, 4));
- setText('b-mp', '1.0000');
- setText('b-sup', fixed(2, 3) + ' / ' + fixed(supP, 3));
- setText('b-state', 'n = ' + n + ' · j = ' + j + ' · \u039b = ' + fixed(leb.L, 3));
- return { n: n, j: j, leb: leb.L, lebAt: leb.at, mj: mj, supP: supP };
+  setText('b-nv', String(n));
+  setText('b-jv', String(j));
+  setText('b-leb', n <= 12 ? fixed(leb.L, 3) : num(leb.L));
+  setText('b-mj', fixed(mj, 4));
+  setText('b-mp', '1.0000');
+  setText('b-sup', fixed(2, 3) + ' / ' + fixed(supP, 3));
+  setText('b-state', 'n = ' + n + ' · j = ' + j + ' · \u039b = ' + fixed(leb.L, 3));
+  return { n: n, j: j, leb: leb.L, lebAt: leb.at, mj: mj, supP: supP };
 }
 
 /* ============================================================
- 实验 03 · 分段线性
- ============================================================ */
+   实验 03 · 分段线性
+   ============================================================ */
 function cDraw(){
- var n = clamp(parseInt($('c-n').value, 10) || 8, 1, 40);
- var xs0 = clamp(parseFloat($('c-x').value) || 0, 0, 1);
- var xs = uni(0, 1, n), ys = xs.map(F);
- var phi = function(x){ return pwLin(xs, ys, x); };
- var emax = maxErr(F, phi, 0, 1, 20000);
- var h = 1 / n, bd = Math.E * h * h / 8;
- var jump = NaN, jNode = NaN;
- if (n >= 2){
- var jj = clamp(Math.round(xs0 * n), 1, n - 1);
- var dl = (ys[jj] - ys[jj - 1]) / h, dr = (ys[jj + 1] - ys[jj]) / h;
- jump = dr - dl; jNode = xs[jj];
- }
+  var n = clamp(parseInt($('c-n').value, 10) || 8, 1, 40);
+  var xs0 = clamp(parseFloat($('c-x').value) || 0, 0, 1);
+  var xs = uni(0, 1, n), ys = xs.map(F);
+  var phi = function(x){ return pwLin(xs, ys, x); };
+  var emax = maxErr(F, phi, 0, 1, 20000);
+  var h = 1 / n, bd = Math.E * h * h / 8;
+  var jump = NaN, jNode = NaN;
+  if (n >= 2){
+    var jj = clamp(Math.round(xs0 * n), 1, n - 1);
+    var dl = (ys[jj] - ys[jj - 1]) / h, dr = (ys[jj + 1] - ys[jj]) / h;
+    jump = dr - dl; jNode = xs[jj];
+  }
 
- var cv = $('cv-c'), Z = fit(cv), g = Z.g, w = Z.w, hh = Z.h;
- var M = mkMap(w, hh, { l: 44, r: 16, t: 16, b: 30 }, [0, 1], [0.90, 2.85]);
- grid(g, M, 10, 6); frame(g, M);
- var t;
- for (t = 0; t <= 1.001; t += 0.2) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
- for (t = 1; t <= 2.8; t += 0.4) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
+  var cv = $('cv-c'), Z = fit(cv), g = Z.g, w = Z.w, hh = Z.h;
+  var M = mkMap(w, hh, { l: 44, r: 16, t: 16, b: 30 }, [0, 1], [0.90, 2.85]);
+  grid(g, M, 10, 6); frame(g, M);
+  var t;
+  for (t = 0; t <= 1.001; t += 0.2) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
+  for (t = 1; t <= 2.8; t += 0.4) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
 
- clipPlot(g, M);
- /* 当前段底色 */
- var si = segIndex(xs, xs0);
- g.fillStyle = 'rgba(125,90,36,.09)';
- g.fillRect(M.X(xs[si]), M.pad.t, M.X(xs[si + 1]) - M.X(xs[si]), M.ih);
- curve(g, M, F, 0, 1, '#b8b0a0', 1.4, [5, 4], 500);
- curve(g, M, function(x){ return 0.92 + 0.22 * hatBasis(xs, si, x); },
- xs[Math.max(0, si - 1)], xs[Math.min(n, si + 1)], '#0d6b5d', 1.8, [], 900);
- polyline(g, M, xs, ys, '#7d5a24', 2.4);
- unclip(g);
- var i;
- if (n <= 40) for (i = 0; i <= n; i++) dot(g, M, xs[i], ys[i], n > 24 ? 2.2 : 3.0);
- g.strokeStyle = 'rgba(35,32,26,.45)'; g.lineWidth = 1; g.setLineDash([4, 4]);
- g.beginPath(); g.moveTo(M.X(xs0), M.pad.t); g.lineTo(M.X(xs0), M.pad.t + M.ih); g.stroke();
- g.setLineDash([]);
- var yv = phi(xs0);
- dot(g, M, xs0, F(xs0), 3.6, '#0d6b5d');
- dot(g, M, xs0, yv, 3.6, '#7d5a24');
- label(g, 'x*', M.X(xs0), M.pad.t + 9, '#6d665a', 'center', 10);
+  clipPlot(g, M);
+  /* 当前段底色 */
+  var si = segIndex(xs, xs0);
+  g.fillStyle = 'rgba(125,90,36,.09)';
+  g.fillRect(M.X(xs[si]), M.pad.t, M.X(xs[si + 1]) - M.X(xs[si]), M.ih);
+  curve(g, M, F, 0, 1, '#b8b0a0', 1.4, [5, 4], 500);
+  curve(g, M, function(x){ return 0.92 + 0.22 * hatBasis(xs, si, x); },
+        xs[Math.max(0, si - 1)], xs[Math.min(n, si + 1)], '#0d6b5d', 1.8, [], 900);
+  polyline(g, M, xs, ys, '#7d5a24', 2.4);
+  unclip(g);
+  var i;
+  if (n <= 40) for (i = 0; i <= n; i++) dot(g, M, xs[i], ys[i], n > 24 ? 2.2 : 3.0);
+  g.strokeStyle = 'rgba(35,32,26,.45)'; g.lineWidth = 1; g.setLineDash([4, 4]);
+  g.beginPath(); g.moveTo(M.X(xs0), M.pad.t); g.lineTo(M.X(xs0), M.pad.t + M.ih); g.stroke();
+  g.setLineDash([]);
+  var yv = phi(xs0);
+  dot(g, M, xs0, F(xs0), 3.6, '#0d6b5d');
+  dot(g, M, xs0, yv, 3.6, '#7d5a24');
+  label(g, 'x*', M.X(xs0), M.pad.t + 9, '#6d665a', 'center', 10);
 
- setText('c-nv', String(n));
- setText('c-xv', xs0.toFixed(3));
- setText('c-emax', exs(emax.e, 3));
- setText('c-bound', exs(bd, 3));
- setText('c-ratio', fixed(emax.e / bd, 4));
- setText('c-jump', isFinite(jump) ? fixed(Math.abs(jump), 4) : '—');
- setText('c-state', 'n = ' + n + ' · x* = ' + xs0.toFixed(3) + ' · \u03c6(x*) = ' + fixed(yv, 4));
- return { n: n, xs: xs0, emax: emax.e, emaxAt: emax.at, bound: bd, ratio: emax.e / bd,
- jump: jump, nodeJ: xs[jj], phiAt: yv, fAt: F(xs0) };
+  setText('c-nv', String(n));
+  setText('c-xv', xs0.toFixed(3));
+  setText('c-emax', exs(emax.e, 3));
+  setText('c-bound', exs(bd, 3));
+  setText('c-ratio', fixed(emax.e / bd, 4));
+  setText('c-jump', isFinite(jump) ? fixed(Math.abs(jump), 4) : '—');
+  setText('c-state', 'n = ' + n + ' · x* = ' + xs0.toFixed(3) + ' · \u03c6(x*) = ' + fixed(yv, 4));
+  return { n: n, xs: xs0, emax: emax.e, emaxAt: emax.at, bound: bd, ratio: emax.e / bd,
+           jump: jump, nodeJ: xs[jj], phiAt: yv, fAt: F(xs0) };
 }
 
 /* ============================================================
- 实验 04 · 双对数：O(h²) 与界
- ============================================================ */
+   实验 04 · 双对数：O(h²) 与界
+   ============================================================ */
 function dSeries(){
- var out = [], k, n, xs, ys;
- for (k = 1; k <= 8; k++){
- n = Math.pow(2, k);
- xs = uni(0, 1, n); ys = xs.map(F);
- out.push({ k: k, n: n, h: 1 / n,
- e: maxErr(F, function(x){ return pwLin(xs, ys, x); }, 0, 1, 20000).e,
- b: Math.E / (8 * n * n) });
- }
- return out;
+  var out = [], k, n, xs, ys;
+  for (k = 1; k <= 8; k++){
+    n = Math.pow(2, k);
+    xs = uni(0, 1, n); ys = xs.map(F);
+    out.push({ k: k, n: n, h: 1 / n,
+      e: maxErr(F, function(x){ return pwLin(xs, ys, x); }, 0, 1, 20000).e,
+      b: Math.E / (8 * n * n) });
+  }
+  return out;
 }
 function dDraw(){
- var k = clamp(parseInt($('d-k').value, 10) || 3, 1, 8);
- var S = dSeries(), cur = S[k - 1];
- var ord = k >= 2 ? Math.log2(S[k - 2].e / cur.e) : NaN;
+  var k = clamp(parseInt($('d-k').value, 10) || 3, 1, 8);
+  var S = dSeries(), cur = S[k - 1];
+  var ord = k >= 2 ? Math.log2(S[k - 2].e / cur.e) : NaN;
 
- var lo = Math.log10(S[0].e), hi = Math.log10(S[7].e);
- var xr = [Math.log10(S[7].h) - 0.12, Math.log10(S[0].h) + 0.12];
- var yr = [hi - 0.9, lo + 0.9];
+  var lo = Math.log10(S[0].e), hi = Math.log10(S[7].e);
+  var xr = [Math.log10(S[7].h) - 0.12, Math.log10(S[0].h) + 0.12];
+  var yr = [hi - 0.9, lo + 0.9];
 
- var cv = $('cv-d'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
- var M = mkMap(w, h, { l: 52, r: 18, t: 16, b: 34 }, xr, yr);
- grid(g, M, 8, 6); frame(g, M);
+  var cv = $('cv-d'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+  var M = mkMap(w, h, { l: 52, r: 18, t: 16, b: 34 }, xr, yr);
+  grid(g, M, 8, 6); frame(g, M);
 
- var i, t;
- for (i = 1; i <= 8; i++){
- t = Math.log10(1 / Math.pow(2, i));
- label(g, '1/' + Math.pow(2, i), M.X(t), M.pad.t + M.ih + 15, '#6d665a', 'center', 10);
- }
- for (t = Math.ceil(yr[0]); t <= Math.floor(yr[1]); t++){
- label(g, '1e' + (t < 0 ? MINUS : '') + Math.abs(t), M.pad.l - 7, M.Y(t), '#6d665a', 'right', 10);
- }
- label(g, 'h', M.pad.l + M.iw - 6, M.pad.t + M.ih - 10, '#6d665a', 'right', 11);
+  var i, t;
+  for (i = 1; i <= 8; i++){
+    t = Math.log10(1 / Math.pow(2, i));
+    label(g, '1/' + Math.pow(2, i), M.X(t), M.pad.t + M.ih + 15, '#6d665a', 'center', 10);
+  }
+  for (t = Math.ceil(yr[0]); t <= Math.floor(yr[1]); t++){
+    label(g, '1e' + (t < 0 ? MINUS : '') + Math.abs(t), M.pad.l - 7, M.Y(t), '#6d665a', 'right', 10);
+  }
+  label(g, 'h', M.pad.l + M.iw - 6, M.pad.t + M.ih - 10, '#6d665a', 'right', 11);
 
- clipPlot(g, M);
- /* 斜率 2 参考线：过末点 */
- var lx0 = Math.log10(S[7].h), ly0 = Math.log10(S[7].e);
- g.strokeStyle = 'rgba(109,102,90,.5)'; g.lineWidth = 1.3; g.setLineDash([6, 5]);
- g.beginPath();
- g.moveTo(M.X(lx0), M.Y(ly0));
- g.lineTo(M.X(lx0 + 1.6), M.Y(ly0 + 2 * 1.6));
- g.stroke(); g.setLineDash([]);
+  clipPlot(g, M);
+  /* 斜率 2 参考线：过末点 */
+  var lx0 = Math.log10(S[7].h), ly0 = Math.log10(S[7].e);
+  g.strokeStyle = 'rgba(109,102,90,.5)'; g.lineWidth = 1.3; g.setLineDash([6, 5]);
+  g.beginPath();
+  g.moveTo(M.X(lx0), M.Y(ly0));
+  g.lineTo(M.X(lx0 + 1.6), M.Y(ly0 + 2 * 1.6));
+  g.stroke(); g.setLineDash([]);
 
- g.strokeStyle = '#0d6b5d'; g.lineWidth = 2;
- g.beginPath();
- for (i = 0; i < S.length; i++){
- var X = M.X(Math.log10(S[i].h)), Y = M.Y(Math.log10(S[i].b));
- if (i === 0) g.moveTo(X, Y); else g.lineTo(X, Y);
- }
- g.stroke();
+  g.strokeStyle = '#0d6b5d'; g.lineWidth = 2;
+  g.beginPath();
+  for (i = 0; i < S.length; i++){
+    var X = M.X(Math.log10(S[i].h)), Y = M.Y(Math.log10(S[i].b));
+    if (i === 0) g.moveTo(X, Y); else g.lineTo(X, Y);
+  }
+  g.stroke();
 
- g.strokeStyle = '#7d5a24'; g.lineWidth = 2.2;
- g.beginPath();
- for (i = 0; i < S.length; i++){
- var X2 = M.X(Math.log10(S[i].h)), Y2 = M.Y(Math.log10(S[i].e));
- if (i === 0) g.moveTo(X2, Y2); else g.lineTo(X2, Y2);
- }
- g.stroke();
- unclip(g);
- for (i = 0; i < S.length; i++){
- var r = (i + 1 === k) ? 5 : 3;
- dot(g, M, Math.log10(S[i].h), Math.log10(S[i].e), r, i + 1 === k ? '#c2531f' : '#7d5a24');
- }
+  g.strokeStyle = '#7d5a24'; g.lineWidth = 2.2;
+  g.beginPath();
+  for (i = 0; i < S.length; i++){
+    var X2 = M.X(Math.log10(S[i].h)), Y2 = M.Y(Math.log10(S[i].e));
+    if (i === 0) g.moveTo(X2, Y2); else g.lineTo(X2, Y2);
+  }
+  g.stroke();
+  unclip(g);
+  for (i = 0; i < S.length; i++){
+    var r = (i + 1 === k) ? 5 : 3;
+    dot(g, M, Math.log10(S[i].h), Math.log10(S[i].e), r, i + 1 === k ? '#c2531f' : '#7d5a24');
+  }
 
- setText('d-kv', 'k = ' + k + '（n = ' + cur.n + '）');
- setText('d-e', exs(cur.e, 3));
- setText('d-ord', isFinite(ord) ? fixed(ord, 3) : '—');
- setText('d-th', '2');
- setText('d-r', fixed(cur.e / cur.b, 4));
- setText('d-state', 'n = ' + cur.n + ' · h = ' + exs(cur.h, 2));
- return { k: k, n: cur.n, e: cur.e, b: cur.b, ord: ord, ratio: cur.e / cur.b, series: S };
+  setText('d-kv', 'k = ' + k + '（n = ' + cur.n + '）');
+  setText('d-e', exs(cur.e, 3));
+  setText('d-ord', isFinite(ord) ? fixed(ord, 3) : '—');
+  setText('d-th', '2');
+  setText('d-r', fixed(cur.e / cur.b, 4));
+  setText('d-state', 'n = ' + cur.n + ' · h = ' + exs(cur.h, 2));
+  return { k: k, n: cur.n, e: cur.e, b: cur.b, ord: ord, ratio: cur.e / cur.b, series: S };
 }
 
 /* ============================================================
- 实验 05 · 分段三次 Hermite
- ============================================================ */
+   实验 05 · 分段三次 Hermite
+   ============================================================ */
 function eDraw(){
- var n = clamp(parseInt($('e-n').value, 10) || 8, 2, 16);
- var xs = uni(0, 1, n), ys = xs.map(F), ms = xs.map(F);
- var eLin = maxErr(F, function(x){ return pwLin(xs, ys, x); }, 0, 1, 20000).e;
- var eHer = maxErr(F, function(x){ return pwHerm(xs, ys, ms, x); }, 0, 1, 20000).e;
- var eLag = maxErr(F, function(x){ return lagEval(xs, ys, x); }, 0, 1, 20000).e;
- var h = 1 / n, bd = Math.E * Math.pow(h, 4) / 384;
+  var n = clamp(parseInt($('e-n').value, 10) || 8, 2, 16);
+  var xs = uni(0, 1, n), ys = xs.map(F), ms = xs.map(F);
+  var eLin = maxErr(F, function(x){ return pwLin(xs, ys, x); }, 0, 1, 20000).e;
+  var eHer = maxErr(F, function(x){ return pwHerm(xs, ys, ms, x); }, 0, 1, 20000).e;
+  var eLag = maxErr(F, function(x){ return lagEval(xs, ys, x); }, 0, 1, 20000).e;
+  var h = 1 / n, bd = Math.E * Math.pow(h, 4) / 384;
 
- var cv = $('cv-e'), Z = fit(cv), g = Z.g, w = Z.w, hh = Z.h;
- var M = mkMap(w, hh, { l: 44, r: 16, t: 16, b: 30 }, [0, 1], [0.90, 2.85]);
- grid(g, M, 10, 6); frame(g, M);
- var t;
- for (t = 0; t <= 1.001; t += 0.2) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
- for (t = 1; t <= 2.8; t += 0.4) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
+  var cv = $('cv-e'), Z = fit(cv), g = Z.g, w = Z.w, hh = Z.h;
+  var M = mkMap(w, hh, { l: 44, r: 16, t: 16, b: 30 }, [0, 1], [0.90, 2.85]);
+  grid(g, M, 10, 6); frame(g, M);
+  var t;
+  for (t = 0; t <= 1.001; t += 0.2) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
+  for (t = 1; t <= 2.8; t += 0.4) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
 
- clipPlot(g, M);
- curve(g, M, F, 0, 1, '#b8b0a0', 1.4, [5, 4], 500);
- polyline(g, M, xs, ys, '#0d6b5d', 1.7);
- curve(g, M, function(x){ return pwHerm(xs, ys, ms, x); }, 0, 1, '#7d5a24', 2.4, [], 900);
- curve(g, M, function(x){ return lagEval(xs, ys, x); }, 0, 1, '#c2531f', 1.6, [7, 4], 700);
- unclip(g);
- var i;
- for (i = 0; i <= n; i++) dot(g, M, xs[i], ys[i], n > 10 ? 2.4 : 3.0);
+  clipPlot(g, M);
+  curve(g, M, F, 0, 1, '#b8b0a0', 1.4, [5, 4], 500);
+  polyline(g, M, xs, ys, '#0d6b5d', 1.7);
+  curve(g, M, function(x){ return pwHerm(xs, ys, ms, x); }, 0, 1, '#7d5a24', 2.4, [], 900);
+  curve(g, M, function(x){ return lagEval(xs, ys, x); }, 0, 1, '#c2531f', 1.6, [7, 4], 700);
+  unclip(g);
+  var i;
+  for (i = 0; i <= n; i++) dot(g, M, xs[i], ys[i], n > 10 ? 2.4 : 3.0);
 
- setText('e-nv', String(n));
- setText('e-lin', exs(eLin, 3));
- setText('e-her', exs(eHer, 3));
- setText('e-lag', exs(eLag, 3));
- setText('e-bd', exs(bd, 3) + ' · ' + fixed(eHer / bd, 4));
- setText('e-state', 'n = ' + n + ' · h = ' + fixed(h, 4));
- return { n: n, h: h, eLin: eLin, eHer: eHer, eLag: eLag, bound: bd, ratio: eHer / bd };
+  setText('e-nv', String(n));
+  setText('e-lin', exs(eLin, 3));
+  setText('e-her', exs(eHer, 3));
+  setText('e-lag', exs(eLag, 3));
+  setText('e-bd', exs(bd, 3) + ' · ' + fixed(eHer / bd, 4));
+  setText('e-state', 'n = ' + n + ' · h = ' + fixed(h, 4));
+  return { n: n, h: h, eLin: eLin, eHer: eHer, eLag: eLag, bound: bd, ratio: eHer / bd };
 }
 
 /* ============================================================
- 实验 06 · 导数逼近 / 支集（双模式）
- ============================================================ */
+   实验 06 · 导数逼近 / 支集（双模式）
+   ============================================================ */
 var F_MODE = 0;
 var SUP_XS = [-3, -2, -1, 0, 1, 2, 3];
 var SUP_Y0 = [-1, -1, -1, 0, 1, 1, 1];
 
 function fDerivStat(n){
- var xs = uni(0, 1, n), ys = xs.map(F), ms = xs.map(F);
- var e1 = maxErr(DF, function(x){ return dPwHerm(xs, ys, ms, x); }, 0, 1, 20000).e;
- var e2 = maxErr(DF, function(x){ return dPwLin(xs, ys, x); }, 0, 1, 20000).e;
- var nh = Math.max(2, Math.round(n / 2));
- var xh = uni(0, 1, nh), yh = xh.map(F), mh = xh.map(F);
- var e1h = maxErr(DF, function(x){ return dPwHerm(xh, yh, mh, x); }, 0, 1, 20000).e;
- var e2h = maxErr(DF, function(x){ return dPwLin(xh, yh, x); }, 0, 1, 20000).e;
- return { n: n, e1: e1, e2: e2, o1: Math.log2(e1h / e1), o2: Math.log2(e2h / e2) };
+  var xs = uni(0, 1, n), ys = xs.map(F), ms = xs.map(F);
+  var e1 = maxErr(DF, function(x){ return dPwHerm(xs, ys, ms, x); }, 0, 1, 20000).e;
+  var e2 = maxErr(DF, function(x){ return dPwLin(xs, ys, x); }, 0, 1, 20000).e;
+  var nh = Math.max(2, Math.round(n / 2));
+  var xh = uni(0, 1, nh), yh = xh.map(F), mh = xh.map(F);
+  var e1h = maxErr(DF, function(x){ return dPwHerm(xh, yh, mh, x); }, 0, 1, 20000).e;
+  var e2h = maxErr(DF, function(x){ return dPwLin(xh, yh, x); }, 0, 1, 20000).e;
+  return { n: n, e1: e1, e2: e2, o1: Math.log2(e1h / e1), o2: Math.log2(e2h / e2) };
 }
 function fSupStat(k, d){
- var ys = SUP_Y0.slice();
- ys[k] += d;
- var msB = ders(SUP_XS, SUP_Y0), ms = ders(SUP_XS, ys);
- var spanH = 0, spanL = 0, maxH = 0, maxL = 0, s, x, a1, a2;
- for (s = 0; s <= 20000; s++){
- x = -3 + 6 * s / 20000;
- a1 = Math.abs(pwHerm(SUP_XS, ys, ms, x) - pwHerm(SUP_XS, SUP_Y0, msB, x));
- a2 = Math.abs(lagEval(SUP_XS, ys, x) - lagEval(SUP_XS, SUP_Y0, x));
- if (a1 > 1e-9 && Math.abs(x - SUP_XS[k]) > spanH) spanH = Math.abs(x - SUP_XS[k]);
- if (a2 > 1e-9 && Math.abs(x - SUP_XS[k]) > spanL) spanL = Math.abs(x - SUP_XS[k]);
- if (a1 > maxH) maxH = a1;
- if (a2 > maxL) maxL = a2;
- }
- return { k: k, d: d, spanH: spanH, spanL: spanL, maxH: maxH, maxL: maxL, ys: ys };
+  var ys = SUP_Y0.slice();
+  ys[k] += d;
+  var msB = ders(SUP_XS, SUP_Y0), ms = ders(SUP_XS, ys);
+  var spanH = 0, spanL = 0, maxH = 0, maxL = 0, s, x, a1, a2;
+  for (s = 0; s <= 20000; s++){
+    x = -3 + 6 * s / 20000;
+    a1 = Math.abs(pwHerm(SUP_XS, ys, ms, x) - pwHerm(SUP_XS, SUP_Y0, msB, x));
+    a2 = Math.abs(lagEval(SUP_XS, ys, x) - lagEval(SUP_XS, SUP_Y0, x));
+    if (a1 > 1e-9 && Math.abs(x - SUP_XS[k]) > spanH) spanH = Math.abs(x - SUP_XS[k]);
+    if (a2 > 1e-9 && Math.abs(x - SUP_XS[k]) > spanL) spanL = Math.abs(x - SUP_XS[k]);
+    if (a1 > maxH) maxH = a1;
+    if (a2 > maxL) maxL = a2;
+  }
+  return { k: k, d: d, spanH: spanH, spanL: spanL, maxH: maxH, maxL: maxL, ys: ys };
 }
 
 function fDraw(){
- var cv = $('cv-f'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
- var t;
- if (F_MODE === 0){
- var n = clamp(parseInt($('f-n').value, 10) || 8, 2, 64);
- var st = fDerivStat(n);
- var xs = uni(0, 1, n), ys = xs.map(F), ms = xs.map(F);
- var M = mkMap(w, h, { l: 48, r: 16, t: 16, b: 30 }, [0, 1], [0.90, 3.60]);
- grid(g, M, 10, 6); frame(g, M);
- for (t = 0; t <= 1.001; t += 0.2) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
- for (t = 1; t <= 3.6; t += 0.5) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
- clipPlot(g, M);
- curve(g, M, DF, 0, 1, '#b8b0a0', 1.5, [5, 4], 500);
- var slopes = [], q;
- for (q = 0; q < n; q++) slopes.push((ys[q + 1] - ys[q]) / (xs[q + 1] - xs[q]));
- stepCurve(g, M, xs.slice(0, n), slopes, 1 / n, '#0d6b5d', 1.7);
- curve(g, M, function(x){ return dPwHerm(xs, ys, ms, x); }, 0, 1, '#7d5a24', 2.4, [], 900);
- unclip(g);
- setText('f-nv', String(n));
- setText('f-e1', exs(st.e1, 3));
- setText('f-o1', isFinite(st.o1) ? fixed(st.o1, 3) : '—');
- setText('f-e2', exs(st.e2, 3));
- setText('f-o2', isFinite(st.o2) ? fixed(st.o2, 3) : '—');
- setText('f-state', '导数模式 · n = ' + n);
- return st;
- }
- var k = clamp(parseInt($('f-k').value, 10) || 0, 0, 6);
- var d = clamp(parseFloat($('f-d').value) || 0, -0.8, 0.8);
- var su = fSupStat(k, d);
- var msB = ders(SUP_XS, SUP_Y0), ms = ders(SUP_XS, su.ys);
- var M2 = mkMap(w, h, { l: 44, r: 16, t: 16, b: 30 }, [-3, 3], [-1.55, 1.90]);
- grid(g, M2, 6, 6); frame(g, M2);
- for (t = -3; t <= 3.001; t += 1) label(g, t.toFixed(0), M2.X(t), M2.pad.t + M2.ih + 14, '#6d665a', 'center');
- for (t = -1.5; t <= 1.51; t += 0.5) label(g, t.toFixed(1), M2.pad.l - 7, M2.Y(t), '#6d665a', 'right');
- clipPlot(g, M2);
- curve(g, M2, function(x){ return pwHerm(SUP_XS, SUP_Y0, msB, x); }, -3, 3, '#b8b0a0', 1.8, [5, 4], 600);
- curve(g, M2, function(x){ return pwHerm(SUP_XS, su.ys, ms, x); }, -3, 3, '#7d5a24', 2.4, [], 900);
- curve(g, M2, function(x){ return lagEval(SUP_XS, su.ys, x); }, -3, 3, '#c2531f', 1.6, [7, 4], 700);
- unclip(g);
- var i;
- for (i = 0; i < 7; i++) dot(g, M2, SUP_XS[i], su.ys[i], i === k ? 4.2 : 3.0, i === k ? '#c2531f' : '#7d5a24');
- g.strokeStyle = 'rgba(194,83,31,.5)'; g.lineWidth = 1; g.setLineDash([3, 3]);
- g.beginPath(); g.moveTo(M2.X(SUP_XS[k]), M2.pad.t); g.lineTo(M2.X(SUP_XS[k]), M2.pad.t + M2.ih); g.stroke();
- g.setLineDash([]);
- setText('f-kv', 'k = ' + k + '（x = ' + SUP_XS[k] + '）');
- setText('f-dv', (d >= 0 ? '+' : MINUS) + Math.abs(d).toFixed(2));
- setText('f-s1', fixed(su.spanH, 3));
- setText('f-s2', fixed(su.spanL, 3));
- setText('f-s3', fixed(su.maxH, 4));
- setText('f-s4', fixed(su.maxL, 4));
- setText('f-state', '支集模式 · k = ' + k + ' · \u03b4 = ' + (d >= 0 ? '+' : MINUS) + Math.abs(d).toFixed(2));
- return su;
+  var cv = $('cv-f'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+  var t;
+  if (F_MODE === 0){
+    var n = clamp(parseInt($('f-n').value, 10) || 8, 2, 64);
+    var st = fDerivStat(n);
+    var xs = uni(0, 1, n), ys = xs.map(F), ms = xs.map(F);
+    var M = mkMap(w, h, { l: 48, r: 16, t: 16, b: 30 }, [0, 1], [0.90, 3.60]);
+    grid(g, M, 10, 6); frame(g, M);
+    for (t = 0; t <= 1.001; t += 0.2) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 14, '#6d665a', 'center');
+    for (t = 1; t <= 3.6; t += 0.5) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right');
+    clipPlot(g, M);
+    curve(g, M, DF, 0, 1, '#b8b0a0', 1.5, [5, 4], 500);
+    var slopes = [], q;
+    for (q = 0; q < n; q++) slopes.push((ys[q + 1] - ys[q]) / (xs[q + 1] - xs[q]));
+    stepCurve(g, M, xs.slice(0, n), slopes, 1 / n, '#0d6b5d', 1.7);
+    curve(g, M, function(x){ return dPwHerm(xs, ys, ms, x); }, 0, 1, '#7d5a24', 2.4, [], 900);
+    unclip(g);
+    setText('f-nv', String(n));
+    setText('f-e1', exs(st.e1, 3));
+    setText('f-o1', isFinite(st.o1) ? fixed(st.o1, 3) : '—');
+    setText('f-e2', exs(st.e2, 3));
+    setText('f-o2', isFinite(st.o2) ? fixed(st.o2, 3) : '—');
+    setText('f-state', '导数模式 · n = ' + n);
+    return st;
+  }
+  var k = clamp(parseInt($('f-k').value, 10) || 0, 0, 6);
+  var d = clamp(parseFloat($('f-d').value) || 0, -0.8, 0.8);
+  var su = fSupStat(k, d);
+  var msB = ders(SUP_XS, SUP_Y0), ms = ders(SUP_XS, su.ys);
+  var M2 = mkMap(w, h, { l: 44, r: 16, t: 16, b: 30 }, [-3, 3], [-1.55, 1.90]);
+  grid(g, M2, 6, 6); frame(g, M2);
+  for (t = -3; t <= 3.001; t += 1) label(g, t.toFixed(0), M2.X(t), M2.pad.t + M2.ih + 14, '#6d665a', 'center');
+  for (t = -1.5; t <= 1.51; t += 0.5) label(g, t.toFixed(1), M2.pad.l - 7, M2.Y(t), '#6d665a', 'right');
+  clipPlot(g, M2);
+  curve(g, M2, function(x){ return pwHerm(SUP_XS, SUP_Y0, msB, x); }, -3, 3, '#b8b0a0', 1.8, [5, 4], 600);
+  curve(g, M2, function(x){ return pwHerm(SUP_XS, su.ys, ms, x); }, -3, 3, '#7d5a24', 2.4, [], 900);
+  curve(g, M2, function(x){ return lagEval(SUP_XS, su.ys, x); }, -3, 3, '#c2531f', 1.6, [7, 4], 700);
+  unclip(g);
+  var i;
+  for (i = 0; i < 7; i++) dot(g, M2, SUP_XS[i], su.ys[i], i === k ? 4.2 : 3.0, i === k ? '#c2531f' : '#7d5a24');
+  g.strokeStyle = 'rgba(194,83,31,.5)'; g.lineWidth = 1; g.setLineDash([3, 3]);
+  g.beginPath(); g.moveTo(M2.X(SUP_XS[k]), M2.pad.t); g.lineTo(M2.X(SUP_XS[k]), M2.pad.t + M2.ih); g.stroke();
+  g.setLineDash([]);
+  setText('f-kv', 'k = ' + k + '（x = ' + SUP_XS[k] + '）');
+  setText('f-dv', (d >= 0 ? '+' : MINUS) + Math.abs(d).toFixed(2));
+  setText('f-s1', fixed(su.spanH, 3));
+  setText('f-s2', fixed(su.spanL, 3));
+  setText('f-s3', fixed(su.maxH, 4));
+  setText('f-s4', fixed(su.maxL, 4));
+  setText('f-state', '支集模式 · k = ' + k + ' · \u03b4 = ' + (d >= 0 ? '+' : MINUS) + Math.abs(d).toFixed(2));
+  return su;
 }
 
 /* ============================================================
- 事件绑定
- ============================================================ */
+   事件绑定
+   ============================================================ */
 function on(id, fn){ var el = $(id); if (el && el.addEventListener) el.addEventListener('input', fn); }
 on('a-y', aDraw);
 on('b-n', bDraw); on('b-j', bDraw);
@@ -1168,25 +1168,25 @@ on('e-n', eDraw);
 on('f-n', fDraw); on('f-k', fDraw); on('f-d', fDraw);
 
 function setMode(m){
- F_MODE = m;
- var b0 = $('f-m0'), b1 = $('f-m1');
- if (b0) b0.setAttribute('aria-pressed', m === 0 ? 'true' : 'false');
- if (b1) b1.setAttribute('aria-pressed', m === 1 ? 'true' : 'false');
- var cd = $('f-ctrls-deriv'), cs = $('f-ctrls-sup');
- var rd = $('f-reads-deriv'), rs = $('f-reads-sup');
- if (cd) cd.style.display = m === 0 ? 'flex' : 'none';
- if (cs) cs.style.display = m === 1 ? 'flex' : 'none';
- if (rd) rd.style.display = m === 0 ? 'grid' : 'none';
- if (rs) rs.style.display = m === 1 ? 'grid' : 'none';
- var lg = $('f-legend');
- if (lg) lg.innerHTML = m === 0
- ? '<span><i class="graydash"></i>f\u2032(x) = e\u02e3</span><span><i class="ch"></i>H\u2032_h（连续，分段二次）</span><span><i class="teal"></i>\u03c6\u2032_h（分段常数，结点处跳变）</span>'
- : '<span><i class="graydash"></i>原始台阶数据的分段 H</span><span><i class="ch"></i>改动后（分段 H）</span><span><i></i>改动后（全局 6 次 Lagrange）</span><span><i class="dot"></i>结点</span>';
- var hn = $('f-hint');
- if (hn) hn.textContent = m === 0
- ? '拖 n：H\u2032_h 的误差按 h\u00b3 掉（阶 2.84\u21922.99），而分段线性的阶梯导数只按 h 掉（阶 0.97）。两条曲线贴在一起时看不出差别，把 n 拖回 4 就看得出：H\u2032_h 是光滑的二次曲线，\u03c6\u2032_h 是台阶。'
- : '拖 k 与 \u03b4：分段 H 的影响半宽恒为 2h = 2（导数用中心差分估计，改 y_k 会波及 k\u22122 到 k+1 段），全局 Lagrange 的影响半宽是\u300c到最远端点\u300d，改中间的点动半条曲线。';
- fDraw();
+  F_MODE = m;
+  var b0 = $('f-m0'), b1 = $('f-m1');
+  if (b0) b0.setAttribute('aria-pressed', m === 0 ? 'true' : 'false');
+  if (b1) b1.setAttribute('aria-pressed', m === 1 ? 'true' : 'false');
+  var cd = $('f-ctrls-deriv'), cs = $('f-ctrls-sup');
+  var rd = $('f-reads-deriv'), rs = $('f-reads-sup');
+  if (cd) cd.style.display = m === 0 ? 'flex' : 'none';
+  if (cs) cs.style.display = m === 1 ? 'flex' : 'none';
+  if (rd) rd.style.display = m === 0 ? 'grid' : 'none';
+  if (rs) rs.style.display = m === 1 ? 'grid' : 'none';
+  var lg = $('f-legend');
+  if (lg) lg.innerHTML = m === 0
+    ? '<span><i class="graydash"></i>f\u2032(x) = e\u02e3</span><span><i class="ch"></i>H\u2032_h（连续，分段二次）</span><span><i class="teal"></i>\u03c6\u2032_h（分段常数，结点处跳变）</span>'
+    : '<span><i class="graydash"></i>原始台阶数据的分段 H</span><span><i class="ch"></i>改动后（分段 H）</span><span><i></i>改动后（全局 6 次 Lagrange）</span><span><i class="dot"></i>结点</span>';
+  var hn = $('f-hint');
+  if (hn) hn.textContent = m === 0
+    ? '拖 n：H\u2032_h 的误差按 h\u00b3 掉（阶 2.84\u21922.99），而分段线性的阶梯导数只按 h 掉（阶 0.97）。两条曲线贴在一起时看不出差别，把 n 拖回 4 就看得出：H\u2032_h 是光滑的二次曲线，\u03c6\u2032_h 是台阶。'
+    : '拖 k 与 \u03b4：分段 H 的影响半宽恒为 2h = 2（导数用中心差分估计，改 y_k 会波及 k\u22122 到 k+1 段），全局 Lagrange 的影响半宽是\u300c到最远端点\u300d，改中间的点动半条曲线。';
+  fDraw();
 }
 var m0 = $('f-m0'), m1 = $('f-m1');
 if (m0 && m0.addEventListener) m0.addEventListener('click', function(){ setMode(0); });
@@ -1196,25 +1196,25 @@ if (m1) m1.onclick = function(){ setMode(1); };
 
 var rt = null;
 if (typeof window !== 'undefined' && window.addEventListener){
- window.addEventListener('resize', function(){
- if (rt) clearTimeout(rt);
- rt = setTimeout(function(){ aDraw(); bDraw(); cDraw(); dDraw(); eDraw(); fDraw(); }, 120);
- });
+  window.addEventListener('resize', function(){
+    if (rt) clearTimeout(rt);
+    rt = setTimeout(function(){ aDraw(); bDraw(); cDraw(); dDraw(); eDraw(); fDraw(); }, 120);
+  });
 }
 
 aDraw(); bDraw(); cDraw(); dDraw(); eDraw(); fDraw();
 
 window.NA25 = {
- PI: PI, F: F, DF: DF,
- uni: uni, lagBasis: lagBasis, lagEval: lagEval, lebConst: lebConst,
- segIndex: segIndex, pwLin: pwLin, hatBasis: hatBasis,
- pwHerm: pwHerm, dPwHerm: dPwHerm, dPwLin: dPwLin, ders: ders, maxErr: maxErr,
- A_XS: A_XS, aQuad: aQuad, aDraw: aDraw,
- bDraw: bDraw, cDraw: cDraw, dDraw: dDraw, dSeries: dSeries,
- eDraw: eDraw, fDerivStat: fDerivStat, fSupStat: fSupStat, fDraw: fDraw,
- SUP_XS: SUP_XS, SUP_Y0: SUP_Y0,
- setMode: setMode,
- getMode: function(){ return F_MODE; }
+  PI: PI, F: F, DF: DF,
+  uni: uni, lagBasis: lagBasis, lagEval: lagEval, lebConst: lebConst,
+  segIndex: segIndex, pwLin: pwLin, hatBasis: hatBasis,
+  pwHerm: pwHerm, dPwHerm: dPwHerm, dPwLin: dPwLin, ders: ders, maxErr: maxErr,
+  A_XS: A_XS, aQuad: aQuad, aDraw: aDraw,
+  bDraw: bDraw, cDraw: cDraw, dDraw: dDraw, dSeries: dSeries,
+  eDraw: eDraw, fDerivStat: fDerivStat, fSupStat: fSupStat, fDraw: fDraw,
+  SUP_XS: SUP_XS, SUP_Y0: SUP_Y0,
+  setMode: setMode,
+  getMode: function(){ return F_MODE; }
 };
 
 })();

@@ -5,24 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>数值线性代数 · 可视化系列</title>
 <!--
- 维护说明（给未来的自己）：
- 1. 本站是「数学可视化」门户的一个学科：本目录 = site/numerical_linear_algebra/，
- 上级 site/index.html 是全站总导航（六学科卡片）。页面全部放在本目录，直接编辑，无副本。
- 2. 新增页面：把做好的 .html 放进本目录，在下方加一张 <a class="card"> 卡片，href 写相对路径。
- 3. 规划中的章节：把对应卡片从 .planned 改成 <a> 并填 href。
- 4. 更新线上：对整个 math_visualization/site/ 目录重新发布（app 已存在，链接不变，内容覆盖）。
- 5. 验证脚本在 math_visualization/ 根（相对路径 ../../verify_formulas.js），改完公式后跑一遍再发布。
- 6. 版式身份「制图台」：暖纸底 + 深墨 + 朱砂/钢青 + 等宽数字 + 图签（NLA-01…NLA-11）。全系列统一。
+  维护说明（给未来的自己）：
+  1. 本站是「数学可视化」门户的一个学科：本目录 = site/numerical_linear_algebra/，
+     上级 site/index.html 是全站总导航（六学科卡片）。页面全部放在本目录，直接编辑，无副本。
+  2. 新增页面：把做好的 .html 放进本目录，在下方加一张 <a class="card"> 卡片，href 写相对路径。
+  3. 规划中的章节：把对应卡片从 .planned 改成 <a> 并填 href。
+  4. 更新线上：对整个 math_visualization/site/ 目录重新发布（app 已存在，链接不变，内容覆盖）。
+  5. 验证脚本在 math_visualization/ 根（相对路径 ../../verify_formulas.js），改完公式后跑一遍再发布。
+  6. 版式身份「制图台」：暖纸底 + 深墨 + 朱砂/钢青 + 等宽数字 + 图签（NLA-01…NLA-11）。全系列统一。
 -->
 <style>
 :root{
- --text:#1f2328; --muted:#57606a; --border:#d0d7de;
- --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
- --card:#f6f8fa;
+  --text:#1f2328; --muted:#57606a; --border:#d0d7de;
+  --accent:#185FA5; --accent-dark:#0C447C; --accent-soft:#E6F1FB;
+  --card:#f6f8fa;
 }
 *{box-sizing:border-box}
 body{margin:0;background:#fff;color:var(--text);
- font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:780px;margin:0 auto;padding:60px 20px 60px}
 .crumb{font-size:13px;margin:0 0 18px}
 .crumb a{color:var(--accent);text-decoration:none}
@@ -30,22 +30,22 @@ body{margin:0;background:#fff;color:var(--text);
 h1{font-size:27px;margin:0 0 8px;font-weight:600}
 p.lead{color:var(--muted);font-size:15.5px;margin:0 0 12px}
 h2{font-size:14px;font-weight:600;color:var(--muted);margin:40px 0 14px;
- letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:8px}
+  letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:8px}
 a.card,.card{display:block;background:var(--card);border:1px solid var(--border);
- border-radius:12px;padding:18px 22px;margin:0 0 12px;text-decoration:none;color:var(--text)}
+  border-radius:12px;padding:18px 22px;margin:0 0 12px;text-decoration:none;color:var(--text)}
 a.card:hover{border-color:var(--accent)}
 .card .t{font-size:16.5px;font-weight:600;color:var(--accent-dark);margin:0 0 4px}
 .card .d{font-size:13.5px;color:var(--muted);margin:0}
 .tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
- border-radius:5px;padding:1px 8px;margin-right:10px;vertical-align:2px;font-weight:500}
+  border-radius:5px;padding:1px 8px;margin-right:10px;vertical-align:2px;font-weight:500}
 .tag.live{background:#E1F5EE;color:#085041}
 .tag.plan{background:#F1EFE8;color:#5F5E5A}
 .tag.ch{background:var(--accent-soft);color:var(--accent-dark)}
 .card.planned{opacity:.62}
 footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--border);
- font-size:13px;color:var(--muted)}
+  font-size:13px;color:var(--muted)}
 footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
- border:1px solid var(--border);border-radius:4px;padding:0 5px;font-size:12px}
+  border:1px solid var(--border);border-radius:4px;padding:0 5px;font-size:12px}
 </style>
 </head>
 <body>

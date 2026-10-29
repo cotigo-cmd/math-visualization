@@ -5,37 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>C++ 程序设计 · 章节导航</title>
 <!--
- 学科索引（C++）。版式身份与 CPP-01 一致：冷灰纸 + 墨 + 青(指针)/琥珀(地址) + 等宽读数。
- 加新页时：在对应章节下插一张 .card，并把状态从 plan 改成 live；同时更新总导航 site/index.html 的副标题。
+  学科索引（C++）。版式身份与 CPP-01 一致：冷灰纸 + 墨 + 青(指针)/琥珀(地址) + 等宽读数。
+  加新页时：在对应章节下插一张 .card，并把状态从 plan 改成 live；同时更新总导航 site/index.html 的副标题。
 -->
 <style>
 :root{
- --paper:#F2F4F6; --card:#fff; --ink:#101820; --muted:#5A6672;
- --line:#D3DAE1; --line2:#B7C0C9;
- --teal:#1F7A8C; --teal-soft:#E7F2F4; --amber:#B45F06;
- --mono:ui-monospace,"JetBrains Mono",Consolas,"Courier New",monospace;
- --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --paper:#F2F4F6; --card:#fff; --ink:#101820; --muted:#5A6672;
+  --line:#D3DAE1; --line2:#B7C0C9;
+  --teal:#1F7A8C; --teal-soft:#E7F2F4; --amber:#B45F06;
+  --mono:ui-monospace,"JetBrains Mono",Consolas,"Courier New",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:15.5px/1.75 var(--sans);
- background-image:linear-gradient(rgba(31,122,140,.045) 1px,transparent 1px);
- background-size:100% 28px}
+  background-image:linear-gradient(rgba(31,122,140,.045) 1px,transparent 1px);
+  background-size:100% 28px}
 .wrap{max-width:860px;margin:0 auto;padding:44px 22px 72px}
 .crumb{font-size:12.5px;font-family:var(--mono);color:var(--muted);margin:0 0 22px}
 .crumb a{color:var(--teal);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .titlebar{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
- border-bottom:2px solid var(--ink);padding-bottom:12px}
+  border-bottom:2px solid var(--ink);padding-bottom:12px}
 .fig{font-family:var(--mono);font-size:12px;letter-spacing:.08em;background:var(--ink);color:#fff;
- padding:3px 9px;border-radius:3px}
+  padding:3px 9px;border-radius:3px}
 h1{font-size:25px;margin:0;font-weight:650;letter-spacing:-.01em}
 .lead{font-size:15px;margin:16px 0 0;max-width:68ch;color:#2A3540}
 .ch{margin:40px 0 0}
 .ch h2{font-size:13px;font-family:var(--mono);color:var(--amber);letter-spacing:.08em;
- text-transform:uppercase;margin:0 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  text-transform:uppercase;margin:0 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .card{display:block;text-decoration:none;color:inherit;background:var(--card);
- border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:0 0 10px;
- box-shadow:0 1px 2px rgba(16,24,32,.04);transition:border-color .12s,transform .12s}
+  border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:0 0 10px;
+  box-shadow:0 1px 2px rgba(16,24,32,.04);transition:border-color .12s,transform .12s}
 .card:hover{border-color:var(--teal);transform:translateX(2px)}
 .card.off{opacity:.62;cursor:default}
 .card.off:hover{border-color:var(--line);transform:none}
@@ -43,12 +43,12 @@ h1{font-size:25px;margin:0;font-weight:650;letter-spacing:-.01em}
 .code{font-family:var(--mono);font-size:11.5px;color:var(--teal);letter-spacing:.05em}
 .name{font-size:16px;font-weight:650}
 .tag{font-family:var(--mono);font-size:10.5px;border-radius:3px;padding:1px 7px;
- background:#EDF0F3;color:#5A6672;margin-left:auto}
+  background:#EDF0F3;color:#5A6672;margin-left:auto}
 .tag.live{background:var(--teal);color:#fff}
 .desc{font-size:13.5px;color:var(--muted);margin:0;line-height:1.7}
 .meta{font-family:var(--mono);font-size:11px;color:#8A939C;margin-top:7px}
 footer{margin-top:46px;padding-top:16px;border-top:1px solid var(--line);
- font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  font-size:12.5px;color:var(--muted);font-family:var(--mono)}
 footer a{color:var(--teal)}
 </style>
 </head>
@@ -57,49 +57,49 @@ footer a{color:var(--teal)}
 
 <p class="crumb"><a href="../index.html">数学可视化 · 全部学科</a> ／ C++ 程序设计</p>
 <div class="titlebar">
- <span class="fig">CPP</span>
- <h1>C++ 程序设计</h1>
+  <span class="fig">CPP</span>
+  <h1>C++ 程序设计</h1>
 </div>
 <p class="lead">教材：谭浩强《C++ 程序设计》。这一学科只做一件事——把<b>看不见的运行时刻</b>画出来：内存里的字节、指针里的地址、栈帧的压入弹出、对象的虚函数表。语法书能讲清的部分不重复画，画的是「书上只能靠想象」的部分。 不需要装编译器：内存布局、调用栈、虚表都是画出来的。</p>
 
 <div class="ch">
- <h2>第 4 章 · 利用函数实现指定的功能（§4）</h2>
+  <h2>第 4 章 · 利用函数实现指定的功能（§4）</h2>
 
- <a class="card" href="./recursion-stack.html">
- <div class="ttl"><span class="code">CPP-03</span><span class="name">递归调用栈：阶乘、汉诺塔与栈溢出</span><span class="tag live">已上线</span></div>
- <p class="desc">同一个函数同时活着很多份——每次调用都往栈上压一帧。五个交互实验：一次调用的五步（参数传递、记返回地址、保护现场/恢复现场，图 4.10；递归函数无法 <code>inline</code>）· <code>fac(n)</code> 栈帧逐层压入弹出＋事件时间线（回溯/递推两阶段，调用 n 次、乘法 n−1 次、最大栈深 n）· <code>age(5)</code> 复现图 4.8（回溯到 10 岁再递推回 18）· 汉诺塔三座实况与调用栈同步（2<sup>n</sup>−1 步、栈深 n+1）· 8 MiB 栈能装多少帧（32 B/帧模型 ≈ 26 万帧）与 <code>static</code> 局部变量陷阱（auto 版每次返回 1，static 版跨调用累加）。</p>
- <div class="meta">§4.6 · 4.7 · 4.12.1–4.12.3 · 习题 9 ／ 读数闸门 verify_readout_stack.js · 437 项</div>
- </a>
+  <a class="card" href="./recursion-stack.html">
+    <div class="ttl"><span class="code">CPP-03</span><span class="name">递归调用栈：阶乘、汉诺塔与栈溢出</span><span class="tag live">已上线</span></div>
+    <p class="desc">同一个函数同时活着很多份——每次调用都往栈上压一帧。五个交互实验：一次调用的五步（参数传递、记返回地址、保护现场/恢复现场，图 4.10；递归函数无法 <code>inline</code>）· <code>fac(n)</code> 栈帧逐层压入弹出＋事件时间线（回溯/递推两阶段，调用 n 次、乘法 n−1 次、最大栈深 n）· <code>age(5)</code> 复现图 4.8（回溯到 10 岁再递推回 18）· 汉诺塔三座实况与调用栈同步（2<sup>n</sup>−1 步、栈深 n+1）· 8 MiB 栈能装多少帧（32 B/帧模型 ≈ 26 万帧）与 <code>static</code> 局部变量陷阱（auto 版每次返回 1，static 版跨调用累加）。</p>
+    <div class="meta">§4.6 · 4.7 · 4.12.1–4.12.3 · 习题 9 ／ 读数闸门 verify_readout_stack.js · 437 项</div>
+  </a>
 </div>
 
 <div class="ch">
- <h2>第 6 章 · 指针与引用</h2>
+  <h2>第 6 章 · 指针与引用</h2>
 
- <a class="card" href="./pointers.html">
- <div class="ttl"><span class="code">CPP-01</span><span class="name">指针：地址、解引用与所有权</span><span class="tag live">已上线</span></div>
- <p class="desc">内存是一排带编号的格子，指针是存着编号的变量。五个交互实验：内存条上的一跳（<code>&amp;</code>/<code>*</code> 互逆）· <code>p+1</code> 到底加几个字节（int / char / double 对比）· 值/指针/引用三种传参的真实结局 · <code>const</code> 四种写法的权限矩阵 · <code>new</code>/<code>delete</code> 的生与死（悬垂、泄漏、<code>unique_ptr</code>）。</p>
- <div class="meta">§6.1–6.3 · 6.7 · 6.10 · 6.11 ／ 读数闸门 verify_readout_ptr.js · 114 项</div>
- </a>
+  <a class="card" href="./pointers.html">
+    <div class="ttl"><span class="code">CPP-01</span><span class="name">指针：地址、解引用与所有权</span><span class="tag live">已上线</span></div>
+    <p class="desc">内存是一排带编号的格子，指针是存着编号的变量。五个交互实验：内存条上的一跳（<code>&amp;</code>/<code>*</code> 互逆）· <code>p+1</code> 到底加几个字节（int / char / double 对比）· 值/指针/引用三种传参的真实结局 · <code>const</code> 四种写法的权限矩阵 · <code>new</code>/<code>delete</code> 的生与死（悬垂、泄漏、<code>unique_ptr</code>）。</p>
+    <div class="meta">§6.1–6.3 · 6.7 · 6.10 · 6.11 ／ 读数闸门 verify_readout_ptr.js · 114 项</div>
+  </a>
 </div>
 
 <div class="ch">
- <h2>第 8 章 · 类和对象（§8 / §9 / §11 / §12）</h2>
+  <h2>第 8 章 · 类和对象（§8 / §9 / §11 / §12）</h2>
 
- <a class="card" href="./object-model.html">
- <div class="ttl"><span class="code">CPP-02</span><span class="name">对象内存模型：构造、析构与 this</span><span class="tag live">已上线</span></div>
- <p class="desc">对象在内存里到底长什么样。</p>
- <div class="meta">§8.3.4 · 9.1 · 9.5.3 · 9.6 · 11.5 · 11.6 · 12.3.3 · 12.3.4 · 12.4 ／ 读数闸门 verify_readout_obj.js · 172 项</div>
- </a>
+  <a class="card" href="./object-model.html">
+    <div class="ttl"><span class="code">CPP-02</span><span class="name">对象内存模型：构造、析构与 this</span><span class="tag live">已上线</span></div>
+ <p class="desc">对象在内存里到底长什么样。五个交互实验：<code>sizeof(Time)</code> 为什么是 12（数据成员 + 对齐填充，函数代码在对象外）· 一段 <code>volume</code> 代码怎么服务十个对象（<code>this</code> 是隐式形参）· 构造/析构时序逐步播放（先基类后派生，析构倒序）· <code>al = bl</code> 的对象切片到底拷走哪些字节 · 虚函数表与虚析构（<code>delete</code> 基类指针为什么必须 <code>virtual ~</code>）。</p>
+    <div class="meta">§8.3.4 · 9.1 · 9.5.3 · 9.6 · 11.5 · 11.6 · 12.3.3 · 12.3.4 · 12.4 ／ 读数闸门 verify_readout_obj.js · 172 项</div>
+  </a>
 </div>
 
 <div class="ch">
- <h2>后续章节（规划）</h2>
+  <h2>后续章节（规划）</h2>
 
- <div class="card off">
- <div class="ttl"><span class="code">CPP-04</span><span class="name">STL 容器的内部结构</span><span class="tag">筹备中</span></div>
- <p class="desc"><code>vector</code> 的扩容与迭代器失效、<code>list</code> 的节点、<code>map</code> 的红黑树——为什么这个操作要选这个容器，一看内部就懂。</p>
- <div class="meta">§13 / STL 部分</div>
- </div>
+  <div class="card off">
+    <div class="ttl"><span class="code">CPP-04</span><span class="name">STL 容器的内部结构</span><span class="tag">筹备中</span></div>
+    <p class="desc"><code>vector</code> 的扩容与迭代器失效、<code>list</code> 的节点、<code>map</code> 的红黑树——为什么这个操作要选这个容器，一看内部就懂。</p>
+    <div class="meta">§13 / STL 部分</div>
+  </div>
 </div>
 
 <footer>

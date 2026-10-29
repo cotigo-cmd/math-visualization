@@ -5,34 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SVD · 几何与低秩近似 · 数值线性代数</title>
 <!--
- 维护说明（给未来的自己）：
- 2. 秩-k 实验室的 SVD 用「单边 Jacobi」（直接正交化 A 的列，数值上比先形成 AᵀA 更稳），
- 36×36 图矩阵；QR 截断对照用 MGS。两者实现都在本页脚本内，闸门独立重算。
- 3. 读数闸门：verify_readout_svd.js（工作区根）。斜坡预设 σ₁ 有闭式（6·√Σw²）可对账。
+  维护说明（给未来的自己）：
+  2. 秩-k 实验室的 SVD 用「单边 Jacobi」（直接正交化 A 的列，数值上比先形成 AᵀA 更稳），
+     36×36 图矩阵；QR 截断对照用 MGS。两者实现都在本页脚本内，闸门独立重算。
+  3. 读数闸门：verify_readout_svd.js（工作区根）。斜坡预设 σ₁ 有闭式（6·√Σw²）可对账。
 -->
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "local" },
- options: { enableMenu: false }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
- --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
- --line:#CBD5DF; --grid:#E6EBF1;
- --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--steel);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
- overflow:hidden;margin:0 0 14px;background:var(--card)}
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -41,45 +41,45 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:70ch}
 .tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
- border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
- background:#EEF3F8;color:var(--steel)}
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:#EEF3F8;color:var(--steel)}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
- border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
 p{margin:10px 0}
 ul,ol{margin:10px 0;padding-left:24px}
 li{margin:4px 0}
 .mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
 .lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
- margin:22px 0;padding:18px 20px 20px}
+  margin:22px 0;padding:18px 20px 20px}
 .lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
 .lab-head .t{font-size:15.5px;font-weight:680}
 .lab-head .no{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#fff;
- background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
 .lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
 canvas{display:block;width:100%;height:auto;background:var(--card);
- border:1px solid var(--line);border-radius:8px;touch-action:none}
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
 .ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
 .ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
 .ctrl label{color:var(--ink2);white-space:nowrap}
 .ctrl .nm{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
 input[type=range]{width:104px;accent-color:var(--cinn)}
 button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
- border-radius:7px;padding:5px 13px;cursor:pointer}
+  border-radius:7px;padding:5px 13px;cursor:pointer}
 button:hover{border-color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{border:none;border-radius:0;padding:5px 12px}
 .seg button.on{background:var(--steel);color:#fff}
 .readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
- display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 18px}
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 18px}
 .ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
- border-bottom:1px dotted var(--grid);padding:3px 0}
+  border-bottom:1px dotted var(--grid);padding:3px 0}
 .ro .k{color:var(--ink2)}
 .ro .v{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-weight:600}
 .eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
- border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
- border-radius:0 8px 8px 0;font-size:14px}
+  border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--steel);background:#EFF4F9}
 .note.g{border-left-color:var(--green);background:#EDF6F1}
 mjx-container[jax="SVG"]{max-width:100%}
@@ -88,7 +88,7 @@ table.tb{border-collapse:collapse;margin:12px 0;font-size:14px}
 table.tb td,table.tb th{border:1px solid var(--line);padding:5px 14px;text-align:center}
 table.tb th{background:var(--card);font-weight:600}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
- font-size:13px;color:var(--ink2)}
+  font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
 .pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
@@ -104,10 +104,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="../index.html">数值线性代数</a></p>
 
 <div class="sheet">
- <div class="cell"><p class="k">图号</p><p class="v no">NLA-03</p></div>
- <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">SVD · 几何与低秩近似</p></div>
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-03</p></div>
+  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">SVD · 几何与低秩近似</p></div>
  <div class="cell"><p class="k">教材</p><p class="v">Lecture 4–5</p></div>
- <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
 </div>
 
 <h1>奇异值分解：每个矩阵都是「旋转—拉伸—旋转」</h1>
@@ -118,39 +118,39 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>设 \(S\) 是 \(\mathbb{R}^n\) 的单位球面。教材的定义全部从椭球的几何读出：</p>
 <div class="eq">$$ Av_j=\sigma_j u_j,\qquad j=1,\dots,n. \tag{4.1} $$</div>
 <ul>
- <li>\(\sigma_j\)（<strong>奇异值</strong>）：像超椭球主半轴的长度，按降序排列 \(\sigma_1\ge\sigma_2\ge\cdots\ge 0\)；</li>
- <li>\(u_j\)（<strong>左奇异向量</strong>）：主半轴的方向（在像空间 \(\mathbb{R}^m\) 中）；</li>
- <li>\(v_j\)（<strong>右奇异向量</strong>）：被拉成该半轴的原像方向（在 \(\mathbb{R}^n\) 中）。</li>
+  <li>\(\sigma_j\)（<strong>奇异值</strong>）：像超椭球主半轴的长度，按降序排列 \(\sigma_1\ge\sigma_2\ge\cdots\ge 0\)；</li>
+  <li>\(u_j\)（<strong>左奇异向量</strong>）：主半轴的方向（在像空间 \(\mathbb{R}^m\) 中）；</li>
+  <li>\(v_j\)（<strong>右奇异向量</strong>）：被拉成该半轴的原像方向（在 \(\mathbb{R}^n\) 中）。</li>
 </ul>
 <p>把 (4.1) 横过来写成矩阵，就是<strong>缩减 SVD</strong> \(A=\hat U\hat\Sigma V^*\)（\(m&gt;n\) 时 \(\hat U\) 是 \(m\times n\)）；把 \(\hat U\) 补全为 \(m\times m\) 正交矩阵、\(\hat\Sigma\) 补上零行，得到<strong>完全 SVD</strong> \(A=U\Sigma V^{\mathrm{T}}\)。若 \(A\) 亏秩（只有 \(r\) 个非零奇异值），几何只决定 \(r\) 个方向，其余列/行可任意补齐——这正是「符号之外还不唯一」的来源。</p>
 
 <section class="lab" id="lab-lens">
- <div class="lab-head"><span class="no">实验 01</span><span class="t">三步透镜：Vᵀ → Σ → U</span><span class="tag">Figure 4.1</span></div>
- <p class="lab-sub">左 panel 是输入空间的单位圆与右奇异向量 \(v_1,v_2\)；右 panel 是像空间。播放按钮分三步展示 \(A=U\Sigma V^{\mathrm{T}}\) 的作用：先 \(V^{\mathrm{T}}\)（只旋转，圆还是圆，\(v_1,v_2\) 转到坐标轴 \(e_1,e_2\)），再 \(\Sigma\)（沿坐标轴拉成椭圆，半轴长 \(\sigma_1,\sigma_2\)），最后 \(U\)（再转一次，半轴落到 \(\sigma_1u_1,\sigma_2u_2\)，此时椭圆恰为 \(A\) 作用于单位圆）。右 panel 的两支箭头随阶段依次标成 \(e_j\to\sigma_j e_j\to\sigma_ju_j\)——圆的旋转本身看不出来，靠它们标记角度；椭圆的最长半轴必须与 \(\sigma_1u_1\) 箭头重合，若看到关于 \(x\) 轴的镜像，就是方向算错了。四条滑杆改 \(A\) 的元素，奇异值与两个方向实时重算。</p>
- <canvas id="cv-svd" width="720" height="400"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>a₁₁</label><input type="range" id="s-a11" min="-2.5" max="2.5" step="0.1" value="1.7"><span class="nm" id="v-a11"></span></div>
- <div class="ctrl"><label>a₁₂</label><input type="range" id="s-a12" min="-2.5" max="2.5" step="0.1" value="0.5"><span class="nm" id="v-a12"></span></div>
- <div class="ctrl"><label>a₂₁</label><input type="range" id="s-a21" min="-2.5" max="2.5" step="0.1" value="0.2"><span class="nm" id="v-a21"></span></div>
- <div class="ctrl"><label>a₂₂</label><input type="range" id="s-a22" min="-2.5" max="2.5" step="0.1" value="1.1"><span class="nm" id="v-a22"></span></div>
- <button id="b-play3">▶ 播放三步</button>
- <span class="seg" id="svd-presets">
- <button data-p="gen" class="on">一般矩阵</button><button data-p="rank1">秩 1</button><button data-p="rot90">旋转 90°</button><button data-p="diag">对角</button>
- </span>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">σ₁ / σ₂</span><span class="v" id="ro-sig"></span></div>
- <div class="ro"><span class="k">rank(A)</span><span class="v" id="ro-rank"></span></div>
- <div class="ro"><span class="k">v₁（输入方向）</span><span class="v" id="ro-v1"></span></div>
- <div class="ro"><span class="k">v₂</span><span class="v" id="ro-v2"></span></div>
- <div class="ro"><span class="k">u₁（输出方向）</span><span class="v" id="ro-u1"></span></div>
- <div class="ro"><span class="k">u₂（输出方向）</span><span class="v" id="ro-u2"></span></div>
- <div class="ro"><span class="k">∠v₁ / ∠u₁ / ∠u₂</span><span class="v" id="ro-ang"></span></div>
- <div class="ro"><span class="k">‖A‖₂ = σ₁</span><span class="v" id="ro-sv2"></span></div>
- <div class="ro"><span class="k">‖A‖_F = √(σ₁²+σ₂²)</span><span class="v" id="ro-svF"></span></div>
- <div class="ro"><span class="k">当前阶段</span><span class="v" id="ro-stage"></span></div>
- </div>
- <p class="hint">「秩 1」预设 \(\sigma_2=0\)：椭圆塌缩成一条线段，\(u_2\) 失去几何意义（教材：用任意正交方向补全）。「旋转 90°」两个奇异值都是 1——椭圆退化成圆，这正是 NLA-01 实验 04 保矩变换的 SVD 面目；注意它没有实特征向量，却有完全普通的 SVD。</p>
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">三步透镜：Vᵀ → Σ → U</span><span class="tag">Figure 4.1</span></div>
+  <p class="lab-sub">左 panel 是输入空间的单位圆与右奇异向量 \(v_1,v_2\)；右 panel 是像空间。播放按钮分三步展示 \(A=U\Sigma V^{\mathrm{T}}\) 的作用：先 \(V^{\mathrm{T}}\)（只旋转，圆还是圆，\(v_1,v_2\) 转到坐标轴 \(e_1,e_2\)），再 \(\Sigma\)（沿坐标轴拉成椭圆，半轴长 \(\sigma_1,\sigma_2\)），最后 \(U\)（再转一次，半轴落到 \(\sigma_1u_1,\sigma_2u_2\)，此时椭圆恰为 \(A\) 作用于单位圆）。右 panel 的两支箭头随阶段依次标成 \(e_j\to\sigma_j e_j\to\sigma_ju_j\)——圆的旋转本身看不出来，靠它们标记角度；椭圆的最长半轴必须与 \(\sigma_1u_1\) 箭头重合，若看到关于 \(x\) 轴的镜像，就是方向算错了。四条滑杆改 \(A\) 的元素，奇异值与两个方向实时重算。</p>
+  <canvas id="cv-svd" width="720" height="400"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>a₁₁</label><input type="range" id="s-a11" min="-2.5" max="2.5" step="0.1" value="1.7"><span class="nm" id="v-a11"></span></div>
+    <div class="ctrl"><label>a₁₂</label><input type="range" id="s-a12" min="-2.5" max="2.5" step="0.1" value="0.5"><span class="nm" id="v-a12"></span></div>
+    <div class="ctrl"><label>a₂₁</label><input type="range" id="s-a21" min="-2.5" max="2.5" step="0.1" value="0.2"><span class="nm" id="v-a21"></span></div>
+    <div class="ctrl"><label>a₂₂</label><input type="range" id="s-a22" min="-2.5" max="2.5" step="0.1" value="1.1"><span class="nm" id="v-a22"></span></div>
+    <button id="b-play3">▶ 播放三步</button>
+    <span class="seg" id="svd-presets">
+      <button data-p="gen" class="on">一般矩阵</button><button data-p="rank1">秩 1</button><button data-p="rot90">旋转 90°</button><button data-p="diag">对角</button>
+    </span>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">σ₁ / σ₂</span><span class="v" id="ro-sig"></span></div>
+    <div class="ro"><span class="k">rank(A)</span><span class="v" id="ro-rank"></span></div>
+    <div class="ro"><span class="k">v₁（输入方向）</span><span class="v" id="ro-v1"></span></div>
+    <div class="ro"><span class="k">v₂</span><span class="v" id="ro-v2"></span></div>
+    <div class="ro"><span class="k">u₁（输出方向）</span><span class="v" id="ro-u1"></span></div>
+    <div class="ro"><span class="k">u₂（输出方向）</span><span class="v" id="ro-u2"></span></div>
+    <div class="ro"><span class="k">∠v₁ / ∠u₁ / ∠u₂</span><span class="v" id="ro-ang"></span></div>
+    <div class="ro"><span class="k">‖A‖₂ = σ₁</span><span class="v" id="ro-sv2"></span></div>
+    <div class="ro"><span class="k">‖A‖_F = √(σ₁²+σ₂²)</span><span class="v" id="ro-svF"></span></div>
+    <div class="ro"><span class="k">当前阶段</span><span class="v" id="ro-stage"></span></div>
+  </div>
+  <p class="hint">「秩 1」预设 \(\sigma_2=0\)：椭圆塌缩成一条线段，\(u_2\) 失去几何意义（教材：用任意正交方向补全）。「旋转 90°」两个奇异值都是 1——椭圆退化成圆，这正是 NLA-01 实验 04 保矩变换的 SVD 面目；注意它没有实特征向量，却有完全普通的 SVD。</p>
 </section>
 
 <h2><span class="no">02</span>SVD 的看家性质</h2>
@@ -166,53 +166,53 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>几何说法：用一条线段逼近超椭球，就取最长轴；用二维椭圆逼近，就取最长和第二长的轴。这是图像压缩（习题 9.3）与泛函中一切「谱截断」的祖宗。下面的实验台用 36×36 图矩阵直接验证这两条等式，并和「QR 截断」对照。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 02</span><span class="t">秩-k 近似实验室：36×36 图矩阵</span><span class="tag">Theorem 5.8 / 5.9</span></div>
- <p class="lab-sub">选一张「图」（每个像素 = 矩阵一个元素），拖动 \(k\) 看秩-k 近似。左为原图，右为 \(A_k\)，色标固定为 \([0,\max A]\)（不自动归一化——否则整体乘个常数在图上看不出来）。下方给出 \(\sigma\) 谱、两种范数下的最优误差，以及与 QR 截断的对照。</p>
- <div class="two">
- <div class="cell2"><canvas id="cv-src" width="288" height="288"></canvas>
- <p class="cap">原图 A（36×36）</p></div>
- <div class="cell2"><canvas id="cv-approx" width="288" height="288"></canvas>
- <p class="cap">秩-k 近似 Aₖ</p></div>
- </div>
- <canvas id="cv-spec" width="640" height="140" style="margin-top:12px"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>k</label><input type="range" id="s-k" min="1" max="36" step="1" value="6"><span class="nm" id="v-k"></span></div>
- <span class="seg" id="pic-presets">
- <button data-p="letter" class="on">字母 A</button><button data-p="stripe">斜条纹</button><button data-p="checker">棋盘</button><button data-p="ramp">斜坡</button>
- </span>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">σ₁ / σ₂ / σ₃</span><span class="v" id="ro-sig3"></span></div>
- <div class="ro"><span class="k">‖A−Aₖ‖₂（=σₖ₊₁）</span><span class="v" id="ro-err2"></span></div>
- <div class="ro"><span class="k">‖A−Aₖ‖_F（=√Σ_{j&gt;k}σⱼ²）</span><span class="v" id="ro-errF"></span></div>
- <div class="ro"><span class="k">QR 截断 ‖A−Q̂ₖR̂ₖ‖_F</span><span class="v" id="ro-errQR"></span></div>
- <div class="ro"><span class="k">能量占比 Σ_{j≤k}σⱼ²/Σσⱼ²</span><span class="v" id="ro-energy"></span></div>
- <div class="ro"><span class="k">存储量（k(m+n) vs mn）</span><span class="v" id="ro-storage"></span></div>
- </div>
- <p class="hint">四张图的有效秩（\(\sigma_j&gt;10^{-6}\sigma_1\) 计数，闸门实测；双侧 Jacobi 的噪声地板在 \(10^{-8}\sigma_1\) 量级，故阈值须高于它）恰好排成阶梯：<strong>斜条纹 36、字母 A 10、棋盘 2、斜坡 1</strong>——前两张适合看压缩，后两张有闭式对账。QR 截断的 Frobenius 误差总是 ≥ SVD 截断，且一般不相等：QR 的列空间只是「前 \(k\) 列张成的空间最优地选过了」，但投影方向并非整体最优。</p>
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">秩-k 近似实验室：36×36 图矩阵</span><span class="tag">Theorem 5.8 / 5.9</span></div>
+  <p class="lab-sub">选一张「图」（每个像素 = 矩阵一个元素），拖动 \(k\) 看秩-k 近似。左为原图，右为 \(A_k\)，色标固定为 \([0,\max A]\)（不自动归一化——否则整体乘个常数在图上看不出来）。下方给出 \(\sigma\) 谱、两种范数下的最优误差，以及与 QR 截断的对照。</p>
+  <div class="two">
+    <div class="cell2"><canvas id="cv-src" width="288" height="288"></canvas>
+      <p class="cap">原图 A（36×36）</p></div>
+    <div class="cell2"><canvas id="cv-approx" width="288" height="288"></canvas>
+      <p class="cap">秩-k 近似 Aₖ</p></div>
+  </div>
+  <canvas id="cv-spec" width="640" height="140" style="margin-top:12px"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>k</label><input type="range" id="s-k" min="1" max="36" step="1" value="6"><span class="nm" id="v-k"></span></div>
+    <span class="seg" id="pic-presets">
+      <button data-p="letter" class="on">字母 A</button><button data-p="stripe">斜条纹</button><button data-p="checker">棋盘</button><button data-p="ramp">斜坡</button>
+    </span>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">σ₁ / σ₂ / σ₃</span><span class="v" id="ro-sig3"></span></div>
+    <div class="ro"><span class="k">‖A−Aₖ‖₂（=σₖ₊₁）</span><span class="v" id="ro-err2"></span></div>
+    <div class="ro"><span class="k">‖A−Aₖ‖_F（=√Σ_{j&gt;k}σⱼ²）</span><span class="v" id="ro-errF"></span></div>
+    <div class="ro"><span class="k">QR 截断 ‖A−Q̂ₖR̂ₖ‖_F</span><span class="v" id="ro-errQR"></span></div>
+    <div class="ro"><span class="k">能量占比 Σ_{j≤k}σⱼ²/Σσⱼ²</span><span class="v" id="ro-energy"></span></div>
+    <div class="ro"><span class="k">存储量（k(m+n) vs mn）</span><span class="v" id="ro-storage"></span></div>
+  </div>
+  <p class="hint">四张图的有效秩（\(\sigma_j&gt;10^{-6}\sigma_1\) 计数，闸门实测；双侧 Jacobi 的噪声地板在 \(10^{-8}\sigma_1\) 量级，故阈值须高于它）恰好排成阶梯：<strong>斜条纹 36、字母 A 10、棋盘 2、斜坡 1</strong>——前两张适合看压缩，后两张有闭式对账。QR 截断的 Frobenius 误差总是 ≥ SVD 截断，且一般不相等：QR 的列空间只是「前 \(k\) 列张成的空间最优地选过了」，但投影方向并非整体最优。</p>
 </section>
 
 <h2><span class="no">04</span>SVD 与特征分解：三种根本差异</h2>
 <ul>
- <li><strong>两套基 vs 一套基</strong>：特征分解 \(A=X\Lambda X^{-1}\) 只用一组（一般不正交的）特征向量；SVD 在定义域与值域各用一套正交基。</li>
- <li><strong>正交性</strong>：\(U,V\) 正交，\(X\) 一般不正交——数值上这意味着 SVD 的条件数天生为 1。</li>
- <li><strong>存在性</strong>：任何矩阵（哪怕矩形、哪怕亏秩）都有 SVD；特征分解则要求特征向量够用。旋转 90° 就是活例：没有实特征向量，\(\sigma_1=\sigma_2=1\)。</li>
+  <li><strong>两套基 vs 一套基</strong>：特征分解 \(A=X\Lambda X^{-1}\) 只用一组（一般不正交的）特征向量；SVD 在定义域与值域各用一套正交基。</li>
+  <li><strong>正交性</strong>：\(U,V\) 正交，\(X\) 一般不正交——数值上这意味着 SVD 的条件数天生为 1。</li>
+  <li><strong>存在性</strong>：任何矩阵（哪怕矩形、哪怕亏秩）都有 SVD；特征分解则要求特征向量够用。旋转 90° 就是活例：没有实特征向量，\(\sigma_1=\sigma_2=1\)。</li>
 </ul>
 <p>应用上的分岔：涉及 \(A\) 的幂、指数（迭代、演化）的问题找特征值；涉及 \(A\) 本身或其逆（范数、秩、投影、最小二乘）的问题找奇异值。</p>
 
 <h2><span class="no">05</span>本页小结与习题</h2>
 <ul>
- <li><strong>几何定义优先</strong>：奇异值 = 椭球半轴长，奇异向量 = 半轴方向与原像方向；分解式是几何的代数快照。</li>
- <li><strong>存在且基本唯一</strong>（定理 4.1，符号与亏秩补全有模糊）；缩减/完全两种形式贯穿全书。</li>
- <li><strong>性质清单</strong>：秩、值域、零空间、\(\|\cdot\|_2\)、\(\|\cdot\|_F\)、\(\sigma^2=\lambda(A^{\mathrm{T}}A)\)、\(|\det|\) 全部由 \(\sigma\) 一览。</li>
- <li><strong>Eckart–Young</strong>：截断到前 \(v\) 项在 2-范数与 Frobenius 范数下都是最优低秩近似——本页实测确认，QR 截断做不到。</li>
+  <li><strong>几何定义优先</strong>：奇异值 = 椭球半轴长，奇异向量 = 半轴方向与原像方向；分解式是几何的代数快照。</li>
+  <li><strong>存在且基本唯一</strong>（定理 4.1，符号与亏秩补全有模糊）；缩减/完全两种形式贯穿全书。</li>
+  <li><strong>性质清单</strong>：秩、值域、零空间、\(\|\cdot\|_2\)、\(\|\cdot\|_F\)、\(\sigma^2=\lambda(A^{\mathrm{T}}A)\)、\(|\det|\) 全部由 \(\sigma\) 一览。</li>
+  <li><strong>Eckart–Young</strong>：截断到前 \(v\) 项在 2-范数与 Frobenius 范数下都是最优低秩近似——本页实测确认，QR 截断做不到。</li>
 </ul>
 <div class="note b"><strong>习题 5.1（(3.7) 的精确奇异值）</strong>：\(A^{\mathrm{T}}A=\begin{psmallmatrix}1&amp;2\\2&amp;8\end{psmallmatrix}\)，特征值 \((9\pm\sqrt{65})/2\)，故 \(\sigma_1=\sqrt{(9+\sqrt{65})/2}\approx 2.9208\)、\(\sigma_2\approx 0.6847\)，与 Lecture 3 图 3.1 的 \(\|A\|_2\approx2.9208\) 精确对上；\(\kappa_2(A)=\sigma_1/\sigma_2\approx 4.266\)（闸门有实测）。</div>
 <div class="note"><strong>计算在哪</strong>：本页只讲性质。怎么稳定地算出 SVD 是 Lecture 31 的主题（QR 迭代的变体）；本实验台用的单边 Jacobi 对 36 阶小矩阵足够，工程规模要用循环约化/分治。</div>
 
 <div class="pager">
- <a href="范数-单位球与诱导范数.html">← 上一页 · 范数</a>
- <a href="投影算子-正交与斜投影.html">下一页 · 投影算子 →</a>
+  <a href="范数-单位球与诱导范数.html">← 上一页 · 范数</a>
+  <a href="投影算子-正交与斜投影.html">下一页 · 投影算子 →</a>
 </div>
 
 <footer>
@@ -225,345 +225,345 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <script>
 "use strict";
 function fmt(x, d){ if(!isFinite(x)) return "—"; d=(d===undefined)?3:d;
- if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
- return x.toFixed(d); }
+  if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
+  return x.toFixed(d); }
 function mapper(cv, cx, cy, s){
- return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
- x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
+  return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
+           x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
 }
 /* 注意 y 方向：canvas 的 y 向下，数学的 y 向上——所有网格线一律 cy - gy*s，
- 与 mapper.Y 同一约定（写成 cy + gy*s 会让网格与内容关于 x 轴镜像） */
+   与 mapper.Y 同一约定（写成 cy + gy*s 会让网格与内容关于 x 轴镜像） */
 function grid(ctx, cx, cy, s, xmin, xmax, ymin, ymax){
- ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
- for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
- ctx.moveTo(cx+gx*s, cy-ymax*s); ctx.lineTo(cx+gx*s, cy-ymin*s); ctx.stroke(); }
- for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
- ctx.moveTo(cx+xmin*s, cy-gy*s); ctx.lineTo(cx+xmax*s, cy-gy*s); ctx.stroke(); }
- ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
- ctx.restore();
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  for(let gx=Math.ceil(xmin); gx<=xmax; gx++){ ctx.beginPath();
+    ctx.moveTo(cx+gx*s, cy-ymax*s); ctx.lineTo(cx+gx*s, cy-ymin*s); ctx.stroke(); }
+  for(let gy=Math.ceil(ymin); gy<=ymax; gy++){ ctx.beginPath();
+    ctx.moveTo(cx+xmin*s, cy-gy*s); ctx.lineTo(cx+xmax*s, cy-gy*s); ctx.stroke(); }
+  ctx.strokeStyle="#CBD5DF"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(cx+xmin*s, cy); ctx.lineTo(cx+xmax*s, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy+ymin*s); ctx.lineTo(cx, cy+ymax*s); ctx.stroke();
+  ctx.restore();
 }
 function arrow(ctx, x1, y1, x2, y2, color, w, dash){
- ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
- if(dash) ctx.setLineDash(dash);
- ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
- const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
- if(L>1){ const h=Math.min(9, L*0.28);
- ctx.beginPath(); ctx.moveTo(x2,y2);
- ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
- ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
- ctx.closePath(); ctx.fill(); }
- ctx.restore();
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+  const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
+  if(L>1){ const h=Math.min(9, L*0.28);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
+    ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
+    ctx.closePath(); ctx.fill(); }
+  ctx.restore();
 }
 function vec(ctx, m, v, color, w, dash){ arrow(ctx, m.X(0), m.Y(0), m.X(v[0]), m.Y(v[1]), color, w, dash); }
 function dot(ctx, x, y, color, r){ ctx.save(); ctx.fillStyle=color;
- ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
+  ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.restore(); }
 function label(ctx, txt, x, y, color, size, align){
- ctx.save(); ctx.fillStyle=color||"#22303F";
- ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
- ctx.textAlign=align||"left"; ctx.textBaseline="middle";
- ctx.fillText(txt, x, y); ctx.restore();
+  ctx.save(); ctx.fillStyle=color||"#22303F";
+  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+  ctx.fillText(txt, x, y); ctx.restore();
 }
 const $ = function(id){ return document.getElementById(id); };
 /* 2×2 奇异值闭式（AᵀA 特征值） */
 function sv2(A){
- const a=A[0][0], b=A[0][1], c=A[1][0], d=A[1][1];
- const m11=a*a+c*c, m12=a*b+c*d, m22=b*b+d*d;
- const tr=m11+m22, det=m11*m22-m12*m12;
- const disc=Math.max(0, tr*tr-4*det);
- const l1=(tr+Math.sqrt(disc))/2, l2=(tr-Math.sqrt(disc))/2;
- const s1=Math.sqrt(Math.max(0,l1)), s2=Math.sqrt(Math.max(0,l2));
- let v1=[m12, l1-m11];
- if(Math.hypot(v1[0],v1[1])<1e-14) v1=[1,0];
- const L=Math.hypot(v1[0],v1[1]); v1=[v1[0]/L, v1[1]/L];
- let v2=[-v1[1], v1[0]];
- const u1=(s1>1e-14) ? [(a*v1[0]+b*v1[1])/s1, (c*v1[0]+d*v1[1])/s1] : null;
- const u2=(s2>1e-14) ? [(a*v2[0]+b*v2[1])/s2, (c*v2[0]+d*v2[1])/s2] : null;
- return {s1:s1, s2:s2, v1:v1, v2:v2, u1:u1, u2:u2};
+  const a=A[0][0], b=A[0][1], c=A[1][0], d=A[1][1];
+  const m11=a*a+c*c, m12=a*b+c*d, m22=b*b+d*d;
+  const tr=m11+m22, det=m11*m22-m12*m12;
+  const disc=Math.max(0, tr*tr-4*det);
+  const l1=(tr+Math.sqrt(disc))/2, l2=(tr-Math.sqrt(disc))/2;
+  const s1=Math.sqrt(Math.max(0,l1)), s2=Math.sqrt(Math.max(0,l2));
+  let v1=[m12, l1-m11];
+  if(Math.hypot(v1[0],v1[1])<1e-14) v1=[1,0];
+  const L=Math.hypot(v1[0],v1[1]); v1=[v1[0]/L, v1[1]/L];
+  let v2=[-v1[1], v1[0]];
+  const u1=(s1>1e-14) ? [(a*v1[0]+b*v1[1])/s1, (c*v1[0]+d*v1[1])/s1] : null;
+  const u2=(s2>1e-14) ? [(a*v2[0]+b*v2[1])/s2, (c*v2[0]+d*v2[1])/s2] : null;
+  return {s1:s1, s2:s2, v1:v1, v2:v2, u1:u1, u2:u2};
 }
 
 /* ================= 实验 01 · 三步透镜 ================= */
 /* 版面：canvas 720×400；两panel各 315×315（s=45，σ₁ 最大 ~3.5 也装得下）；
- 顶部一行 panel 标题（y=14），底部两行说明（y≈360/384）——都在画布内。 */
+   顶部一行 panel 标题（y=14），底部两行说明（y≈360/384）——都在画布内。 */
 const cvS = $("cv-svd"), WS=720, HS=400, SSP=45;
 const mIn = mapper(cvS, 176, 182, SSP);
 const mOut = mapper(cvS, 544, 182, SSP);
 const stateS = { a11:1.7, a12:0.5, a21:0.2, a22:1.1, stage:2, timer:null };
 function matS(){ return [[stateS.a11, stateS.a12],[stateS.a21, stateS.a22]]; }
 /* 2×2 的 U、Σ、Vᵀ。U 的【列】才是 uⱼ：U=[[u₁x,u₂x],[u₁y,u₂y]]。
- 若按行塞（[[u₁x,u₁y],[u₂x,u₂y]]），得到的是 UᵀΣVᵀ 而不是 UΣVᵀ，
- 画出来的椭圆会关于 x 轴镜像——本页曾经的真 bug。 */
+   若按行塞（[[u₁x,u₁y],[u₂x,u₂y]]），得到的是 UᵀΣVᵀ 而不是 UΣVᵀ，
+   画出来的椭圆会关于 x 轴镜像——本页曾经的真 bug。 */
 function svdParts(A){
- const sv=sv2(A);
- const Vt=[[sv.v1[0], sv.v1[1]],[sv.v2[0], sv.v2[1]]];
- const U=(sv.u1&&sv.u2) ? [[sv.u1[0], sv.u2[0]],[sv.u1[1], sv.u2[1]]] : null;
- return { sv:sv, Vt:Vt, U:U, SIG:[[sv.s1,0],[0,sv.s2]] };
+  const sv=sv2(A);
+  const Vt=[[sv.v1[0], sv.v1[1]],[sv.v2[0], sv.v2[1]]];
+  const U=(sv.u1&&sv.u2) ? [[sv.u1[0], sv.u2[0]],[sv.u1[1], sv.u2[1]]] : null;
+  return { sv:sv, Vt:Vt, U:U, SIG:[[sv.s1,0],[0,sv.s2]] };
 }
 function mul2(P,Q){
- return [[P[0][0]*Q[0][0]+P[0][1]*Q[1][0], P[0][0]*Q[0][1]+P[0][1]*Q[1][1]],
- [P[1][0]*Q[0][0]+P[1][1]*Q[1][0], P[1][0]*Q[0][1]+P[1][1]*Q[1][1]]];
+  return [[P[0][0]*Q[0][0]+P[0][1]*Q[1][0], P[0][0]*Q[0][1]+P[0][1]*Q[1][1]],
+          [P[1][0]*Q[0][0]+P[1][1]*Q[1][0], P[1][0]*Q[0][1]+P[1][1]*Q[1][1]]];
 }
 /* 三步透镜的矩阵：M₀=Vᵀ（只转，圆还是圆）、M₁=ΣVᵀ（拉成轴对齐椭圆）、M₂=UΣVᵀ=A */
 function stageMatrix(stage, A){
- A=A||matS();
- const P=svdParts(A);
- if(stage<=0) return P.Vt;
- if(stage===1) return mul2(P.SIG, P.Vt);
- return P.U ? mul2(mul2(P.U, P.SIG), P.Vt) : A; /* 亏秩时 u₂ 无定义，M₂ 直接取 A（两者相等） */
+  A=A||matS();
+  const P=svdParts(A);
+  if(stage<=0) return P.Vt;
+  if(stage===1) return mul2(P.SIG, P.Vt);
+  return P.U ? mul2(mul2(P.U, P.SIG), P.Vt) : A;   /* 亏秩时 u₂ 无定义，M₂ 直接取 A（两者相等） */
 }
 function drawSVD(){
- const ctx=cvS.getContext("2d"); ctx.clearRect(0,0,WS,HS);
- const A=matS(), P=svdParts(A), sv=P.sv;
- grid(ctx, mIn.X(0), mIn.Y(0), SSP, -3.5, 3.5, -3.5, 3.5);
- grid(ctx, mOut.X(0), mOut.Y(0), SSP, -3.5, 3.5, -3.5, 3.5);
- /* 左：单位圆 + v */
- ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([6,5]); ctx.lineWidth=1.6;
- ctx.beginPath(); ctx.arc(mIn.X(0), mIn.Y(0), SSP, 0, 7); ctx.stroke(); ctx.restore();
- vec(ctx, mIn, sv.v1, "#B04A2F", 3.2); label(ctx, "v₁", mIn.X(sv.v1[0])+8, mIn.Y(sv.v1[1])-9, "#B04A2F", 13.5);
- vec(ctx, mIn, sv.v2, "#2F5D8A", 3.2); label(ctx, "v₂", mIn.X(sv.v2[0])+8, mIn.Y(sv.v2[1])+13, "#2F5D8A", 13.5);
- label(ctx, "输入 ℝ²：单位圆 S", mIn.X(-3.45), 14, "#5A6B7C", 12);
- /* 右：当前阶段的像 M·S */
- const stage=stateS.stage;
- const M=stageMatrix(stage, A);
- function ellipsePath(E){
- ctx.beginPath();
- for(let i=0;i<=120;i++){ const t=i/120*2*Math.PI;
- const px=E[0][0]*Math.cos(t)+E[0][1]*Math.sin(t), py=E[1][0]*Math.cos(t)+E[1][1]*Math.sin(t);
- if(i===0) ctx.moveTo(mOut.X(px), mOut.Y(py)); else ctx.lineTo(mOut.X(px), mOut.Y(py)); }
- ctx.closePath();
- }
- ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2.6;
- ellipsePath(M); ctx.stroke(); ctx.restore();
- const cap = stage===0 ? "① Vᵀ：只转，圆仍是圆"
- : stage===1 ? "② Σ：拉成轴对齐椭圆"
- : "③ U：转到最终姿态";
- label(ctx, cap, mOut.X(-3.45), 14, "#B04A2F", 12);
- /* 右：v₁、v₂ 在当前阶段的像（箭头）——圆的旋转只能靠它们看出来 */
- function imgVec(v){ return [M[0][0]*v[0]+M[0][1]*v[1], M[1][0]*v[0]+M[1][1]*v[1]]; }
- const w1=imgVec(sv.v1), w2=imgVec(sv.v2);
- const names = stage===0 ? ["e₁","e₂"] : stage===1 ? ["σ₁e₁","σ₂e₂"] : ["σ₁u₁","σ₂u₂"];
- function drawImg(w, name, color, below){
- if(Math.hypot(w[0],w[1])<1e-9) return; /* σ₂=0 时第二支退化为零向量，不画 */
- vec(ctx, mOut, w, color, 2.6);
- /* 标签夹在画布内：滑杆拉到头时 σ₁ 接近 3.5，箭头尖会顶到 panel 边界 */
- const lx=Math.max(8, Math.min(mOut.X(w[0])+7, WS-46));
- const ly=Math.max(10, Math.min(mOut.Y(w[1])+(below?13:-8), HS-16));
- label(ctx, name, lx, ly, color, 12);
- }
- drawImg(w1, names[0], "#B04A2F", false);
- drawImg(w2, names[1], "#2F5D8A", true);
- if(!P.U){
- label(ctx, (stage===2? "σ₂=0：椭圆退化成线段，u₂ 无几何定义" : "σ₂=0：v₂ 方向被压成 0"), mOut.X(-3.45), 30, "#5A6B7C", 11.5);
- }
- /* 底部说明：三步顺序 + 该看什么 */
- label(ctx, "A = U Σ Vᵀ　｜　① Vᵀ 转 → ② Σ 沿轴拉成半轴 σ₁,σ₂ 的椭圆 → ③ U 再转", 360, 362, "#22303F", 12.5, "center");
- label(ctx, "圆的旋转本身看不出来：盯住两支箭头 eⱼ → σⱼeⱼ → σⱼuⱼ；最长半轴必须与 σ₁u₁ 重合", 360, 384, "#5A6B7C", 11.5, "center");
- /* 读数 */
- $("v-a11").textContent=fmt(stateS.a11,2); $("v-a12").textContent=fmt(stateS.a12,2);
- $("v-a21").textContent=fmt(stateS.a21,2); $("v-a22").textContent=fmt(stateS.a22,2);
- $("ro-sig").textContent=fmt(sv.s1,4)+" / "+fmt(sv.s2,4);
- $("ro-rank").textContent=(sv.s2>1e-10)?"2":"1";
- $("ro-v1").textContent="("+fmt(sv.v1[0],3)+", "+fmt(sv.v1[1],3)+")";
- $("ro-v2").textContent="("+fmt(sv.v2[0],3)+", "+fmt(sv.v2[1],3)+")";
- $("ro-u1").textContent=sv.u1? "("+fmt(sv.u1[0],3)+", "+fmt(sv.u1[1],3)+")" : "—（σ₁=0）";
- $("ro-u2").textContent=sv.u2? "("+fmt(sv.u2[0],3)+", "+fmt(sv.u2[1],3)+")" : "—（σ₂=0：u₂ 不唯一）";
- const deg=function(v){ return fmt(Math.atan2(v[1],v[0])*180/Math.PI,1)+"°"; };
- $("ro-ang").textContent=deg(sv.v1)+" / "+(sv.u1?deg(sv.u1):"—")+" / "+(sv.u2?deg(sv.u2):"—");
- $("ro-sv2").textContent=fmt(sv.s1,4);
- $("ro-svF").textContent=fmt(Math.sqrt(sv.s1*sv.s1+sv.s2*sv.s2),4);
- $("ro-stage").textContent=["① Vᵀ 旋转","② Σ 拉伸","③ U 旋转（完成）"][stage];
+  const ctx=cvS.getContext("2d"); ctx.clearRect(0,0,WS,HS);
+  const A=matS(), P=svdParts(A), sv=P.sv;
+  grid(ctx, mIn.X(0), mIn.Y(0), SSP, -3.5, 3.5, -3.5, 3.5);
+  grid(ctx, mOut.X(0), mOut.Y(0), SSP, -3.5, 3.5, -3.5, 3.5);
+  /* 左：单位圆 + v */
+  ctx.save(); ctx.strokeStyle="#9AA7B4"; ctx.setLineDash([6,5]); ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.arc(mIn.X(0), mIn.Y(0), SSP, 0, 7); ctx.stroke(); ctx.restore();
+  vec(ctx, mIn, sv.v1, "#B04A2F", 3.2); label(ctx, "v₁", mIn.X(sv.v1[0])+8, mIn.Y(sv.v1[1])-9, "#B04A2F", 13.5);
+  vec(ctx, mIn, sv.v2, "#2F5D8A", 3.2); label(ctx, "v₂", mIn.X(sv.v2[0])+8, mIn.Y(sv.v2[1])+13, "#2F5D8A", 13.5);
+  label(ctx, "输入 ℝ²：单位圆 S", mIn.X(-3.45), 14, "#5A6B7C", 12);
+  /* 右：当前阶段的像 M·S */
+  const stage=stateS.stage;
+  const M=stageMatrix(stage, A);
+  function ellipsePath(E){
+    ctx.beginPath();
+    for(let i=0;i<=120;i++){ const t=i/120*2*Math.PI;
+      const px=E[0][0]*Math.cos(t)+E[0][1]*Math.sin(t), py=E[1][0]*Math.cos(t)+E[1][1]*Math.sin(t);
+      if(i===0) ctx.moveTo(mOut.X(px), mOut.Y(py)); else ctx.lineTo(mOut.X(px), mOut.Y(py)); }
+    ctx.closePath();
+  }
+  ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.lineWidth=2.6;
+  ellipsePath(M); ctx.stroke(); ctx.restore();
+  const cap = stage===0 ? "① Vᵀ：只转，圆仍是圆"
+            : stage===1 ? "② Σ：拉成轴对齐椭圆"
+            : "③ U：转到最终姿态";
+  label(ctx, cap, mOut.X(-3.45), 14, "#B04A2F", 12);
+  /* 右：v₁、v₂ 在当前阶段的像（箭头）——圆的旋转只能靠它们看出来 */
+  function imgVec(v){ return [M[0][0]*v[0]+M[0][1]*v[1], M[1][0]*v[0]+M[1][1]*v[1]]; }
+  const w1=imgVec(sv.v1), w2=imgVec(sv.v2);
+  const names = stage===0 ? ["e₁","e₂"] : stage===1 ? ["σ₁e₁","σ₂e₂"] : ["σ₁u₁","σ₂u₂"];
+  function drawImg(w, name, color, below){
+    if(Math.hypot(w[0],w[1])<1e-9) return;      /* σ₂=0 时第二支退化为零向量，不画 */
+    vec(ctx, mOut, w, color, 2.6);
+    /* 标签夹在画布内：滑杆拉到头时 σ₁ 接近 3.5，箭头尖会顶到 panel 边界 */
+    const lx=Math.max(8, Math.min(mOut.X(w[0])+7, WS-46));
+    const ly=Math.max(10, Math.min(mOut.Y(w[1])+(below?13:-8), HS-16));
+    label(ctx, name, lx, ly, color, 12);
+  }
+  drawImg(w1, names[0], "#B04A2F", false);
+  drawImg(w2, names[1], "#2F5D8A", true);
+  if(!P.U){
+    label(ctx, (stage===2? "σ₂=0：椭圆退化成线段，u₂ 无几何定义" : "σ₂=0：v₂ 方向被压成 0"), mOut.X(-3.45), 30, "#5A6B7C", 11.5);
+  }
+  /* 底部说明：三步顺序 + 该看什么 */
+  label(ctx, "A = U Σ Vᵀ　｜　① Vᵀ 转 → ② Σ 沿轴拉成半轴 σ₁,σ₂ 的椭圆 → ③ U 再转", 360, 362, "#22303F", 12.5, "center");
+  label(ctx, "圆的旋转本身看不出来：盯住两支箭头 eⱼ → σⱼeⱼ → σⱼuⱼ；最长半轴必须与 σ₁u₁ 重合", 360, 384, "#5A6B7C", 11.5, "center");
+  /* 读数 */
+  $("v-a11").textContent=fmt(stateS.a11,2); $("v-a12").textContent=fmt(stateS.a12,2);
+  $("v-a21").textContent=fmt(stateS.a21,2); $("v-a22").textContent=fmt(stateS.a22,2);
+  $("ro-sig").textContent=fmt(sv.s1,4)+" / "+fmt(sv.s2,4);
+  $("ro-rank").textContent=(sv.s2>1e-10)?"2":"1";
+  $("ro-v1").textContent="("+fmt(sv.v1[0],3)+", "+fmt(sv.v1[1],3)+")";
+  $("ro-v2").textContent="("+fmt(sv.v2[0],3)+", "+fmt(sv.v2[1],3)+")";
+  $("ro-u1").textContent=sv.u1? "("+fmt(sv.u1[0],3)+", "+fmt(sv.u1[1],3)+")" : "—（σ₁=0）";
+  $("ro-u2").textContent=sv.u2? "("+fmt(sv.u2[0],3)+", "+fmt(sv.u2[1],3)+")" : "—（σ₂=0：u₂ 不唯一）";
+  const deg=function(v){ return fmt(Math.atan2(v[1],v[0])*180/Math.PI,1)+"°"; };
+  $("ro-ang").textContent=deg(sv.v1)+" / "+(sv.u1?deg(sv.u1):"—")+" / "+(sv.u2?deg(sv.u2):"—");
+  $("ro-sv2").textContent=fmt(sv.s1,4);
+  $("ro-svF").textContent=fmt(Math.sqrt(sv.s1*sv.s1+sv.s2*sv.s2),4);
+  $("ro-stage").textContent=["① Vᵀ 旋转","② Σ 拉伸","③ U 旋转（完成）"][stage];
 }
 $("b-play3").onclick=function(){
- if(stateS.timer){ clearInterval(stateS.timer); stateS.timer=null; }
- stateS.stage=0; drawSVD();
- stateS.timer=setInterval(function(){
- stateS.stage=Math.min(2, stateS.stage+1); /* 钳在 ③，否则多跑一格会把 stage 读成 undefined */
- if(stateS.stage>=2){ clearInterval(stateS.timer); stateS.timer=null; }
- drawSVD();
- }, 900);
+  if(stateS.timer){ clearInterval(stateS.timer); stateS.timer=null; }
+  stateS.stage=0; drawSVD();
+  stateS.timer=setInterval(function(){
+    stateS.stage=Math.min(2, stateS.stage+1);       /* 钳在 ③，否则多跑一格会把 stage 读成 undefined */
+    if(stateS.stage>=2){ clearInterval(stateS.timer); stateS.timer=null; }
+    drawSVD();
+  }, 900);
 };
 const PRESETS_S = {
- gen:{a11:1.7,a12:0.5,a21:0.2,a22:1.1},
- rank1:{a11:1,a12:0.6,a21:0.6,a22:0.36},
- rot90:{a11:0,a12:-1,a21:1,a22:0},
- diag:{a11:1.6,a12:0,a21:0,a22:0.7}
+  gen:{a11:1.7,a12:0.5,a21:0.2,a22:1.1},
+  rank1:{a11:1,a12:0.6,a21:0.6,a22:0.36},
+  rot90:{a11:0,a12:-1,a21:1,a22:0},
+  diag:{a11:1.6,a12:0,a21:0,a22:0.7}
 };
 $("svd-presets").addEventListener("click", function(e){
- const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.p) return;
- const p=PRESETS_S[t.dataset.p]; if(!p) return;
- stateS.a11=p.a11; stateS.a12=p.a12; stateS.a21=p.a21; stateS.a22=p.a22;
- $("s-a11").value=p.a11; $("s-a12").value=p.a12; $("s-a21").value=p.a21; $("s-a22").value=p.a22;
- drawSVD();
+  const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.p) return;
+  const p=PRESETS_S[t.dataset.p]; if(!p) return;
+  stateS.a11=p.a11; stateS.a12=p.a12; stateS.a21=p.a21; stateS.a22=p.a22;
+  $("s-a11").value=p.a11; $("s-a12").value=p.a12; $("s-a21").value=p.a21; $("s-a22").value=p.a22;
+  drawSVD();
 });
 [["s-a11","a11"],["s-a12","a12"],["s-a21","a21"],["s-a22","a22"]].forEach(function(p){
- $(p[0]).addEventListener("input", function(){ stateS[p[1]]=parseFloat(this.value); drawSVD(); });
+  $(p[0]).addEventListener("input", function(){ stateS[p[1]]=parseFloat(this.value); drawSVD(); });
 });
 drawSVD();
 
 /* ================= 实验 02 · 秩-k 近似实验室 ================= */
 const N = 36;
 function makePic(kind){
- const A=[]; for(let i=0;i<N;i++){ A.push(new Array(N).fill(0)); }
- for(let i=0;i<N;i++) for(let j=0;j<N;j++){
- const u=(j-(N-1)/2)/((N-1)/2), v=((N-1)/2-i)/((N-1)/2);
- if(kind==="letter"){
- /* 字母 A：两撇 + 横杠 */
- const s=0.16;
- let val=0;
- const d1=Math.abs(u-0.42*v+0.06), d2=Math.abs(u+0.42*v-0.06);
- const inA=(v>-0.75&&v<0.8);
- if(inA&&(d1<s||d2<s)) val=1;
- if(inA&&Math.abs(v+0.08)<0.055&&Math.abs(u)<0.62) val=1;
- A[i][j]=val;
- } else if(kind==="stripe"){
- A[i][j]=(Math.abs(u-v)<=0.18)?1:0;
- } else if(kind==="checker"){
- A[i][j]=((Math.floor(i/4)+Math.floor(j/4))%2);
- } else {
- A[i][j]=0.5+0.5*u;
- }
- }
- return A;
+  const A=[]; for(let i=0;i<N;i++){ A.push(new Array(N).fill(0)); }
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+    const u=(j-(N-1)/2)/((N-1)/2), v=((N-1)/2-i)/((N-1)/2);
+    if(kind==="letter"){
+      /* 字母 A：两撇 + 横杠 */
+      const s=0.16;
+      let val=0;
+      const d1=Math.abs(u-0.42*v+0.06), d2=Math.abs(u+0.42*v-0.06);
+      const inA=(v>-0.75&&v<0.8);
+      if(inA&&(d1<s||d2<s)) val=1;
+      if(inA&&Math.abs(v+0.08)<0.055&&Math.abs(u)<0.62) val=1;
+      A[i][j]=val;
+    } else if(kind==="stripe"){
+      A[i][j]=(Math.abs(u-v)<=0.18)?1:0;
+    } else if(kind==="checker"){
+      A[i][j]=((Math.floor(i/4)+Math.floor(j/4))%2);
+    } else {
+      A[i][j]=0.5+0.5*u;
+    }
+  }
+  return A;
 }
 /* 单边 Jacobi SVD：直接正交化 A 的列 */
 function jacobiSVD(A){
- const m=A.length, n=A[0].length;
- const cols=[]; for(let j=0;j<n;j++){ const c=new Array(m);
- for(let i=0;i<m;i++) c[i]=A[i][j]; cols.push(c); }
- const V=[]; for(let i=0;i<n;i++){ const r=new Array(n).fill(0); r[i]=1; V.push(r); }
- const dot=function(a,b){ let s=0; for(let i=0;i<a.length;i++) s+=a[i]*b[i]; return s; };
- for(let sweep=0; sweep<50; sweep++){
- let off=0;
- for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
- const aii=dot(cols[i],cols[i]), bjj=dot(cols[j],cols[j]), aij=dot(cols[i],cols[j]);
- if(Math.abs(aij) <= 1e-15*Math.sqrt(aii*bjj)) continue;
- off=Math.max(off, Math.abs(aij)/Math.sqrt(aii*bjj));
- const tau=(bjj-aii)/(2*aij);
- const t=(tau>=0?1:-1)/(Math.abs(tau)+Math.sqrt(1+tau*tau));
- const c=1/Math.sqrt(1+t*t), s=c*t;
- for(let k=0;k<m;k++){ const ak=cols[i][k], bk=cols[j][k];
- cols[i][k]=c*ak-s*bk; cols[j][k]=s*ak+c*bk; }
- for(let k=0;k<n;k++){ const vik=V[i][k], vjk=V[j][k];
- V[i][k]=c*vik-s*vjk; V[j][k]=s*vik+c*vjk; }
- }
- if(off<1e-13) break;
- }
- const items=[];
- for(let i=0;i<n;i++) items.push({i:i, s:Math.sqrt(dot(cols[i],cols[i]))});
- items.sort(function(p,q){ return q.s-p.s; });
- const sig=items.map(function(it){ return it.s; });
- const U=items.map(function(it){ const s=it.s;
- return s>1e-11 ? cols[it.i].map(function(x){ return x/s; }) : null; });
- const Vs=items.map(function(it){ return V[it.i]; });
- return {sig:sig, U:U, V:Vs, m:m, n:n};
+  const m=A.length, n=A[0].length;
+  const cols=[]; for(let j=0;j<n;j++){ const c=new Array(m);
+    for(let i=0;i<m;i++) c[i]=A[i][j]; cols.push(c); }
+  const V=[]; for(let i=0;i<n;i++){ const r=new Array(n).fill(0); r[i]=1; V.push(r); }
+  const dot=function(a,b){ let s=0; for(let i=0;i<a.length;i++) s+=a[i]*b[i]; return s; };
+  for(let sweep=0; sweep<50; sweep++){
+    let off=0;
+    for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
+      const aii=dot(cols[i],cols[i]), bjj=dot(cols[j],cols[j]), aij=dot(cols[i],cols[j]);
+      if(Math.abs(aij) <= 1e-15*Math.sqrt(aii*bjj)) continue;
+      off=Math.max(off, Math.abs(aij)/Math.sqrt(aii*bjj));
+      const tau=(bjj-aii)/(2*aij);
+      const t=(tau>=0?1:-1)/(Math.abs(tau)+Math.sqrt(1+tau*tau));
+      const c=1/Math.sqrt(1+t*t), s=c*t;
+      for(let k=0;k<m;k++){ const ak=cols[i][k], bk=cols[j][k];
+        cols[i][k]=c*ak-s*bk; cols[j][k]=s*ak+c*bk; }
+      for(let k=0;k<n;k++){ const vik=V[i][k], vjk=V[j][k];
+        V[i][k]=c*vik-s*vjk; V[j][k]=s*vik+c*vjk; }
+    }
+    if(off<1e-13) break;
+  }
+  const items=[];
+  for(let i=0;i<n;i++) items.push({i:i, s:Math.sqrt(dot(cols[i],cols[i]))});
+  items.sort(function(p,q){ return q.s-p.s; });
+  const sig=items.map(function(it){ return it.s; });
+  const U=items.map(function(it){ const s=it.s;
+    return s>1e-11 ? cols[it.i].map(function(x){ return x/s; }) : null; });
+  const Vs=items.map(function(it){ return V[it.i]; });
+  return {sig:sig, U:U, V:Vs, m:m, n:n};
 }
 function mgs(A){
- const m=A.length, n=A[0].length;
- const Q=[]; for(let j=0;j<n;j++){ const c=new Array(m);
- for(let i=0;i<m;i++) c[i]=A[i][j]; Q.push(c); }
- const R=[]; for(let i=0;i<n;i++) R.push(new Array(n).fill(0));
- /* 列模的尺度，用于识别「正交化后塌成零」的亏秩列 */
- let scale=0; for(let j=0;j<n;j++){ let s=0;
- for(let i=0;i<m;i++) s+=Q[j][i]*Q[j][i]; scale=Math.max(scale, Math.sqrt(s)); }
- for(let i=0;i<n;i++){
- let nrm=0; for(let k=0;k<m;k++) nrm+=Q[i][k]*Q[i][k];
- R[i][i]=Math.sqrt(nrm);
- if(R[i][i] > 1e-13*scale){
- for(let k=0;k<m;k++) Q[i][k]/=R[i][i];
- } else {
- R[i][i]=0; for(let k=0;k<m;k++) Q[i][k]=0; /* 亏秩列：整列归零，避免除零 */
- }
- for(let j=i+1;j<n;j++){
- let s=0; for(let k=0;k<m;k++) s+=Q[i][k]*Q[j][k];
- R[i][j]=s;
- for(let k=0;k<m;k++) Q[j][k]-=s*Q[i][k];
- }
- }
- return {Q:Q, R:R};
+  const m=A.length, n=A[0].length;
+  const Q=[]; for(let j=0;j<n;j++){ const c=new Array(m);
+    for(let i=0;i<m;i++) c[i]=A[i][j]; Q.push(c); }
+  const R=[]; for(let i=0;i<n;i++) R.push(new Array(n).fill(0));
+  /* 列模的尺度，用于识别「正交化后塌成零」的亏秩列 */
+  let scale=0; for(let j=0;j<n;j++){ let s=0;
+    for(let i=0;i<m;i++) s+=Q[j][i]*Q[j][i]; scale=Math.max(scale, Math.sqrt(s)); }
+  for(let i=0;i<n;i++){
+    let nrm=0; for(let k=0;k<m;k++) nrm+=Q[i][k]*Q[i][k];
+    R[i][i]=Math.sqrt(nrm);
+    if(R[i][i] > 1e-13*scale){
+      for(let k=0;k<m;k++) Q[i][k]/=R[i][i];
+    } else {
+      R[i][i]=0; for(let k=0;k<m;k++) Q[i][k]=0;   /* 亏秩列：整列归零，避免除零 */
+    }
+    for(let j=i+1;j<n;j++){
+      let s=0; for(let k=0;k<m;k++) s+=Q[i][k]*Q[j][k];
+      R[i][j]=s;
+      for(let k=0;k<m;k++) Q[j][k]-=s*Q[i][k];
+    }
+  }
+  return {Q:Q, R:R};
 }
 const stateP = { kind:"letter", k:6, svd:null, pic:null, qr:null, maxv:1 };
 function loadPic(kind){
- stateP.kind=kind;
- stateP.pic=makePic(kind);
- stateP.svd=jacobiSVD(stateP.pic);
- stateP.qr=mgs(stateP.pic);
- let mx=0; for(let i=0;i<N;i++) for(let j=0;j<N;j++) mx=Math.max(mx, stateP.pic[i][j]);
- stateP.maxv=mx;
+  stateP.kind=kind;
+  stateP.pic=makePic(kind);
+  stateP.svd=jacobiSVD(stateP.pic);
+  stateP.qr=mgs(stateP.pic);
+  let mx=0; for(let i=0;i<N;i++) for(let j=0;j<N;j++) mx=Math.max(mx, stateP.pic[i][j]);
+  stateP.maxv=mx;
 }
 function approx(k){
- const A=new Array(N); for(let i=0;i<N;i++) A[i]=new Array(N).fill(0);
- const S=stateP.svd;
- for(let j=0;j<Math.min(k,S.n);j++){
- const s=S.sig[j]; if(!S.U[j]||s<=0) continue;
- for(let i=0;i<N;i++){ const u=S.U[j][i]*s;
- for(let c=0;c<N;c++) A[i][c]+=u*S.V[j][c]; }
- }
- return A;
+  const A=new Array(N); for(let i=0;i<N;i++) A[i]=new Array(N).fill(0);
+  const S=stateP.svd;
+  for(let j=0;j<Math.min(k,S.n);j++){
+    const s=S.sig[j]; if(!S.U[j]||s<=0) continue;
+    for(let i=0;i<N;i++){ const u=S.U[j][i]*s;
+      for(let c=0;c<N;c++) A[i][c]+=u*S.V[j][c]; }
+  }
+  return A;
 }
 function drawGray(cv, M, maxv){
- const ctx=cv.getContext("2d");
- const cell=cv.width/N;
- for(let i=0;i<N;i++) for(let j=0;j<N;j++){
- const g=Math.max(0,Math.min(1, M[i][j]/maxv));
- const v=Math.round(255*(1-g));
- ctx.fillStyle="rgb("+v+","+v+","+v+")";
- ctx.fillRect(j*cell, i*cell, Math.ceil(cell), Math.ceil(cell));
- }
+  const ctx=cv.getContext("2d");
+  const cell=cv.width/N;
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+    const g=Math.max(0,Math.min(1, M[i][j]/maxv));
+    const v=Math.round(255*(1-g));
+    ctx.fillStyle="rgb("+v+","+v+","+v+")";
+    ctx.fillRect(j*cell, i*cell, Math.ceil(cell), Math.ceil(cell));
+  }
 }
 function drawSpec(){
- const cv=$("cv-spec"), ctx=cv.getContext("2d");
- ctx.clearRect(0,0,cv.width,cv.height);
- const S=stateP.svd, sig=S.sig, W=cv.width, H=cv.height;
- const padL=44, padB=18, padT=8;
- const bw=(W-padL-8)/sig.length;
- const smax=sig[0]||1;
- /* 网格与轴 */
- ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
- [0.25,0.5,0.75,1].forEach(function(f){ const y=padT+(H-padT-padB)*(1-f);
- ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-8,y); ctx.stroke();
- label(ctx, (f*smax).toFixed(1), padL-6, y, "#5A6B7C", 10, "right"); });
- ctx.restore();
- for(let j=0;j<sig.length;j++){
- const h=(H-padT-padB)*(sig[j]/smax);
- ctx.fillStyle=(j<stateP.k)?"#2F5D8A":"#C9CFD6";
- ctx.fillRect(padL+j*bw+0.5, H-padB-h, Math.max(1,bw-1), h);
- }
- /* k 截线 */
- const xk=padL+stateP.k*bw;
- ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.setLineDash([4,4]); ctx.lineWidth=1.6;
- ctx.beginPath(); ctx.moveTo(xk,padT); ctx.lineTo(xk,H-padB); ctx.stroke(); ctx.restore();
- label(ctx, "σ₁", padL+sig.length*bw*0+2, padT-2, "#22303F", 10);
- label(ctx, "k="+stateP.k+" 截断", xk+4, padT+10, "#B04A2F", 11);
- label(ctx, "σ 谱（长度=σⱼ/σ₁）", padL, H-4, "#5A6B7C", 10.5);
+  const cv=$("cv-spec"), ctx=cv.getContext("2d");
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const S=stateP.svd, sig=S.sig, W=cv.width, H=cv.height;
+  const padL=44, padB=18, padT=8;
+  const bw=(W-padL-8)/sig.length;
+  const smax=sig[0]||1;
+  /* 网格与轴 */
+  ctx.save(); ctx.strokeStyle="#E6EBF1"; ctx.lineWidth=1;
+  [0.25,0.5,0.75,1].forEach(function(f){ const y=padT+(H-padT-padB)*(1-f);
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-8,y); ctx.stroke();
+    label(ctx, (f*smax).toFixed(1), padL-6, y, "#5A6B7C", 10, "right"); });
+  ctx.restore();
+  for(let j=0;j<sig.length;j++){
+    const h=(H-padT-padB)*(sig[j]/smax);
+    ctx.fillStyle=(j<stateP.k)?"#2F5D8A":"#C9CFD6";
+    ctx.fillRect(padL+j*bw+0.5, H-padB-h, Math.max(1,bw-1), h);
+  }
+  /* k 截线 */
+  const xk=padL+stateP.k*bw;
+  ctx.save(); ctx.strokeStyle="#B04A2F"; ctx.setLineDash([4,4]); ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(xk,padT); ctx.lineTo(xk,H-padB); ctx.stroke(); ctx.restore();
+  label(ctx, "σ₁", padL+sig.length*bw*0+2, padT-2, "#22303F", 10);
+  label(ctx, "k="+stateP.k+" 截断", xk+4, padT+10, "#B04A2F", 11);
+  label(ctx, "σ 谱（长度=σⱼ/σ₁）", padL, H-4, "#5A6B7C", 10.5);
 }
 function drawPicLab(){
- drawGray($("cv-src"), stateP.pic, stateP.maxv);
- drawGray($("cv-approx"), approx(stateP.k), stateP.maxv);
- drawSpec();
- const S=stateP.svd, sig=S.sig, k=stateP.k;
- $("v-k").textContent=k;
- $("ro-sig3").textContent=fmt(sig[0],3)+" / "+fmt(sig[1],3)+" / "+fmt(sig[2],3);
- $("ro-err2").textContent=fmt(k<sig.length?sig[k]:0,4);
- let tailF=0; for(let j=k;j<sig.length;j++) tailF+=sig[j]*sig[j];
- $("ro-errF").textContent=fmt(Math.sqrt(tailF),4);
- /* QR 截断误差（Frobenius，独立路径） */
- let errQR=0;
- for(let i=0;i<N;i++) for(let j=0;j<N;j++){
- let b=0;
- for(let c=0;c<Math.min(k,N);c++) b+=stateP.qr.Q[c][i]*stateP.qr.R[c][j];
- const d=stateP.pic[i][j]-b; errQR+=d*d;
- }
- $("ro-errQR").textContent=fmt(Math.sqrt(errQR),4);
- let eAll=0, eK=0;
- for(let j=0;j<sig.length;j++){ eAll+=sig[j]*sig[j]; if(j<k) eK+=sig[j]*sig[j]; }
- $("ro-energy").textContent=fmt(eAll>0?eK/eAll:0,4);
- $("ro-storage").textContent=k*(N+N)+" / "+N*N+" = "+fmt(k*2*N/(N*N),3);
+  drawGray($("cv-src"), stateP.pic, stateP.maxv);
+  drawGray($("cv-approx"), approx(stateP.k), stateP.maxv);
+  drawSpec();
+  const S=stateP.svd, sig=S.sig, k=stateP.k;
+  $("v-k").textContent=k;
+  $("ro-sig3").textContent=fmt(sig[0],3)+" / "+fmt(sig[1],3)+" / "+fmt(sig[2],3);
+  $("ro-err2").textContent=fmt(k<sig.length?sig[k]:0,4);
+  let tailF=0; for(let j=k;j<sig.length;j++) tailF+=sig[j]*sig[j];
+  $("ro-errF").textContent=fmt(Math.sqrt(tailF),4);
+  /* QR 截断误差（Frobenius，独立路径） */
+  let errQR=0;
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+    let b=0;
+    for(let c=0;c<Math.min(k,N);c++) b+=stateP.qr.Q[c][i]*stateP.qr.R[c][j];
+    const d=stateP.pic[i][j]-b; errQR+=d*d;
+  }
+  $("ro-errQR").textContent=fmt(Math.sqrt(errQR),4);
+  let eAll=0, eK=0;
+  for(let j=0;j<sig.length;j++){ eAll+=sig[j]*sig[j]; if(j<k) eK+=sig[j]*sig[j]; }
+  $("ro-energy").textContent=fmt(eAll>0?eK/eAll:0,4);
+  $("ro-storage").textContent=k*(N+N)+" / "+N*N+" = "+fmt(k*2*N/(N*N),3);
 }
 $("s-k").addEventListener("input", function(){ stateP.k=parseInt(this.value,10); drawPicLab(); });
 $("pic-presets").addEventListener("click", function(e){
- const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.p) return;
- loadPic(t.dataset.p); drawPicLab();
+  const t=(e&&e.target)||this; if(!t.dataset||!t.dataset.p) return;
+  loadPic(t.dataset.p); drawPicLab();
 });
 loadPic("letter"); drawPicLab();
 </script>

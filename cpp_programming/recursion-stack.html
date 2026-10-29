@@ -6,33 +6,33 @@
 <title>递归调用栈 · 阶乘、汉诺塔与栈溢出 — CPP-03</title>
 <!--
  CPP-03 · C++ 程序设计 §4（教材第 3 版 第 4 章）
- 维护说明：
- - 本页无数学公式，故意不引 MathJax，完全离线可用；不要为了「统一」硬加 $ 定界符。
- - 所有渲染走 innerHTML 字符串（DOM 桩没有 appendChild，读数闸门要能跑）。
- - 页面脚本暴露 window.STK，供 verify_readout_stack.js 直接调用纯函数与状态机核对。
- - 版式身份「内存检查器」：冷灰纸 + 墨 + 青(指针/回溯) / 琥珀(地址/递推) + 等宽读数 + 图号 CPP-03。
- - 教材依据：§4.6 函数的递归调用（例4.5 age、例4.6 fac、图4.8/4.9 两阶段）、§4.7 内置函数
- （图4.10 调用五步；「包含循环、switch 或递归的函数无法进行代码置换」）、§4.12.1 动态存储方式
- （调用开始分配、调用结束释放、两次调用地址可能不同）、§4.12.2 自动变量、§4.12.3 静态局部变量
- （例4.12）、第 4 章习题 9（Hanoi 塔，教材未附参考程序，页内代码按递归公式给出并注明）。
- - 栈容量 8 MiB / 每帧 32 B 是常见量级的模型示意，页内已标注「模型」。
+  维护说明：
+  - 本页无数学公式，故意不引 MathJax，完全离线可用；不要为了「统一」硬加 $ 定界符。
+  - 所有渲染走 innerHTML 字符串（DOM 桩没有 appendChild，读数闸门要能跑）。
+  - 页面脚本暴露 window.STK，供 verify_readout_stack.js 直接调用纯函数与状态机核对。
+  - 版式身份「内存检查器」：冷灰纸 + 墨 + 青(指针/回溯) / 琥珀(地址/递推) + 等宽读数 + 图号 CPP-03。
+  - 教材依据：§4.6 函数的递归调用（例4.5 age、例4.6 fac、图4.8/4.9 两阶段）、§4.7 内置函数
+    （图4.10 调用五步；「包含循环、switch 或递归的函数无法进行代码置换」）、§4.12.1 动态存储方式
+    （调用开始分配、调用结束释放、两次调用地址可能不同）、§4.12.2 自动变量、§4.12.3 静态局部变量
+    （例4.12）、第 4 章习题 9（Hanoi 塔，教材未附参考程序，页内代码按递归公式给出并注明）。
+  - 栈容量 8 MiB / 每帧 32 B 是常见量级的模型示意，页内已标注「模型」。
 -->
 <style>
 :root{
- --paper:#F2F4F6; --card:#FFFFFF; --ink:#101820; --muted:#5A6672;
- --line:#D3DAE1; --line2:#B7C0C9;
- --teal:#1F7A8C; --teal-soft:#E7F2F4;
- --amber:#B45F06; --amber-soft:#FBF0E2;
- --red:#B4232C; --red-soft:#FBEAEA;
- --green:#2F7A4F; --green-soft:#E9F3ED;
- --mono:ui-monospace,"JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
- --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --paper:#F2F4F6; --card:#FFFFFF; --ink:#101820; --muted:#5A6672;
+  --line:#D3DAE1; --line2:#B7C0C9;
+  --teal:#1F7A8C; --teal-soft:#E7F2F4;
+  --amber:#B45F06; --amber-soft:#FBF0E2;
+  --red:#B4232C; --red-soft:#FBEAEA;
+  --green:#2F7A4F; --green-soft:#E9F3ED;
+  --mono:ui-monospace,"JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font:15.5px/1.78 var(--sans);
- background-image:linear-gradient(rgba(31,122,140,.045) 1px,transparent 1px);
- background-size:100% 28px}
+  background-image:linear-gradient(rgba(31,122,140,.045) 1px,transparent 1px);
+  background-size:100% 28px}
 .wrap{max-width:940px;margin:0 auto;padding:44px 22px 72px}
 
 /* ---------- 页眉 ---------- */
@@ -41,7 +41,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font:15.5px/1.78 var(--sa
 .crumb a:hover{text-decoration:underline}
 .titlebar{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:12px}
 .fig{font-family:var(--mono);font-size:12px;letter-spacing:.08em;background:var(--ink);color:#fff;
- padding:3px 9px;border-radius:3px;white-space:nowrap}
+  padding:3px 9px;border-radius:3px;white-space:nowrap}
 h1{font-size:25px;line-height:1.35;margin:0;font-weight:650;letter-spacing:-.01em}
 .sub{font-family:var(--mono);font-size:12px;color:var(--muted);margin:10px 0 0}
 .lead{font-size:15.5px;margin:16px 0 0;max-width:70ch}
@@ -50,32 +50,32 @@ h1{font-size:25px;line-height:1.35;margin:0;font-weight:650;letter-spacing:-.01e
 /* ---------- 目录 ---------- */
 .toc{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}
 .toc a{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--muted);
- border:1px solid var(--line);background:var(--card);border-radius:20px;padding:4px 12px}
+  border:1px solid var(--line);background:var(--card);border-radius:20px;padding:4px 12px}
 .toc a:hover{border-color:var(--teal);color:var(--teal)}
 
 /* ---------- 章节 ---------- */
 section{margin:44px 0 0}
 h2{font-size:19px;font-weight:650;margin:0 0 4px;padding-left:44px;position:relative;letter-spacing:-.01em}
 h2 .num{position:absolute;left:0;top:2px;font-family:var(--mono);font-size:12px;color:var(--amber);
- border-bottom:2px solid var(--amber);padding-bottom:2px}
+  border-bottom:2px solid var(--amber);padding-bottom:2px}
 h2 + .dek{font-size:13px;color:var(--muted);margin:0 0 18px;padding-left:44px}
 @media(max-width:640px){h2{padding-left:0}h2 .num{position:static;display:block;margin-bottom:6px;border:0;padding:0}
- h2+.dek{padding-left:0}}
+  h2+.dek{padding-left:0}}
 
 p{margin:0 0 14px}
 code{font-family:var(--mono);font-size:.9em;background:#EDF0F3;border:1px solid var(--line);
- border-radius:4px;padding:1px 5px;white-space:nowrap}
+  border-radius:4px;padding:1px 5px;white-space:nowrap}
 @media(max-width:660px){code{white-space:normal;word-break:break-word}}
 pre{font-family:var(--mono);font-size:12.5px;line-height:1.65;background:#111820;color:#D8E1E8;
- border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+  border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
 pre b{color:#7FD1DE;font-weight:400}
 pre i{color:#E0A45C;font-style:normal}
 
 /* ---------- 面板 ---------- */
 .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;
- box-shadow:0 1px 2px rgba(16,24,32,.04);margin:0 0 16px;overflow:hidden}
+  box-shadow:0 1px 2px rgba(16,24,32,.04);margin:0 0 16px;overflow:hidden}
 .panel .ph{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
- padding:9px 14px;border-bottom:1px solid var(--line);background:#FAFBFC}
+  padding:9px 14px;border-bottom:1px solid var(--line);background:#FAFBFC}
 .panel .ph .t{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--muted)}
 input[type=range]{accent-color:#1F7A8C}
 .panel .pb{padding:14px}
@@ -86,7 +86,7 @@ canvas{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
 /* ---------- 按钮 ---------- */
 .ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 14px 14px}
 .btn{font-family:var(--mono);font-size:12.5px;background:#fff;color:var(--ink);
- border:1px solid var(--line2);border-radius:6px;padding:6px 12px;cursor:pointer;line-height:1.4}
+  border:1px solid var(--line2);border-radius:6px;padding:6px 12px;cursor:pointer;line-height:1.4}
 .btn:hover{border-color:var(--teal);color:var(--teal)}
 .btn.on{background:var(--teal);border-color:var(--teal);color:#fff}
 .btn.danger:hover{border-color:var(--red);color:var(--red)}
@@ -110,7 +110,7 @@ canvas{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
 
 /* ---------- 图例 / 步骤说明 ---------- */
 .lg{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--muted);
- padding:0 14px 10px}
+  padding:0 14px 10px}
 .lg .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 .step{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 14px 12px;min-height:20px;line-height:1.7}
 
@@ -124,13 +124,13 @@ tr.hi td{background:var(--amber-soft)}
 
 /* ---------- 提示块 ---------- */
 .note{border-left:3px solid var(--teal);background:var(--teal-soft);padding:11px 14px;
- border-radius:0 6px 6px 0;font-size:14px;margin:0 0 16px}
+  border-radius:0 6px 6px 0;font-size:14px;margin:0 0 16px}
 .note.warn{border-color:var(--red);background:var(--red-soft)}
 .note.tip{border-color:var(--amber);background:var(--amber-soft)}
 .note p:last-child{margin:0}
 .note b{font-weight:650}
 .tagx{font-family:var(--mono);font-size:10.5px;border-radius:3px;padding:1px 6px;
- background:var(--ink);color:#fff;margin-right:6px}
+  background:var(--ink);color:#fff;margin-right:6px}
 
 /* ---------- auto / static 对照 ---------- */
 .frames{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 10px}
@@ -144,7 +144,7 @@ tr.hi td{background:var(--amber-soft)}
 .verdict.yes{color:var(--green)}
 
 footer{margin-top:52px;padding-top:16px;border-top:1px solid var(--line);
- font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  font-size:12.5px;color:var(--muted);font-family:var(--mono)}
 footer a{color:var(--teal)}
 </style>
 </head>
@@ -154,20 +154,20 @@ footer a{color:var(--teal)}
 <p class="crumb"><a href="../index.html">数学可视化 · 全部学科</a> ／ <a href="./index.html">C++ 程序设计</a></p>
 
 <div class="titlebar">
- <span class="fig">CPP-03</span>
- <h1>递归调用栈：阶乘、汉诺塔与栈溢出</h1>
+  <span class="fig">CPP-03</span>
+  <h1>递归调用栈：阶乘、汉诺塔与栈溢出</h1>
 </div>
 <p class="sub">教材第 4 章 §4.6 · §4.7 · §4.12 · 习题 9 · 图 CPP-03 · 五个交互实验</p>
 
 <p class="lead">递归难，不是因为公式怪，而是因为<em>同一个函数同时活着很多份</em>。每次调用都往栈上压一帧，每帧里有自己的形参和局部变量；返回时帧弹出，值自底向上回填。这一页把压入与弹出画出来：<b>阶乘</b>看两阶段，<b>汉诺塔</b>看递归树与栈深，最后一节看<strong>栈是怎么被压爆的</strong>。</p>
 
 <nav class="toc">
- <a href="#s1">01 一次调用发生了什么</a>
- <a href="#s2">02 阶乘：压入与弹出</a>
- <a href="#s3">03 年龄：回溯与递推</a>
- <a href="#s4">04 汉诺塔：递归树与栈深</a>
- <a href="#s5">05 栈溢出与 static 陷阱</a>
- <a href="#s6">06 速查</a>
+  <a href="#s1">01 一次调用发生了什么</a>
+  <a href="#s2">02 阶乘：压入与弹出</a>
+  <a href="#s3">03 年龄：回溯与递推</a>
+  <a href="#s4">04 汉诺塔：递归树与栈深</a>
+  <a href="#s5">05 栈溢出与 static 陷阱</a>
+  <a href="#s6">06 速查</a>
 </nav>
 
 <!-- ============ 1 ============ -->
@@ -178,15 +178,15 @@ footer a{color:var(--teal)}
 <p>教材把一次调用拆成五步（图 4.10）：① 执行调用前的语句；② 流程转到被调用函数入口，<b>同时进行参数传递</b>，并记下当时执行指令的地址、「保护现场」；③ 执行函数体；④ 流程返回先前记下的地址处，把返回值带回、「恢复现场」；⑤ 继续执行未完成的语句。这些「记下来」的信息，就住在接下来每一张图里的<b>栈帧</b>中。</p>
 
 <div class="panel">
- <div class="ph"><span class="t">图 CPP-03a · <code>y = fac(3)</code> 的五步（逐步播放）</span><span class="t" id="m1hint">点「下一步」逐程推进</span></div>
- <div class="cvwrap"><canvas id="cv1" width="760" height="300"></canvas></div>
- <div class="step" id="st1"></div>
- <div class="ctl">
- <button class="btn" id="b1next">下一步 →</button>
- <button class="btn" id="b1auto">自动播放</button>
- <button class="btn" id="b1reset">重来</button>
- </div>
- <div class="ro" id="ro1"></div>
+  <div class="ph"><span class="t">图 CPP-03a · <code>y = fac(3)</code> 的五步（逐步播放）</span><span class="t" id="m1hint">点「下一步」逐程推进</span></div>
+  <div class="cvwrap"><canvas id="cv1" width="760" height="300"></canvas></div>
+  <div class="step" id="st1"></div>
+  <div class="ctl">
+    <button class="btn" id="b1next">下一步 →</button>
+    <button class="btn" id="b1auto">自动播放</button>
+    <button class="btn" id="b1reset">重来</button>
+  </div>
+  <div class="ro" id="ro1"></div>
 </div>
 
 <p>这就是 §4.7 讲<b>内置函数</b>（inline）的动机：调用有真实的时间和空间开销，把函数体直接嵌入调用点可以省掉②④两步。但教材同时提醒：<b>「包含循环语句和 switch 语句的函数或一个递归函数是无法进行代码置换的」</b>——递归函数每次调用都要有自己的一帧，编译期展开不了，编译器会忽略 <code>inline</code> 声明按普通函数处理。</p>
@@ -204,36 +204,36 @@ footer a{color:var(--teal)}
 <p>教材例 4.6 的递归函数（返回类型用 <code>long</code>，因为阶乘长得快）：</p>
 <pre>long fac(int n)
 {
- long f;
- if (n &lt; 0) { cout &lt;&lt; "n&lt;0,data error!" &lt;&lt; endl; f = -1; }
- else if (n == 0 || n == 1) f = 1; <i>// 边界条件：到此为止，不再调用自己</i>
- else f = fac(n - 1) * n; <i>// 递归调用：先拿到 fac(n-1)，再乘 n</i>
- return f;
+    long f;
+    if (n &lt; 0)        { cout &lt;&lt; "n&lt;0,data error!" &lt;&lt; endl; f = -1; }
+    else if (n == 0 || n == 1) f = 1;        <i>// 边界条件：到此为止，不再调用自己</i>
+    else               f = fac(n - 1) * n;   <i>// 递归调用：先拿到 fac(n-1)，再乘 n</i>
+    return f;
 }</pre>
 
 <p>关键在于：<b><code>fac(n-1)</code> 没返回之前，乘法做不了</b>。所以 <code>fac(5)</code> 必须先把 <code>fac(4)</code> 压栈，<code>fac(4)</code> 再压 <code>fac(3)</code>……直到 <code>fac(1)</code> 撞上边界条件。这一路向下的过程就是教材图 4.8 说的<b>回溯</b>（问题分解，值还全不知道）；随后 <code>1 → 2 → 6 → 24 → 120</code> 逐层返回，就是<b>递推</b>。每层都有自己的 <code>n</code> 和 <code>f</code>——它们是同一段代码的不同实例。</p>
 
 <div class="panel">
- <div class="ph"><span class="t">图 CPP-03b · <code>fac(n)</code> 调用栈与事件时间线</span><span class="t" id="m2hint">拖动 n 或逐步播放</span></div>
- <div class="cvwrap"><canvas id="cv2" width="760" height="330"></canvas></div>
- <div class="lg">
- <span><span class="sw" style="background:#1F7A8C"></span>回溯（分解·压栈）</span>
- <span><span class="sw" style="background:#B45F06"></span>递推（回填·弹栈）</span>
- <span><span class="sw" style="background:#B7C0C9"></span>尚未发生</span>
- </div>
- <div class="pb">
- <div class="slide">
- <span class="lb">n =</span>
- <input type="range" id="s2n" min="1" max="12" step="1" value="5">
- <span class="vv" id="s2nv"></span>
- </div>
- </div>
- <div class="ctl">
- <button class="btn" id="b2step">第 1 步 →</button>
- <button class="btn" id="b2play">自动播放</button>
- <button class="btn" id="b2reset">重来</button>
- </div>
- <div class="ro" id="ro2"></div>
+  <div class="ph"><span class="t">图 CPP-03b · <code>fac(n)</code> 调用栈与事件时间线</span><span class="t" id="m2hint">拖动 n 或逐步播放</span></div>
+  <div class="cvwrap"><canvas id="cv2" width="760" height="330"></canvas></div>
+  <div class="lg">
+    <span><span class="sw" style="background:#1F7A8C"></span>回溯（分解·压栈）</span>
+    <span><span class="sw" style="background:#B45F06"></span>递推（回填·弹栈）</span>
+    <span><span class="sw" style="background:#B7C0C9"></span>尚未发生</span>
+  </div>
+  <div class="pb">
+    <div class="slide">
+      <span class="lb">n =</span>
+      <input type="range" id="s2n" min="1" max="12" step="1" value="5">
+      <span class="vv" id="s2nv"></span>
+    </div>
+  </div>
+  <div class="ctl">
+    <button class="btn" id="b2step">第 1 步 →</button>
+    <button class="btn" id="b2play">自动播放</button>
+    <button class="btn" id="b2reset">重来</button>
+  </div>
+  <div class="ro" id="ro2"></div>
 </div>
 
 <p>把进度走完，读三个数：<b>调用次数 = n</b>（<code>fac(n)…fac(1)</code> 各一次）、<b>返回次数 = n</b>、<b>乘法次数 = n−1</b>。事件时间线上前半段全是青点、后半段全是琥珀点——线性递归的两阶段在时间轴上干净地分成两半，这是它和树形递归（下一节汉诺塔）最直观的区别。</p>
@@ -243,13 +243,13 @@ footer a{color:var(--teal)}
 </div>
 
 <div class="panel">
- <div class="ph"><span class="t">图 CPP-03b′ · 一帧里面到底有什么（模型：32 字节/帧）</span></div>
- <div class="pb">
- <table id="tb2">
- <tr><th class="mono">槽位</th><th class="mono">字节</th><th>内容</th></tr>
- </table>
- <p style="font-size:13px;color:var(--muted);margin:0">返回地址 8 B ＋ 保存的帧指针 8 B ＋ 形参 <code>n</code> 4 B（补 4 B 对齐）＋ 局部变量 <code>f</code> 8 B ＝ <b>32 B/帧</b>。这是 64 位平台的常见量级，本页后续的容量估算都用这个模型，实际大小随编译器与优化等级变化。</p>
- </div>
+  <div class="ph"><span class="t">图 CPP-03b′ · 一帧里面到底有什么（模型：32 字节/帧）</span></div>
+  <div class="pb">
+    <table id="tb2">
+      <tr><th class="mono">槽位</th><th class="mono">字节</th><th>内容</th></tr>
+    </table>
+    <p style="font-size:13px;color:var(--muted);margin:0">返回地址 8 B ＋ 保存的帧指针 8 B ＋ 形参 <code>n</code> 4 B（补 4 B 对齐）＋ 局部变量 <code>f</code> 8 B ＝ <b>32 B/帧</b>。这是 64 位平台的常见量级，本页后续的容量估算都用这个模型，实际大小随编译器与优化等级变化。</p>
+  </div>
 </div>
 </section>
 
@@ -262,32 +262,32 @@ footer a{color:var(--teal)}
 
 <pre>int age(int n)
 {
- int c;
- if (n == 1) c = 10; <i>// 边界条件：第 1 个人 10 岁</i>
- else c = age(n - 1) + 2; <i>// 回溯：先问前一个人</i>
- return c;
+    int c;
+    if (n == 1) c = 10;              <i>// 边界条件：第 1 个人 10 岁</i>
+    else       c = age(n - 1) + 2;   <i>// 回溯：先问前一个人</i>
+    return c;
 }</pre>
 
 <div class="panel">
- <div class="ph"><span class="t">图 CPP-03c · <code>age(n)</code> 的回溯与递推（复现图 4.8）</span><span class="t" id="m3hint">拖动 n 或逐步播放</span></div>
- <div class="cvwrap"><canvas id="cv3" width="760" height="280"></canvas></div>
- <div class="lg">
- <span><span class="sw" style="background:#1F7A8C"></span>回溯：一路下钻，c 还是问号</span>
- <span><span class="sw" style="background:#B45F06"></span>递推：从最年轻逐层算回</span>
- </div>
- <div class="pb">
- <div class="slide">
- <span class="lb">n =</span>
- <input type="range" id="s3n" min="1" max="8" step="1" value="5">
- <span class="vv" id="s3nv"></span>
- </div>
- </div>
- <div class="ctl">
- <button class="btn" id="b3step">第 1 步 →</button>
- <button class="btn" id="b3play">自动播放</button>
- <button class="btn" id="b3reset">重来</button>
- </div>
- <div class="ro" id="ro3"></div>
+  <div class="ph"><span class="t">图 CPP-03c · <code>age(n)</code> 的回溯与递推（复现图 4.8）</span><span class="t" id="m3hint">拖动 n 或逐步播放</span></div>
+  <div class="cvwrap"><canvas id="cv3" width="760" height="280"></canvas></div>
+  <div class="lg">
+    <span><span class="sw" style="background:#1F7A8C"></span>回溯：一路下钻，c 还是问号</span>
+    <span><span class="sw" style="background:#B45F06"></span>递推：从最年轻逐层算回</span>
+  </div>
+  <div class="pb">
+    <div class="slide">
+      <span class="lb">n =</span>
+      <input type="range" id="s3n" min="1" max="8" step="1" value="5">
+      <span class="vv" id="s3nv"></span>
+    </div>
+  </div>
+  <div class="ctl">
+    <button class="btn" id="b3step">第 1 步 →</button>
+    <button class="btn" id="b3play">自动播放</button>
+    <button class="btn" id="b3reset">重来</button>
+  </div>
+  <div class="ro" id="ro3"></div>
 </div>
 
 <p>走完后对一眼公式：<code>age(n) = 10 + 2(n−1) = 2n + 8</code>。<code>age(5) = 18</code>，与教材运行结果一致。递归在这里并不比循环快——它胜在「只写递归公式和边界条件就能把问题讲清楚」，这正是 §4.6 末尾说的：实现递归时间空间开销大，但符合人的思路，可读性优先。</p>
@@ -304,34 +304,34 @@ footer a{color:var(--teal)}
 
 <p>习题 9：A 座上有若干个盘子，大的在下小的在上，每次只许移一个盘、3 座上始终保持大盘在下，借助 B 座全部移到 C 座，打印移动步骤。递归写法只要三行（教材未附参考程序，此处按递归公式给出）：把「移 n 个盘」拆成「移上面 n−1 个到中转座 → 移最大的盘 → 把 n−1 个从周转到目标」。</p>
 
-<pre>void hanoi(int n, char a, char b, char c) <i>// 把 n 个盘从 a 移到 c，b 是中转座</i>
+<pre>void hanoi(int n, char a, char b, char c)   <i>// 把 n 个盘从 a 移到 c，b 是中转座</i>
 {
- if (n == 1) { cout &lt;&lt; a &lt;&lt; "→" &lt;&lt; c &lt;&lt; endl; return; } <i>// 边界：只有一个盘，直接搬</i>
- hanoi(n - 1, a, c, b); <i>// ① 上面 n-1 个盘：a → b</i>
- cout &lt;&lt; a &lt;&lt; "→" &lt;&lt; c &lt;&lt; endl; <i>// ② 最大的盘：a → c</i>
- hanoi(n - 1, b, a, c); <i>// ③ b 上的 n-1 个盘：b → c</i>
+    if (n == 1) { cout &lt;&lt; a &lt;&lt; "→" &lt;&lt; c &lt;&lt; endl; return; }  <i>// 边界：只有一个盘，直接搬</i>
+    hanoi(n - 1, a, c, b);                   <i>// ① 上面 n-1 个盘：a → b</i>
+    cout &lt;&lt; a &lt;&lt; "→" &lt;&lt; c &lt;&lt; endl;       <i>// ② 最大的盘：a → c</i>
+    hanoi(n - 1, b, a, c);                   <i>// ③ b 上的 n-1 个盘：b → c</i>
 }</pre>
 
 <div class="panel">
- <div class="ph"><span class="t">图 CPP-03d · 三座实况 ＋ <code>hanoi</code> 调用栈（自 main 起，自底向上）</span><span class="t" id="m4hint">拖动 n 或逐步播放</span></div>
- <div class="cvwrap"><canvas id="cv4" width="760" height="360"></canvas></div>
- <div class="lg">
- <span><span class="sw" style="background:#1F7A8C"></span>当前最深的帧</span>
- <span><span class="sw" style="background:#B45F06"></span>刚完成的移动</span>
- </div>
- <div class="pb">
- <div class="slide">
- <span class="lb">n =</span>
- <input type="range" id="s4n" min="1" max="5" step="1" value="3">
- <span class="vv" id="s4nv"></span>
- </div>
- </div>
- <div class="ctl">
- <button class="btn" id="b4step">第 1 步 →</button>
- <button class="btn" id="b4play">自动播放</button>
- <button class="btn" id="b4reset">重来</button>
- </div>
- <div class="ro" id="ro4"></div>
+  <div class="ph"><span class="t">图 CPP-03d · 三座实况 ＋ <code>hanoi</code> 调用栈（自 main 起，自底向上）</span><span class="t" id="m4hint">拖动 n 或逐步播放</span></div>
+  <div class="cvwrap"><canvas id="cv4" width="760" height="360"></canvas></div>
+  <div class="lg">
+    <span><span class="sw" style="background:#1F7A8C"></span>当前最深的帧</span>
+    <span><span class="sw" style="background:#B45F06"></span>刚完成的移动</span>
+  </div>
+  <div class="pb">
+    <div class="slide">
+      <span class="lb">n =</span>
+      <input type="range" id="s4n" min="1" max="5" step="1" value="3">
+      <span class="vv" id="s4nv"></span>
+    </div>
+  </div>
+  <div class="ctl">
+    <button class="btn" id="b4step">第 1 步 →</button>
+    <button class="btn" id="b4play">自动播放</button>
+    <button class="btn" id="b4reset">重来</button>
+  </div>
+  <div class="ro" id="ro4"></div>
 </div>
 
 <p>三个值得盯的数：<b>移动步数 = 2<sup>n</sup>−1</b>（每一步都打印一次，与调用次数相同）；<b>hanoi 帧的最大栈深 = n</b>（算上 <code>main</code> 帧是 n+1）；<b>hanoi 的总调用次数也 = 2<sup>n</sup>−1</b>。注意时间线上青点和琥珀点是<b>交替</b>出现的——树形递归的回溯与递推交织在一起，和上一节阶乘的「先全下钻、再全返回」完全不同。</p>
@@ -348,65 +348,65 @@ footer a{color:var(--teal)}
 
 <p>每一层递归都要一帧，而栈的容量是有限的（Linux 默认常见 8 MiB，<code>ulimit -s</code> 可查；Windows 默认通常 1 MiB）。少了边界条件，或边界条件永远够不着，帧就只进不出——直到 <b>栈溢出</b>：Linux 上进程收到 <code>SIGSEGV</code>，Windows 上是栈溢出异常 <code>0xC00000FD</code>。</p>
 
-<pre>void boom(int n) { boom(n + 1); } <i>// 没有边界条件：帧越压越多，直到栈爆掉</i>
-int deep(int n) { if (n == 0) return 0; return deep(n - 1) + 1; } <i>// 有边界，但 n 太大照样溢出</i></pre>
+<pre>void boom(int n) { boom(n + 1); }        <i>// 没有边界条件：帧越压越多，直到栈爆掉</i>
+int  deep(int n) { if (n == 0) return 0; return deep(n - 1) + 1; }   <i>// 有边界，但 n 太大照样溢出</i></pre>
 
 <div class="panel">
- <div class="ph"><span class="t">图 CPP-03e · 8 MiB 栈能装多少帧（容量模型，可调）</span><span class="t" id="m5hint">拖动「试探深度」看何时越过上限</span></div>
- <div class="cvwrap"><canvas id="cv5" width="760" height="260"></canvas></div>
- <div class="pb">
- <div class="slide">
- <span class="lb">栈容量 =</span>
- <input type="range" id="s5lim" min="1" max="16" step="1" value="8">
- <span class="vv" id="s5limv"></span>
- </div>
- <div class="slide">
- <span class="lb">试探深度 =</span>
- <input type="range" id="s5dep" min="1" max="300000" step="1" value="100000">
- <span class="vv" id="s5depv"></span>
- </div>
- </div>
- <div class="ctl">
- <button class="btn" id="b5jump">试探深度设为「溢出点」</button>
- <button class="btn" id="b5safe">回到安全区</button>
- </div>
- <div class="ro" id="ro5"></div>
+  <div class="ph"><span class="t">图 CPP-03e · 8 MiB 栈能装多少帧（容量模型，可调）</span><span class="t" id="m5hint">拖动「试探深度」看何时越过上限</span></div>
+  <div class="cvwrap"><canvas id="cv5" width="760" height="260"></canvas></div>
+  <div class="pb">
+    <div class="slide">
+      <span class="lb">栈容量 =</span>
+      <input type="range" id="s5lim" min="1" max="16" step="1" value="8">
+      <span class="vv" id="s5limv"></span>
+    </div>
+    <div class="slide">
+      <span class="lb">试探深度 =</span>
+      <input type="range" id="s5dep" min="1" max="300000" step="1" value="100000">
+      <span class="vv" id="s5depv"></span>
+    </div>
+  </div>
+  <div class="ctl">
+    <button class="btn" id="b5jump">试探深度设为「溢出点」</button>
+    <button class="btn" id="b5safe">回到安全区</button>
+  </div>
+  <div class="ro" id="ro5"></div>
 </div>
 
 <div class="panel">
- <div class="ph"><span class="t">图 CPP-03e′ · 每帧字节数 ↔ 可容纳帧数（随上方容量联动）</span></div>
- <div class="pb">
- <table id="tb5">
- <tr><th class="mono">假设每帧字节</th><th class="mono">可容纳帧数</th><th>说明</th></tr>
- </table>
- </div>
+  <div class="ph"><span class="t">图 CPP-03e′ · 每帧字节数 ↔ 可容纳帧数（随上方容量联动）</span></div>
+  <div class="pb">
+    <table id="tb5">
+      <tr><th class="mono">假设每帧字节</th><th class="mono">可容纳帧数</th><th>说明</th></tr>
+    </table>
+  </div>
 </div>
 
 <p><b>另一半陷阱在 <code>static</code>。</b>§4.12.2：自动变量（形参和普通局部变量）在调用开始时分配、调用结束时释放；§4.12.3 与例 4.12：<code>static</code> 局部变量在静态存储区分配，<b>整个程序运行期间都不释放</b>，只赋初值一次，下次调用保留上次的值。于是同一段代码，两种命运：</p>
 
 <pre>int f(int n)
 {
- static int c = 0; <i>// 静态局部变量：只初始化一次，地址固定，跨调用保留</i>
- c++;
- if (n &gt; 1) f(n - 1);
- return c;
+    static int c = 0;      <i>// 静态局部变量：只初始化一次，地址固定，跨调用保留</i>
+    c++;
+    if (n &gt; 1) f(n - 1);
+    return c;
 }</pre>
 
 <div class="panel">
- <div class="ph"><span class="t">图 CPP-03f · 连调两次 <code>f(3)</code>：<code>auto</code> 版 vs <code>static</code> 版</span><span class="t" id="m6hint">切换模式后调用</span></div>
- <div class="pb">
- <div class="ctl" style="padding:0 0 12px">
- <button class="btn on" id="b6auto">auto 版（普通局部变量）</button>
- <button class="btn" id="b6static">static 版（静态局部变量）</button>
- </div>
- <div class="frames" id="fr6"></div>
- <div class="ctl" style="padding:0">
- <button class="btn" id="b6call">调用 f(3)</button>
- <button class="btn" id="b6reset">重置</button>
- </div>
- <div class="step" id="st6">选一种模式，再点「调用 f(3)」；连点两次看差别。</div>
- <div class="ro" id="ro6"></div>
- </div>
+  <div class="ph"><span class="t">图 CPP-03f · 连调两次 <code>f(3)</code>：<code>auto</code> 版 vs <code>static</code> 版</span><span class="t" id="m6hint">切换模式后调用</span></div>
+  <div class="pb">
+    <div class="ctl" style="padding:0 0 12px">
+      <button class="btn on" id="b6auto">auto 版（普通局部变量）</button>
+      <button class="btn" id="b6static">static 版（静态局部变量）</button>
+    </div>
+    <div class="frames" id="fr6"></div>
+    <div class="ctl" style="padding:0">
+      <button class="btn" id="b6call">调用 f(3)</button>
+      <button class="btn" id="b6reset">重置</button>
+    </div>
+    <div class="step" id="st6">选一种模式，再点「调用 f(3)」；连点两次看差别。</div>
+    <div class="ro" id="ro6"></div>
+  </div>
 </div>
 
 <div class="note warn">
@@ -424,26 +424,26 @@ int deep(int n) { if (n == 0) return 0; return deep(n - 1) + 1; } <i>// 有边�
 <p class="dek">考前十分钟看这一节。</p>
 
 <table>
- <tr><th class="mono">概念</th><th>一句话</th><th>教材位置</th></tr>
- <tr><td class="mono">递归调用</td><td>调用过程中又直接或间接调用本函数；用 <code>if</code> 控制只在某条件成立时继续递归</td><td class="mono">§4.6</td></tr>
- <tr><td class="mono">递归函数</td><td>包含递归调用的函数；只写递归公式和结束条件即可，实现细节交给系统</td><td class="mono">§4.6</td></tr>
- <tr><td class="mono">两阶段</td><td>回溯（分解，值未知）→ 递推（从边界值逐层算回）</td><td class="mono">§4.6 图 4.8</td></tr>
- <tr><td class="mono">调用五步</td><td>① 执行调用前语句 ② 转控制＋参数传递＋记返回地址＋保护现场 ③ 执行函数体 ④ 返回＋恢复现场 ⑤ 继续执行</td><td class="mono">§4.7 图 4.10</td></tr>
- <tr><td class="mono">内置函数</td><td><code>inline</code> 把函数体嵌入调用点省掉调用开销；<b>递归函数无法代码置换</b>，编译器按普通函数处理</td><td class="mono">§4.7</td></tr>
- <tr><td class="mono">动态存储</td><td>局部变量调用开始时分配、调用结束时释放；两次调用的地址可能不同</td><td class="mono">§4.12.1</td></tr>
- <tr><td class="mono">自动变量</td><td>形参与普通局部变量默认都是 <code>auto</code>，住在动态存储区（栈）</td><td class="mono">§4.12.2</td></tr>
- <tr><td class="mono">静态局部变量</td><td><code>static</code>：静态存储区，只赋初值一次，跨调用保留，地址固定</td><td class="mono">§4.12.3 例 4.12</td></tr>
+  <tr><th class="mono">概念</th><th>一句话</th><th>教材位置</th></tr>
+  <tr><td class="mono">递归调用</td><td>调用过程中又直接或间接调用本函数；用 <code>if</code> 控制只在某条件成立时继续递归</td><td class="mono">§4.6</td></tr>
+  <tr><td class="mono">递归函数</td><td>包含递归调用的函数；只写递归公式和结束条件即可，实现细节交给系统</td><td class="mono">§4.6</td></tr>
+  <tr><td class="mono">两阶段</td><td>回溯（分解，值未知）→ 递推（从边界值逐层算回）</td><td class="mono">§4.6 图 4.8</td></tr>
+  <tr><td class="mono">调用五步</td><td>① 执行调用前语句 ② 转控制＋参数传递＋记返回地址＋保护现场 ③ 执行函数体 ④ 返回＋恢复现场 ⑤ 继续执行</td><td class="mono">§4.7 图 4.10</td></tr>
+  <tr><td class="mono">内置函数</td><td><code>inline</code> 把函数体嵌入调用点省掉调用开销；<b>递归函数无法代码置换</b>，编译器按普通函数处理</td><td class="mono">§4.7</td></tr>
+  <tr><td class="mono">动态存储</td><td>局部变量调用开始时分配、调用结束时释放；两次调用的地址可能不同</td><td class="mono">§4.12.1</td></tr>
+  <tr><td class="mono">自动变量</td><td>形参与普通局部变量默认都是 <code>auto</code>，住在动态存储区（栈）</td><td class="mono">§4.12.2</td></tr>
+  <tr><td class="mono">静态局部变量</td><td><code>static</code>：静态存储区，只赋初值一次，跨调用保留，地址固定</td><td class="mono">§4.12.3 例 4.12</td></tr>
 </table>
 
 <table>
- <tr><th class="mono">高频错误</th><th>后果 / 对策</th></tr>
- <tr><td class="mono">没有边界条件，或边界永远够不着</td><td>无限递归 → 栈溢出（<code>SIGSEGV</code> / <code>0xC00000FD</code>）。写递归先写边界</td></tr>
- <tr><td class="mono">边界条件写错：<code>n==0</code> 写成 <code>n=0</code></td><td>赋值恒真，递归永不停止；<code>==</code> 与 <code>=</code> 要分清</td></tr>
- <tr><td class="mono">递归层数太深</td><td>8 MiB / 32 B 模型 ≈ 26 万层就爆；深度不可控时改循环</td></tr>
- <tr><td class="mono">把 <code>static</code> 局部变量当普通局部变量用</td><td>值跨调用保留、地址固定；递归里做层号/计数会全乱</td></tr>
- <tr><td class="mono">返回类型装不下结果</td><td>64 位 <code>long</code> 能装到 20!（2 432 902 008 176 640 000），21!（51 090 942 171 709 440 000）溢出；Windows 的 <code>long</code> 只有 32 位，13! 就溢出</td></tr>
- <tr><td class="mono">该用循环的地方用递归</td><td>每层一帧＋调用开销；时间空间开销大，可读性优先时才用递归（§4.6 原话）</td></tr>
- <tr><td class="mono">在递归调用前就使用它的返回值</td><td>值在底层返回前不存在；顺序只能是「先调用、后使用」</td></tr>
+  <tr><th class="mono">高频错误</th><th>后果 / 对策</th></tr>
+  <tr><td class="mono">没有边界条件，或边界永远够不着</td><td>无限递归 → 栈溢出（<code>SIGSEGV</code> / <code>0xC00000FD</code>）。写递归先写边界</td></tr>
+  <tr><td class="mono">边界条件写错：<code>n==0</code> 写成 <code>n=0</code></td><td>赋值恒真，递归永不停止；<code>==</code> 与 <code>=</code> 要分清</td></tr>
+  <tr><td class="mono">递归层数太深</td><td>8 MiB / 32 B 模型 ≈ 26 万层就爆；深度不可控时改循环</td></tr>
+  <tr><td class="mono">把 <code>static</code> 局部变量当普通局部变量用</td><td>值跨调用保留、地址固定；递归里做层号/计数会全乱</td></tr>
+  <tr><td class="mono">返回类型装不下结果</td><td>64 位 <code>long</code> 能装到 20!（2 432 902 008 176 640 000），21!（51 090 942 171 709 440 000）溢出；Windows 的 <code>long</code> 只有 32 位，13! 就溢出</td></tr>
+  <tr><td class="mono">该用循环的地方用递归</td><td>每层一帧＋调用开销；时间空间开销大，可读性优先时才用递归（§4.6 原话）</td></tr>
+  <tr><td class="mono">在递归调用前就使用它的返回值</td><td>值在底层返回前不存在；顺序只能是「先调用、后使用」</td></tr>
 </table>
 
 <div class="note">
@@ -463,43 +463,43 @@ int deep(int n) { if (n == 0) return 0; return deep(n - 1) + 1; } <i>// 有边�
 /* ================= 工具 ================= */
 function $(id){ return document.getElementById(id); }
 function hex8(n){
- var s = (n >>> 0).toString(16);
- return '0x' + ('00000000' + s).slice(-8);
+  var s = (n >>> 0).toString(16);
+  return '0x' + ('00000000' + s).slice(-8);
 }
 function hex6(n){
- var s = (n >>> 0).toString(16);
- return '0x' + ('000000' + s).slice(-6);
+  var s = (n >>> 0).toString(16);
+  return '0x' + ('000000' + s).slice(-6);
 }
 function setHTML(id, html){ var e = $(id); if(e) e.innerHTML = html; }
 function setText(id, t){ var e = $(id); if(e) e.textContent = t; }
 function on(id, fn){ var e = $(id); if(e && e.addEventListener) e.addEventListener('click', fn); }
 function clampInt(v, lo, hi, dflt){
- if(typeof v !== 'number' || !isFinite(v)) v = dflt;
- v = Math.round(v);
- if(v < lo) v = lo;
- if(v > hi) v = hi;
- return v;
+  if(typeof v !== 'number' || !isFinite(v)) v = dflt;
+  v = Math.round(v);
+  if(v < lo) v = lo;
+  if(v > hi) v = hi;
+  return v;
 }
 var MONO = 'ui-monospace, Consolas, monospace';
 var TEAL = '#1F7A8C', AMBER = '#B45F06', RED = '#B4232C', GREEN = '#2F7A4F';
 var INK = '#101820', MUTED = '#5A6672', LINE = '#B7C0C9', GREY = '#77838F';
 
 /* ================= 常量与模型 ================= */
-var STACK_BASE = 0x7ffd1000; // 示意基址（64 位 Linux 栈的常见区间）
-var FRAME_B = 32; // 模型：一帧 32 字节
-var RET_ADDR = 0x401147; // 示意返回地址
-var STATIC_ADDR = 0x404060; // 示意：静态存储区地址
+var STACK_BASE = 0x7ffd1000;                 // 示意基址（64 位 Linux 栈的常见区间）
+var FRAME_B = 32;                            // 模型：一帧 32 字节
+var RET_ADDR = 0x401147;                     // 示意返回地址
+var STATIC_ADDR = 0x404060;                  // 示意：静态存储区地址
 var FRAME_LAYOUT = [
- { name:'返回地址', bytes:8, why:'调用指令的下一条指令的地址' },
- { name:'保存的帧指针', bytes:8, why:'恢复现场：调用前的栈基址' },
- { name:'形参 n', bytes:4, why:'实参的副本，本帧私有' },
- { name:'对齐填充', bytes:4, why:'把下一个槽位凑到 8 字节对齐' },
- { name:'局部变量 f', bytes:8, why:'本帧私有，调用结束即释放' }
+  { name:'返回地址',     bytes:8, why:'调用指令的下一条指令的地址' },
+  { name:'保存的帧指针', bytes:8, why:'恢复现场：调用前的栈基址' },
+  { name:'形参 n',       bytes:4, why:'实参的副本，本帧私有' },
+  { name:'对齐填充',     bytes:4, why:'把下一个槽位凑到 8 字节对齐' },
+  { name:'局部变量 f',   bytes:8, why:'本帧私有，调用结束即释放' }
 ];
-var FACT20 = '2432902008176640000'; // 20! = 2.43e18，仍装得进 64 位 long
-var FACT21 = '51090942171709440000'; // 21! 超出 64 位 long（9.22e18）
-var DISKS64 = '18446744073709551615'; // 2^64 - 1
-var YEARS64 = 5849; // 每秒一步、每年 365 天 → 约 5849 亿年
+var FACT20 = '2432902008176640000';          // 20! = 2.43e18，仍装得进 64 位 long
+var FACT21 = '51090942171709440000';         // 21! 超出 64 位 long（9.22e18）
+var DISKS64 = '18446744073709551615';        // 2^64 - 1
+var YEARS64 = 5849;                          // 每秒一步、每年 365 天 → 约 5849 亿年
 
 function frameAddr(d){ return STACK_BASE - (d - 1) * FRAME_B; }
 function maxFrames(limitMiB, frameB){ return Math.floor(limitMiB * 1024 * 1024 / frameB); }
@@ -510,73 +510,73 @@ function pow2m1(n){ var p = 1, i; for(i = 0; i < n; i++) p *= 2; return p - 1; }
 /* ================= 纯函数：递归追踪（闸门直接调用） ================= */
 // fac：例4.6。事件序列 = n 次 call + n 次 ret；乘法的次数 = n-1；最大栈深 = n
 function facTrace(n){
- var events = [], calls = 0, rets = 0, mults = 0, maxDepth = 0;
- function go(k, d){
- calls++;
- if(d > maxDepth) maxDepth = d;
- events.push({ type:'call', n:k, depth:d });
- var v;
- if(k <= 1){
- v = 1;
- events.push({ type:'ret', n:k, depth:d, v:v, mult:false });
- } else {
- var sub = go(k - 1, d + 1);
- mults++;
- v = sub * k;
- events.push({ type:'ret', n:k, depth:d, v:v, mult:true });
- }
- rets++;
- return v;
- }
- var r = go(n, 1);
- return { n:n, events:events, result:r, calls:calls, rets:rets, mults:mults, maxDepth:maxDepth };
+  var events = [], calls = 0, rets = 0, mults = 0, maxDepth = 0;
+  function go(k, d){
+    calls++;
+    if(d > maxDepth) maxDepth = d;
+    events.push({ type:'call', n:k, depth:d });
+    var v;
+    if(k <= 1){
+      v = 1;
+      events.push({ type:'ret', n:k, depth:d, v:v, mult:false });
+    } else {
+      var sub = go(k - 1, d + 1);
+      mults++;
+      v = sub * k;
+      events.push({ type:'ret', n:k, depth:d, v:v, mult:true });
+    }
+    rets++;
+    return v;
+  }
+  var r = go(n, 1);
+  return { n:n, events:events, result:r, calls:calls, rets:rets, mults:mults, maxDepth:maxDepth };
 }
 
 // age：例4.5。age(n) = 2n + 8；加法的次数 = n-1
 function ageTrace(n){
- var events = [], calls = 0, rets = 0, adds = 0, maxDepth = 0;
- function go(k, d){
- calls++;
- if(d > maxDepth) maxDepth = d;
- events.push({ type:'call', n:k, depth:d });
- var v;
- if(k === 1){
- v = 10;
- events.push({ type:'ret', n:k, depth:d, v:v, add:false });
- } else {
- var sub = go(k - 1, d + 1);
- adds++;
- v = sub + 2;
- events.push({ type:'ret', n:k, depth:d, v:v, add:true });
- }
- rets++;
- return v;
- }
- var r = go(n, 1);
- return { n:n, events:events, result:r, calls:calls, rets:rets, adds:adds, maxDepth:maxDepth };
+  var events = [], calls = 0, rets = 0, adds = 0, maxDepth = 0;
+  function go(k, d){
+    calls++;
+    if(d > maxDepth) maxDepth = d;
+    events.push({ type:'call', n:k, depth:d });
+    var v;
+    if(k === 1){
+      v = 10;
+      events.push({ type:'ret', n:k, depth:d, v:v, add:false });
+    } else {
+      var sub = go(k - 1, d + 1);
+      adds++;
+      v = sub + 2;
+      events.push({ type:'ret', n:k, depth:d, v:v, add:true });
+    }
+    rets++;
+    return v;
+  }
+  var r = go(n, 1);
+  return { n:n, events:events, result:r, calls:calls, rets:rets, adds:adds, maxDepth:maxDepth };
 }
 
 // hanoi：习题9。调用次数 = 移动步数 = 2^n - 1；hanoi 帧最大栈深 = n
 function hanoiTrace(n){
- var events = [], moves = [], calls = 0, rets = 0, maxDepth = 0;
- function go(k, a, b, c, d){
- calls++;
- if(d > maxDepth) maxDepth = d;
- events.push({ type:'call', k:k, a:a, b:b, c:c, depth:d });
- if(k === 1){
- moves.push(a + '→' + c);
- events.push({ type:'move', from:a, to:c, depth:d, step:moves.length });
- } else {
- go(k - 1, a, c, b, d + 1);
- moves.push(a + '→' + c);
- events.push({ type:'move', from:a, to:c, depth:d, step:moves.length });
- go(k - 1, b, a, c, d + 1);
- }
- events.push({ type:'ret', k:k, depth:d });
- rets++;
- }
- go(n, 'A', 'B', 'C', 1);
- return { n:n, events:events, moves:moves, count:moves.length, calls:calls, rets:rets, maxDepth:maxDepth };
+  var events = [], moves = [], calls = 0, rets = 0, maxDepth = 0;
+  function go(k, a, b, c, d){
+    calls++;
+    if(d > maxDepth) maxDepth = d;
+    events.push({ type:'call', k:k, a:a, b:b, c:c, depth:d });
+    if(k === 1){
+      moves.push(a + '→' + c);
+      events.push({ type:'move', from:a, to:c, depth:d, step:moves.length });
+    } else {
+      go(k - 1, a, c, b, d + 1);
+      moves.push(a + '→' + c);
+      events.push({ type:'move', from:a, to:c, depth:d, step:moves.length });
+      go(k - 1, b, a, c, d + 1);
+    }
+    events.push({ type:'ret', k:k, depth:d });
+    rets++;
+  }
+  go(n, 'A', 'B', 'C', 1);
+  return { n:n, events:events, moves:moves, count:moves.length, calls:calls, rets:rets, maxDepth:maxDepth };
 }
 
 // static 陷阱：auto 版每帧各有一个 c；static 版全递归共用一个 c
@@ -585,812 +585,812 @@ function fStaticRun(k, st){ st.c++; if(k > 1) fStaticRun(k - 1, st); return st.c
 
 /* ================= S01：一次调用的五步 ================= */
 var P1CAP = [
- '未调用：栈上只有 main 一帧。下一句 long y = fac(3); 高亮，等待执行。',
- '①→② 调用发生：实参 3 复制给形参 n；记下返回地址；保护现场（保存寄存器与帧指针）；fac 帧压入栈。',
- '③ 执行函数体：n = 3 > 1，需要 fac(2) 的值——于是又发生一次完整调用（见 S02）。',
- '④ 返回：弹出 fac 帧；流程回到返回地址（调用指令的下一条）；把返回值 6 放回约定位置；恢复现场。',
- '⑤ 继续执行：main 中后续语句得到 y = 6，一次调用尘埃落定，栈上又只剩 main。'
+  '未调用：栈上只有 main 一帧。下一句 long y = fac(3); 高亮，等待执行。',
+  '①→② 调用发生：实参 3 复制给形参 n；记下返回地址；保护现场（保存寄存器与帧指针）；fac 帧压入栈。',
+  '③ 执行函数体：n = 3 > 1，需要 fac(2) 的值——于是又发生一次完整调用（见 S02）。',
+  '④ 返回：弹出 fac 帧；流程回到返回地址（调用指令的下一条）；把返回值 6 放回约定位置；恢复现场。',
+  '⑤ 继续执行：main 中后续语句得到 y = 6，一次调用尘埃落定，栈上又只剩 main。'
 ];
-var P1LINE = [7, 7, 3, 4, 8]; // 各阶段高亮的代码行（0 基）
+var P1LINE = [7, 7, 3, 4, 8];   // 各阶段高亮的代码行（0 基）
 var M1 = { phase: 0, timer: null };
 
 function step1(){
- if(M1.phase < 4){ M1.phase++; render1(); }
+  if(M1.phase < 4){ M1.phase++; render1(); }
 }
 function reset1(){ M1.phase = 0; render1(); }
 function play1(){
- if(M1.timer){ clearInterval(M1.timer); M1.timer = null; setText('b1auto', '自动播放'); return; }
- if(M1.phase >= 4) reset1();
- setText('b1auto', '暂停');
- M1.timer = setInterval(function(){
- if(M1.phase >= 4){ clearInterval(M1.timer); M1.timer = null; setText('b1auto', '自动播放'); return; }
- step1();
- }, 900);
+  if(M1.timer){ clearInterval(M1.timer); M1.timer = null; setText('b1auto', '自动播放'); return; }
+  if(M1.phase >= 4) reset1();
+  setText('b1auto', '暂停');
+  M1.timer = setInterval(function(){
+    if(M1.phase >= 4){ clearInterval(M1.timer); M1.timer = null; setText('b1auto', '自动播放'); return; }
+    step1();
+  }, 900);
 }
 
 var CODE1 = [
- 'long fac(int n) {',
- ' long f;',
- ' if (n <= 1) f = 1;',
- ' else f = fac(n - 1) * n;',
- ' return f;',
- '}',
- 'int main() {',
- ' long y = fac(3);',
- ' cout << y << endl;',
- '}'
+  'long fac(int n) {',
+  '    long f;',
+  '    if (n <= 1) f = 1;',
+  '    else f = fac(n - 1) * n;',
+  '    return f;',
+  '}',
+  'int main() {',
+  '    long y = fac(3);',
+  '    cout << y << endl;',
+  '}'
 ];
-var CODE1NOTE = [3, 4, 7]; // 行尾加注释的行
+var CODE1NOTE = [3, 4, 7];   // 行尾加注释的行
 
 function draw1(){
- var cv = $('cv1'); if(!cv || !cv.getContext) return;
- var ctx = cv.getContext('2d'); if(!ctx) return;
- var W = 760, H = 300, dpr = Math.min(window.devicePixelRatio || 1, 2);
- cv.width = W * dpr; cv.height = H * dpr;
- if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
- ctx.clearRect(0, 0, W, H);
- ctx.font = '11px ' + MONO;
+  var cv = $('cv1'); if(!cv || !cv.getContext) return;
+  var ctx = cv.getContext('2d'); if(!ctx) return;
+  var W = 760, H = 300, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = W * dpr; cv.height = H * dpr;
+  if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  ctx.font = '11px ' + MONO;
 
- // 代码面板
- var cx0 = 20, cy0 = 14, cw = 470, lh = 19, pad = 12;
- var chH = CODE1.length * lh + pad * 2 - 4;
- ctx.fillStyle = '#111820';
- if(ctx.roundRect) { ctx.beginPath(); ctx.roundRect(cx0, cy0, cw, chH, 8); ctx.fill(); }
- else ctx.fillRect(cx0, cy0, cw, chH);
- ctx.font = '12px ' + MONO;
- for(var i = 0; i < CODE1.length; i++){
- var y = cy0 + pad + 12 + i * lh;
- var act = (P1LINE[M1.phase] === i);
- if(act){
- ctx.fillStyle = 'rgba(127,209,222,.14)';
- ctx.fillRect(cx0 + 4, y - 13, cw - 8, lh);
- ctx.fillStyle = '#7FD1DE';
- ctx.fillRect(cx0 + 4, y - 13, 3, lh);
- }
- ctx.fillStyle = act ? '#7FD1DE' : (i === 6 ? '#8FA3B0' : '#D8E1E8');
- ctx.fillText(CODE1[i], cx0 + 14, y);
- if(CODE1NOTE.indexOf(i) >= 0){
- ctx.fillStyle = '#5A7280';
- ctx.fillText(i === 7 ? '← 调用点' : (i === 3 ? '← 函数体' : '← 返回'), cx0 + 14 + 168, y);
- }
- }
+  // 代码面板
+  var cx0 = 20, cy0 = 14, cw = 470, lh = 19, pad = 12;
+  var chH = CODE1.length * lh + pad * 2 - 4;
+  ctx.fillStyle = '#111820';
+  if(ctx.roundRect) { ctx.beginPath(); ctx.roundRect(cx0, cy0, cw, chH, 8); ctx.fill(); }
+  else ctx.fillRect(cx0, cy0, cw, chH);
+  ctx.font = '12px ' + MONO;
+  for(var i = 0; i < CODE1.length; i++){
+    var y = cy0 + pad + 12 + i * lh;
+    var act = (P1LINE[M1.phase] === i);
+    if(act){
+      ctx.fillStyle = 'rgba(127,209,222,.14)';
+      ctx.fillRect(cx0 + 4, y - 13, cw - 8, lh);
+      ctx.fillStyle = '#7FD1DE';
+      ctx.fillRect(cx0 + 4, y - 13, 3, lh);
+    }
+    ctx.fillStyle = act ? '#7FD1DE' : (i === 6 ? '#8FA3B0' : '#D8E1E8');
+    ctx.fillText(CODE1[i], cx0 + 14, y);
+    if(CODE1NOTE.indexOf(i) >= 0){
+      ctx.fillStyle = '#5A7280';
+      ctx.fillText(i === 7 ? '← 调用点' : (i === 3 ? '← 函数体' : '← 返回'), cx0 + 14 + 168, y);
+    }
+  }
 
- // 栈区（右侧）
- var sx = 520, sw = 220;
- ctx.fillStyle = MUTED;
- ctx.font = '11px ' + MONO;
- ctx.fillText('栈（高地址在上）', sx, cy0 + 10);
- function frameBox(y, h, title, lines, hi){
- ctx.fillStyle = hi ? '#E7F2F4' : '#FFFFFF';
- ctx.fillRect(sx, y, sw, h);
- ctx.strokeStyle = hi ? TEAL : LINE;
- ctx.lineWidth = hi ? 2 : 1;
- if(ctx.setLineDash) ctx.setLineDash([]);
- if(ctx.strokeRect) ctx.strokeRect(sx + 1, y + 1, sw - 2, h - 2);
- ctx.fillStyle = INK;
- ctx.font = '12px ' + MONO;
- ctx.fillText(title, sx + 10, y + 17);
- ctx.fillStyle = MUTED;
- ctx.font = '10.5px ' + MONO;
- for(var j = 0; j < lines.length; j++) ctx.fillText(lines[j], sx + 10, y + 33 + j * 14);
- }
- frameBox(cy0 + 22, 52, 'main() 帧', M1.phase >= 4 ? ['y = 6（已返回）'] : ['y = ?'], false);
- var inFac = (M1.phase >= 1 && M1.phase <= 3);
- if(inFac){
- frameBox(cy0 + 84, 66, 'fac() 帧 · n = 3', [
- '返回地址 ' + hex8(RET_ADDR),
- '形参 n = 3 · 局部 f = ' + (M1.phase >= 3 ? '6' : '?'),
- hex8(frameAddr(2))
- ], true);
- }
- // 控制流箭头
- if(M1.phase === 1){
- ctx.strokeStyle = TEAL; ctx.lineWidth = 1.8;
- ctx.beginPath(); ctx.moveTo(sx + sw / 2, cy0 + 74); ctx.lineTo(sx + sw / 2, cy0 + 84);
- ctx.stroke();
- ctx.fillStyle = TEAL; ctx.font = '10.5px ' + MONO;
- ctx.fillText('控制流转入', sx + sw / 2 + 8, cy0 + 82);
- } else if(M1.phase === 3){
- ctx.strokeStyle = AMBER; ctx.lineWidth = 1.8;
- ctx.beginPath(); ctx.moveTo(sx + sw / 2, cy0 + 84); ctx.lineTo(sx + sw / 2, cy0 + 74);
- ctx.stroke();
- ctx.fillStyle = AMBER; ctx.font = '10.5px ' + MONO;
- ctx.fillText('带回 6', sx + sw / 2 + 8, cy0 + 82);
- }
+  // 栈区（右侧）
+  var sx = 520, sw = 220;
+  ctx.fillStyle = MUTED;
+  ctx.font = '11px ' + MONO;
+  ctx.fillText('栈（高地址在上）', sx, cy0 + 10);
+  function frameBox(y, h, title, lines, hi){
+    ctx.fillStyle = hi ? '#E7F2F4' : '#FFFFFF';
+    ctx.fillRect(sx, y, sw, h);
+    ctx.strokeStyle = hi ? TEAL : LINE;
+    ctx.lineWidth = hi ? 2 : 1;
+    if(ctx.setLineDash) ctx.setLineDash([]);
+    if(ctx.strokeRect) ctx.strokeRect(sx + 1, y + 1, sw - 2, h - 2);
+    ctx.fillStyle = INK;
+    ctx.font = '12px ' + MONO;
+    ctx.fillText(title, sx + 10, y + 17);
+    ctx.fillStyle = MUTED;
+    ctx.font = '10.5px ' + MONO;
+    for(var j = 0; j < lines.length; j++) ctx.fillText(lines[j], sx + 10, y + 33 + j * 14);
+  }
+  frameBox(cy0 + 22, 52, 'main() 帧', M1.phase >= 4 ? ['y = 6（已返回）'] : ['y = ?'], false);
+  var inFac = (M1.phase >= 1 && M1.phase <= 3);
+  if(inFac){
+    frameBox(cy0 + 84, 66, 'fac() 帧 · n = 3', [
+      '返回地址 ' + hex8(RET_ADDR),
+      '形参 n = 3 · 局部 f = ' + (M1.phase >= 3 ? '6' : '?'),
+      hex8(frameAddr(2))
+    ], true);
+  }
+  // 控制流箭头
+  if(M1.phase === 1){
+    ctx.strokeStyle = TEAL; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(sx + sw / 2, cy0 + 74); ctx.lineTo(sx + sw / 2, cy0 + 84);
+    ctx.stroke();
+    ctx.fillStyle = TEAL; ctx.font = '10.5px ' + MONO;
+    ctx.fillText('控制流转入', sx + sw / 2 + 8, cy0 + 82);
+  } else if(M1.phase === 3){
+    ctx.strokeStyle = AMBER; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(sx + sw / 2, cy0 + 84); ctx.lineTo(sx + sw / 2, cy0 + 74);
+    ctx.stroke();
+    ctx.fillStyle = AMBER; ctx.font = '10.5px ' + MONO;
+    ctx.fillText('带回 6', sx + sw / 2 + 8, cy0 + 82);
+  }
 
- // 底部：帧结构条
- var by = cy0 + 172;
- ctx.fillStyle = MUTED;
- ctx.fillText('fac() 帧的解剖（模型 32 B）：', sx, by);
- var slots = ['返回地址 8B', '帧指针 8B', '形参 n 4B', '填充 4B', '局部 f 8B'];
- var bw = 66, bx = sx;
- for(var s = 0; s < slots.length; s++){
- ctx.fillStyle = s === 4 ? '#FBF0E2' : '#F4F7F8';
- ctx.fillRect(bx, by + 10, bw - 3, 26);
- ctx.strokeStyle = LINE; ctx.lineWidth = 1;
- if(ctx.strokeRect) ctx.strokeRect(bx + 0.5, by + 10.5, bw - 4, 25);
- ctx.fillStyle = '#3A4650';
- ctx.font = '9.5px ' + MONO;
- ctx.fillText(slots[s], bx + 5, by + 26);
- bx += bw;
- }
- ctx.fillStyle = MUTED;
- ctx.fillText('共 32 字节 —— 每层递归都要这么一块', sx, by + 54);
+  // 底部：帧结构条
+  var by = cy0 + 172;
+  ctx.fillStyle = MUTED;
+  ctx.fillText('fac() 帧的解剖（模型 32 B）：', sx, by);
+  var slots = ['返回地址 8B', '帧指针 8B', '形参 n 4B', '填充 4B', '局部 f 8B'];
+  var bw = 66, bx = sx;
+  for(var s = 0; s < slots.length; s++){
+    ctx.fillStyle = s === 4 ? '#FBF0E2' : '#F4F7F8';
+    ctx.fillRect(bx, by + 10, bw - 3, 26);
+    ctx.strokeStyle = LINE; ctx.lineWidth = 1;
+    if(ctx.strokeRect) ctx.strokeRect(bx + 0.5, by + 10.5, bw - 4, 25);
+    ctx.fillStyle = '#3A4650';
+    ctx.font = '9.5px ' + MONO;
+    ctx.fillText(slots[s], bx + 5, by + 26);
+    bx += bw;
+  }
+  ctx.fillStyle = MUTED;
+  ctx.fillText('共 32 字节 —— 每层递归都要这么一块', sx, by + 54);
 }
 
 function render1(){
- setText('st1', P1CAP[M1.phase]);
- var inFac = (M1.phase >= 1 && M1.phase <= 3);
- setHTML('ro1',
- '<div class="l"><span class="k">当前阶段</span><span class="v tealtx">' + (M1.phase + 1) + ' / 5 · ' +
- ['调用前','调用与压栈','执行函数体','返回与弹栈','继续执行'][M1.phase] + '</span></div>' +
- '<div class="l"><span class="k">控制流位置</span><span class="v">' + (inFac ? 'fac() 内' : 'main()') + '</span></div>' +
- '<div class="l"><span class="k">栈上帧数</span><span class="v">' + (inFac ? 2 : 1) + '（main' + (inFac ? ' + fac' : '') + '）</span></div>' +
- '<div class="l"><span class="k">形参 n</span><span class="v">' + (inFac ? '3' : '—') + '</span></div>' +
- '<div class="l"><span class="k">返回地址（示意）</span><span class="v addr">' + (inFac ? hex8(RET_ADDR) : '—') + '</span></div>' +
- '<div class="l"><span class="k">fac(3) 的返回值</span><span class="v ' + (M1.phase >= 4 ? 'ok' : '') + '">' +
- (M1.phase >= 4 ? '6' : '尚未产生') + '</span></div>');
- var b = $('b1next');
- if(b){ b.disabled = (M1.phase >= 4); b.textContent = (M1.phase >= 4) ? '已结束' : '下一步 →'; }
- draw1();
+  setText('st1', P1CAP[M1.phase]);
+  var inFac = (M1.phase >= 1 && M1.phase <= 3);
+  setHTML('ro1',
+    '<div class="l"><span class="k">当前阶段</span><span class="v tealtx">' + (M1.phase + 1) + ' / 5 · ' +
+      ['调用前','调用与压栈','执行函数体','返回与弹栈','继续执行'][M1.phase] + '</span></div>' +
+    '<div class="l"><span class="k">控制流位置</span><span class="v">' + (inFac ? 'fac() 内' : 'main()') + '</span></div>' +
+    '<div class="l"><span class="k">栈上帧数</span><span class="v">' + (inFac ? 2 : 1) + '（main' + (inFac ? ' + fac' : '') + '）</span></div>' +
+    '<div class="l"><span class="k">形参 n</span><span class="v">' + (inFac ? '3' : '—') + '</span></div>' +
+    '<div class="l"><span class="k">返回地址（示意）</span><span class="v addr">' + (inFac ? hex8(RET_ADDR) : '—') + '</span></div>' +
+    '<div class="l"><span class="k">fac(3) 的返回值</span><span class="v ' + (M1.phase >= 4 ? 'ok' : '') + '">' +
+      (M1.phase >= 4 ? '6' : '尚未产生') + '</span></div>');
+  var b = $('b1next');
+  if(b){ b.disabled = (M1.phase >= 4); b.textContent = (M1.phase >= 4) ? '已结束' : '下一步 →'; }
+  draw1();
 }
 
 /* ================= S02：fac 栈帧动画 ================= */
 var M2 = { n:5, tr:null, idx:0, done:false, stack:[], phase:'idle', result:null,
- calls:0, rets:0, mults:0, maxDepth:0, lastRet:null, timer:null };
+           calls:0, rets:0, mults:0, maxDepth:0, lastRet:null, timer:null };
 
 function setN2(n){
- M2.n = clampInt(n, 1, 12, 5);
- var sl = $('s2n'); if(sl) sl.value = String(M2.n);
- reset2();
+  M2.n = clampInt(n, 1, 12, 5);
+  var sl = $('s2n'); if(sl) sl.value = String(M2.n);
+  reset2();
 }
 function reset2(){
- M2.tr = facTrace(M2.n);
- M2.idx = 0; M2.done = false; M2.stack = []; M2.phase = 'idle';
- M2.result = null; M2.calls = 0; M2.rets = 0; M2.mults = 0; M2.maxDepth = 0; M2.lastRet = null;
- render2();
+  M2.tr = facTrace(M2.n);
+  M2.idx = 0; M2.done = false; M2.stack = []; M2.phase = 'idle';
+  M2.result = null; M2.calls = 0; M2.rets = 0; M2.mults = 0; M2.maxDepth = 0; M2.lastRet = null;
+  render2();
 }
 function step2(){
- if(M2.done) return;
- var e = M2.tr.events[M2.idx];
- if(e.type === 'call'){
- M2.stack.push({ n:e.n, f:null });
- M2.phase = 'back';
- M2.calls++;
- if(e.depth > M2.maxDepth) M2.maxDepth = e.depth;
- } else {
- M2.stack.pop();
- M2.rets++;
- if(e.mult) M2.mults++;
- M2.phase = 'fwd';
- M2.lastRet = { n:e.n, v:e.v };
- }
- M2.idx++;
- if(M2.idx >= M2.tr.events.length){
- M2.done = true; M2.result = M2.tr.result; M2.phase = 'done';
- }
- render2();
+  if(M2.done) return;
+  var e = M2.tr.events[M2.idx];
+  if(e.type === 'call'){
+    M2.stack.push({ n:e.n, f:null });
+    M2.phase = 'back';
+    M2.calls++;
+    if(e.depth > M2.maxDepth) M2.maxDepth = e.depth;
+  } else {
+    M2.stack.pop();
+    M2.rets++;
+    if(e.mult) M2.mults++;
+    M2.phase = 'fwd';
+    M2.lastRet = { n:e.n, v:e.v };
+  }
+  M2.idx++;
+  if(M2.idx >= M2.tr.events.length){
+    M2.done = true; M2.result = M2.tr.result; M2.phase = 'done';
+  }
+  render2();
 }
 function play2(){
- if(M2.timer){ clearInterval(M2.timer); M2.timer = null; setText('b2play', '自动播放'); return; }
- if(M2.done) reset2();
- setText('b2play', '暂停');
- M2.timer = setInterval(function(){
- if(M2.done){ clearInterval(M2.timer); M2.timer = null; setText('b2play', '自动播放'); return; }
- step2();
- }, 480);
+  if(M2.timer){ clearInterval(M2.timer); M2.timer = null; setText('b2play', '自动播放'); return; }
+  if(M2.done) reset2();
+  setText('b2play', '暂停');
+  M2.timer = setInterval(function(){
+    if(M2.done){ clearInterval(M2.timer); M2.timer = null; setText('b2play', '自动播放'); return; }
+    step2();
+  }, 480);
 }
 
 function draw2(){
- var cv = $('cv2'); if(!cv || !cv.getContext) return;
- var ctx = cv.getContext('2d'); if(!ctx) return;
- var W = 760, H = 330, dpr = Math.min(window.devicePixelRatio || 1, 2);
- cv.width = W * dpr; cv.height = H * dpr;
- if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
- ctx.clearRect(0, 0, W, H);
+  var cv = $('cv2'); if(!cv || !cv.getContext) return;
+  var ctx = cv.getContext('2d'); if(!ctx) return;
+  var W = 760, H = 330, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = W * dpr; cv.height = H * dpr;
+  if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
 
- ctx.fillStyle = MUTED;
- ctx.font = '11px ' + MONO;
- ctx.fillText('fac(' + M2.n + ') 调用栈 · main 在顶，后进先出 · 地址随深度递减 →', 90, 24);
+  ctx.fillStyle = MUTED;
+  ctx.font = '11px ' + MONO;
+  ctx.fillText('fac(' + M2.n + ') 调用栈 · main 在顶，后进先出 · 地址随深度递减 →', 90, 24);
 
- // ---- 栈列 ----
- var bx = 92, bw = 250, mainY = 44, mainH = 26;
- // main 帧
- ctx.fillStyle = '#FFFFFF';
- ctx.fillRect(bx, mainY, bw, mainH);
- ctx.strokeStyle = LINE; ctx.lineWidth = 1;
- if(ctx.strokeRect) ctx.strokeRect(bx + 0.5, mainY + 0.5, bw - 1, mainH - 1);
- ctx.fillStyle = INK; ctx.font = '12px ' + MONO;
- ctx.fillText('main()', bx + 10, mainY + 17);
- ctx.fillStyle = M2.done ? GREEN : MUTED;
- ctx.fillText(M2.done ? ('y = ' + M2.result) : 'y = ?', bx + bw - 78, mainY + 17);
+  // ---- 栈列 ----
+  var bx = 92, bw = 250, mainY = 44, mainH = 26;
+  // main 帧
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(bx, mainY, bw, mainH);
+  ctx.strokeStyle = LINE; ctx.lineWidth = 1;
+  if(ctx.strokeRect) ctx.strokeRect(bx + 0.5, mainY + 0.5, bw - 1, mainH - 1);
+  ctx.fillStyle = INK; ctx.font = '12px ' + MONO;
+  ctx.fillText('main()', bx + 10, mainY + 17);
+  ctx.fillStyle = M2.done ? GREEN : MUTED;
+  ctx.fillText(M2.done ? ('y = ' + M2.result) : 'y = ?', bx + bw - 78, mainY + 17);
 
- // fac 帧
- var n = M2.stack.length;
- for(var i = 0; i < n; i++){
- var fr = M2.stack[i], d = i + 1;
- var y = 76 + i * 21, h = 18;
- var isTop = (i === n - 1);
- ctx.fillStyle = isTop ? '#E7F2F4' : '#FFFFFF';
- ctx.fillRect(bx, y, bw, h);
- ctx.strokeStyle = isTop ? TEAL : LINE;
- ctx.lineWidth = isTop ? 2 : 1;
- if(ctx.strokeRect) ctx.strokeRect(bx + 1, y + 1, bw - 2, h - 2);
- ctx.fillStyle = INK; ctx.font = '11px ' + MONO;
- ctx.fillText('fac() n = ' + fr.n, bx + 10, y + 13);
- ctx.fillStyle = fr.f === null ? GREY : AMBER;
- ctx.fillText(fr.f === null ? 'f = …' : ('f = ' + fr.f), bx + bw - 74, y + 13);
- ctx.fillStyle = AMBER;
- ctx.font = '10px ' + MONO;
- ctx.fillText(hex8(frameAddr(d)), bx - 84, y + 13);
- }
- // 栈深标注
- ctx.fillStyle = MUTED;
- ctx.font = '10.5px ' + MONO;
- ctx.fillText('栈深 ' + n + ' 帧', bx, 76 + Math.max(n, 1) * 21 + 14);
- if(M2.phase === 'back' && n > 0){
- ctx.fillStyle = TEAL;
- ctx.fillText('↓ 压入 fac(' + M2.stack[n - 1].n + ')', bx + 90, 76 + (n - 1) * 21 - 4);
- } else if(M2.phase === 'fwd' && M2.lastRet){
- ctx.fillStyle = AMBER;
- ctx.fillText('↑ 弹出：fac(' + M2.lastRet.n + ') = ' + M2.lastRet.v, bx + 60, 76 + n * 21 + 4);
- }
+  // fac 帧
+  var n = M2.stack.length;
+  for(var i = 0; i < n; i++){
+    var fr = M2.stack[i], d = i + 1;
+    var y = 76 + i * 21, h = 18;
+    var isTop = (i === n - 1);
+    ctx.fillStyle = isTop ? '#E7F2F4' : '#FFFFFF';
+    ctx.fillRect(bx, y, bw, h);
+    ctx.strokeStyle = isTop ? TEAL : LINE;
+    ctx.lineWidth = isTop ? 2 : 1;
+    if(ctx.strokeRect) ctx.strokeRect(bx + 1, y + 1, bw - 2, h - 2);
+    ctx.fillStyle = INK; ctx.font = '11px ' + MONO;
+    ctx.fillText('fac()  n = ' + fr.n, bx + 10, y + 13);
+    ctx.fillStyle = fr.f === null ? GREY : AMBER;
+    ctx.fillText(fr.f === null ? 'f = …' : ('f = ' + fr.f), bx + bw - 74, y + 13);
+    ctx.fillStyle = AMBER;
+    ctx.font = '10px ' + MONO;
+    ctx.fillText(hex8(frameAddr(d)), bx - 84, y + 13);
+  }
+  // 栈深标注
+  ctx.fillStyle = MUTED;
+  ctx.font = '10.5px ' + MONO;
+  ctx.fillText('栈深 ' + n + ' 帧', bx, 76 + Math.max(n, 1) * 21 + 14);
+  if(M2.phase === 'back' && n > 0){
+    ctx.fillStyle = TEAL;
+    ctx.fillText('↓ 压入 fac(' + M2.stack[n - 1].n + ')', bx + 90, 76 + (n - 1) * 21 - 4);
+  } else if(M2.phase === 'fwd' && M2.lastRet){
+    ctx.fillStyle = AMBER;
+    ctx.fillText('↑ 弹出：fac(' + M2.lastRet.n + ') = ' + M2.lastRet.v, bx + 60, 76 + n * 21 + 4);
+  }
 
- // ---- 事件时间线 ----
- var ev = M2.tr.events, total = ev.length;
- var tx0 = 430, tw = 300, ty0 = 60;
- ctx.fillStyle = MUTED;
- ctx.fillText('事件时间线（' + total + ' 个事件）', tx0, ty0 - 12);
- var perRow = total <= 12 ? total : 12;
- var rows = Math.ceil(total / perRow);
- var gap = tw / perRow;
- for(var k = 0; k < total; k++){
- var row = Math.floor(k / perRow), col = k % perRow;
- var x = tx0 + col * gap + gap / 2, y = ty0 + row * 26;
- var isCall = ev[k].type === 'call';
- var past = k < M2.idx, cur = k === M2.idx;
- if(cur){
- ctx.strokeStyle = INK; ctx.lineWidth = 1.6;
- ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.stroke();
- }
- ctx.fillStyle = past ? (isCall ? TEAL : AMBER) : '#DDE3E8';
- if(isCall){ ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); }
- else ctx.fillRect(x - 4, y - 4, 8, 8);
- }
- // 阶段标注
- ctx.font = '10.5px ' + MONO;
- var half = M2.tr.n;
- if(rows === 1){
- ctx.strokeStyle = TEAL; ctx.lineWidth = 1.4;
- ctx.beginPath(); ctx.moveTo(tx0 + 2, ty0 + 16); ctx.lineTo(tx0 + half * gap - 2, ty0 + 16); ctx.stroke();
- ctx.strokeStyle = AMBER;
- ctx.beginPath(); ctx.moveTo(tx0 + half * gap + 2, ty0 + 16); ctx.lineTo(tx0 + tw - 2, ty0 + 16); ctx.stroke();
- ctx.fillStyle = TEAL; ctx.fillText('回溯', tx0 + 2, ty0 + 30);
- ctx.fillStyle = AMBER; ctx.fillText('递推', tx0 + half * gap + 6, ty0 + 30);
- } else {
- ctx.fillStyle = TEAL; ctx.fillText('回溯（call × ' + half + '）', tx0, ty0 + 46);
- ctx.fillStyle = AMBER; ctx.fillText('递推（ret × ' + half + '）', tx0, ty0 + 74);
- }
+  // ---- 事件时间线 ----
+  var ev = M2.tr.events, total = ev.length;
+  var tx0 = 430, tw = 300, ty0 = 60;
+  ctx.fillStyle = MUTED;
+  ctx.fillText('事件时间线（' + total + ' 个事件）', tx0, ty0 - 12);
+  var perRow = total <= 12 ? total : 12;
+  var rows = Math.ceil(total / perRow);
+  var gap = tw / perRow;
+  for(var k = 0; k < total; k++){
+    var row = Math.floor(k / perRow), col = k % perRow;
+    var x = tx0 + col * gap + gap / 2, y = ty0 + row * 26;
+    var isCall = ev[k].type === 'call';
+    var past = k < M2.idx, cur = k === M2.idx;
+    if(cur){
+      ctx.strokeStyle = INK; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.fillStyle = past ? (isCall ? TEAL : AMBER) : '#DDE3E8';
+    if(isCall){ ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); }
+    else ctx.fillRect(x - 4, y - 4, 8, 8);
+  }
+  // 阶段标注
+  ctx.font = '10.5px ' + MONO;
+  var half = M2.tr.n;
+  if(rows === 1){
+    ctx.strokeStyle = TEAL; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(tx0 + 2, ty0 + 16); ctx.lineTo(tx0 + half * gap - 2, ty0 + 16); ctx.stroke();
+    ctx.strokeStyle = AMBER;
+    ctx.beginPath(); ctx.moveTo(tx0 + half * gap + 2, ty0 + 16); ctx.lineTo(tx0 + tw - 2, ty0 + 16); ctx.stroke();
+    ctx.fillStyle = TEAL; ctx.fillText('回溯', tx0 + 2, ty0 + 30);
+    ctx.fillStyle = AMBER; ctx.fillText('递推', tx0 + half * gap + 6, ty0 + 30);
+  } else {
+    ctx.fillStyle = TEAL; ctx.fillText('回溯（call × ' + half + '）', tx0, ty0 + 46);
+    ctx.fillStyle = AMBER; ctx.fillText('递推（ret × ' + half + '）', tx0, ty0 + 74);
+  }
 
- // ---- 对账 ----
- ctx.fillStyle = INK;
- ctx.font = '12px ' + MONO;
- ctx.fillText('调用 ' + M2.calls + ' 次 · 返回 ' + M2.rets + ' 次 · 乘法 ' + M2.mults + ' 次', tx0, 150);
- ctx.fillStyle = MUTED;
- ctx.font = '11px ' + MONO;
- ctx.fillText('最大栈深 ' + M2.maxDepth + ' 帧（fac 帧）', tx0, 170);
- ctx.fillText('fac(' + M2.n + ') = ' + (M2.done ? M2.result : '…'), tx0, 190);
- ctx.fillStyle = GREY;
- ctx.fillText('同一函数，同时活着 ' + n + ' 份；', tx0, 216);
- ctx.fillText('每份有自己的 n 和 f。', tx0, 232);
+  // ---- 对账 ----
+  ctx.fillStyle = INK;
+  ctx.font = '12px ' + MONO;
+  ctx.fillText('调用 ' + M2.calls + ' 次 · 返回 ' + M2.rets + ' 次 · 乘法 ' + M2.mults + ' 次', tx0, 150);
+  ctx.fillStyle = MUTED;
+  ctx.font = '11px ' + MONO;
+  ctx.fillText('最大栈深 ' + M2.maxDepth + ' 帧（fac 帧）', tx0, 170);
+  ctx.fillText('fac(' + M2.n + ') = ' + (M2.done ? M2.result : '…'), tx0, 190);
+  ctx.fillStyle = GREY;
+  ctx.fillText('同一函数，同时活着 ' + n + ' 份；', tx0, 216);
+  ctx.fillText('每份有自己的 n 和 f。', tx0, 232);
 }
 
 function render2(){
- var tr = M2.tr;
- setText('s2nv', 'fac(' + M2.n + ')');
- var ph = { idle:'未开始', back:'回溯（分解）', fwd:'递推（回填）', done:'完成' }[M2.phase];
- setHTML('ro2',
- '<div class="l"><span class="k">n（滑杆）</span><span class="v">' + M2.n + '</span></div>' +
- '<div class="l"><span class="k">事件进度</span><span class="v">' + M2.idx + ' / ' + tr.events.length + '</span></div>' +
- '<div class="l"><span class="k">当前阶段</span><span class="v ' + (M2.phase === 'back' ? 'tealtx' : M2.phase === 'fwd' ? 'addr' : '') + '">' + ph + '</span></div>' +
- '<div class="l"><span class="k">当前栈深</span><span class="v">' + M2.stack.length + ' 帧</span></div>' +
- '<div class="l"><span class="k">栈顶帧地址</span><span class="v addr">' +
- (M2.stack.length ? hex8(frameAddr(M2.stack.length)) : '—') + '</span></div>' +
- '<div class="l"><span class="k">fac 调用 / 返回次数</span><span class="v">' + M2.calls + ' / ' + M2.rets + '</span></div>' +
- '<div class="l"><span class="k">乘法次数</span><span class="v">' + M2.mults + '</span></div>' +
- '<div class="l"><span class="k">最大栈深</span><span class="v">' + M2.maxDepth + ' 帧</span></div>' +
- '<div class="l"><span class="k">最近一次返回</span><span class="v ' + (M2.lastRet ? 'addr' : '') + '">' +
- (M2.lastRet ? ('fac(' + M2.lastRet.n + ') = ' + M2.lastRet.v) : '—') + '</span></div>' +
- '<div class="l"><span class="k">fac(' + M2.n + ') 结果</span><span class="v ' + (M2.done ? 'ok' : '') + '">' +
- (M2.done ? M2.result : '未完成') + '</span></div>');
- var b = $('b2step');
- if(b){ b.disabled = M2.done; b.textContent = M2.done ? '已结束' : ('第 ' + (M2.idx + 1) + ' 步 →'); }
- // 帧结构表
- var rows = '';
- for(var i = 0; i < FRAME_LAYOUT.length; i++){
- var s = FRAME_LAYOUT[i];
- rows += '<tr' + (i === 4 ? ' class="hi"' : '') + '><td class="mono">' + s.name + '</td>' +
- '<td class="mono">' + s.bytes + ' B</td><td>' + s.why + '</td></tr>';
- }
- setHTML('tb2', '<tr><th class="mono">槽位</th><th class="mono">字节</th><th>内容</th></tr>' + rows);
- draw2();
+  var tr = M2.tr;
+  setText('s2nv', 'fac(' + M2.n + ')');
+  var ph = { idle:'未开始', back:'回溯（分解）', fwd:'递推（回填）', done:'完成' }[M2.phase];
+  setHTML('ro2',
+    '<div class="l"><span class="k">n（滑杆）</span><span class="v">' + M2.n + '</span></div>' +
+    '<div class="l"><span class="k">事件进度</span><span class="v">' + M2.idx + ' / ' + tr.events.length + '</span></div>' +
+    '<div class="l"><span class="k">当前阶段</span><span class="v ' + (M2.phase === 'back' ? 'tealtx' : M2.phase === 'fwd' ? 'addr' : '') + '">' + ph + '</span></div>' +
+    '<div class="l"><span class="k">当前栈深</span><span class="v">' + M2.stack.length + ' 帧</span></div>' +
+    '<div class="l"><span class="k">栈顶帧地址</span><span class="v addr">' +
+      (M2.stack.length ? hex8(frameAddr(M2.stack.length)) : '—') + '</span></div>' +
+    '<div class="l"><span class="k">fac 调用 / 返回次数</span><span class="v">' + M2.calls + ' / ' + M2.rets + '</span></div>' +
+    '<div class="l"><span class="k">乘法次数</span><span class="v">' + M2.mults + '</span></div>' +
+    '<div class="l"><span class="k">最大栈深</span><span class="v">' + M2.maxDepth + ' 帧</span></div>' +
+    '<div class="l"><span class="k">最近一次返回</span><span class="v ' + (M2.lastRet ? 'addr' : '') + '">' +
+      (M2.lastRet ? ('fac(' + M2.lastRet.n + ') = ' + M2.lastRet.v) : '—') + '</span></div>' +
+    '<div class="l"><span class="k">fac(' + M2.n + ') 结果</span><span class="v ' + (M2.done ? 'ok' : '') + '">' +
+      (M2.done ? M2.result : '未完成') + '</span></div>');
+  var b = $('b2step');
+  if(b){ b.disabled = M2.done; b.textContent = M2.done ? '已结束' : ('第 ' + (M2.idx + 1) + ' 步 →'); }
+  // 帧结构表
+  var rows = '';
+  for(var i = 0; i < FRAME_LAYOUT.length; i++){
+    var s = FRAME_LAYOUT[i];
+    rows += '<tr' + (i === 4 ? ' class="hi"' : '') + '><td class="mono">' + s.name + '</td>' +
+            '<td class="mono">' + s.bytes + ' B</td><td>' + s.why + '</td></tr>';
+  }
+  setHTML('tb2', '<tr><th class="mono">槽位</th><th class="mono">字节</th><th>内容</th></tr>' + rows);
+  draw2();
 }
 
 /* ================= S03：age 两阶段动画 ================= */
 var M3 = { n:5, tr:null, idx:0, done:false, stack:[], phase:'idle', result:null,
- calls:0, rets:0, adds:0, maxDepth:0, known:[], timer:null };
+           calls:0, rets:0, adds:0, maxDepth:0, known:[], timer:null };
 
 function setN3(n){
- M3.n = clampInt(n, 1, 8, 5);
- var sl = $('s3n'); if(sl) sl.value = String(M3.n);
- reset3();
+  M3.n = clampInt(n, 1, 8, 5);
+  var sl = $('s3n'); if(sl) sl.value = String(M3.n);
+  reset3();
 }
 function reset3(){
- M3.tr = ageTrace(M3.n);
- M3.idx = 0; M3.done = false; M3.stack = []; M3.phase = 'idle';
- M3.result = null; M3.calls = 0; M3.rets = 0; M3.adds = 0; M3.maxDepth = 0; M3.known = [];
- render3();
+  M3.tr = ageTrace(M3.n);
+  M3.idx = 0; M3.done = false; M3.stack = []; M3.phase = 'idle';
+  M3.result = null; M3.calls = 0; M3.rets = 0; M3.adds = 0; M3.maxDepth = 0; M3.known = [];
+  render3();
 }
 function step3(){
- if(M3.done) return;
- var e = M3.tr.events[M3.idx];
- if(e.type === 'call'){
- M3.stack.push({ n:e.n, c:null });
- M3.phase = 'back';
- M3.calls++;
- if(e.depth > M3.maxDepth) M3.maxDepth = e.depth;
- } else {
- M3.stack.pop();
- M3.rets++;
- if(e.add) M3.adds++;
- M3.phase = 'fwd';
- M3.known.push({ n:e.n, v:e.v });
- }
- M3.idx++;
- if(M3.idx >= M3.tr.events.length){
- M3.done = true; M3.result = M3.tr.result; M3.phase = 'done';
- }
- render3();
+  if(M3.done) return;
+  var e = M3.tr.events[M3.idx];
+  if(e.type === 'call'){
+    M3.stack.push({ n:e.n, c:null });
+    M3.phase = 'back';
+    M3.calls++;
+    if(e.depth > M3.maxDepth) M3.maxDepth = e.depth;
+  } else {
+    M3.stack.pop();
+    M3.rets++;
+    if(e.add) M3.adds++;
+    M3.phase = 'fwd';
+    M3.known.push({ n:e.n, v:e.v });
+  }
+  M3.idx++;
+  if(M3.idx >= M3.tr.events.length){
+    M3.done = true; M3.result = M3.tr.result; M3.phase = 'done';
+  }
+  render3();
 }
 function play3(){
- if(M3.timer){ clearInterval(M3.timer); M3.timer = null; setText('b3play', '自动播放'); return; }
- if(M3.done) reset3();
- setText('b3play', '暂停');
- M3.timer = setInterval(function(){
- if(M3.done){ clearInterval(M3.timer); M3.timer = null; setText('b3play', '自动播放'); return; }
- step3();
- }, 520);
+  if(M3.timer){ clearInterval(M3.timer); M3.timer = null; setText('b3play', '自动播放'); return; }
+  if(M3.done) reset3();
+  setText('b3play', '暂停');
+  M3.timer = setInterval(function(){
+    if(M3.done){ clearInterval(M3.timer); M3.timer = null; setText('b3play', '自动播放'); return; }
+    step3();
+  }, 520);
 }
 
 function draw3(){
- var cv = $('cv3'); if(!cv || !cv.getContext) return;
- var ctx = cv.getContext('2d'); if(!ctx) return;
- var W = 760, H = 280, dpr = Math.min(window.devicePixelRatio || 1, 2);
- cv.width = W * dpr; cv.height = H * dpr;
- if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
- ctx.clearRect(0, 0, W, H);
+  var cv = $('cv3'); if(!cv || !cv.getContext) return;
+  var ctx = cv.getContext('2d'); if(!ctx) return;
+  var W = 760, H = 280, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = W * dpr; cv.height = H * dpr;
+  if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
 
- ctx.fillStyle = MUTED;
- ctx.font = '11px ' + MONO;
- ctx.fillText('age(' + M3.n + ') · 回溯：一路下钻问前一个人；递推：从 10 岁逐层算回', 90, 24);
+  ctx.fillStyle = MUTED;
+  ctx.font = '11px ' + MONO;
+  ctx.fillText('age(' + M3.n + ') · 回溯：一路下钻问前一个人；递推：从 10 岁逐层算回', 90, 24);
 
- // 帧链（左）
- var bx = 92, bw = 240;
- ctx.fillStyle = '#FFFFFF';
- ctx.fillRect(bx, 44, bw, 26);
- ctx.strokeStyle = LINE; ctx.lineWidth = 1;
- if(ctx.strokeRect) ctx.strokeRect(bx + 0.5, 44.5, bw - 1, 25);
- ctx.fillStyle = INK; ctx.font = '12px ' + MONO;
- ctx.fillText('main()', bx + 10, 61);
- ctx.fillStyle = M3.done ? GREEN : MUTED;
- ctx.fillText(M3.done ? ('age = ' + M3.result) : 'age = ?', bx + bw - 96, 61);
+  // 帧链（左）
+  var bx = 92, bw = 240;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(bx, 44, bw, 26);
+  ctx.strokeStyle = LINE; ctx.lineWidth = 1;
+  if(ctx.strokeRect) ctx.strokeRect(bx + 0.5, 44.5, bw - 1, 25);
+  ctx.fillStyle = INK; ctx.font = '12px ' + MONO;
+  ctx.fillText('main()', bx + 10, 61);
+  ctx.fillStyle = M3.done ? GREEN : MUTED;
+  ctx.fillText(M3.done ? ('age = ' + M3.result) : 'age = ?', bx + bw - 96, 61);
 
- var n = M3.stack.length;
- for(var i = 0; i < n; i++){
- var fr = M3.stack[i];
- var y = 78 + i * 21, isTop = (i === n - 1);
- ctx.fillStyle = isTop ? '#E7F2F4' : '#FFFFFF';
- ctx.fillRect(bx, y, bw, 18);
- ctx.strokeStyle = isTop ? TEAL : LINE;
- ctx.lineWidth = isTop ? 2 : 1;
- if(ctx.strokeRect) ctx.strokeRect(bx + 1, y + 1, bw - 2, 16);
- ctx.fillStyle = INK; ctx.font = '11px ' + MONO;
- ctx.fillText('age(' + fr.n + ')', bx + 10, y + 13);
- ctx.fillStyle = fr.c === null ? GREY : AMBER;
- ctx.fillText(fr.c === null ? 'c = ?' : ('c = ' + fr.c), bx + bw - 72, y + 13);
- ctx.fillStyle = AMBER; ctx.font = '10px ' + MONO;
- ctx.fillText(hex8(frameAddr(i + 1)), bx - 84, y + 13);
- }
- ctx.fillStyle = MUTED; ctx.font = '10.5px ' + MONO;
- ctx.fillText('栈深 ' + n + ' 帧', bx, 78 + Math.max(n, 1) * 21 + 14);
+  var n = M3.stack.length;
+  for(var i = 0; i < n; i++){
+    var fr = M3.stack[i];
+    var y = 78 + i * 21, isTop = (i === n - 1);
+    ctx.fillStyle = isTop ? '#E7F2F4' : '#FFFFFF';
+    ctx.fillRect(bx, y, bw, 18);
+    ctx.strokeStyle = isTop ? TEAL : LINE;
+    ctx.lineWidth = isTop ? 2 : 1;
+    if(ctx.strokeRect) ctx.strokeRect(bx + 1, y + 1, bw - 2, 16);
+    ctx.fillStyle = INK; ctx.font = '11px ' + MONO;
+    ctx.fillText('age(' + fr.n + ')', bx + 10, y + 13);
+    ctx.fillStyle = fr.c === null ? GREY : AMBER;
+    ctx.fillText(fr.c === null ? 'c = ?' : ('c = ' + fr.c), bx + bw - 72, y + 13);
+    ctx.fillStyle = AMBER; ctx.font = '10px ' + MONO;
+    ctx.fillText(hex8(frameAddr(i + 1)), bx - 84, y + 13);
+  }
+  ctx.fillStyle = MUTED; ctx.font = '10.5px ' + MONO;
+  ctx.fillText('栈深 ' + n + ' 帧', bx, 78 + Math.max(n, 1) * 21 + 14);
 
- // 递推结果列（右）
- var kx = 430;
- ctx.fillStyle = MUTED;
- ctx.fillText('递推结果（自底向上回填）', kx, 44);
- ctx.font = '12px ' + MONO;
- if(!M3.known.length){
- ctx.fillStyle = GREY;
- ctx.fillText('（回溯阶段：谁都还不知道）', kx, 66);
- }
- for(var k = 0; k < M3.known.length; k++){
- var it = M3.known[k];
- ctx.fillStyle = '#FBF0E2';
- ctx.fillRect(kx, 54 + k * 22, 190, 18);
- ctx.strokeStyle = AMBER; ctx.lineWidth = 1;
- if(ctx.strokeRect) ctx.strokeRect(kx + 0.5, 54.5 + k * 22, 189, 17);
- ctx.fillStyle = AMBER;
- ctx.fillText('age(' + it.n + ') = ' + it.v, kx + 10, 67 + k * 22);
- }
- // 公式对账
- ctx.fillStyle = INK;
- ctx.font = '12px ' + MONO;
- ctx.fillText('公式对账：age(n) = 2n + 8', kx, 54 + Math.max(M3.known.length, 1) * 22 + 16);
- ctx.fillStyle = MUTED;
- ctx.fillText('age(' + M3.n + ') = 2×' + M3.n + ' + 8 = ' + (2 * M3.n + 8), kx, 54 + Math.max(M3.known.length, 1) * 22 + 36);
- ctx.fillStyle = M3.done ? GREEN : GREY;
- ctx.fillText(M3.done ? ('动画结果 ' + M3.result + ' ✓ 与公式一致') : '走完动画后与此对照', kx, 54 + Math.max(M3.known.length, 1) * 22 + 56);
+  // 递推结果列（右）
+  var kx = 430;
+  ctx.fillStyle = MUTED;
+  ctx.fillText('递推结果（自底向上回填）', kx, 44);
+  ctx.font = '12px ' + MONO;
+  if(!M3.known.length){
+    ctx.fillStyle = GREY;
+    ctx.fillText('（回溯阶段：谁都还不知道）', kx, 66);
+  }
+  for(var k = 0; k < M3.known.length; k++){
+    var it = M3.known[k];
+    ctx.fillStyle = '#FBF0E2';
+    ctx.fillRect(kx, 54 + k * 22, 190, 18);
+    ctx.strokeStyle = AMBER; ctx.lineWidth = 1;
+    if(ctx.strokeRect) ctx.strokeRect(kx + 0.5, 54.5 + k * 22, 189, 17);
+    ctx.fillStyle = AMBER;
+    ctx.fillText('age(' + it.n + ') = ' + it.v, kx + 10, 67 + k * 22);
+  }
+  // 公式对账
+  ctx.fillStyle = INK;
+  ctx.font = '12px ' + MONO;
+  ctx.fillText('公式对账：age(n) = 2n + 8', kx, 54 + Math.max(M3.known.length, 1) * 22 + 16);
+  ctx.fillStyle = MUTED;
+  ctx.fillText('age(' + M3.n + ') = 2×' + M3.n + ' + 8 = ' + (2 * M3.n + 8), kx, 54 + Math.max(M3.known.length, 1) * 22 + 36);
+  ctx.fillStyle = M3.done ? GREEN : GREY;
+  ctx.fillText(M3.done ? ('动画结果 ' + M3.result + ' ✓ 与公式一致') : '走完动画后与此对照', kx, 54 + Math.max(M3.known.length, 1) * 22 + 56);
 }
 
 function render3(){
- setText('s3nv', 'age(' + M3.n + ')');
- var ph = { idle:'未开始', back:'回溯（下钻）', fwd:'递推（回填）', done:'完成' }[M3.phase];
- setHTML('ro3',
- '<div class="l"><span class="k">n（滑杆）</span><span class="v">' + M3.n + '</span></div>' +
- '<div class="l"><span class="k">事件进度</span><span class="v">' + M3.idx + ' / ' + M3.tr.events.length + '</span></div>' +
- '<div class="l"><span class="k">当前阶段</span><span class="v ' + (M3.phase === 'back' ? 'tealtx' : M3.phase === 'fwd' ? 'addr' : '') + '">' + ph + '</span></div>' +
- '<div class="l"><span class="k">当前栈深</span><span class="v">' + M3.stack.length + ' 帧</span></div>' +
- '<div class="l"><span class="k">栈顶在问</span><span class="v">' +
- (M3.stack.length ? ('age(' + M3.stack[M3.stack.length - 1].n + ')') : '—') + '</span></div>' +
- '<div class="l"><span class="k">已知的最老年龄</span><span class="v ' + (M3.known.length ? 'addr' : '') + '">' +
- (M3.known.length ? M3.known[0].v + '（age(1)）' : '还没回溯到底') + '</span></div>' +
- '<div class="l"><span class="k">调用 / 返回次数</span><span class="v">' + M3.calls + ' / ' + M3.rets + '</span></div>' +
- '<div class="l"><span class="k">最大栈深</span><span class="v">' + M3.maxDepth + ' 帧</span></div>' +
- '<div class="l"><span class="k">age(' + M3.n + ') 结果</span><span class="v ' + (M3.done ? 'ok' : '') + '">' +
- (M3.done ? M3.result + '（公式 2n+8 = ' + (2 * M3.n + 8) + '）' : '未完成') + '</span></div>');
- var b = $('b3step');
- if(b){ b.disabled = M3.done; b.textContent = M3.done ? '已结束' : ('第 ' + (M3.idx + 1) + ' 步 →'); }
- draw3();
+  setText('s3nv', 'age(' + M3.n + ')');
+  var ph = { idle:'未开始', back:'回溯（下钻）', fwd:'递推（回填）', done:'完成' }[M3.phase];
+  setHTML('ro3',
+    '<div class="l"><span class="k">n（滑杆）</span><span class="v">' + M3.n + '</span></div>' +
+    '<div class="l"><span class="k">事件进度</span><span class="v">' + M3.idx + ' / ' + M3.tr.events.length + '</span></div>' +
+    '<div class="l"><span class="k">当前阶段</span><span class="v ' + (M3.phase === 'back' ? 'tealtx' : M3.phase === 'fwd' ? 'addr' : '') + '">' + ph + '</span></div>' +
+    '<div class="l"><span class="k">当前栈深</span><span class="v">' + M3.stack.length + ' 帧</span></div>' +
+    '<div class="l"><span class="k">栈顶在问</span><span class="v">' +
+      (M3.stack.length ? ('age(' + M3.stack[M3.stack.length - 1].n + ')') : '—') + '</span></div>' +
+    '<div class="l"><span class="k">已知的最老年龄</span><span class="v ' + (M3.known.length ? 'addr' : '') + '">' +
+      (M3.known.length ? M3.known[0].v + '（age(1)）' : '还没回溯到底') + '</span></div>' +
+    '<div class="l"><span class="k">调用 / 返回次数</span><span class="v">' + M3.calls + ' / ' + M3.rets + '</span></div>' +
+    '<div class="l"><span class="k">最大栈深</span><span class="v">' + M3.maxDepth + ' 帧</span></div>' +
+    '<div class="l"><span class="k">age(' + M3.n + ') 结果</span><span class="v ' + (M3.done ? 'ok' : '') + '">' +
+      (M3.done ? M3.result + '（公式 2n+8 = ' + (2 * M3.n + 8) + '）' : '未完成') + '</span></div>');
+  var b = $('b3step');
+  if(b){ b.disabled = M3.done; b.textContent = M3.done ? '已结束' : ('第 ' + (M3.idx + 1) + ' 步 →'); }
+  draw3();
 }
 
 /* ================= S04：汉诺塔 ================= */
 var M4 = { n:3, tr:null, idx:0, done:false, stack:[], pegs:{A:[],B:[],C:[]},
- moves:0, depth:0, maxDepth:0, calls:0, curMove:null, lastMove:null, timer:null };
+           moves:0, depth:0, maxDepth:0, calls:0, curMove:null, lastMove:null, timer:null };
 
 function resetPegs(n){
- M4.pegs = { A:[], B:[], C:[] };
- for(var s = n; s >= 1; s--) M4.pegs.A.push(s); // 下标 0 = 最底（最大）
+  M4.pegs = { A:[], B:[], C:[] };
+  for(var s = n; s >= 1; s--) M4.pegs.A.push(s);   // 下标 0 = 最底（最大）
 }
 function setN4(n){
- M4.n = clampInt(n, 1, 5, 3);
- var sl = $('s4n'); if(sl) sl.value = String(M4.n);
- reset4();
+  M4.n = clampInt(n, 1, 5, 3);
+  var sl = $('s4n'); if(sl) sl.value = String(M4.n);
+  reset4();
 }
 function reset4(){
- M4.tr = hanoiTrace(M4.n);
- M4.idx = 0; M4.done = false; M4.stack = [];
- M4.moves = 0; M4.depth = 0; M4.maxDepth = 0; M4.calls = 0; M4.curMove = null; M4.lastMove = null;
- resetPegs(M4.n);
- render4();
+  M4.tr = hanoiTrace(M4.n);
+  M4.idx = 0; M4.done = false; M4.stack = [];
+  M4.moves = 0; M4.depth = 0; M4.maxDepth = 0; M4.calls = 0; M4.curMove = null; M4.lastMove = null;
+  resetPegs(M4.n);
+  render4();
 }
 function step4(){
- if(M4.done) return;
- var e = M4.tr.events[M4.idx];
- if(e.type === 'call'){
- M4.stack.push({ k:e.k, a:e.a, b:e.b, c:e.c });
- M4.calls++;
- if(e.depth > M4.maxDepth) M4.maxDepth = e.depth;
- M4.depth = M4.stack.length;
- } else if(e.type === 'move'){
- var disk = M4.pegs[e.from].pop();
- M4.pegs[e.to].push(disk);
- M4.moves++;
- M4.curMove = e.from + '→' + e.to;
- M4.lastMove = { from:e.from, to:e.to, disk:disk, step:e.step };
- } else {
- M4.stack.pop();
- M4.depth = M4.stack.length;
- }
- M4.idx++;
- if(M4.idx >= M4.tr.events.length) M4.done = true;
- render4();
+  if(M4.done) return;
+  var e = M4.tr.events[M4.idx];
+  if(e.type === 'call'){
+    M4.stack.push({ k:e.k, a:e.a, b:e.b, c:e.c });
+    M4.calls++;
+    if(e.depth > M4.maxDepth) M4.maxDepth = e.depth;
+    M4.depth = M4.stack.length;
+  } else if(e.type === 'move'){
+    var disk = M4.pegs[e.from].pop();
+    M4.pegs[e.to].push(disk);
+    M4.moves++;
+    M4.curMove = e.from + '→' + e.to;
+    M4.lastMove = { from:e.from, to:e.to, disk:disk, step:e.step };
+  } else {
+    M4.stack.pop();
+    M4.depth = M4.stack.length;
+  }
+  M4.idx++;
+  if(M4.idx >= M4.tr.events.length) M4.done = true;
+  render4();
 }
 function play4(){
- if(M4.timer){ clearInterval(M4.timer); M4.timer = null; setText('b4play', '自动播放'); return; }
- if(M4.done) reset4();
- setText('b4play', '暂停');
- M4.timer = setInterval(function(){
- if(M4.done){ clearInterval(M4.timer); M4.timer = null; setText('b4play', '自动播放'); return; }
- step4();
- }, 420);
+  if(M4.timer){ clearInterval(M4.timer); M4.timer = null; setText('b4play', '自动播放'); return; }
+  if(M4.done) reset4();
+  setText('b4play', '暂停');
+  M4.timer = setInterval(function(){
+    if(M4.done){ clearInterval(M4.timer); M4.timer = null; setText('b4play', '自动播放'); return; }
+    step4();
+  }, 420);
 }
 
 function diskW(size){ return 34 + size * 17; }
 
 function draw4(){
- var cv = $('cv4'); if(!cv || !cv.getContext) return;
- var ctx = cv.getContext('2d'); if(!ctx) return;
- var W = 760, H = 360, dpr = Math.min(window.devicePixelRatio || 1, 2);
- cv.width = W * dpr; cv.height = H * dpr;
- if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
- ctx.clearRect(0, 0, W, H);
+  var cv = $('cv4'); if(!cv || !cv.getContext) return;
+  var ctx = cv.getContext('2d'); if(!ctx) return;
+  var W = 760, H = 360, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = W * dpr; cv.height = H * dpr;
+  if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
 
- var total = M4.tr.count;
- ctx.fillStyle = MUTED;
- ctx.font = '11px ' + MONO;
- ctx.fillText('hanoi(' + M4.n + ', A, B, C) · 第 ' + M4.moves + ' / ' + total + ' 步' +
- (M4.curMove ? ' · 当前 ' + M4.curMove : '') + (M4.done ? ' · 完成，全部在 C 座' : ''), 20, 24);
+  var total = M4.tr.count;
+  ctx.fillStyle = MUTED;
+  ctx.font = '11px ' + MONO;
+  ctx.fillText('hanoi(' + M4.n + ', A, B, C) · 第 ' + M4.moves + ' / ' + total + ' 步' +
+    (M4.curMove ? ' · 当前 ' + M4.curMove : '') + (M4.done ? ' · 完成，全部在 C 座' : ''), 20, 24);
 
- // ---- 三座 ----
- var pegs = ['A', 'B', 'C'], cxs = [150, 380, 610], baseY = 212, poleTop = 66, dh = 17;
- // 底座
- ctx.strokeStyle = LINE; ctx.lineWidth = 1.5;
- ctx.beginPath(); ctx.moveTo(60, baseY + 4); ctx.lineTo(700, baseY + 4); ctx.stroke();
- for(var p = 0; p < 3; p++){
- var cx = cxs[p];
- ctx.strokeStyle = '#9AA4AE'; ctx.lineWidth = 3;
- ctx.beginPath(); ctx.moveTo(cx, poleTop); ctx.lineTo(cx, baseY); ctx.stroke();
- ctx.fillStyle = MUTED; ctx.font = '13px ' + MONO;
- ctx.fillText(pegs[p], cx - 4, baseY + 22);
- var arr = M4.pegs[pegs[p]];
- for(var d = 0; d < arr.length; d++){
- var size = arr[d], w = diskW(size);
- var y = baseY - (d + 1) * dh;
- var isLast = (M4.lastMove && M4.lastMove.to === pegs[p] && M4.lastMove.disk === size && d === arr.length - 1);
- ctx.fillStyle = isLast ? '#FBF0E2' : (size === M4.n ? '#E7F2F4' : '#F4F7F8');
- ctx.fillRect(cx - w / 2, y, w, dh - 2);
- ctx.strokeStyle = isLast ? AMBER : (size === M4.n ? TEAL : LINE);
- ctx.lineWidth = isLast ? 2 : 1;
- if(ctx.strokeRect) ctx.strokeRect(cx - w / 2 + 0.5, y + 0.5, w - 1, dh - 3);
- ctx.fillStyle = isLast ? AMBER : '#3A4650';
- ctx.font = '10px ' + MONO;
- ctx.fillText(String(size), cx - 3, y + 12);
- }
- }
+  // ---- 三座 ----
+  var pegs = ['A', 'B', 'C'], cxs = [150, 380, 610], baseY = 212, poleTop = 66, dh = 17;
+  // 底座
+  ctx.strokeStyle = LINE; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(60, baseY + 4); ctx.lineTo(700, baseY + 4); ctx.stroke();
+  for(var p = 0; p < 3; p++){
+    var cx = cxs[p];
+    ctx.strokeStyle = '#9AA4AE'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(cx, poleTop); ctx.lineTo(cx, baseY); ctx.stroke();
+    ctx.fillStyle = MUTED; ctx.font = '13px ' + MONO;
+    ctx.fillText(pegs[p], cx - 4, baseY + 22);
+    var arr = M4.pegs[pegs[p]];
+    for(var d = 0; d < arr.length; d++){
+      var size = arr[d], w = diskW(size);
+      var y = baseY - (d + 1) * dh;
+      var isLast = (M4.lastMove && M4.lastMove.to === pegs[p] && M4.lastMove.disk === size && d === arr.length - 1);
+      ctx.fillStyle = isLast ? '#FBF0E2' : (size === M4.n ? '#E7F2F4' : '#F4F7F8');
+      ctx.fillRect(cx - w / 2, y, w, dh - 2);
+      ctx.strokeStyle = isLast ? AMBER : (size === M4.n ? TEAL : LINE);
+      ctx.lineWidth = isLast ? 2 : 1;
+      if(ctx.strokeRect) ctx.strokeRect(cx - w / 2 + 0.5, y + 0.5, w - 1, dh - 3);
+      ctx.fillStyle = isLast ? AMBER : '#3A4650';
+      ctx.font = '10px ' + MONO;
+      ctx.fillText(String(size), cx - 3, y + 12);
+    }
+  }
 
- // ---- 调用栈（横向，左 = 栈顶 main） ----
- var sy = 258, sh = 46, sw = 112, gapx = 6, sx0 = 20;
- ctx.fillStyle = MUTED; ctx.font = '11px ' + MONO;
- ctx.fillText('调用栈（左 = 栈顶，深 → 右）：', sx0, sy - 8);
- var frames = ['main()'].concat(M4.stack.map(function(f){ return 'hanoi(' + f.k + ',' + f.a + ',' + f.b + ',' + f.c + ')'; }));
- var maxShow = 6;
- for(var f = 0; f < Math.min(frames.length, maxShow); f++){
- var x = sx0 + f * (sw + gapx);
- var isTop = (f === frames.length - 1);
- ctx.fillStyle = isTop ? '#E7F2F4' : '#FFFFFF';
- ctx.fillRect(x, sy, sw, sh);
- ctx.strokeStyle = isTop ? TEAL : LINE;
- ctx.lineWidth = isTop ? 2 : 1;
- if(ctx.strokeRect) ctx.strokeRect(x + 1, sy + 1, sw - 2, sh - 2);
- ctx.fillStyle = INK;
- ctx.font = (f === 0 ? 11 : 9.5) + 'px ' + MONO;
- ctx.fillText(frames[f], x + 7, sy + 20);
- ctx.fillStyle = MUTED; ctx.font = '9px ' + MONO;
- ctx.fillText(f === 0 ? '返回 main 的调用者' : ('第 ' + f + ' 层 · ' + hex8(frameAddr(f))), x + 7, sy + 36);
- }
- if(frames.length > maxShow){
- ctx.fillStyle = GREY; ctx.font = '10px ' + MONO;
- ctx.fillText('…', sx0 + maxShow * (sw + gapx) + 4, sy + 26);
- }
+  // ---- 调用栈（横向，左 = 栈顶 main） ----
+  var sy = 258, sh = 46, sw = 112, gapx = 6, sx0 = 20;
+  ctx.fillStyle = MUTED; ctx.font = '11px ' + MONO;
+  ctx.fillText('调用栈（左 = 栈顶，深 → 右）：', sx0, sy - 8);
+  var frames = ['main()'].concat(M4.stack.map(function(f){ return 'hanoi(' + f.k + ',' + f.a + ',' + f.b + ',' + f.c + ')'; }));
+  var maxShow = 6;
+  for(var f = 0; f < Math.min(frames.length, maxShow); f++){
+    var x = sx0 + f * (sw + gapx);
+    var isTop = (f === frames.length - 1);
+    ctx.fillStyle = isTop ? '#E7F2F4' : '#FFFFFF';
+    ctx.fillRect(x, sy, sw, sh);
+    ctx.strokeStyle = isTop ? TEAL : LINE;
+    ctx.lineWidth = isTop ? 2 : 1;
+    if(ctx.strokeRect) ctx.strokeRect(x + 1, sy + 1, sw - 2, sh - 2);
+    ctx.fillStyle = INK;
+    ctx.font = (f === 0 ? 11 : 9.5) + 'px ' + MONO;
+    ctx.fillText(frames[f], x + 7, sy + 20);
+    ctx.fillStyle = MUTED; ctx.font = '9px ' + MONO;
+    ctx.fillText(f === 0 ? '返回 main 的调用者' : ('第 ' + f + ' 层 · ' + hex8(frameAddr(f))), x + 7, sy + 36);
+  }
+  if(frames.length > maxShow){
+    ctx.fillStyle = GREY; ctx.font = '10px ' + MONO;
+    ctx.fillText('…', sx0 + maxShow * (sw + gapx) + 4, sy + 26);
+  }
 
- // ---- 对账 ----
- ctx.fillStyle = INK; ctx.font = '12px ' + MONO;
- ctx.fillText('移动 ' + M4.moves + ' / ' + total + '（2^' + M4.n + '−1 = ' + total + '）', 20, 336);
- ctx.fillStyle = MUTED; ctx.font = '11px ' + MONO;
- ctx.fillText('hanoi 调用 ' + M4.calls + ' 次 · 当前栈深 ' + M4.depth + '（含 main）· 最大 ' + (M4.maxDepth + 1), 300, 336);
+  // ---- 对账 ----
+  ctx.fillStyle = INK; ctx.font = '12px ' + MONO;
+  ctx.fillText('移动 ' + M4.moves + ' / ' + total + '（2^' + M4.n + '−1 = ' + total + '）', 20, 336);
+  ctx.fillStyle = MUTED; ctx.font = '11px ' + MONO;
+  ctx.fillText('hanoi 调用 ' + M4.calls + ' 次 · 当前栈深 ' + M4.depth + '（含 main）· 最大 ' + (M4.maxDepth + 1), 300, 336);
 }
 
 function render4(){
- setText('s4nv', 'n = ' + M4.n + '（' + M4.tr.count + ' 步）');
- var top = M4.stack.length ? M4.stack[M4.stack.length - 1] : null;
- setHTML('ro4',
- '<div class="l"><span class="k">n（滑杆）</span><span class="v">' + M4.n + '</span></div>' +
- '<div class="l"><span class="k">移动进度</span><span class="v">' + M4.moves + ' / ' + M4.tr.count + '（2^' + M4.n + '−1）</span></div>' +
- '<div class="l"><span class="k">当前移动</span><span class="v ' + (M4.curMove ? 'addr' : '') + '">' +
- (M4.curMove ? (M4.curMove + ' · 第 ' + M4.lastMove.disk + ' 号盘') : '—') + '</span></div>' +
- '<div class="l"><span class="k">栈顶帧</span><span class="v">' +
- (top ? ('hanoi(' + top.k + ',' + top.a + ',' + top.b + ',' + top.c + ')') : 'main()') + '</span></div>' +
- '<div class="l"><span class="k">当前栈深</span><span class="v">' + (M4.depth + 1) + ' 帧（含 main）</span></div>' +
- '<div class="l"><span class="k">最大栈深</span><span class="v">' + (M4.maxDepth + 1) + ' 帧（n+1）</span></div>' +
- '<div class="l"><span class="k">hanoi 调用次数</span><span class="v">' + M4.calls + '</span></div>' +
- '<div class="l"><span class="k">A / B / C 座盘点</span><span class="v">' +
- M4.pegs.A.length + ' / ' + M4.pegs.B.length + ' / ' + M4.pegs.C.length + ' 个盘</span></div>' +
- '<div class="l"><span class="k">总盘数守恒</span><span class="v ' + ((M4.pegs.A.length + M4.pegs.B.length + M4.pegs.C.length) === M4.n ? 'ok' : 'bad') + '">' +
- ((M4.pegs.A.length + M4.pegs.B.length + M4.pegs.C.length) === M4.n ? '✓ ' + M4.n : '异常') + '</span></div>');
- var b = $('b4step');
- if(b){ b.disabled = M4.done; b.textContent = M4.done ? '已结束' : ('第 ' + (M4.idx + 1) + ' 步 →'); }
- draw4();
+  setText('s4nv', 'n = ' + M4.n + '（' + M4.tr.count + ' 步）');
+  var top = M4.stack.length ? M4.stack[M4.stack.length - 1] : null;
+  setHTML('ro4',
+    '<div class="l"><span class="k">n（滑杆）</span><span class="v">' + M4.n + '</span></div>' +
+    '<div class="l"><span class="k">移动进度</span><span class="v">' + M4.moves + ' / ' + M4.tr.count + '（2^' + M4.n + '−1）</span></div>' +
+    '<div class="l"><span class="k">当前移动</span><span class="v ' + (M4.curMove ? 'addr' : '') + '">' +
+      (M4.curMove ? (M4.curMove + ' · 第 ' + M4.lastMove.disk + ' 号盘') : '—') + '</span></div>' +
+    '<div class="l"><span class="k">栈顶帧</span><span class="v">' +
+      (top ? ('hanoi(' + top.k + ',' + top.a + ',' + top.b + ',' + top.c + ')') : 'main()') + '</span></div>' +
+    '<div class="l"><span class="k">当前栈深</span><span class="v">' + (M4.depth + 1) + ' 帧（含 main）</span></div>' +
+    '<div class="l"><span class="k">最大栈深</span><span class="v">' + (M4.maxDepth + 1) + ' 帧（n+1）</span></div>' +
+    '<div class="l"><span class="k">hanoi 调用次数</span><span class="v">' + M4.calls + '</span></div>' +
+    '<div class="l"><span class="k">A / B / C 座盘点</span><span class="v">' +
+      M4.pegs.A.length + ' / ' + M4.pegs.B.length + ' / ' + M4.pegs.C.length + ' 个盘</span></div>' +
+    '<div class="l"><span class="k">总盘数守恒</span><span class="v ' + ((M4.pegs.A.length + M4.pegs.B.length + M4.pegs.C.length) === M4.n ? 'ok' : 'bad') + '">' +
+      ((M4.pegs.A.length + M4.pegs.B.length + M4.pegs.C.length) === M4.n ? '✓ ' + M4.n : '异常') + '</span></div>');
+  var b = $('b4step');
+  if(b){ b.disabled = M4.done; b.textContent = M4.done ? '已结束' : ('第 ' + (M4.idx + 1) + ' 步 →'); }
+  draw4();
 }
 
 /* ================= S05：栈溢出模型 ================= */
 var M5 = { limitMiB:8, depth:100000, frameB:FRAME_B };
 
 function setLimit5(v){
- M5.limitMiB = clampInt(v, 1, 16, 8);
- var sl = $('s5lim'); if(sl) sl.value = String(M5.limitMiB);
- render5();
+  M5.limitMiB = clampInt(v, 1, 16, 8);
+  var sl = $('s5lim'); if(sl) sl.value = String(M5.limitMiB);
+  render5();
 }
 function setDepth5(v){
- M5.depth = clampInt(v, 1, 300000, 100000);
- var sl = $('s5dep'); if(sl) sl.value = String(M5.depth);
- render5();
+  M5.depth = clampInt(v, 1, 300000, 100000);
+  var sl = $('s5dep'); if(sl) sl.value = String(M5.depth);
+  render5();
 }
 function jumpOverflow(){ M5.depth = maxFrames(M5.limitMiB, M5.frameB) + 1; render5(); }
 function jumpSafe(){ M5.depth = Math.max(1, Math.floor(maxFrames(M5.limitMiB, M5.frameB) / 2)); render5(); }
 
 function draw5(){
- var cv = $('cv5'); if(!cv || !cv.getContext) return;
- var ctx = cv.getContext('2d'); if(!ctx) return;
- var W = 760, H = 260, dpr = Math.min(window.devicePixelRatio || 1, 2);
- cv.width = W * dpr; cv.height = H * dpr;
- if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
- ctx.clearRect(0, 0, W, H);
+  var cv = $('cv5'); if(!cv || !cv.getContext) return;
+  var ctx = cv.getContext('2d'); if(!ctx) return;
+  var W = 760, H = 260, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = W * dpr; cv.height = H * dpr;
+  if(ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
 
- var limitB = M5.limitMiB * 1024 * 1024;
- var cap = maxFrames(M5.limitMiB, M5.frameB);
- var over = overflowAt(M5.depth, M5.limitMiB, M5.frameB);
+  var limitB = M5.limitMiB * 1024 * 1024;
+  var cap = maxFrames(M5.limitMiB, M5.frameB);
+  var over = overflowAt(M5.depth, M5.limitMiB, M5.frameB);
 
- // ---- 容量条 ----
- var bx0 = 40, bw = 380, by = 60, bh = 30;
- ctx.fillStyle = MUTED; ctx.font = '11px ' + MONO;
- ctx.fillText('已用 = 试探深度 × 每帧字节（上限 ' + M5.limitMiB + ' MiB）', bx0, by - 12);
- // 溢出区（红 Hatched）
- ctx.fillStyle = '#FBEAEA';
- ctx.fillRect(bx0, by, bw, bh);
- ctx.strokeStyle = '#E5B7B7'; ctx.lineWidth = 1;
- for(var hx = bx0; hx < bx0 + bw; hx += 10){
- ctx.beginPath(); ctx.moveTo(hx, by + bh); ctx.lineTo(hx + 10, by); ctx.stroke();
- }
- var usedW = Math.min(usedBytes(M5.depth, M5.frameB) / limitB, 1) * bw;
- ctx.fillStyle = over ? RED : TEAL;
- ctx.fillRect(bx0, by, usedW, bh);
- ctx.strokeStyle = LINE; ctx.lineWidth = 1;
- if(ctx.strokeRect) ctx.strokeRect(bx0 + 0.5, by + 0.5, bw - 1, bh - 1);
- // 刻度
- ctx.fillStyle = MUTED; ctx.font = '10px ' + MONO;
- for(var q = 1; q <= 4; q++){
- var tx = bx0 + bw * q / 4;
- ctx.beginPath(); ctx.moveTo(tx, by + bh); ctx.lineTo(tx, by + bh + 5); ctx.stroke();
- ctx.fillText((M5.limitMiB * q / 4).toFixed(1) + ' MiB', tx - 22, by + bh + 17);
- }
- var miB = usedBytes(M5.depth, M5.frameB) / (1024 * 1024);
- ctx.fillStyle = over ? RED : INK; ctx.font = '12px ' + MONO;
- ctx.fillText('已用 ' + miB.toFixed(2) + ' MiB', bx0 + 6, by + 20);
- ctx.fillStyle = MUTED;
- ctx.fillText(over ? '越界部分画不下了——真实程序在这里已经崩溃' : '仍在栈容量内', bx0 + 6, by + bh + 34);
+  // ---- 容量条 ----
+  var bx0 = 40, bw = 380, by = 60, bh = 30;
+  ctx.fillStyle = MUTED; ctx.font = '11px ' + MONO;
+  ctx.fillText('已用 = 试探深度 × 每帧字节（上限 ' + M5.limitMiB + ' MiB）', bx0, by - 12);
+  // 溢出区（红 Hatched）
+  ctx.fillStyle = '#FBEAEA';
+  ctx.fillRect(bx0, by, bw, bh);
+  ctx.strokeStyle = '#E5B7B7'; ctx.lineWidth = 1;
+  for(var hx = bx0; hx < bx0 + bw; hx += 10){
+    ctx.beginPath(); ctx.moveTo(hx, by + bh); ctx.lineTo(hx + 10, by); ctx.stroke();
+  }
+  var usedW = Math.min(usedBytes(M5.depth, M5.frameB) / limitB, 1) * bw;
+  ctx.fillStyle = over ? RED : TEAL;
+  ctx.fillRect(bx0, by, usedW, bh);
+  ctx.strokeStyle = LINE; ctx.lineWidth = 1;
+  if(ctx.strokeRect) ctx.strokeRect(bx0 + 0.5, by + 0.5, bw - 1, bh - 1);
+  // 刻度
+  ctx.fillStyle = MUTED; ctx.font = '10px ' + MONO;
+  for(var q = 1; q <= 4; q++){
+    var tx = bx0 + bw * q / 4;
+    ctx.beginPath(); ctx.moveTo(tx, by + bh); ctx.lineTo(tx, by + bh + 5); ctx.stroke();
+    ctx.fillText((M5.limitMiB * q / 4).toFixed(1) + ' MiB', tx - 22, by + bh + 17);
+  }
+  var miB = usedBytes(M5.depth, M5.frameB) / (1024 * 1024);
+  ctx.fillStyle = over ? RED : INK; ctx.font = '12px ' + MONO;
+  ctx.fillText('已用 ' + miB.toFixed(2) + ' MiB', bx0 + 6, by + 20);
+  ctx.fillStyle = MUTED;
+  ctx.fillText(over ? '越界部分画不下了——真实程序在这里已经崩溃' : '仍在栈容量内', bx0 + 6, by + bh + 34);
 
- // ---- 栈生长示意 ----
- var cx0 = 470, cw = 56, cy0 = 46, chh = 170;
- ctx.strokeStyle = LINE; ctx.lineWidth = 1.5;
- if(ctx.strokeRect) ctx.strokeRect(cx0, cy0, cw, chh);
- ctx.fillStyle = MUTED; ctx.font = '10px ' + MONO;
- ctx.fillText('栈', cx0 + 20, cy0 - 6);
- var fillFrac = over ? 1 : M4depthFrac(M5.depth, cap);
- var fh = 8, per = Math.floor(chh / fh);
- var fillCount = Math.round(fillFrac * per);
- for(var i = 0; i < fillCount; i++){
- var y = cy0 + chh - (i + 1) * fh;
- ctx.fillStyle = over && i > per - 6 ? RED : TEAL;
- ctx.fillRect(cx0 + 3, y, cw - 6, fh - 1);
- }
- ctx.fillStyle = MUTED;
- ctx.fillText('第 ' + M5.depth + ' 帧', cx0 - 2, cy0 + chh + 16);
- if(over){
- ctx.fillStyle = RED;
- ctx.fillText('↑ 溢出', cx0 + 8, cy0 - 6);
- }
- // ---- 帧解剖 ----
- var ax = 570, ay = 46, aw = 170;
- ctx.fillStyle = MUTED; ctx.font = '11px ' + MONO;
- ctx.fillText('一帧的解剖（模型）', ax, ay - 6);
- var slots = [['返回地址', 8], ['保存的帧指针', 8], ['形参 n', 4], ['对齐填充', 4], ['局部变量 f', 8]];
- for(var s = 0; s < slots.length; s++){
- var yy = ay + s * 26;
- ctx.fillStyle = s === 4 ? '#FBF0E2' : '#F4F7F8';
- ctx.fillRect(ax, yy, aw, 22);
- ctx.strokeStyle = LINE; ctx.lineWidth = 1;
- if(ctx.strokeRect) ctx.strokeRect(ax + 0.5, yy + 0.5, aw - 1, 21);
- ctx.fillStyle = '#3A4650'; ctx.font = '10.5px ' + MONO;
- ctx.fillText(slots[s][0] + ' · ' + slots[s][1] + ' B', ax + 8, yy + 15);
- }
- ctx.fillStyle = INK; ctx.font = '11px ' + MONO;
- ctx.fillText('合计 ' + FRAME_B + ' B / 帧', ax, ay + 5 * 26 + 14);
- ctx.fillStyle = MUTED; ctx.font = '10px ' + MONO;
- ctx.fillText('常见量级；实际随编译器变化', ax, ay + 5 * 26 + 28);
+  // ---- 栈生长示意 ----
+  var cx0 = 470, cw = 56, cy0 = 46, chh = 170;
+  ctx.strokeStyle = LINE; ctx.lineWidth = 1.5;
+  if(ctx.strokeRect) ctx.strokeRect(cx0, cy0, cw, chh);
+  ctx.fillStyle = MUTED; ctx.font = '10px ' + MONO;
+  ctx.fillText('栈', cx0 + 20, cy0 - 6);
+  var fillFrac = over ? 1 : M4depthFrac(M5.depth, cap);
+  var fh = 8, per = Math.floor(chh / fh);
+  var fillCount = Math.round(fillFrac * per);
+  for(var i = 0; i < fillCount; i++){
+    var y = cy0 + chh - (i + 1) * fh;
+    ctx.fillStyle = over && i > per - 6 ? RED : TEAL;
+    ctx.fillRect(cx0 + 3, y, cw - 6, fh - 1);
+  }
+  ctx.fillStyle = MUTED;
+  ctx.fillText('第 ' + M5.depth + ' 帧', cx0 - 2, cy0 + chh + 16);
+  if(over){
+    ctx.fillStyle = RED;
+    ctx.fillText('↑ 溢出', cx0 + 8, cy0 - 6);
+  }
+  // ---- 帧解剖 ----
+  var ax = 570, ay = 46, aw = 170;
+  ctx.fillStyle = MUTED; ctx.font = '11px ' + MONO;
+  ctx.fillText('一帧的解剖（模型）', ax, ay - 6);
+  var slots = [['返回地址', 8], ['保存的帧指针', 8], ['形参 n', 4], ['对齐填充', 4], ['局部变量 f', 8]];
+  for(var s = 0; s < slots.length; s++){
+    var yy = ay + s * 26;
+    ctx.fillStyle = s === 4 ? '#FBF0E2' : '#F4F7F8';
+    ctx.fillRect(ax, yy, aw, 22);
+    ctx.strokeStyle = LINE; ctx.lineWidth = 1;
+    if(ctx.strokeRect) ctx.strokeRect(ax + 0.5, yy + 0.5, aw - 1, 21);
+    ctx.fillStyle = '#3A4650'; ctx.font = '10.5px ' + MONO;
+    ctx.fillText(slots[s][0] + ' · ' + slots[s][1] + ' B', ax + 8, yy + 15);
+  }
+  ctx.fillStyle = INK; ctx.font = '11px ' + MONO;
+  ctx.fillText('合计 ' + FRAME_B + ' B / 帧', ax, ay + 5 * 26 + 14);
+  ctx.fillStyle = MUTED; ctx.font = '10px ' + MONO;
+  ctx.fillText('常见量级；实际随编译器变化', ax, ay + 5 * 26 + 28);
 }
 function M4depthFrac(depth, cap){ return cap > 0 ? Math.min(depth / cap, 1) : 1; }
 
 function render5(){
- var cap = maxFrames(M5.limitMiB, M5.frameB);
- var limitB = M5.limitMiB * 1024 * 1024;
- var over = overflowAt(M5.depth, M5.limitMiB, M5.frameB);
- setText('s5limv', M5.limitMiB + ' MiB');
- setText('s5depv', M5.depth.toLocaleString('en-US') + ' 帧');
- setHTML('ro5',
- '<div class="l"><span class="k">栈容量</span><span class="v">' + M5.limitMiB + ' MiB = ' + limitB.toLocaleString('en-US') + ' B</span></div>' +
- '<div class="l"><span class="k">每帧字节（模型）</span><span class="v">' + M5.frameB + ' B</span></div>' +
- '<div class="l"><span class="k">可容纳帧数</span><span class="v">' + cap.toLocaleString('en-US') + ' 帧</span></div>' +
- '<div class="l"><span class="k">试探深度</span><span class="v">' + M5.depth.toLocaleString('en-US') + ' 帧</span></div>' +
- '<div class="l"><span class="k">已用字节</span><span class="v">' + usedBytes(M5.depth, M5.frameB).toLocaleString('en-US') + ' B = ' +
- (usedBytes(M5.depth, M5.frameB) / (1024 * 1024)).toFixed(2) + ' MiB</span></div>' +
- '<div class="l"><span class="k">状态</span><span class="v ' + (over ? 'bad' : 'ok') + '">' +
- (over ? '栈溢出（SIGSEGV / 0xC00000FD）' : '安全') + '</span></div>' +
- '<div class="l"><span class="k">溢出阈值</span><span class="v">第 ' + (cap + 1).toLocaleString('en-US') + ' 帧起溢出</span></div>');
- // 联动表
- var rows = '';
- var sizes = [16, 32, 64, 128];
- for(var i = 0; i < sizes.length; i++){
- var f = maxFrames(M5.limitMiB, sizes[i]);
- rows += '<tr' + (sizes[i] === 32 ? ' class="hi"' : '') + '><td class="mono">' + sizes[i] + ' B</td>' +
- '<td class="mono">' + f.toLocaleString('en-US') + ' 帧</td>' +
- '<td>' + (sizes[i] === 32 ? '本页模型：返回地址 8 + 帧指针 8 + 形参 4(+4 填充) + 局部 8' :
- (sizes[i] === 16 ? '极简帧（无局部变量、未对齐）' : sizes[i] === 64 ? '局部变量更多' : '大帧：多个局部变量或数组')) + '</td></tr>';
- }
- setHTML('tb5', '<tr><th class="mono">假设每帧字节</th><th class="mono">可容纳帧数</th><th>说明</th></tr>' + rows);
- draw5();
+  var cap = maxFrames(M5.limitMiB, M5.frameB);
+  var limitB = M5.limitMiB * 1024 * 1024;
+  var over = overflowAt(M5.depth, M5.limitMiB, M5.frameB);
+  setText('s5limv', M5.limitMiB + ' MiB');
+  setText('s5depv', M5.depth.toLocaleString('en-US') + ' 帧');
+  setHTML('ro5',
+    '<div class="l"><span class="k">栈容量</span><span class="v">' + M5.limitMiB + ' MiB = ' + limitB.toLocaleString('en-US') + ' B</span></div>' +
+    '<div class="l"><span class="k">每帧字节（模型）</span><span class="v">' + M5.frameB + ' B</span></div>' +
+    '<div class="l"><span class="k">可容纳帧数</span><span class="v">' + cap.toLocaleString('en-US') + ' 帧</span></div>' +
+    '<div class="l"><span class="k">试探深度</span><span class="v">' + M5.depth.toLocaleString('en-US') + ' 帧</span></div>' +
+    '<div class="l"><span class="k">已用字节</span><span class="v">' + usedBytes(M5.depth, M5.frameB).toLocaleString('en-US') + ' B = ' +
+      (usedBytes(M5.depth, M5.frameB) / (1024 * 1024)).toFixed(2) + ' MiB</span></div>' +
+    '<div class="l"><span class="k">状态</span><span class="v ' + (over ? 'bad' : 'ok') + '">' +
+      (over ? '栈溢出（SIGSEGV / 0xC00000FD）' : '安全') + '</span></div>' +
+    '<div class="l"><span class="k">溢出阈值</span><span class="v">第 ' + (cap + 1).toLocaleString('en-US') + ' 帧起溢出</span></div>');
+  // 联动表
+  var rows = '';
+  var sizes = [16, 32, 64, 128];
+  for(var i = 0; i < sizes.length; i++){
+    var f = maxFrames(M5.limitMiB, sizes[i]);
+    rows += '<tr' + (sizes[i] === 32 ? ' class="hi"' : '') + '><td class="mono">' + sizes[i] + ' B</td>' +
+            '<td class="mono">' + f.toLocaleString('en-US') + ' 帧</td>' +
+            '<td>' + (sizes[i] === 32 ? '本页模型：返回地址 8 + 帧指针 8 + 形参 4(+4 填充) + 局部 8' :
+              (sizes[i] === 16 ? '极简帧（无局部变量、未对齐）' : sizes[i] === 64 ? '局部变量更多' : '大帧：多个局部变量或数组')) + '</td></tr>';
+  }
+  setHTML('tb5', '<tr><th class="mono">假设每帧字节</th><th class="mono">可容纳帧数</th><th>说明</th></tr>' + rows);
+  draw5();
 }
 
 /* ================= S05′：auto vs static ================= */
 var ST = { mode:'auto', staticC:0, lastRet:null, frames:[], note:'' };
 
 function setMode6(m){
- ST.mode = m;
- var a = $('b6auto'), b = $('b6static');
- if(a) a.className = 'btn' + (m === 'auto' ? ' on' : '');
- if(b) b.className = 'btn' + (m === 'static' ? ' on' : '');
- resetST();
+  ST.mode = m;
+  var a = $('b6auto'), b = $('b6static');
+  if(a) a.className = 'btn' + (m === 'auto' ? ' on' : '');
+  if(b) b.className = 'btn' + (m === 'static' ? ' on' : '');
+  resetST();
 }
 function resetST(){
- ST.staticC = 0; ST.lastRet = null; ST.frames = []; ST.note = '';
- renderST();
+  ST.staticC = 0; ST.lastRet = null; ST.frames = []; ST.note = '';
+  renderST();
 }
 function callF(){
- var k = 3;
- ST.frames = [];
- if(ST.mode === 'auto'){
- for(var d = 1; d <= k; d++) ST.frames.push({ d:d, c:1, addr:frameAddr(d), own:true });
- ST.lastRet = 1;
- ST.note = 'auto 版：三次调用各有一个 c（每帧私有，初值 0 自增后为 1），返回最外层的 c = 1；调用结束，三个 c 连同帧一起释放，地址随即可能被下次调用复用。';
- } else {
- for(var d2 = 1; d2 <= k; d2++){
- ST.staticC++;
- ST.frames.push({ d:d2, c:ST.staticC, addr:STATIC_ADDR, own:false });
- }
- ST.lastRet = ST.staticC;
- ST.note = 'static 版：整个递归共用一个 c（静态存储区，地址固定 0x404060），三次自增后返回 3；再点一次「调用 f(3)」，会从 4 接着涨到 6——这就是例 4.12 的「保留上次调用结束时的值」。';
- }
- renderST();
+  var k = 3;
+  ST.frames = [];
+  if(ST.mode === 'auto'){
+    for(var d = 1; d <= k; d++) ST.frames.push({ d:d, c:1, addr:frameAddr(d), own:true });
+    ST.lastRet = 1;
+    ST.note = 'auto 版：三次调用各有一个 c（每帧私有，初值 0 自增后为 1），返回最外层的 c = 1；调用结束，三个 c 连同帧一起释放，地址随即可能被下次调用复用。';
+  } else {
+    for(var d2 = 1; d2 <= k; d2++){
+      ST.staticC++;
+      ST.frames.push({ d:d2, c:ST.staticC, addr:STATIC_ADDR, own:false });
+    }
+    ST.lastRet = ST.staticC;
+    ST.note = 'static 版：整个递归共用一个 c（静态存储区，地址固定 0x404060），三次自增后返回 3；再点一次「调用 f(3)」，会从 4 接着涨到 6——这就是例 4.12 的「保留上次调用结束时的值」。';
+  }
+  renderST();
 }
 
 function renderST(){
- var h = '';
- for(var i = 0; i < ST.frames.length; i++){
- var f = ST.frames[i];
- h += '<div class="frame' + (f.own ? '' : ' shared') + '">' +
- '<div class="fr-t">f(' + (4 - f.d) + ') 帧 · 第 ' + f.d + ' 层</div>' +
- '<div class="row">c = ' + f.c + '</div>' +
- '<div class="row">地址 <span class="a">' + hex8(f.addr) + '</span>' + (f.own ? '' : ' · 静态存储区（共享）') + '</div>' +
- '</div>';
- }
- if(ST.mode === 'static' && ST.frames.length){
- h += '<div class="frame shared" style="align-self:center"><div class="fr-t">全递归共用的一个 c</div>' +
- '<div class="row">c = ' + ST.staticC + '</div>' +
- '<div class="row">地址 <span class="a">' + hex6(STATIC_ADDR) + '</span> · 程序结束才释放</div></div>';
- }
- if(!ST.frames.length) h = '<div class="frame" style="color:#8A939C"><div class="fr-t">尚未调用</div><div class="row">点「调用 f(3)」开始</div></div>';
- setHTML('fr6', h);
- setText('st6', ST.note || '选一种模式，再点「调用 f(3)」；连点两次看差别。');
- setHTML('ro6',
- '<div class="l"><span class="k">模式</span><span class="v">' + (ST.mode === 'auto' ? 'auto（普通局部变量）' : 'static（静态局部变量）') + '</span></div>' +
- '<div class="l"><span class="k">f(3) 返回值</span><span class="v ' + (ST.lastRet === null ? '' : (ST.mode === 'static' ? 'bad' : 'ok')) + '">' +
- (ST.lastRet === null ? '—' : ST.lastRet) + '</span></div>' +
- '<div class="l"><span class="k">c 的地址</span><span class="v addr">' +
- (ST.frames.length ? hex8(ST.frames[0].addr) + (ST.mode === 'static' ? '（三层完全相同）' : '（三层各不同）') : '—') + '</span></div>' +
- '<div class="l"><span class="k">c 的生命周期</span><span class="v">' +
- (ST.mode === 'auto' ? '随调用结束释放（动态存储区）' : '整个程序运行期（静态存储区）') + '</span></div>' +
- '<div class="l"><span class="k">static 计数器当前值</span><span class="v ' + (ST.mode === 'static' && ST.staticC ? 'bad' : '') + '">' +
- (ST.mode === 'static' ? ST.staticC : '不适用') + '</span></div>' +
- '<div class="l"><span class="k">纯函数核对</span><span class="v ok">fAuto(3) = ' + fAuto(3) + ' · fStatic(3) = ' + fStaticRun(3, { c:0 }) + '</span></div>');
+  var h = '';
+  for(var i = 0; i < ST.frames.length; i++){
+    var f = ST.frames[i];
+    h += '<div class="frame' + (f.own ? '' : ' shared') + '">' +
+         '<div class="fr-t">f(' + (4 - f.d) + ') 帧 · 第 ' + f.d + ' 层</div>' +
+         '<div class="row">c = ' + f.c + '</div>' +
+         '<div class="row">地址 <span class="a">' + hex8(f.addr) + '</span>' + (f.own ? '' : ' · 静态存储区（共享）') + '</div>' +
+         '</div>';
+  }
+  if(ST.mode === 'static' && ST.frames.length){
+    h += '<div class="frame shared" style="align-self:center"><div class="fr-t">全递归共用的一个 c</div>' +
+         '<div class="row">c = ' + ST.staticC + '</div>' +
+         '<div class="row">地址 <span class="a">' + hex6(STATIC_ADDR) + '</span> · 程序结束才释放</div></div>';
+  }
+  if(!ST.frames.length) h = '<div class="frame" style="color:#8A939C"><div class="fr-t">尚未调用</div><div class="row">点「调用 f(3)」开始</div></div>';
+  setHTML('fr6', h);
+  setText('st6', ST.note || '选一种模式，再点「调用 f(3)」；连点两次看差别。');
+  setHTML('ro6',
+    '<div class="l"><span class="k">模式</span><span class="v">' + (ST.mode === 'auto' ? 'auto（普通局部变量）' : 'static（静态局部变量）') + '</span></div>' +
+    '<div class="l"><span class="k">f(3) 返回值</span><span class="v ' + (ST.lastRet === null ? '' : (ST.mode === 'static' ? 'bad' : 'ok')) + '">' +
+      (ST.lastRet === null ? '—' : ST.lastRet) + '</span></div>' +
+    '<div class="l"><span class="k">c 的地址</span><span class="v addr">' +
+      (ST.frames.length ? hex8(ST.frames[0].addr) + (ST.mode === 'static' ? '（三层完全相同）' : '（三层各不同）') : '—') + '</span></div>' +
+    '<div class="l"><span class="k">c 的生命周期</span><span class="v">' +
+      (ST.mode === 'auto' ? '随调用结束释放（动态存储区）' : '整个程序运行期（静态存储区）') + '</span></div>' +
+    '<div class="l"><span class="k">static 计数器当前值</span><span class="v ' + (ST.mode === 'static' && ST.staticC ? 'bad' : '') + '">' +
+      (ST.mode === 'static' ? ST.staticC : '不适用') + '</span></div>' +
+    '<div class="l"><span class="k">纯函数核对</span><span class="v ok">fAuto(3) = ' + fAuto(3) + ' · fStatic(3) = ' + fStaticRun(3, { c:0 }) + '</span></div>');
 }
 
 /* ================= 事件绑定 ================= */
@@ -1418,14 +1418,14 @@ on('b6call', function(){ callF(); });
 on('b6reset', function(){ resetST(); });
 
 function bindRange(id, fn){
- var e = $(id);
- if(e && e.addEventListener){
- e.addEventListener('input', function(){
- var v = parseInt(e.value, 10);
- if(isNaN(v)) return;
- fn(v);
- });
- }
+  var e = $(id);
+  if(e && e.addEventListener){
+    e.addEventListener('input', function(){
+      var v = parseInt(e.value, 10);
+      if(isNaN(v)) return;
+      fn(v);
+    });
+  }
 }
 bindRange('s2n', function(v){ setN2(v); });
 bindRange('s3n', function(v){ setN3(v); });
@@ -1434,35 +1434,35 @@ bindRange('s5lim', function(v){ setLimit5(v); });
 bindRange('s5dep', function(v){ setDepth5(v); });
 
 /* ================= 首次渲染 ================= */
-reset2(); // 内部会 render2()
-reset3(); // 内部会 render3()
-reset4(); // 内部会 render4()
+reset2();   // 内部会 render2()
+reset3();   // 内部会 render3()
+reset4();   // 内部会 render4()
 render1();
 render5();
 renderST();
 
 /* ================= 暴露给读数闸门 ================= */
 window.STK = {
- // 纯函数
- facTrace: facTrace, ageTrace: ageTrace, hanoiTrace: hanoiTrace,
- fAuto: fAuto, fStaticRun: fStaticRun,
- pow2m1: pow2m1, frameAddr: frameAddr,
- maxFrames: maxFrames, usedBytes: usedBytes, overflowAt: overflowAt,
- // 常量与模型
- STACK_BASE: STACK_BASE, FRAME_B: FRAME_B, RET_ADDR: RET_ADDR, STATIC_ADDR: STATIC_ADDR,
- FRAME_LAYOUT: FRAME_LAYOUT, FACT20: FACT20, FACT21: FACT21, DISKS64: DISKS64, YEARS64: YEARS64,
- // S01
- M1: M1, step1: step1, reset1: reset1, P1CAP: P1CAP,
- // S02
- M2: M2, setN2: setN2, step2: step2, reset2: reset2,
- // S03
- M3: M3, setN3: setN3, step3: step3, reset3: reset3,
- // S04
- M4: M4, setN4: setN4, step4: step4, reset4: reset4, resetPegs: resetPegs,
- // S05
- M5: M5, setLimit5: setLimit5, setDepth5: setDepth5, jumpOverflow: jumpOverflow, jumpSafe: jumpSafe,
- // auto/static
- ST: ST, callF: callF, resetST: resetST, setMode6: setMode6
+  // 纯函数
+  facTrace: facTrace, ageTrace: ageTrace, hanoiTrace: hanoiTrace,
+  fAuto: fAuto, fStaticRun: fStaticRun,
+  pow2m1: pow2m1, frameAddr: frameAddr,
+  maxFrames: maxFrames, usedBytes: usedBytes, overflowAt: overflowAt,
+  // 常量与模型
+  STACK_BASE: STACK_BASE, FRAME_B: FRAME_B, RET_ADDR: RET_ADDR, STATIC_ADDR: STATIC_ADDR,
+  FRAME_LAYOUT: FRAME_LAYOUT, FACT20: FACT20, FACT21: FACT21, DISKS64: DISKS64, YEARS64: YEARS64,
+  // S01
+  M1: M1, step1: step1, reset1: reset1, P1CAP: P1CAP,
+  // S02
+  M2: M2, setN2: setN2, step2: step2, reset2: reset2,
+  // S03
+  M3: M3, setN3: setN3, step3: step3, reset3: reset3,
+  // S04
+  M4: M4, setN4: setN4, step4: step4, reset4: reset4, resetPegs: resetPegs,
+  // S05
+  M5: M5, setLimit5: setLimit5, setDepth5: setDepth5, jumpOverflow: jumpOverflow, jumpSafe: jumpSafe,
+  // auto/static
+  ST: ST, callF: callF, resetST: resetST, setMode6: setMode6
 };
 
 })();

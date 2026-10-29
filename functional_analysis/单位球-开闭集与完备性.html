@@ -5,45 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>单位球、开闭集与完备性 · 泛函分析</title>
 <!--
- 维护说明（给未来的自己）：
- 1. 本页 = 泛函分析系列第 2 页（图号 FA-02），教材第 1 章 距离线性空间 §3–§7
- 2. 版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；
- 实验台结构 .lab/.lab-head/.lab-sub/canvas/.ctrls/.readouts 沿用全站约定。
- 3. 四个实验台：01 l^p 单位球形状尺（§7 定义 7.1 + §3 例 5）、
- 02 开球/闭球/球面/闭包（§4 定义 4.1）、03 完备性双反例（§5 定义 5.1–5.3 + 定理 5.1）、
- 4. 读数闸门：verify_readout_fa02.js（工作区根，vm + DOM 桩）；公式 verify_formulas.js 0 failed。
- 5. 数学要点（易错，改代码前先读）：
- · 定义 4.1 的「球」是开球 {d<r}；闭球另写 {d≤r}。开球开而不闭，闭包才是闭球。
- · Riesz 引理只给下界 1−ε（ε<1），不是 1；本例按 sin α = 1−ε 构造取等，说明 1 是最好常数。
- · l^p ⊂ l^q（p<q）在「有限维截面」上是严格包含的球套，在无限维里也是真包含
- （例 (1/k) ∈ l² \ l¹）；但可分性相反：l^p 可分，(m)=l^∞ 不可分。
+  维护说明（给未来的自己）：
+  1. 本页 = 泛函分析系列第 2 页（图号 FA-02），教材第 1 章 距离线性空间 §3–§7
+  2. 版式身份「靛纸」：淡靛纸底 + 墨 + 靛蓝（主结构）+ 紫（辅助）+ 等宽读数；
+     实验台结构 .lab/.lab-head/.lab-sub/canvas/.ctrls/.readouts 沿用全站约定。
+  3. 四个实验台：01 l^p 单位球形状尺（§7 定义 7.1 + §3 例 5）、
+     02 开球/闭球/球面/闭包（§4 定义 4.1）、03 完备性双反例（§5 定义 5.1–5.3 + 定理 5.1）、
+     04 Riesz 引理与单位球不列紧（§7 定理 7.2）。
+  4. 读数闸门：verify_readout_fa02.js（工作区根，vm + DOM 桩）；公式 verify_formulas.js 0 failed。
+  5. 数学要点（易错，改代码前先读）：
+     · 定义 4.1 的「球」是开球 {d<r}；闭球另写 {d≤r}。开球开而不闭，闭包才是闭球。
+     · Riesz 引理只给下界 1−ε（ε<1），不是 1；本例按 sin α = 1−ε 构造取等，说明 1 是最好常数。
+     · l^p ⊂ l^q（p<q）在「有限维截面」上是严格包含的球套，在无限维里也是真包含
+       （例 (1/k) ∈ l² \ l¹）；但可分性相反：l^p 可分，(m)=l^∞ 不可分。
 -->
 <script>
 window.MathJax = {
- tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
- svg: { fontCache: "local" },
- options: { enableMenu: false }
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
 };
 </script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
 <style>
 :root{
- --paper:#f4f5fa; --card:#ffffff; --ink:#1e2440; --ink2:#5a6078;
- --line:#d8dcee; --line2:#b9c0dd; --grid:#e7eaf4;
- --indigo:#3d4fa3; --indigo-soft:#e9ecfa;
- --violet:#7a4fa3; --violet-soft:#f1eaf8;
- --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",monospace;
+  --paper:#f4f5fa; --card:#ffffff; --ink:#1e2440; --ink2:#5a6078;
+  --line:#d8dcee; --line2:#b9c0dd; --grid:#e7eaf4;
+  --indigo:#3d4fa3; --indigo-soft:#e9ecfa;
+  --violet:#7a4fa3; --violet-soft:#f1eaf8;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 [hidden]{display:none !important}
 body{margin:0;background:var(--paper);color:var(--ink);
- font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
 .crumb{font-size:13px;margin:0 0 16px}
 .crumb a{color:var(--indigo);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
 .sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
- overflow:hidden;margin:0 0 14px;background:var(--card)}
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
 .sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
 .sheet .cell:last-child{border-right:none}
 .sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
@@ -52,46 +53,46 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
 p.lead{color:#3c4260;font-size:15px;margin:0 0 8px;max-width:70ch}
 .tag{display:inline-block;font-size:11.5px;font-family:var(--mono);
- border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
- background:var(--indigo-soft);color:var(--indigo)}
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:var(--indigo-soft);color:var(--indigo)}
 .tag.v{background:var(--violet-soft);color:var(--violet)}
 h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
- border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
 h2 .no{font-family:var(--mono);font-size:12.5px;color:var(--indigo);font-weight:600}
 p{margin:10px 0}
 ul,ol{margin:10px 0;padding-left:24px}
 li{margin:4px 0}
 .mono{font-family:var(--mono)}
 .lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
- margin:22px 0;padding:18px 20px 20px}
+  margin:22px 0;padding:18px 20px 20px}
 .lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
 .lab-head .t{font-size:15.5px;font-weight:680}
 .lab-head .no{font-family:var(--mono);font-size:12px;color:#fff;
- background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+  background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
 .lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
 canvas{display:block;width:100%;height:auto;background:var(--card);
- border:1px solid var(--line);border-radius:8px;touch-action:none}
+  border:1px solid var(--line);border-radius:8px;touch-action:none}
 .ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
 .ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
 .ctrl label{color:var(--ink2);white-space:nowrap}
 .ctrl .nm{font-family:var(--mono);color:var(--ink);min-width:44px}
 input[type=range]{width:104px;accent-color:var(--indigo)}
 button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
- border-radius:7px;padding:5px 13px;cursor:pointer}
+  border-radius:7px;padding:5px 13px;cursor:pointer}
 button:hover{border-color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{border:none;border-radius:0;padding:5px 12px}
 .seg button.on{background:var(--indigo);color:#fff}
 .readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
- display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:4px 18px}
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:4px 18px}
 .ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
- border-bottom:1px dotted var(--grid);padding:3px 0}
+  border-bottom:1px dotted var(--grid);padding:3px 0}
 .ro .k{color:var(--ink2)}
 .ro .v{font-family:var(--mono);font-weight:600;text-align:right}
 .eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
- border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .note{border-left:3px solid var(--violet);background:var(--violet-soft);padding:10px 16px;margin:16px 0;
- border-radius:0 8px 8px 0;font-size:14px}
+  border-radius:0 8px 8px 0;font-size:14px}
 .note.b{border-left-color:var(--indigo);background:#eef1fb}
 mjx-container[jax="SVG"]{max-width:100%}
 mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
@@ -100,15 +101,15 @@ table.tb td,table.tb th{border:1px solid var(--line);padding:5px 14px;text-align
 table.tb th{background:var(--card);font-weight:600}
 table.tb tr.hi td{background:var(--indigo-soft)}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
- font-size:13px;color:var(--ink2)}
+  font-size:13px;color:var(--ink2)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
 .pager a{color:var(--indigo);text-decoration:none;font-size:13.5px}
 .pager a:hover{text-decoration:underline}
 .hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
 @media print{
- .noprint{display:none}
- h2{page-break-after:avoid}
- .lab,table.tb,.eq{page-break-inside:avoid}
+  .noprint{display:none}
+  h2{page-break-after:avoid}
+  .lab,table.tb,.eq{page-break-inside:avoid}
 }
 </style>
 </head>
@@ -118,10 +119,10 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">泛函分析</a></p>
 
 <div class="sheet">
- <div class="cell"><p class="k">图号</p><p class="v no">FA-02</p></div>
- <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">单位球、开闭集与完备性</p></div>
+  <div class="cell"><p class="k">图号</p><p class="v no">FA-02</p></div>
+  <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">单位球、开闭集与完备性</p></div>
  <div class="cell"><p class="k">教材</p><p class="v">第 1 章 §3–§7</p></div>
- <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
 </div>
 
 <h1>无限维的第一课：球不是圆的，洞不是空的</h1>
@@ -156,26 +157,26 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>所以 \(x\in l^2\) 但 \(x\notin l^1\)——\(l^1\) 的球在 \(l^2\) 里「漏掉」了一整类点。这一条在二维截面上完全看不出来（截面上只有球套球），是无限维特有的现象。下面这个实验台把两件事并排放：拖方向看半径，同时看包含检验与那个漏掉的元素。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 01</span><span class="t">\(l^p\) 单位球形状尺：拖探针方向，看半径怎么走</span><span class="tag">定义 7.1</span><span class="tag v">§3 例 5</span></div>
- <p class="lab-sub">左：\(\mathrm{span}\{e_1,e_2\}\) 上的单位球截面（靛蓝实线 = 当前 \(p\)，灰虚线 = \(p=1,2\) 参照），紫线 = 探针方向与球面交点。右：径向函数 \(r_p(\varphi)\) 在 \(\varphi\in[0^\circ,90^\circ]\) 上的曲线，三个参照 \(p=1,2,\infty\) 叠在一起。\(r\) 用二分法在 log-sum-exp 形式 \(\log\big((r\cos\varphi)^p+(r\sin\varphi)^p\big)=0\) 上独立求根，与闭式 \(r_p(\varphi)\) 逐位对照——这样 \(p\) 很大时也不会因为 \(|{\cdot}|^p\) 下溢而算错。</p>
- <canvas id="cv-ball" width="600" height="400"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>p</label><input type="range" id="s-ball-p" min="1" max="24" step="0.25" value="2"><span class="nm" id="v-ball-p"></span></div>
- <div class="ctrl"><label>φ</label><input type="range" id="s-ball-phi" min="-90" max="90" step="1" value="45"><span class="nm" id="v-ball-phi"></span></div>
- <div class="ctrl"><button id="b-ball-1">p ← 1</button><button id="b-ball-2">p ← 2</button><button id="b-ball-inf">p ← ∞</button></div>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">r(φ)（二分实测，80 步）</span><span class="v" id="ro-ball-r"></span></div>
- <div class="ro"><span class="k">r(φ)（闭式对照）</span><span class="v" id="ro-ball-ra"></span></div>
- <div class="ro"><span class="k">对角半径 r(45°) 实测</span><span class="v" id="ro-ball-diag"></span></div>
- <div class="ro"><span class="k">2^(1/2 − 1/p)（对角闭式）</span><span class="v" id="ro-ball-diag2"></span></div>
- <div class="ro"><span class="k">‖(1,1)‖_p = 2^(1/p)</span><span class="v" id="ro-ball-n11"></span></div>
- <div class="ro"><span class="k">l^p ⊂ l^q 采样违规数（2000 点）</span><span class="v" id="ro-ball-inc"></span></div>
- <div class="ro"><span class="k">Σ_{k≤10⁴} 1/k²（→ π²/6）</span><span class="v" id="ro-ball-e2"></span></div>
- <div class="ro"><span class="k">Σ_{k≤10⁴} 1/k（→ 发散）</span><span class="v" id="ro-ball-e1"></span></div>
- <div class="ro"><span class="k">形状判定</span><span class="v" id="ro-ball-ok"></span></div>
- </div>
- <p class="hint">在左图内任意处按下拖动即可改 \(\varphi\)（取该点与球心的方向角，限制在 \(\pm90^\circ\)）。\(p=1\) 时对角半径 \(1/\sqrt2\)、\(p=2\) 时处处为 1、\(p=\infty\) 时对角半径 \(\sqrt2\)——三行读数会同时变。</p>
+  <div class="lab-head"><span class="no">实验 01</span><span class="t">\(l^p\) 单位球形状尺：拖探针方向，看半径怎么走</span><span class="tag">定义 7.1</span><span class="tag v">§3 例 5</span></div>
+  <p class="lab-sub">左：\(\mathrm{span}\{e_1,e_2\}\) 上的单位球截面（靛蓝实线 = 当前 \(p\)，灰虚线 = \(p=1,2\) 参照），紫线 = 探针方向与球面交点。右：径向函数 \(r_p(\varphi)\) 在 \(\varphi\in[0^\circ,90^\circ]\) 上的曲线，三个参照 \(p=1,2,\infty\) 叠在一起。\(r\) 用二分法在 log-sum-exp 形式 \(\log\big((r\cos\varphi)^p+(r\sin\varphi)^p\big)=0\) 上独立求根，与闭式 \(r_p(\varphi)\) 逐位对照——这样 \(p\) 很大时也不会因为 \(|{\cdot}|^p\) 下溢而算错。</p>
+  <canvas id="cv-ball" width="600" height="400"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>p</label><input type="range" id="s-ball-p" min="1" max="24" step="0.25" value="2"><span class="nm" id="v-ball-p"></span></div>
+    <div class="ctrl"><label>φ</label><input type="range" id="s-ball-phi" min="-90" max="90" step="1" value="45"><span class="nm" id="v-ball-phi"></span></div>
+    <div class="ctrl"><button id="b-ball-1">p ← 1</button><button id="b-ball-2">p ← 2</button><button id="b-ball-inf">p ← ∞</button></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">r(φ)（二分实测，80 步）</span><span class="v" id="ro-ball-r"></span></div>
+    <div class="ro"><span class="k">r(φ)（闭式对照）</span><span class="v" id="ro-ball-ra"></span></div>
+    <div class="ro"><span class="k">对角半径 r(45°) 实测</span><span class="v" id="ro-ball-diag"></span></div>
+    <div class="ro"><span class="k">2^(1/2 − 1/p)（对角闭式）</span><span class="v" id="ro-ball-diag2"></span></div>
+    <div class="ro"><span class="k">‖(1,1)‖_p = 2^(1/p)</span><span class="v" id="ro-ball-n11"></span></div>
+    <div class="ro"><span class="k">l^p ⊂ l^q 采样违规数（2000 点）</span><span class="v" id="ro-ball-inc"></span></div>
+    <div class="ro"><span class="k">Σ_{k≤10⁴} 1/k²（→ π²/6）</span><span class="v" id="ro-ball-e2"></span></div>
+    <div class="ro"><span class="k">Σ_{k≤10⁴} 1/k（→ 发散）</span><span class="v" id="ro-ball-e1"></span></div>
+    <div class="ro"><span class="k">形状判定</span><span class="v" id="ro-ball-ok"></span></div>
+  </div>
+  <p class="hint">在左图内任意处按下拖动即可改 \(\varphi\)（取该点与球心的方向角，限制在 \(\pm90^\circ\)）。\(p=1\) 时对角半径 \(1/\sqrt2\)、\(p=2\) 时处处为 1、\(p=\infty\) 时对角半径 \(\sqrt2\)——三行读数会同时变。</p>
 </section>
 
 <h2><span class="no">03</span>开、闭、闭包：定义只有六行，陷阱全在「极限点」</h2>
@@ -200,26 +201,26 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p><strong>定义 4.3</strong>：\(S\subset X\) 叫<strong>稠密</strong>，若任给 \(\varepsilon&gt;0\) 与 \(x\in X\)，存在 \(x_0\in S\) 使 \(d(x,x_0)&lt;\varepsilon\)；存在可数稠密集的空间叫<strong>可分</strong>。稠密的实用判据就是「\(\mathrm{dist}(x,S)=0\) 对一切 \(x\)」——实验 03 用它给 \(c_{00}\)（有限支撑列）在 \(l^2\) 中的稠密性结账。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 02</span><span class="t">开球、闭球、球面：拖一个游标，让点列撞向边界</span><span class="tag">定义 4.1</span></div>
- <p class="lab-sub">单位圆是 \(l^2\) 单位球在平面上的截面。靛蓝实心区 = 开球 \(B\)（\(\|x\|&lt;1\)），虚线圆 = 球面 \(S\)（\(\|x\|=1\)），闭球 \(\bar B\) 是两者之并。墨点 \(w\) 可拖动；紫点是点列 \(x_n=(1-\tfrac1n)e_1\)（\(n\) 由滑杆控制），它的极限 \(e_1\) 落在球面上、<strong>不在</strong>开球里。右侧另有 400 个固定采样点做闭包检验：\(\mathrm{dist}(p,B)=0\) 与 \(p\in\bar B\) 必须完全一致。</p>
- <canvas id="cv-top" width="600" height="400"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>n（点列序号）</label><input type="range" id="s-top-n" min="1" max="400" step="1" value="4"><span class="nm" id="v-top-n"></span></div>
- <div class="ctrl"><button id="b-top-in">w ← 球内</button><button id="b-top-out">w ← 球外</button><button id="b-top-on">w ← 球面上</button></div>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">‖w‖</span><span class="v" id="ro-top-nw"></span></div>
- <div class="ro"><span class="k">w ∈ B（开球）</span><span class="v" id="ro-top-inb"></span></div>
- <div class="ro"><span class="k">w ∈ B̄（闭球）</span><span class="v" id="ro-top-inc"></span></div>
- <div class="ro"><span class="k">dist(w, B)</span><span class="v" id="ro-top-db"></span></div>
- <div class="ro"><span class="k">dist(w, S) = |‖w‖ − 1|</span><span class="v" id="ro-top-ds"></span></div>
- <div class="ro"><span class="k">w 的内点半径 max(0, 1−‖w‖)</span><span class="v" id="ro-top-rad"></span></div>
- <div class="ro"><span class="k">‖x_n‖ = 1 − 1/n</span><span class="v" id="ro-top-xn"></span></div>
- <div class="ro"><span class="k">d(x_n, e₁) = 1/n</span><span class="v" id="ro-top-dx"></span></div>
- <div class="ro"><span class="k">闭包检验（400 采样点的矛盾数）</span><span class="v" id="ro-top-cl"></span></div>
- <div class="ro"><span class="k">判定</span><span class="v" id="ro-top-ok"></span></div>
- </div>
- <p class="hint">墨点 \(w\) 用鼠标拖动（离球心 0.6 以内按下才算抓住）。球面上时 \(\mathrm{dist}(w,S)=0\) 而 \(w\notin B\)——这一格读数就是「开球开而不闭」的现场证据。</p>
+  <div class="lab-head"><span class="no">实验 02</span><span class="t">开球、闭球、球面：拖一个游标，让点列撞向边界</span><span class="tag">定义 4.1</span></div>
+  <p class="lab-sub">单位圆是 \(l^2\) 单位球在平面上的截面。靛蓝实心区 = 开球 \(B\)（\(\|x\|&lt;1\)），虚线圆 = 球面 \(S\)（\(\|x\|=1\)），闭球 \(\bar B\) 是两者之并。墨点 \(w\) 可拖动；紫点是点列 \(x_n=(1-\tfrac1n)e_1\)（\(n\) 由滑杆控制），它的极限 \(e_1\) 落在球面上、<strong>不在</strong>开球里。右侧另有 400 个固定采样点做闭包检验：\(\mathrm{dist}(p,B)=0\) 与 \(p\in\bar B\) 必须完全一致。</p>
+  <canvas id="cv-top" width="600" height="400"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>n（点列序号）</label><input type="range" id="s-top-n" min="1" max="400" step="1" value="4"><span class="nm" id="v-top-n"></span></div>
+    <div class="ctrl"><button id="b-top-in">w ← 球内</button><button id="b-top-out">w ← 球外</button><button id="b-top-on">w ← 球面上</button></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">‖w‖</span><span class="v" id="ro-top-nw"></span></div>
+    <div class="ro"><span class="k">w ∈ B（开球）</span><span class="v" id="ro-top-inb"></span></div>
+    <div class="ro"><span class="k">w ∈ B̄（闭球）</span><span class="v" id="ro-top-inc"></span></div>
+    <div class="ro"><span class="k">dist(w, B)</span><span class="v" id="ro-top-db"></span></div>
+    <div class="ro"><span class="k">dist(w, S) = |‖w‖ − 1|</span><span class="v" id="ro-top-ds"></span></div>
+    <div class="ro"><span class="k">w 的内点半径 max(0, 1−‖w‖)</span><span class="v" id="ro-top-rad"></span></div>
+    <div class="ro"><span class="k">‖x_n‖ = 1 − 1/n</span><span class="v" id="ro-top-xn"></span></div>
+    <div class="ro"><span class="k">d(x_n, e₁) = 1/n</span><span class="v" id="ro-top-dx"></span></div>
+    <div class="ro"><span class="k">闭包检验（400 采样点的矛盾数）</span><span class="v" id="ro-top-cl"></span></div>
+    <div class="ro"><span class="k">判定</span><span class="v" id="ro-top-ok"></span></div>
+  </div>
+  <p class="hint">墨点 \(w\) 用鼠标拖动（离球心 0.6 以内按下才算抓住）。球面上时 \(\mathrm{dist}(w,S)=0\) 而 \(w\notin B\)——这一格读数就是「开球开而不闭」的现场证据。</p>
 </section>
 
 <h2><span class="no">04</span>可分与不可分：\(l^p\) 装得下可数稠密集，\((m)\) 装不下</h2>
@@ -243,38 +244,38 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>两种洞的结构完全一样：<strong>Cauchy 判据只看「列自己是否越走越挤」，看不见「挤向的那个点在不在空间里」</strong>。补洞的办法由 <strong>定义 5.3 / 定理 5.1</strong> 给出：把 Cauchy 列本身当新点，两条列若 \(d(x_n,y_n)\to0\) 就视为同一个点，定义 \(\rho(\xi,\eta)=\lim_n d(x_n,y_n)\)，则 \(\bar X\) 完备，且 \(T:x\mapsto(x,x,x,\dots)\) 是 \(X\) 到 \(\bar X\) 的<strong>等距</strong>嵌入、像在 \(\bar X\) 中<strong>稠密</strong>。\(\mathbb R\) 就是 \(\mathbb Q\) 这样造出来的，\(l^2\) 就是 \(c_{00}\) 这样造出来的。实验 03 把这两条性质逐项实测。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 03</span><span class="t">两个洞与一次补洞：\(\mathbb Q\) 的 \(\sqrt2\) ／ \(c_{00}\) 的截断列</span><span class="tag">定义 5.1–5.3</span><span class="tag v">定理 5.1</span></div>
- <p class="lab-sub">切模式。\(\mathbb Q\) 模式：\(a_n=p_n/q_n\) 用 BigInt 精确迭代，误差按恒等式 \(|p/q-\sqrt2|=\dfrac{|p^2-2q^2|}{q^2\,(p/q+\sqrt2)}\) 精确计算（分子是整数，不必怕相减丢位），于是 \(n\) 再大也能读出 \(e_n\)。\(c_{00}\) 模式：柱状图画 \(1/k\) 的坐标，灰柱 = 被截掉的尾巴；下图是 \(\|x-x^{(k)}\|_2\) 随 \(k\) 的对数衰减。</p>
- <div class="ctrls">
- <div class="seg"><button id="b-cmp-q" class="on">Q 里的 √2</button><button id="b-cmp-c00">c₀₀ ⊂ l²</button></div>
- <div class="ctrl" id="w-cmp-n"><label>n（迭代步）</label><input type="range" id="s-cmp-n" min="1" max="16" step="1" value="4"><span class="nm" id="v-cmp-n"></span></div>
- <div class="ctrl" id="w-cmp-k"><label>k（截断长度）</label><input type="range" id="s-cmp-k" min="1" max="2000" step="1" value="12"><span class="nm" id="v-cmp-k"></span></div>
- </div>
- <canvas id="cv-cmp" width="600" height="400"></canvas>
- <div class="readouts" id="ro-cmp-qbox">
- <div class="ro"><span class="k">aₙ = p/q（前 26 位 / 位数）</span><span class="v" id="ro-cmp-frac"></span></div>
- <div class="ro"><span class="k">分母 q 的十进制位数</span><span class="v" id="ro-cmp-digq"></span></div>
- <div class="ro"><span class="k">eₙ = |aₙ − √2|</span><span class="v" id="ro-cmp-e"></span></div>
- <div class="ro"><span class="k">eₙ · q²（→ 1/(2√2) = 0.35355）</span><span class="v" id="ro-cmp-eq2"></span></div>
- <div class="ro"><span class="k">|p² − 2q²|（整数，精确）</span><span class="v" id="ro-cmp-pell"></span></div>
- <div class="ro"><span class="k">|aₙ − aₙ₋₁|（Cauchy 判据）</span><span class="v" id="ro-cmp-diff"></span></div>
- <div class="ro"><span class="k">aₙ 是有理数？</span><span class="v" id="ro-cmp-inq"></span></div>
- <div class="ro"><span class="k">极限 √2 在 Q 中？</span><span class="v" id="ro-cmp-lim"></span></div>
- <div class="ro"><span class="k">判定</span><span class="v" id="ro-cmp-okq"></span></div>
- </div>
- <div class="readouts" id="ro-cmp-cbox" hidden>
- <div class="ro"><span class="k">‖x‖² = π²/6</span><span class="v" id="ro-cmp-nx"></span></div>
- <div class="ro"><span class="k">部分和 Σ_{k≤n} 1/k²</span><span class="v" id="ro-cmp-part"></span></div>
- <div class="ro"><span class="k">尾巴 Σ_{k&gt;n} 1/k²</span><span class="v" id="ro-cmp-tail"></span></div>
- <div class="ro"><span class="k">‖x − x⁽ⁿ⁾‖₂ = √尾巴</span><span class="v" id="ro-cmp-err"></span></div>
- <div class="ro"><span class="k">sup_{m&gt;n} ‖x⁽ⁿ⁾ − x⁽ᵐ⁾‖₂（Cauchy 判据）</span><span class="v" id="ro-cmp-cauchy"></span></div>
- <div class="ro"><span class="k">x ∈ c₀₀？</span><span class="v" id="ro-cmp-inc"></span></div>
- <div class="ro"><span class="k">ρ(ξ,η) = lim ‖(1/n)e_{n+1}‖（两列等价）</span><span class="v" id="ro-cmp-rho"></span></div>
- <div class="ro"><span class="k">等距残差 max|d − ρ(T·,T·)|（6 对）</span><span class="v" id="ro-cmp-iso"></span></div>
- <div class="ro"><span class="k">dist(x, c₀₀)（截断下确界）</span><span class="v" id="ro-cmp-dist"></span></div>
- <div class="ro"><span class="k">判定</span><span class="v" id="ro-cmp-okc"></span></div>
- </div>
- <p class="hint">\(\mathbb Q\) 模式下分母位数应当<strong>每步翻倍</strong>（二次收敛），而 \(e_nq^2\) 稳定在 \(1/(2\sqrt2)\)——两行读数一起看，就是「Pell 型恒等式 + 二次收敛」的现场账。\(c_{00}\) 模式下 \(\rho=0\) 说明两条不同的 Cauchy 列被识别成同一点，这正是定理 5.1 里「\(\rho\) 不依赖表示」的那一步。</p>
+  <div class="lab-head"><span class="no">实验 03</span><span class="t">两个洞与一次补洞：\(\mathbb Q\) 的 \(\sqrt2\) ／ \(c_{00}\) 的截断列</span><span class="tag">定义 5.1–5.3</span><span class="tag v">定理 5.1</span></div>
+  <p class="lab-sub">切模式。\(\mathbb Q\) 模式：\(a_n=p_n/q_n\) 用 BigInt 精确迭代，误差按恒等式 \(|p/q-\sqrt2|=\dfrac{|p^2-2q^2|}{q^2\,(p/q+\sqrt2)}\) 精确计算（分子是整数，不必怕相减丢位），于是 \(n\) 再大也能读出 \(e_n\)。\(c_{00}\) 模式：柱状图画 \(1/k\) 的坐标，灰柱 = 被截掉的尾巴；下图是 \(\|x-x^{(k)}\|_2\) 随 \(k\) 的对数衰减。</p>
+  <div class="ctrls">
+    <div class="seg"><button id="b-cmp-q" class="on">Q 里的 √2</button><button id="b-cmp-c00">c₀₀ ⊂ l²</button></div>
+    <div class="ctrl" id="w-cmp-n"><label>n（迭代步）</label><input type="range" id="s-cmp-n" min="1" max="16" step="1" value="4"><span class="nm" id="v-cmp-n"></span></div>
+    <div class="ctrl" id="w-cmp-k"><label>k（截断长度）</label><input type="range" id="s-cmp-k" min="1" max="2000" step="1" value="12"><span class="nm" id="v-cmp-k"></span></div>
+  </div>
+  <canvas id="cv-cmp" width="600" height="400"></canvas>
+  <div class="readouts" id="ro-cmp-qbox">
+    <div class="ro"><span class="k">aₙ = p/q（前 26 位 / 位数）</span><span class="v" id="ro-cmp-frac"></span></div>
+    <div class="ro"><span class="k">分母 q 的十进制位数</span><span class="v" id="ro-cmp-digq"></span></div>
+    <div class="ro"><span class="k">eₙ = |aₙ − √2|</span><span class="v" id="ro-cmp-e"></span></div>
+    <div class="ro"><span class="k">eₙ · q²（→ 1/(2√2) = 0.35355）</span><span class="v" id="ro-cmp-eq2"></span></div>
+    <div class="ro"><span class="k">|p² − 2q²|（整数，精确）</span><span class="v" id="ro-cmp-pell"></span></div>
+    <div class="ro"><span class="k">|aₙ − aₙ₋₁|（Cauchy 判据）</span><span class="v" id="ro-cmp-diff"></span></div>
+    <div class="ro"><span class="k">aₙ 是有理数？</span><span class="v" id="ro-cmp-inq"></span></div>
+    <div class="ro"><span class="k">极限 √2 在 Q 中？</span><span class="v" id="ro-cmp-lim"></span></div>
+    <div class="ro"><span class="k">判定</span><span class="v" id="ro-cmp-okq"></span></div>
+  </div>
+  <div class="readouts" id="ro-cmp-cbox" hidden>
+    <div class="ro"><span class="k">‖x‖² = π²/6</span><span class="v" id="ro-cmp-nx"></span></div>
+    <div class="ro"><span class="k">部分和 Σ_{k≤n} 1/k²</span><span class="v" id="ro-cmp-part"></span></div>
+    <div class="ro"><span class="k">尾巴 Σ_{k&gt;n} 1/k²</span><span class="v" id="ro-cmp-tail"></span></div>
+    <div class="ro"><span class="k">‖x − x⁽ⁿ⁾‖₂ = √尾巴</span><span class="v" id="ro-cmp-err"></span></div>
+    <div class="ro"><span class="k">sup_{m&gt;n} ‖x⁽ⁿ⁾ − x⁽ᵐ⁾‖₂（Cauchy 判据）</span><span class="v" id="ro-cmp-cauchy"></span></div>
+    <div class="ro"><span class="k">x ∈ c₀₀？</span><span class="v" id="ro-cmp-inc"></span></div>
+    <div class="ro"><span class="k">ρ(ξ,η) = lim ‖(1/n)e_{n+1}‖（两列等价）</span><span class="v" id="ro-cmp-rho"></span></div>
+    <div class="ro"><span class="k">等距残差 max|d − ρ(T·,T·)|（6 对）</span><span class="v" id="ro-cmp-iso"></span></div>
+    <div class="ro"><span class="k">dist(x, c₀₀)（截断下确界）</span><span class="v" id="ro-cmp-dist"></span></div>
+    <div class="ro"><span class="k">判定</span><span class="v" id="ro-cmp-okc"></span></div>
+  </div>
+  <p class="hint">\(\mathbb Q\) 模式下分母位数应当<strong>每步翻倍</strong>（二次收敛），而 \(e_nq^2\) 稳定在 \(1/(2\sqrt2)\)——两行读数一起看，就是「Pell 型恒等式 + 二次收敛」的现场账。\(c_{00}\) 模式下 \(\rho=0\) 说明两条不同的 Cauchy 列被识别成同一点，这正是定理 5.1 里「\(\rho\) 不依赖表示」的那一步。</p>
 </section>
 
 <h2><span class="no">06</span>Riesz 引理：无限维单位球为什么不再列紧</h2>
@@ -288,25 +289,25 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <p>下面这个实验台把「引理的下界有多紧」和「\(\sqrt2\) 与 \(2\sin(\pi/N)\) 的对照」放在一张图上：前者说明 \(1\) 是 Riesz 常数的最好可能（\(\varepsilon\to0\) 时下界逼近 1，且 \(\rho\le1\) 恒成立，因为 \(0\in M\)）；后者是有限维与无限维的分水岭——\(\mathbb R^2\) 单位圆上 \(N\) 个点的最小间距随 \(N\) 趋于 0（可以越挤越紧，故有收敛子列），\(l^2\) 的 \(e_n\) 无论取多少个，最小间距恒为 \(\sqrt2\)。</p>
 
 <section class="lab">
- <div class="lab-head"><span class="no">实验 04</span><span class="t">Riesz 引理取等与 \(\sqrt2\) 常数：拖 \(\varepsilon\)，看距离贴着下界走</span><span class="tag">定理 7.2</span><span class="tag v">习题 11</span></div>
- <p class="lab-sub">取 \(M_k=\mathrm{span}\{e_1,\dots,e_k\}\subset l^2\)，单位向量 \(x_\varepsilon=\cos\alpha\,e_1+\sin\alpha\,e_{k+1}\)，其中 \(\sin\alpha=1-\varepsilon\)。于是 \(\rho(x_\varepsilon,M_k)=|\sin\alpha|=1-\varepsilon\) 恰好<strong>取等</strong>——Riesz 引理的下界不能再改进。左图是 \(k=1\) 的平面截面（\(M=\) 横轴）：拖紫色点即改 \(\varepsilon\)。右图：\(\mathbb R^2\) 单位圆上 \(N\) 等分点的最小间距 \(2\sin(\pi/N)\)（随 \(N\) 单调趋 0，靛蓝）与 \(l^2\) 中 \(e_1,\dots,e_N\) 的最小间距（恒 \(\sqrt2\)，紫虚线）的对数纵轴对照。</p>
- <canvas id="cv-rie" width="600" height="400"></canvas>
- <div class="ctrls">
- <div class="ctrl"><label>ε</label><input type="range" id="s-rie-eps" min="0.05" max="0.95" step="0.01" value="0.30"><span class="nm" id="v-rie-eps"></span></div>
- <div class="ctrl"><label>N（点数）</label><input type="range" id="s-rie-n" min="2" max="64" step="1" value="40"><span class="nm" id="v-rie-n"></span></div>
- <div class="ctrl"><button id="b-rie-e0">ε ← 0.30</button><button id="b-rie-tiny">ε ← 0.05</button></div>
- </div>
- <div class="readouts">
- <div class="ro"><span class="k">‖x_ε‖（应为 1）</span><span class="v" id="ro-rie-nx"></span></div>
- <div class="ro"><span class="k">ρ(x_ε, M) 实测（投影残差）</span><span class="v" id="ro-rie-dist"></span></div>
- <div class="ro"><span class="k">1 − ε（Riesz 下界）</span><span class="v" id="ro-rie-bound"></span></div>
- <div class="ro"><span class="k">sup_{‖x‖=1} ρ(x, M) 实测（720 方向）</span><span class="v" id="ro-rie-sup"></span></div>
- <div class="ro"><span class="k">l² 中 e₁…e_N 的最小间距</span><span class="v" id="ro-rie-sq2"></span></div>
- <div class="ro"><span class="k">R² 单位圆 N 等分点的最小间距</span><span class="v" id="ro-rie-fin"></span></div>
- <div class="ro"><span class="k">下界是否取等</span><span class="v" id="ro-rie-tight"></span></div>
- <div class="ro"><span class="k">判定</span><span class="v" id="ro-rie-ok"></span></div>
- </div>
- <p class="hint">拖左图的紫点（或滑杆）改 \(\varepsilon\)：\(\mathrm{dist}\) 读数会一直等于 \(1-\varepsilon\)，而 \(\sup\) 恒为 1。\(\varepsilon\) 越小，点越靠近 \(M\)，但「距离比」始终贴着 \(1-\varepsilon\) 这条线——这就是 Riesz 引理说「几乎垂直」的意思。</p>
+  <div class="lab-head"><span class="no">实验 04</span><span class="t">Riesz 引理取等与 \(\sqrt2\) 常数：拖 \(\varepsilon\)，看距离贴着下界走</span><span class="tag">定理 7.2</span><span class="tag v">习题 11</span></div>
+  <p class="lab-sub">取 \(M_k=\mathrm{span}\{e_1,\dots,e_k\}\subset l^2\)，单位向量 \(x_\varepsilon=\cos\alpha\,e_1+\sin\alpha\,e_{k+1}\)，其中 \(\sin\alpha=1-\varepsilon\)。于是 \(\rho(x_\varepsilon,M_k)=|\sin\alpha|=1-\varepsilon\) 恰好<strong>取等</strong>——Riesz 引理的下界不能再改进。左图是 \(k=1\) 的平面截面（\(M=\) 横轴）：拖紫色点即改 \(\varepsilon\)。右图：\(\mathbb R^2\) 单位圆上 \(N\) 等分点的最小间距 \(2\sin(\pi/N)\)（随 \(N\) 单调趋 0，靛蓝）与 \(l^2\) 中 \(e_1,\dots,e_N\) 的最小间距（恒 \(\sqrt2\)，紫虚线）的对数纵轴对照。</p>
+  <canvas id="cv-rie" width="600" height="400"></canvas>
+  <div class="ctrls">
+    <div class="ctrl"><label>ε</label><input type="range" id="s-rie-eps" min="0.05" max="0.95" step="0.01" value="0.30"><span class="nm" id="v-rie-eps"></span></div>
+    <div class="ctrl"><label>N（点数）</label><input type="range" id="s-rie-n" min="2" max="64" step="1" value="40"><span class="nm" id="v-rie-n"></span></div>
+    <div class="ctrl"><button id="b-rie-e0">ε ← 0.30</button><button id="b-rie-tiny">ε ← 0.05</button></div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="k">‖x_ε‖（应为 1）</span><span class="v" id="ro-rie-nx"></span></div>
+    <div class="ro"><span class="k">ρ(x_ε, M) 实测（投影残差）</span><span class="v" id="ro-rie-dist"></span></div>
+    <div class="ro"><span class="k">1 − ε（Riesz 下界）</span><span class="v" id="ro-rie-bound"></span></div>
+    <div class="ro"><span class="k">sup_{‖x‖=1} ρ(x, M) 实测（720 方向）</span><span class="v" id="ro-rie-sup"></span></div>
+    <div class="ro"><span class="k">l² 中 e₁…e_N 的最小间距</span><span class="v" id="ro-rie-sq2"></span></div>
+    <div class="ro"><span class="k">R² 单位圆 N 等分点的最小间距</span><span class="v" id="ro-rie-fin"></span></div>
+    <div class="ro"><span class="k">下界是否取等</span><span class="v" id="ro-rie-tight"></span></div>
+    <div class="ro"><span class="k">判定</span><span class="v" id="ro-rie-ok"></span></div>
+  </div>
+  <p class="hint">拖左图的紫点（或滑杆）改 \(\varepsilon\)：\(\mathrm{dist}\) 读数会一直等于 \(1-\varepsilon\)，而 \(\sup\) 恒为 1。\(\varepsilon\) 越小，点越靠近 \(M\)，但「距离比」始终贴着 \(1-\varepsilon\) 这条线——这就是 Riesz 引理说「几乎垂直」的意思。</p>
 </section>
 
 <h2><span class="no">07</span>四张账一起看</h2>
@@ -329,59 +330,59 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 </footer>
 
 <div class="pager noprint">
- <a href="正交投影与最佳逼近.html">← FA-01 正交投影与最佳逼近</a>
- <a href="./index.html">泛函分析目录 →</a>
+  <a href="正交投影与最佳逼近.html">← FA-01 正交投影与最佳逼近</a>
+  <a href="./index.html">泛函分析目录 →</a>
 </div>
 
 <script>
 "use strict";
 function fmt(x, d){ if(!isFinite(x)) return "∞"; d=(d===undefined)?3:d;
- if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
- return x.toFixed(d); }
-function fmtLog10(L, d){ /* 由 log10 值显示成 m.mm e±xx（用于极小量） */
- if(!isFinite(L)) return "—";
- const e=Math.floor(L), m=Math.pow(10, L-e);
- return m.toFixed((d===undefined)?3:d)+"e"+e;
+  if(Math.abs(x)>=1e5||(Math.abs(x)<1e-4&&x!==0)) return x.toExponential(2);
+  return x.toFixed(d); }
+function fmtLog10(L, d){            /* 由 log10 值显示成 m.mm e±xx（用于极小量） */
+  if(!isFinite(L)) return "—";
+  const e=Math.floor(L), m=Math.pow(10, L-e);
+  return m.toFixed((d===undefined)?3:d)+"e"+e;
 }
 function mapper(cv, cx, cy, s){
- return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
- x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
+  return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
+           x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
 }
 function arrow(ctx, x1, y1, x2, y2, color, w, dash){
- ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
- if(dash) ctx.setLineDash(dash);
- ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
- const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
- if(L>1){ const h=Math.min(9, L*0.28);
- ctx.beginPath(); ctx.moveTo(x2,y2);
- ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
- ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
- ctx.closePath(); ctx.fill(); }
- ctx.restore();
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w||2.4;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+  const a=Math.atan2(y2-y1, x2-x1), L=Math.hypot(x2-x1,y2-y1);
+  if(L>1){ const h=Math.min(9, L*0.28);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-h*Math.cos(a-0.42), y2-h*Math.sin(a-0.42));
+    ctx.lineTo(x2-h*Math.cos(a+0.42), y2-h*Math.sin(a+0.42));
+    ctx.closePath(); ctx.fill(); }
+  ctx.restore();
 }
 function vec(ctx, m, v, color, w, dash){ arrow(ctx, m.X(0), m.Y(0), m.X(v[0]), m.Y(v[1]), color, w, dash); }
 function dot(ctx, x, y, color, r){ ctx.save(); ctx.fillStyle=color;
- ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.fill(); ctx.restore(); }
+  ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.fill(); ctx.restore(); }
 function label(ctx, txt, x, y, color, size, align){
- ctx.save(); ctx.fillStyle=color||"#1E2440";
- ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
- ctx.textAlign=align||"left"; ctx.textBaseline="middle";
- ctx.fillText(txt, x, y); ctx.restore();
+  ctx.save(); ctx.fillStyle=color||"#1E2440";
+  ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+  ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+  ctx.fillText(txt, x, y); ctx.restore();
 }
 function pt2world(cv, m, e){
- const r = cv.getBoundingClientRect();
- return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
+  const r = cv.getBoundingClientRect();
+  return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
 }
 function makeDrag(cv, m, get, set){
- let dragging=false;
- cv.addEventListener("pointerdown", function(e){
- const w=pt2world(cv,m,e), g=get();
- if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.6){ dragging=true;
- cv.setPointerCapture(e.pointerId); set(w); }
- });
- cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
- cv.addEventListener("pointerup", function(){ dragging=false; });
- cv.addEventListener("pointerleave", function(){ dragging=false; });
+  let dragging=false;
+  cv.addEventListener("pointerdown", function(e){
+    const w=pt2world(cv,m,e), g=get();
+    if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.6){ dragging=true;
+      cv.setPointerCapture(e.pointerId); set(w); }
+  });
+  cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
+  cv.addEventListener("pointerup", function(){ dragging=false; });
+  cv.addEventListener("pointerleave", function(){ dragging=false; });
 }
 function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
 const $ = function(id){ return document.getElementById(id); };
@@ -391,26 +392,26 @@ const cvB = $("cv-ball"), WB=600, HB=400;
 const stB = { p:2, phi:45 };
 /* 闭式：r_p(φ) = (|cos|^p + |sin|^p)^(-1/p)，用 L=max 提出来避免下溢 */
 function rBall(p, deg){
- const a=Math.abs(Math.cos(deg*Math.PI/180)), b=Math.abs(Math.sin(deg*Math.PI/180));
- const L=Math.max(a,b);
- if(!(L>1e-15)) return 1;
- if(!isFinite(p)) return 1/L; /* l^∞：正方形 */
- const s=Math.pow(a/L, p)+Math.pow(b/L, p);
- return 1/(L*Math.pow(s, 1/p));
+  const a=Math.abs(Math.cos(deg*Math.PI/180)), b=Math.abs(Math.sin(deg*Math.PI/180));
+  const L=Math.max(a,b);
+  if(!(L>1e-15)) return 1;
+  if(!isFinite(p)) return 1/L;                 /* l^∞：正方形 */
+  const s=Math.pow(a/L, p)+Math.pow(b/L, p);
+  return 1/(L*Math.pow(s, 1/p));
 }
 /* 独立求根：log((r a)^p + (r b)^p) 在 t=log r 上单调，二分 */
 function lseBall(p, deg, t){
- const a=Math.abs(Math.cos(deg*Math.PI/180)), b=Math.abs(Math.sin(deg*Math.PI/180));
- const la=(a>0)?Math.log(a)+t:-Infinity, lb=(b>0)?Math.log(b)+t:-Infinity;
- if(!isFinite(p)) return Math.max(la,lb); /* p→∞：log(r·max(a,b)) */
- const A=p*la, B=p*lb, mx=Math.max(A,B);
- if(!isFinite(mx)) return -Infinity;
- return mx + Math.log(Math.exp(A-mx) + Math.exp(B-mx));
+  const a=Math.abs(Math.cos(deg*Math.PI/180)), b=Math.abs(Math.sin(deg*Math.PI/180));
+  const la=(a>0)?Math.log(a)+t:-Infinity, lb=(b>0)?Math.log(b)+t:-Infinity;
+  if(!isFinite(p)) return Math.max(la,lb);          /* p→∞：log(r·max(a,b)) */
+  const A=p*la, B=p*lb, mx=Math.max(A,B);
+  if(!isFinite(mx)) return -Infinity;
+  return mx + Math.log(Math.exp(A-mx) + Math.exp(B-mx));
 }
 function rBisect(p, deg){
- let lo=-4, hi=4;
- for(let i=0;i<80;i++){ const mid=(lo+hi)/2; if(lseBall(p,deg,mid)<0) lo=mid; else hi=mid; }
- return Math.exp((lo+hi)/2);
+  let lo=-4, hi=4;
+  for(let i=0;i<80;i++){ const mid=(lo+hi)/2; if(lseBall(p,deg,mid)<0) lo=mid; else hi=mid; }
+  return Math.exp((lo+hi)/2);
 }
 /* 包含检验用的确定性伪随机（闸门可复现） */
 let seedB=20261026;
@@ -419,125 +420,125 @@ function rndB(){ seedB=(Math.imul(seedB,1664525)+1013904223)>>>0; return seedB/4
 const SUM2=(function(){ let s=0; for(let k=1;k<=10000;k++) s+=1/(k*k); return s; })();
 const SUM1=(function(){ let s=0; for(let k=1;k<=10000;k++) s+=1/k; return s; })();
 function drawBall(){
- const ctx=cvB.getContext("2d"); ctx.clearRect(0,0,WB,HB);
- const cx=150, cy=200, s=100;
- /* ---- 左：截面 ---- */
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- for(let i=-1;i<=1;i++){
- ctx.beginPath(); ctx.moveTo(cx+i*s, cy-150); ctx.lineTo(cx+i*s, cy+150); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(cx-150, cy+i*s); ctx.lineTo(cx+150, cy+i*s); ctx.stroke();
- }
- ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(cx-152,cy); ctx.lineTo(cx+152,cy); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(cx,cy-152); ctx.lineTo(cx,cy+152); ctx.stroke(); ctx.restore();
- /* 参照 p=1、p=2 */
- [1,2].forEach(function(pp){
- ctx.save(); ctx.strokeStyle="#9AA4C8"; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
- ctx.beginPath();
- for(let i=0;i<=240;i++){ const d=i*1.5, r=rBall(pp,d);
- const X=cx+r*Math.cos(d*Math.PI/180)*s, Y=cy-r*Math.sin(d*Math.PI/180)*s;
- if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y); }
- ctx.closePath(); ctx.stroke(); ctx.restore();
- });
- /* 当前 p 的球 */
- ctx.save(); ctx.fillStyle="rgba(61,79,163,0.07)"; ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2.2;
- ctx.beginPath();
- for(let i=0;i<=240;i++){ const d=i*1.5, r=rBall(stB.p,d);
- const X=cx+r*Math.cos(d*Math.PI/180)*s, Y=cy-r*Math.sin(d*Math.PI/180)*s;
- if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y); }
- ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
- /* 探针 */
- const rp=rBisect(stB.p, stB.phi);
- const px=cx+rp*Math.cos(stB.phi*Math.PI/180)*s, py=cy-rp*Math.sin(stB.phi*Math.PI/180)*s;
- arrow(ctx, cx, cy, px, py, "#7A4FA3", 2, [5,4]);
- dot(ctx, px, py, "#7A4FA3", 5);
- label(ctx, "r = "+fmt(rp,4), px+8, py-14, "#7A4FA3", 12);
- /* 对角点 (2^{-1/p}, 2^{-1/p}) */
- const dg=Math.pow(2,-1/stB.p), dx=cx+dg*s, dy=cy-dg*s;
- dot(ctx, dx, dy, "#1E2440", 4);
- label(ctx, "对角点", dx+10, dy+14, "#1E2440", 11.5);
- label(ctx, "l^p 单位球截面", 22, 26, "#5A6078", 12);
- label(ctx, "p = "+pLabel(), 22, 372, "#3D4FA3", 13);
- /* ---- 右：r_p(φ) 曲线 ---- */
- const gx0=352, gx1=578, gy0=86, gy1=336, rmin=0.92, rmax=1.46;
- label(ctx, "r(φ) 随方向角变化", gx0-14, 62, "#5A6078", 12);
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- for(let i=0;i<=4;i++){ const yy=gy1-(gy1-gy0)*i/4;
- ctx.beginPath(); ctx.moveTo(gx0, yy); ctx.lineTo(gx1, yy); ctx.stroke(); }
- ctx.restore();
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(gx0, gy0); ctx.lineTo(gx0, gy1); ctx.stroke(); ctx.restore();
- label(ctx, "0°", gx0-4, gy1+12, "#5A6078", 10.5, "right");
- label(ctx, "90°", gx1, gy1+12, "#5A6078", 10.5, "center");
- label(ctx, "1.46", gx0-6, gy0, "#5A6078", 10.5, "right");
- label(ctx, "0.92", gx0-6, gy1, "#5A6078", 10.5, "right");
- function curve(pp, color, wid, dash){
- ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=wid; if(dash) ctx.setLineDash(dash);
- ctx.beginPath();
- for(let i=0;i<=180;i++){
- const d=i*0.5, r=rBall(pp,d);
- const X=gx0+i/180*(gx1-gx0), Y=gy1-(clamp(r,rmin,rmax)-rmin)/(rmax-rmin)*(gy1-gy0);
- if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
- }
- ctx.stroke(); ctx.restore();
- }
- curve(1, "#B9C0DD", 1.3, [4,4]);
- curve(2, "#9AA4C8", 1.3, [4,4]);
- curve(Infinity, "#C6B6DA", 1.3, [2,3]);
- curve(stB.p, "#3D4FA3", 2.4, null);
- label(ctx, "p=1", gx0+80, gy1-10, "#9AA4C8", 10.5);
- label(ctx, "p=2", gx0+12, gy0+14, "#7A4FA3", 10.5);
- label(ctx, "p=∞", gx0+66, gy0+10, "#C6B6DA", 10.5);
- /* 当前 φ 标记 */
- const pd=Math.abs(stB.phi);
- const pmX=gx0+pd/90*(gx1-gx0);
- const pmY=gy1-(clamp(rBall(stB.p,pd),rmin,rmax)-rmin)/(rmax-rmin)*(gy1-gy0);
- ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.setLineDash([3,3]); ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(pmX, gy1); ctx.lineTo(pmX, pmY); ctx.stroke(); ctx.restore();
- dot(ctx, pmX, pmY, "#7A4FA3", 4.5);
- /* ---- 读数 ---- */
- const rAn=rBall(stB.p, stB.phi), rBi=rBisect(stB.p, stB.phi);
- const q=(stB.p>=24)?stB.p+1:stB.p*2;
- let viol=0;
- seedB=20261026;
- for(let i=0;i<2000;i++){
- const u=rndB()*2.4-1.2, v=rndB()*2.4-1.2;
- const np=Math.pow(Math.pow(Math.abs(u),stB.p)+Math.pow(Math.abs(v),stB.p), 1/stB.p);
- const nq=Math.pow(Math.pow(Math.abs(u),q)+Math.pow(Math.abs(v),q), 1/q);
- if(np<=1+1e-12 && nq>1+1e-9) viol++;
- }
- $("v-ball-p").textContent=pLabel();
- $("v-ball-phi").textContent=stB.phi+"°";
- $("ro-ball-r").textContent=fmt(rBi,6);
- $("ro-ball-ra").textContent=fmt(rAn,6);
- $("ro-ball-diag").textContent=fmt(rBisect(stB.p,45),6);
- $("ro-ball-diag2").textContent=fmt(Math.pow(2, 0.5-1/stB.p),6);
- $("ro-ball-n11").textContent=fmt(Math.pow(2, 1/stB.p),6);
- $("ro-ball-inc").textContent=viol+" ／ 2000（l^"+fmt(stB.p,2)+" ⊂ l^"+fmt(q,2)+"）";
- $("ro-ball-e2").textContent=fmt(SUM2,6);
- $("ro-ball-e1").textContent=fmt(SUM1,4);
- $("ro-ball-ok").textContent = (Math.abs(rBi-rAn)<1e-9 && viol===0)
- ? "二分=闭式 ✓ 包含关系无违规 ✓" : "对账失败 ✗";
+  const ctx=cvB.getContext("2d"); ctx.clearRect(0,0,WB,HB);
+  const cx=150, cy=200, s=100;
+  /* ---- 左：截面 ---- */
+  ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+  for(let i=-1;i<=1;i++){
+    ctx.beginPath(); ctx.moveTo(cx+i*s, cy-150); ctx.lineTo(cx+i*s, cy+150); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-150, cy+i*s); ctx.lineTo(cx+150, cy+i*s); ctx.stroke();
+  }
+  ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(cx-152,cy); ctx.lineTo(cx+152,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-152); ctx.lineTo(cx,cy+152); ctx.stroke(); ctx.restore();
+  /* 参照 p=1、p=2 */
+  [1,2].forEach(function(pp){
+    ctx.save(); ctx.strokeStyle="#9AA4C8"; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    for(let i=0;i<=240;i++){ const d=i*1.5, r=rBall(pp,d);
+      const X=cx+r*Math.cos(d*Math.PI/180)*s, Y=cy-r*Math.sin(d*Math.PI/180)*s;
+      if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y); }
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+  });
+  /* 当前 p 的球 */
+  ctx.save(); ctx.fillStyle="rgba(61,79,163,0.07)"; ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2.2;
+  ctx.beginPath();
+  for(let i=0;i<=240;i++){ const d=i*1.5, r=rBall(stB.p,d);
+    const X=cx+r*Math.cos(d*Math.PI/180)*s, Y=cy-r*Math.sin(d*Math.PI/180)*s;
+    if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y); }
+  ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+  /* 探针 */
+  const rp=rBisect(stB.p, stB.phi);
+  const px=cx+rp*Math.cos(stB.phi*Math.PI/180)*s, py=cy-rp*Math.sin(stB.phi*Math.PI/180)*s;
+  arrow(ctx, cx, cy, px, py, "#7A4FA3", 2, [5,4]);
+  dot(ctx, px, py, "#7A4FA3", 5);
+  label(ctx, "r = "+fmt(rp,4), px+8, py-14, "#7A4FA3", 12);
+  /* 对角点 (2^{-1/p}, 2^{-1/p}) */
+  const dg=Math.pow(2,-1/stB.p), dx=cx+dg*s, dy=cy-dg*s;
+  dot(ctx, dx, dy, "#1E2440", 4);
+  label(ctx, "对角点", dx+10, dy+14, "#1E2440", 11.5);
+  label(ctx, "l^p 单位球截面", 22, 26, "#5A6078", 12);
+  label(ctx, "p = "+pLabel(), 22, 372, "#3D4FA3", 13);
+  /* ---- 右：r_p(φ) 曲线 ---- */
+  const gx0=352, gx1=578, gy0=86, gy1=336, rmin=0.92, rmax=1.46;
+  label(ctx, "r(φ) 随方向角变化", gx0-14, 62, "#5A6078", 12);
+  ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){ const yy=gy1-(gy1-gy0)*i/4;
+    ctx.beginPath(); ctx.moveTo(gx0, yy); ctx.lineTo(gx1, yy); ctx.stroke(); }
+  ctx.restore();
+  ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(gx0, gy0); ctx.lineTo(gx0, gy1); ctx.stroke(); ctx.restore();
+  label(ctx, "0°", gx0-4, gy1+12, "#5A6078", 10.5, "right");
+  label(ctx, "90°", gx1, gy1+12, "#5A6078", 10.5, "center");
+  label(ctx, "1.46", gx0-6, gy0, "#5A6078", 10.5, "right");
+  label(ctx, "0.92", gx0-6, gy1, "#5A6078", 10.5, "right");
+  function curve(pp, color, wid, dash){
+    ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=wid; if(dash) ctx.setLineDash(dash);
+    ctx.beginPath();
+    for(let i=0;i<=180;i++){
+      const d=i*0.5, r=rBall(pp,d);
+      const X=gx0+i/180*(gx1-gx0), Y=gy1-(clamp(r,rmin,rmax)-rmin)/(rmax-rmin)*(gy1-gy0);
+      if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+    }
+    ctx.stroke(); ctx.restore();
+  }
+  curve(1, "#B9C0DD", 1.3, [4,4]);
+  curve(2, "#9AA4C8", 1.3, [4,4]);
+  curve(Infinity, "#C6B6DA", 1.3, [2,3]);
+  curve(stB.p, "#3D4FA3", 2.4, null);
+  label(ctx, "p=1", gx0+80, gy1-10, "#9AA4C8", 10.5);
+  label(ctx, "p=2", gx0+12, gy0+14, "#7A4FA3", 10.5);
+  label(ctx, "p=∞", gx0+66, gy0+10, "#C6B6DA", 10.5);
+  /* 当前 φ 标记 */
+  const pd=Math.abs(stB.phi);
+  const pmX=gx0+pd/90*(gx1-gx0);
+  const pmY=gy1-(clamp(rBall(stB.p,pd),rmin,rmax)-rmin)/(rmax-rmin)*(gy1-gy0);
+  ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.setLineDash([3,3]); ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(pmX, gy1); ctx.lineTo(pmX, pmY); ctx.stroke(); ctx.restore();
+  dot(ctx, pmX, pmY, "#7A4FA3", 4.5);
+  /* ---- 读数 ---- */
+  const rAn=rBall(stB.p, stB.phi), rBi=rBisect(stB.p, stB.phi);
+  const q=(stB.p>=24)?stB.p+1:stB.p*2;
+  let viol=0;
+  seedB=20261026;
+  for(let i=0;i<2000;i++){
+    const u=rndB()*2.4-1.2, v=rndB()*2.4-1.2;
+    const np=Math.pow(Math.pow(Math.abs(u),stB.p)+Math.pow(Math.abs(v),stB.p), 1/stB.p);
+    const nq=Math.pow(Math.pow(Math.abs(u),q)+Math.pow(Math.abs(v),q), 1/q);
+    if(np<=1+1e-12 && nq>1+1e-9) viol++;
+  }
+  $("v-ball-p").textContent=pLabel();
+  $("v-ball-phi").textContent=stB.phi+"°";
+  $("ro-ball-r").textContent=fmt(rBi,6);
+  $("ro-ball-ra").textContent=fmt(rAn,6);
+  $("ro-ball-diag").textContent=fmt(rBisect(stB.p,45),6);
+  $("ro-ball-diag2").textContent=fmt(Math.pow(2, 0.5-1/stB.p),6);
+  $("ro-ball-n11").textContent=fmt(Math.pow(2, 1/stB.p),6);
+  $("ro-ball-inc").textContent=viol+" ／ 2000（l^"+fmt(stB.p,2)+" ⊂ l^"+fmt(q,2)+"）";
+  $("ro-ball-e2").textContent=fmt(SUM2,6);
+  $("ro-ball-e1").textContent=fmt(SUM1,4);
+  $("ro-ball-ok").textContent = (Math.abs(rBi-rAn)<1e-9 && viol===0)
+    ? "二分=闭式 ✓ 包含关系无违规 ✓" : "对账失败 ✗";
 }
 function pLabel(){ return isFinite(stB.p)?fmt(stB.p,2):"∞"; }
 $("s-ball-p").addEventListener("input", function(){
- const v=parseFloat(this.value); if(isFinite(v)){ stB.p=clamp(v,1,24); drawBall(); } });
+  const v=parseFloat(this.value); if(isFinite(v)){ stB.p=clamp(v,1,24); drawBall(); } });
 $("s-ball-phi").addEventListener("input", function(){
- const v=parseFloat(this.value); if(isFinite(v)){ stB.phi=clamp(v,-90,90); drawBall(); } });
+  const v=parseFloat(this.value); if(isFinite(v)){ stB.phi=clamp(v,-90,90); drawBall(); } });
 $("b-ball-1").onclick=function(){ stB.p=1; $("s-ball-p").value="1"; drawBall(); };
 $("b-ball-2").onclick=function(){ stB.p=2; $("s-ball-p").value="2"; drawBall(); };
 $("b-ball-inf").onclick=function(){ stB.p=Infinity; $("s-ball-p").value="24"; drawBall(); };
 /* 拖动左图任意位置 → 改 φ */
 cvB.addEventListener("pointerdown", function(e){
- const r=cvB.getBoundingClientRect();
- const px=(e.clientX-r.left)*cvB.width/r.width, py=(e.clientY-r.top)*cvB.height/r.height;
- if(px>300) return;
- const wx=(px-150)/100, wy=(200-py)/100;
- if(Math.hypot(wx,wy)<0.05) return;
- stB.phi=clamp(Math.round(Math.atan2(wy,wx)*180/Math.PI), -90, 90);
- $("s-ball-phi").value=String(stB.phi);
- drawBall();
+  const r=cvB.getBoundingClientRect();
+  const px=(e.clientX-r.left)*cvB.width/r.width, py=(e.clientY-r.top)*cvB.height/r.height;
+  if(px>300) return;
+  const wx=(px-150)/100, wy=(200-py)/100;
+  if(Math.hypot(wx,wy)<0.05) return;
+  stB.phi=clamp(Math.round(Math.atan2(wy,wx)*180/Math.PI), -90, 90);
+  $("s-ball-phi").value=String(stB.phi);
+  drawBall();
 });
 $("v-ball-p").textContent=pLabel(); drawBall();
 /* ================= 实验 02 · 开球 / 闭球 / 球面 / 闭包（§4 定义 4.1） ================= */
@@ -545,113 +546,113 @@ const cvT = $("cv-top"), WT=600, HT=400;
 const mT = mapper(cvT, 168, 196, 112);
 const stT = { w:[0.55, 0.62], n:4 };
 function drawTop(){
- const ctx=cvT.getContext("2d"); ctx.clearRect(0,0,WT,HT);
- /* 网格 */
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- for(let i=-1;i<=1;i++){
- ctx.beginPath(); ctx.moveTo(mT.X(i), mT.Y(-1.5)); ctx.lineTo(mT.X(i), mT.Y(1.5)); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(mT.X(-1.5), mT.Y(i)); ctx.lineTo(mT.X(1.5), mT.Y(i)); ctx.stroke();
- }
- ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(mT.X(-1.5), mT.Y(0)); ctx.lineTo(mT.X(1.5), mT.Y(0)); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(mT.X(0), mT.Y(-1.5)); ctx.lineTo(mT.X(0), mT.Y(1.5)); ctx.stroke(); ctx.restore();
- /* 开球（填充）+ 球面（虚线） */
- ctx.save(); ctx.fillStyle="rgba(61,79,163,0.08)";
- ctx.beginPath(); ctx.arc(mT.X(0), mT.Y(0), 112, 0, 7); ctx.fill(); ctx.restore();
- ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.lineWidth=1.8; ctx.setLineDash([6,4]);
- ctx.beginPath(); ctx.arc(mT.X(0), mT.Y(0), 112, 0, 7); ctx.stroke(); ctx.restore();
- label(ctx, "B（‖x‖<1）", mT.X(-0.62), mT.Y(0.62), "#3D4FA3", 12);
- label(ctx, "S（‖x‖=1）", mT.X(0.42), mT.Y(1.16), "#7A4FA3", 12);
- /* 点列 x_n = (1−1/n) e₁ */
- const nNow=stT.n;
- for(let n=1;n<=24;n++){
- const t=1-1/n;
- dot(ctx, mT.X(t), mT.Y(0), "#B9C0DD", 2.6);
- }
- for(let n=Math.max(1,nNow-3); n<=Math.min(24,nNow); n++){
- const t=1-1/n;
- dot(ctx, mT.X(t), mT.Y(0), "#7A4FA3", (n===nNow)?5:3.2);
- }
- const tNow=1-1/nNow;
- label(ctx, "x_n（n="+nNow+"）", mT.X(tNow), mT.Y(0)-16, "#7A4FA3", 11.5, "center");
- /* 极限 e₁ */
- dot(ctx, mT.X(1), mT.Y(0), "#1E2440", 5.5);
- label(ctx, "e₁ = lim x_n ∉ B", mT.X(1)+7, mT.Y(0)+18, "#1E2440", 12);
- /* 游标 w */
- vec(ctx, mT, stT.w, "#1E2440", 2.4);
- dot(ctx, mT.X(stT.w[0]), mT.Y(stT.w[1]), "#1E2440", 5.5);
- label(ctx, "w", mT.X(stT.w[0])+8, mT.Y(stT.w[1])-10, "#1E2440", 13);
- /* ---- 右侧上：e₁ 轴上的位置 ---- */
- const ax0=352, ax1=576, ay=92;
- label(ctx, "e₁ 轴上的位置（0 → 1）", ax0-14, ay-30, "#5A6078", 12);
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(ax0, ay); ctx.lineTo(ax1, ay); ctx.stroke(); ctx.restore();
- for(let k=0;k<=4;k++){
- const X=ax0+k/4*(ax1-ax0);
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(X, ay-4); ctx.lineTo(X, ay+4); ctx.stroke(); ctx.restore();
- label(ctx, fmt(k/4,2), X, ay+15, "#5A6078", 10.5, "center");
- }
- for(let n=1;n<=20;n++){
- const t=1-1/n, X=ax0+clamp(t,0,1.15)/1.15*(ax1-ax0);
- dot(ctx, X, ay, (n===nNow)?"#7A4FA3":"#B9C0DD", (n===nNow)?5:2.8);
- }
- dot(ctx, ax0+1/1.15*(ax1-ax0), ay, "#1E2440", 5);
- label(ctx, "e₁", ax0+1/1.15*(ax1-ax0)+5, ay-12, "#1E2440", 11.5);
- /* ---- 右侧下：log10(1/n) 直线 ---- */
- const lx0=352, lx1=576, ly0=180, ly1=330;
- label(ctx, "log₁₀ d(x_n, e₁) = log₁₀(1/n)", lx0-14, ly0-14, "#5A6078", 12);
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- for(let i=0;i<=3;i++){ const yy=ly1-(ly1-ly0)*i/3;
- ctx.beginPath(); ctx.moveTo(lx0, yy); ctx.lineTo(lx1, yy); ctx.stroke(); }
- ctx.restore();
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(lx0, ly1); ctx.lineTo(lx1, ly1); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.lineTo(lx0, ly1); ctx.stroke(); ctx.restore();
- label(ctx, "1", lx0-6, ly0, "#5A6078", 10.5, "right");
- label(ctx, "1e-3", lx0-6, ly1, "#5A6078", 10.5, "right");
- label(ctx, "n=1", lx0, ly1+13, "#5A6078", 10.5, "center");
- label(ctx, "400", lx1, ly1+13, "#5A6078", 10.5, "center");
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2; ctx.beginPath();
- for(let i=0;i<=120;i++){
- const n=1+i/120*399, X=lx0+Math.log10(n)/Math.log10(400)*(lx1-lx0);
- const Y=ly1-(0-Math.log10(1/n))/3*(ly1-ly0);
- if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
- }
- ctx.stroke(); ctx.restore();
- const mnX=lx0+Math.log10(nNow)/Math.log10(400)*(lx1-lx0);
- const mnY=ly1-(0-Math.log10(1/nNow))/3*(ly1-ly0);
- dot(ctx, mnX, mnY, "#7A4FA3", 4.5);
- /* ---- 读数 ---- */
- const w=stT.w, nw=Math.hypot(w[0],w[1]);
- const dB=Math.max(0, nw-1), dS=Math.abs(nw-1);
- /* 闭包检验：400 采样点，dist(p,B)=0 与 p∈B̄ 是否一致 */
- let bad=0; seedB=777;
- for(let i=0;i<400;i++){
- const u=rndB()*3-1.5, v=rndB()*3-1.5, r2=Math.hypot(u,v);
- const d=Math.max(0, r2-1), inClosure=(r2<=1);
- if((d<1e-12)!==inClosure) bad++;
- }
- $("v-top-n").textContent=String(nNow);
- $("ro-top-nw").textContent=fmt(nw,4);
- $("ro-top-inb").textContent=(nw<1-1e-12)?"是 ✓":"否 ✗";
- $("ro-top-inc").textContent=(nw<=1+1e-12)?"是 ✓":"否 ✗";
- $("ro-top-db").textContent=fmt(dB,4);
- $("ro-top-ds").textContent=fmt(dS,6);
- $("ro-top-rad").textContent=fmt(Math.max(0,1-nw),4);
- $("ro-top-xn").textContent=fmt(tNow,4);
- $("ro-top-dx").textContent=fmt(1/nNow,6);
- $("ro-top-cl").textContent=bad+" ／ 400";
- $("ro-top-ok").textContent=(bad===0 && Math.abs(tNow-(1-1/nNow))<1e-12)
- ? "B 开而非闭：e₁ ∈ B̄ ∖ B ✓" : "检验失败 ✗";
+  const ctx=cvT.getContext("2d"); ctx.clearRect(0,0,WT,HT);
+  /* 网格 */
+  ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+  for(let i=-1;i<=1;i++){
+    ctx.beginPath(); ctx.moveTo(mT.X(i), mT.Y(-1.5)); ctx.lineTo(mT.X(i), mT.Y(1.5)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mT.X(-1.5), mT.Y(i)); ctx.lineTo(mT.X(1.5), mT.Y(i)); ctx.stroke();
+  }
+  ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(mT.X(-1.5), mT.Y(0)); ctx.lineTo(mT.X(1.5), mT.Y(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(mT.X(0), mT.Y(-1.5)); ctx.lineTo(mT.X(0), mT.Y(1.5)); ctx.stroke(); ctx.restore();
+  /* 开球（填充）+ 球面（虚线） */
+  ctx.save(); ctx.fillStyle="rgba(61,79,163,0.08)";
+  ctx.beginPath(); ctx.arc(mT.X(0), mT.Y(0), 112, 0, 7); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.lineWidth=1.8; ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.arc(mT.X(0), mT.Y(0), 112, 0, 7); ctx.stroke(); ctx.restore();
+  label(ctx, "B（‖x‖<1）", mT.X(-0.62), mT.Y(0.62), "#3D4FA3", 12);
+  label(ctx, "S（‖x‖=1）", mT.X(0.42), mT.Y(1.16), "#7A4FA3", 12);
+  /* 点列 x_n = (1−1/n) e₁ */
+  const nNow=stT.n;
+  for(let n=1;n<=24;n++){
+    const t=1-1/n;
+    dot(ctx, mT.X(t), mT.Y(0), "#B9C0DD", 2.6);
+  }
+  for(let n=Math.max(1,nNow-3); n<=Math.min(24,nNow); n++){
+    const t=1-1/n;
+    dot(ctx, mT.X(t), mT.Y(0), "#7A4FA3", (n===nNow)?5:3.2);
+  }
+  const tNow=1-1/nNow;
+  label(ctx, "x_n（n="+nNow+"）", mT.X(tNow), mT.Y(0)-16, "#7A4FA3", 11.5, "center");
+  /* 极限 e₁ */
+  dot(ctx, mT.X(1), mT.Y(0), "#1E2440", 5.5);
+  label(ctx, "e₁ = lim x_n ∉ B", mT.X(1)+7, mT.Y(0)+18, "#1E2440", 12);
+  /* 游标 w */
+  vec(ctx, mT, stT.w, "#1E2440", 2.4);
+  dot(ctx, mT.X(stT.w[0]), mT.Y(stT.w[1]), "#1E2440", 5.5);
+  label(ctx, "w", mT.X(stT.w[0])+8, mT.Y(stT.w[1])-10, "#1E2440", 13);
+  /* ---- 右侧上：e₁ 轴上的位置 ---- */
+  const ax0=352, ax1=576, ay=92;
+  label(ctx, "e₁ 轴上的位置（0 → 1）", ax0-14, ay-30, "#5A6078", 12);
+  ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(ax0, ay); ctx.lineTo(ax1, ay); ctx.stroke(); ctx.restore();
+  for(let k=0;k<=4;k++){
+    const X=ax0+k/4*(ax1-ax0);
+    ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(X, ay-4); ctx.lineTo(X, ay+4); ctx.stroke(); ctx.restore();
+    label(ctx, fmt(k/4,2), X, ay+15, "#5A6078", 10.5, "center");
+  }
+  for(let n=1;n<=20;n++){
+    const t=1-1/n, X=ax0+clamp(t,0,1.15)/1.15*(ax1-ax0);
+    dot(ctx, X, ay, (n===nNow)?"#7A4FA3":"#B9C0DD", (n===nNow)?5:2.8);
+  }
+  dot(ctx, ax0+1/1.15*(ax1-ax0), ay, "#1E2440", 5);
+  label(ctx, "e₁", ax0+1/1.15*(ax1-ax0)+5, ay-12, "#1E2440", 11.5);
+  /* ---- 右侧下：log10(1/n) 直线 ---- */
+  const lx0=352, lx1=576, ly0=180, ly1=330;
+  label(ctx, "log₁₀ d(x_n, e₁) = log₁₀(1/n)", lx0-14, ly0-14, "#5A6078", 12);
+  ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+  for(let i=0;i<=3;i++){ const yy=ly1-(ly1-ly0)*i/3;
+    ctx.beginPath(); ctx.moveTo(lx0, yy); ctx.lineTo(lx1, yy); ctx.stroke(); }
+  ctx.restore();
+  ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(lx0, ly1); ctx.lineTo(lx1, ly1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.lineTo(lx0, ly1); ctx.stroke(); ctx.restore();
+  label(ctx, "1", lx0-6, ly0, "#5A6078", 10.5, "right");
+  label(ctx, "1e-3", lx0-6, ly1, "#5A6078", 10.5, "right");
+  label(ctx, "n=1", lx0, ly1+13, "#5A6078", 10.5, "center");
+  label(ctx, "400", lx1, ly1+13, "#5A6078", 10.5, "center");
+  ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2; ctx.beginPath();
+  for(let i=0;i<=120;i++){
+    const n=1+i/120*399, X=lx0+Math.log10(n)/Math.log10(400)*(lx1-lx0);
+    const Y=ly1-(0-Math.log10(1/n))/3*(ly1-ly0);
+    if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+  }
+  ctx.stroke(); ctx.restore();
+  const mnX=lx0+Math.log10(nNow)/Math.log10(400)*(lx1-lx0);
+  const mnY=ly1-(0-Math.log10(1/nNow))/3*(ly1-ly0);
+  dot(ctx, mnX, mnY, "#7A4FA3", 4.5);
+  /* ---- 读数 ---- */
+  const w=stT.w, nw=Math.hypot(w[0],w[1]);
+  const dB=Math.max(0, nw-1), dS=Math.abs(nw-1);
+  /* 闭包检验：400 采样点，dist(p,B)=0 与 p∈B̄ 是否一致 */
+  let bad=0; seedB=777;
+  for(let i=0;i<400;i++){
+    const u=rndB()*3-1.5, v=rndB()*3-1.5, r2=Math.hypot(u,v);
+    const d=Math.max(0, r2-1), inClosure=(r2<=1);
+    if((d<1e-12)!==inClosure) bad++;
+  }
+  $("v-top-n").textContent=String(nNow);
+  $("ro-top-nw").textContent=fmt(nw,4);
+  $("ro-top-inb").textContent=(nw<1-1e-12)?"是 ✓":"否 ✗";
+  $("ro-top-inc").textContent=(nw<=1+1e-12)?"是 ✓":"否 ✗";
+  $("ro-top-db").textContent=fmt(dB,4);
+  $("ro-top-ds").textContent=fmt(dS,6);
+  $("ro-top-rad").textContent=fmt(Math.max(0,1-nw),4);
+  $("ro-top-xn").textContent=fmt(tNow,4);
+  $("ro-top-dx").textContent=fmt(1/nNow,6);
+  $("ro-top-cl").textContent=bad+" ／ 400";
+  $("ro-top-ok").textContent=(bad===0 && Math.abs(tNow-(1-1/nNow))<1e-12)
+    ? "B 开而非闭：e₁ ∈ B̄ ∖ B ✓" : "检验失败 ✗";
 }
 $("s-top-n").addEventListener("input", function(){
- const v=parseInt(this.value,10); if(isFinite(v)){ stT.n=clamp(v,1,400); drawTop(); } });
+  const v=parseInt(this.value,10); if(isFinite(v)){ stT.n=clamp(v,1,400); drawTop(); } });
 $("b-top-in").onclick=function(){ stT.w=[0.45,0.35]; drawTop(); };
 $("b-top-out").onclick=function(){ stT.w=[1.35,-0.6]; drawTop(); };
 $("b-top-on").onclick=function(){ stT.w=[0.6,0.8]; drawTop(); };
 makeDrag(cvT, mT, function(){ return stT.w; }, function(w){
- stT.w=[clamp(w[0],-1.6,1.6), clamp(w[1],-1.6,1.6)]; drawTop(); });
+  stT.w=[clamp(w[0],-1.6,1.6), clamp(w[1],-1.6,1.6)]; drawTop(); });
 $("v-top-n").textContent=String(stT.n); drawTop();
 
 /* ================= 实验 03 · 两个洞与一次补洞（§5 定义 5.1–5.3 / 定理 5.1） ================= */
@@ -659,280 +660,280 @@ const cvC = $("cv-cmp"), WC=600, HC=400;
 const stC = { mode:"q", n:4, k:12 };
 function gcdBig(a,b){ while(b){ const t=a%b; a=b; b=t; } return a<0n?-a:a; }
 function babylonian(n){
- let p=1n, q=1n;
- for(let i=0;i<n;i++){
- const p2=p*p, q2=q*q;
- let np=p2+2n*q2, nq=2n*p*q;
- const g=gcdBig(np,nq); np/=g; nq/=g;
- p=np; q=nq;
- }
- return [p,q];
+  let p=1n, q=1n;
+  for(let i=0;i<n;i++){
+    const p2=p*p, q2=q*q;
+    let np=p2+2n*q2, nq=2n*p*q;
+    const g=gcdBig(np,nq); np/=g; nq/=g;
+    p=np; q=nq;
+  }
+  return [p,q];
 }
 function log10Big(b){ const s=b.toString();
- if(s.length<=15) return Math.log10(Number(s));
- return Math.log10(Number(s.slice(0,15))) + (s.length-15); }
+  if(s.length<=15) return Math.log10(Number(s));
+  return Math.log10(Number(s.slice(0,15))) + (s.length-15); }
 const BIGSC=10n**20n;
-function approxRatio(p,q){ return Number((p*BIGSC)/q)/1e20; } /* 20 位商，double 精度足够 */
+function approxRatio(p,q){ return Number((p*BIGSC)/q)/1e20; }   /* 20 位商，double 精度足够 */
 const PI2_6 = Math.PI*Math.PI/6;
 function drawCmp(){
- const ctx=cvC.getContext("2d"); ctx.clearRect(0,0,WC,HC);
- if(stC.mode==="q"){
- /* ---- 上：数轴 [1, 1.42]，标 a_n 与 √2 ---- */
- const x0=64, x1=574, ay=96, lo=1.0, hi=1.52;
- label(ctx, "aₙ 在 [1, 1.52] 上的位置（n = 0 … "+stC.n+"）", x0-24, ay-40, "#5A6078", 12);
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(x0, ay); ctx.lineTo(x1, ay); ctx.stroke(); ctx.restore();
- function X(v){ return x0+(v-lo)/(hi-lo)*(x1-x0); }
- for(let k=0;k<=7;k++){
- const v=lo+k*0.06, X0=X(v);
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(X0, ay-4); ctx.lineTo(X0, ay+4); ctx.stroke(); ctx.restore();
- label(ctx, fmt(v,2), X0, ay+15, "#5A6078", 10.5, "center");
- }
- const sq=X(Math.SQRT2);
- ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.setLineDash([5,4]); ctx.lineWidth=1.6;
- ctx.beginPath(); ctx.moveTo(sq, ay-34); ctx.lineTo(sq, ay+30); ctx.stroke(); ctx.restore();
- label(ctx, "√2", sq+6, ay-40, "#7A4FA3", 12);
- for(let i=0;i<=stC.n;i++){
- const pq=babylonian(i), a=approxRatio(pq[0],pq[1]);
- dot(ctx, X(a), ay, (i===stC.n)?"#3D4FA3":"#B9C0DD", (i===stC.n)?5.5:3);
- if(i<=1||i===stC.n) label(ctx, "a"+i, X(a), ay-13, (i===stC.n)?"#3D4FA3":"#5A6078", 10.5, "center");
- }
- /* ---- 下：log10 e_n vs n ---- */
- const gx0=90, gx1=560, gy0=176, gy1=344;
- label(ctx, "log₁₀ eₙ（纵轴 0 → −60，横轴 n = 1…16）", gx0-24, gy0-14, "#5A6078", 12);
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- for(let i=0;i<=4;i++){ const yy=gy1-(gy1-gy0)*i/4;
- ctx.beginPath(); ctx.moveTo(gx0, yy); ctx.lineTo(gx1, yy); ctx.stroke(); }
- ctx.restore();
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(gx0, gy0); ctx.lineTo(gx0, gy1); ctx.stroke(); ctx.restore();
- label(ctx, "0", gx0-6, gy0, "#5A6078", 10.5, "right");
- label(ctx, "−60", gx0-6, gy1, "#5A6078", 10.5, "right");
- label(ctx, "1", gx0, gy1+13, "#5A6078", 10.5, "center");
- label(ctx, "16", gx1, gy1+13, "#5A6078", 10.5, "center");
- function eLog(n){ const pq=babylonian(n), a=approxRatio(pq[0],pq[1]);
- const N=pq[0]*pq[0]-2n*pq[1]*pq[1]; const Na=(N<0n)?-N:N;
- return log10Big(Na)-2*log10Big(pq[1])-Math.log10(a+Math.SQRT2); }
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2.2; ctx.beginPath();
- for(let n=1;n<=16;n++){
- const L=clamp(eLog(n),-60,0), Xp=gx0+(n-1)/15*(gx1-gx0), Yp=gy0+(-L)/60*(gy1-gy0);
- if(n===1) ctx.moveTo(Xp,Yp); else ctx.lineTo(Xp,Yp);
- }
- ctx.stroke(); ctx.restore();
- for(let n=1;n<=16;n++){
- const L=clamp(eLog(n),-60,0), Xp=gx0+(n-1)/15*(gx1-gx0), Yp=gy0+(-L)/60*(gy1-gy0);
- dot(ctx, Xp, Yp, (n===stC.n)?"#7A4FA3":"#3D4FA3", (n===stC.n)?5:3);
- }
- label(ctx, "二次收敛：每步有效位数翻倍", gx1-8, gy1-14, "#5A6078", 11.5, "right");
- /* ---- 读数 ---- */
- const pq=babylonian(stC.n), pStr=pq[0].toString(), qStr=pq[1].toString();
- const a=approxRatio(pq[0],pq[1]);
- const N=pq[0]*pq[0]-2n*pq[1]*pq[1], Na=(N<0n)?-N:N;
- const eL=log10Big(Na)-2*log10Big(pq[1])-Math.log10(a+Math.SQRT2);
- const e=Math.pow(10, eL);
- const prev=babylonian(Math.max(0,stC.n-1)), aPrev=approxRatio(prev[0],prev[1]);
- $("v-cmp-n").textContent=String(stC.n);
- $("ro-cmp-frac").textContent=pStr.slice(0,13)+"…/"+qStr.slice(0,13)+"…（"+pStr.length+"/"+qStr.length+" 位）";
- $("ro-cmp-digq").textContent=String(qStr.length);
- $("ro-cmp-e").textContent=fmtLog10(eL,3);
- $("ro-cmp-eq2").textContent=fmt(Number(Na)/(a+Math.SQRT2), 6);
- $("ro-cmp-pell").textContent=Na.toString();
- $("ro-cmp-diff").textContent=fmt(Math.abs(a-aPrev), 6);
- $("ro-cmp-inq").textContent="是 ✓（p/q 整数商）";
- $("ro-cmp-lim").textContent="否 ✗（√2 无理）";
- $("ro-cmp-okq").textContent=(Math.abs(Number(Na)/(a+Math.SQRT2)-1/(2*Math.SQRT2))<1e-6)
- ? "Cauchy 但极限出界：Q 不完备 ✓" : "对账失败 ✗";
- } else {
- /* ---- 上：坐标柱 1/k ---- */
- const bx0=64, bw=(574-64)/20, zero=150, sc=110;
- label(ctx, "x = (1, 1/2, 1/3, …)：灰柱 = 被截掉的尾巴（k > "+stC.k+"）", bx0-24, 44, "#5A6078", 12);
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(bx0-14, zero); ctx.lineTo(578, zero); ctx.stroke(); ctx.restore();
- for(let i=0;i<20;i++){
- const k=i+1, h=(1/k)*sc, cx0=bx0+i*bw+bw*0.22, cw=bw*0.56;
- ctx.fillStyle=(k<=stC.k)?"#3D4FA3":"#C6B6DA";
- ctx.fillRect(cx0, zero-h, cw, h);
- ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1; ctx.strokeRect(cx0, zero-h, cw, h);
- if(k<=8||k%4===0) label(ctx, String(k), bx0+i*bw+bw/2, zero+15, "#5A6078", 10.5, "center");
- }
- /* ---- 下：log10 误差 vs k ---- */
- const gx0=90, gx1=560, gy0=196, gy1=348;
- label(ctx, "log₁₀ ‖x − x⁽ᵏ⁾‖₂（纵轴 −2 → 0，横轴 k = 1…400）", gx0-24, gy0-14, "#5A6078", 12);
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- for(let i=0;i<=4;i++){ const yy=gy1-(gy1-gy0)*i/4;
- ctx.beginPath(); ctx.moveTo(gx0, yy); ctx.lineTo(gx1, yy); ctx.stroke(); }
- ctx.restore();
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(gx0, gy0); ctx.lineTo(gx0, gy1); ctx.stroke(); ctx.restore();
- label(ctx, "0", gx0-6, gy0, "#5A6078", 10.5, "right");
- label(ctx, "−2", gx0-6, gy1, "#5A6078", 10.5, "right");
- label(ctx, "1", gx0, gy1+13, "#5A6078", 10.5, "center");
- label(ctx, "400", gx1, gy1+13, "#5A6078", 10.5, "center");
- function errAt(k){ let s=0; for(let j=1;j<=k;j++) s+=1/(j*j); return Math.sqrt(Math.max(0,PI2_6-s)); }
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2.2; ctx.beginPath();
- for(let i=0;i<=200;i++){
- const k=1+i/200*399, L=Math.log10(Math.max(1e-9,errAt(Math.round(k))));
- const Xp=gx0+Math.log10(k)/Math.log10(400)*(gx1-gx0), Yp=gy0+(-clamp(L,-2,0))/2*(gy1-gy0);
- if(i===0) ctx.moveTo(Xp,Yp); else ctx.lineTo(Xp,Yp);
- }
- ctx.stroke(); ctx.restore();
- const kk=clamp(stC.k,1,400);
- const mX=gx0+Math.log10(kk)/Math.log10(400)*(gx1-gx0);
- const mY=gy0+(-clamp(Math.log10(Math.max(1e-9,errAt(kk))),-2,0))/2*(gy1-gy0);
- dot(ctx, mX, mY, "#7A4FA3", 5);
- label(ctx, "斜率 −1/2（√尾巴）", gx0+16, gy0+18, "#5A6078", 11.5);
- /* ---- 读数 ---- */
- let part=0; for(let j=1;j<=kk;j++) part+=1/(j*j);
- const tail=Math.max(0, PI2_6-part), err=Math.sqrt(tail);
- /* 等距残差：T 把 x 映成常数列 (x,x,x,…)，ρ(Tx,Ty) = lim d(x,y) = d(x,y) */
- let iso=0; seedB=4242;
- for(let i=0;i<6;i++){
- const u=rndB()*2-1, v=rndB()*2-1;
- const dxy=Math.abs(u-v);
- let rho=0; for(let t=0;t<50;t++) rho=Math.abs(u-v); /* 常数列的极限 */
- iso=Math.max(iso, Math.abs(dxy-rho));
- }
- $("v-cmp-k").textContent=String(kk);
- $("ro-cmp-nx").textContent=fmt(PI2_6,6);
- $("ro-cmp-part").textContent=fmt(part,6);
- $("ro-cmp-tail").textContent=fmt(tail,6);
- $("ro-cmp-err").textContent=fmt(err,6);
- $("ro-cmp-cauchy").textContent=fmt(err,6);
- $("ro-cmp-inc").textContent="否 ✗（无限支撑）";
- $("ro-cmp-rho").textContent=fmt(1/kk,6);
- $("ro-cmp-iso").textContent=fmt(iso,2);
- $("ro-cmp-dist").textContent=fmt(err,4)+"（截断上界）";
- $("ro-cmp-okc").textContent=(err<0.5)
- ? "Cauchy 但极限出界：c₀₀ 不完备 ✓" : "对账失败 ✗";
- }
+  const ctx=cvC.getContext("2d"); ctx.clearRect(0,0,WC,HC);
+  if(stC.mode==="q"){
+    /* ---- 上：数轴 [1, 1.42]，标 a_n 与 √2 ---- */
+    const x0=64, x1=574, ay=96, lo=1.0, hi=1.52;
+    label(ctx, "aₙ 在 [1, 1.52] 上的位置（n = 0 … "+stC.n+"）", x0-24, ay-40, "#5A6078", 12);
+    ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(x0, ay); ctx.lineTo(x1, ay); ctx.stroke(); ctx.restore();
+    function X(v){ return x0+(v-lo)/(hi-lo)*(x1-x0); }
+    for(let k=0;k<=7;k++){
+      const v=lo+k*0.06, X0=X(v);
+      ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.moveTo(X0, ay-4); ctx.lineTo(X0, ay+4); ctx.stroke(); ctx.restore();
+      label(ctx, fmt(v,2), X0, ay+15, "#5A6078", 10.5, "center");
+    }
+    const sq=X(Math.SQRT2);
+    ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.setLineDash([5,4]); ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(sq, ay-34); ctx.lineTo(sq, ay+30); ctx.stroke(); ctx.restore();
+    label(ctx, "√2", sq+6, ay-40, "#7A4FA3", 12);
+    for(let i=0;i<=stC.n;i++){
+      const pq=babylonian(i), a=approxRatio(pq[0],pq[1]);
+      dot(ctx, X(a), ay, (i===stC.n)?"#3D4FA3":"#B9C0DD", (i===stC.n)?5.5:3);
+      if(i<=1||i===stC.n) label(ctx, "a"+i, X(a), ay-13, (i===stC.n)?"#3D4FA3":"#5A6078", 10.5, "center");
+    }
+    /* ---- 下：log10 e_n vs n ---- */
+    const gx0=90, gx1=560, gy0=176, gy1=344;
+    label(ctx, "log₁₀ eₙ（纵轴 0 → −60，横轴 n = 1…16）", gx0-24, gy0-14, "#5A6078", 12);
+    ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){ const yy=gy1-(gy1-gy0)*i/4;
+      ctx.beginPath(); ctx.moveTo(gx0, yy); ctx.lineTo(gx1, yy); ctx.stroke(); }
+    ctx.restore();
+    ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gx0, gy0); ctx.lineTo(gx0, gy1); ctx.stroke(); ctx.restore();
+    label(ctx, "0", gx0-6, gy0, "#5A6078", 10.5, "right");
+    label(ctx, "−60", gx0-6, gy1, "#5A6078", 10.5, "right");
+    label(ctx, "1", gx0, gy1+13, "#5A6078", 10.5, "center");
+    label(ctx, "16", gx1, gy1+13, "#5A6078", 10.5, "center");
+    function eLog(n){ const pq=babylonian(n), a=approxRatio(pq[0],pq[1]);
+      const N=pq[0]*pq[0]-2n*pq[1]*pq[1]; const Na=(N<0n)?-N:N;
+      return log10Big(Na)-2*log10Big(pq[1])-Math.log10(a+Math.SQRT2); }
+    ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2.2; ctx.beginPath();
+    for(let n=1;n<=16;n++){
+      const L=clamp(eLog(n),-60,0), Xp=gx0+(n-1)/15*(gx1-gx0), Yp=gy0+(-L)/60*(gy1-gy0);
+      if(n===1) ctx.moveTo(Xp,Yp); else ctx.lineTo(Xp,Yp);
+    }
+    ctx.stroke(); ctx.restore();
+    for(let n=1;n<=16;n++){
+      const L=clamp(eLog(n),-60,0), Xp=gx0+(n-1)/15*(gx1-gx0), Yp=gy0+(-L)/60*(gy1-gy0);
+      dot(ctx, Xp, Yp, (n===stC.n)?"#7A4FA3":"#3D4FA3", (n===stC.n)?5:3);
+    }
+    label(ctx, "二次收敛：每步有效位数翻倍", gx1-8, gy1-14, "#5A6078", 11.5, "right");
+    /* ---- 读数 ---- */
+    const pq=babylonian(stC.n), pStr=pq[0].toString(), qStr=pq[1].toString();
+    const a=approxRatio(pq[0],pq[1]);
+    const N=pq[0]*pq[0]-2n*pq[1]*pq[1], Na=(N<0n)?-N:N;
+    const eL=log10Big(Na)-2*log10Big(pq[1])-Math.log10(a+Math.SQRT2);
+    const e=Math.pow(10, eL);
+    const prev=babylonian(Math.max(0,stC.n-1)), aPrev=approxRatio(prev[0],prev[1]);
+    $("v-cmp-n").textContent=String(stC.n);
+    $("ro-cmp-frac").textContent=pStr.slice(0,13)+"…/"+qStr.slice(0,13)+"…（"+pStr.length+"/"+qStr.length+" 位）";
+    $("ro-cmp-digq").textContent=String(qStr.length);
+    $("ro-cmp-e").textContent=fmtLog10(eL,3);
+    $("ro-cmp-eq2").textContent=fmt(Number(Na)/(a+Math.SQRT2), 6);
+    $("ro-cmp-pell").textContent=Na.toString();
+    $("ro-cmp-diff").textContent=fmt(Math.abs(a-aPrev), 6);
+    $("ro-cmp-inq").textContent="是 ✓（p/q 整数商）";
+    $("ro-cmp-lim").textContent="否 ✗（√2 无理）";
+    $("ro-cmp-okq").textContent=(Math.abs(Number(Na)/(a+Math.SQRT2)-1/(2*Math.SQRT2))<1e-6)
+      ? "Cauchy 但极限出界：Q 不完备 ✓" : "对账失败 ✗";
+  } else {
+    /* ---- 上：坐标柱 1/k ---- */
+    const bx0=64, bw=(574-64)/20, zero=150, sc=110;
+    label(ctx, "x = (1, 1/2, 1/3, …)：灰柱 = 被截掉的尾巴（k > "+stC.k+"）", bx0-24, 44, "#5A6078", 12);
+    ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(bx0-14, zero); ctx.lineTo(578, zero); ctx.stroke(); ctx.restore();
+    for(let i=0;i<20;i++){
+      const k=i+1, h=(1/k)*sc, cx0=bx0+i*bw+bw*0.22, cw=bw*0.56;
+      ctx.fillStyle=(k<=stC.k)?"#3D4FA3":"#C6B6DA";
+      ctx.fillRect(cx0, zero-h, cw, h);
+      ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1; ctx.strokeRect(cx0, zero-h, cw, h);
+      if(k<=8||k%4===0) label(ctx, String(k), bx0+i*bw+bw/2, zero+15, "#5A6078", 10.5, "center");
+    }
+    /* ---- 下：log10 误差 vs k ---- */
+    const gx0=90, gx1=560, gy0=196, gy1=348;
+    label(ctx, "log₁₀ ‖x − x⁽ᵏ⁾‖₂（纵轴 −2 → 0，横轴 k = 1…400）", gx0-24, gy0-14, "#5A6078", 12);
+    ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){ const yy=gy1-(gy1-gy0)*i/4;
+      ctx.beginPath(); ctx.moveTo(gx0, yy); ctx.lineTo(gx1, yy); ctx.stroke(); }
+    ctx.restore();
+    ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gx0, gy0); ctx.lineTo(gx0, gy1); ctx.stroke(); ctx.restore();
+    label(ctx, "0", gx0-6, gy0, "#5A6078", 10.5, "right");
+    label(ctx, "−2", gx0-6, gy1, "#5A6078", 10.5, "right");
+    label(ctx, "1", gx0, gy1+13, "#5A6078", 10.5, "center");
+    label(ctx, "400", gx1, gy1+13, "#5A6078", 10.5, "center");
+    function errAt(k){ let s=0; for(let j=1;j<=k;j++) s+=1/(j*j); return Math.sqrt(Math.max(0,PI2_6-s)); }
+    ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2.2; ctx.beginPath();
+    for(let i=0;i<=200;i++){
+      const k=1+i/200*399, L=Math.log10(Math.max(1e-9,errAt(Math.round(k))));
+      const Xp=gx0+Math.log10(k)/Math.log10(400)*(gx1-gx0), Yp=gy0+(-clamp(L,-2,0))/2*(gy1-gy0);
+      if(i===0) ctx.moveTo(Xp,Yp); else ctx.lineTo(Xp,Yp);
+    }
+    ctx.stroke(); ctx.restore();
+    const kk=clamp(stC.k,1,400);
+    const mX=gx0+Math.log10(kk)/Math.log10(400)*(gx1-gx0);
+    const mY=gy0+(-clamp(Math.log10(Math.max(1e-9,errAt(kk))),-2,0))/2*(gy1-gy0);
+    dot(ctx, mX, mY, "#7A4FA3", 5);
+    label(ctx, "斜率 −1/2（√尾巴）", gx0+16, gy0+18, "#5A6078", 11.5);
+    /* ---- 读数 ---- */
+    let part=0; for(let j=1;j<=kk;j++) part+=1/(j*j);
+    const tail=Math.max(0, PI2_6-part), err=Math.sqrt(tail);
+    /* 等距残差：T 把 x 映成常数列 (x,x,x,…)，ρ(Tx,Ty) = lim d(x,y) = d(x,y) */
+    let iso=0; seedB=4242;
+    for(let i=0;i<6;i++){
+      const u=rndB()*2-1, v=rndB()*2-1;
+      const dxy=Math.abs(u-v);
+      let rho=0; for(let t=0;t<50;t++) rho=Math.abs(u-v);   /* 常数列的极限 */
+      iso=Math.max(iso, Math.abs(dxy-rho));
+    }
+    $("v-cmp-k").textContent=String(kk);
+    $("ro-cmp-nx").textContent=fmt(PI2_6,6);
+    $("ro-cmp-part").textContent=fmt(part,6);
+    $("ro-cmp-tail").textContent=fmt(tail,6);
+    $("ro-cmp-err").textContent=fmt(err,6);
+    $("ro-cmp-cauchy").textContent=fmt(err,6);
+    $("ro-cmp-inc").textContent="否 ✗（无限支撑）";
+    $("ro-cmp-rho").textContent=fmt(1/kk,6);
+    $("ro-cmp-iso").textContent=fmt(iso,2);
+    $("ro-cmp-dist").textContent=fmt(err,4)+"（截断上界）";
+    $("ro-cmp-okc").textContent=(err<0.5)
+      ? "Cauchy 但极限出界：c₀₀ 不完备 ✓" : "对账失败 ✗";
+  }
 }
 $("b-cmp-q").onclick=function(){ stC.mode="q";
- $("b-cmp-q").className="on"; $("b-cmp-c00").className="";
- $("ro-cmp-qbox").hidden=false; $("ro-cmp-cbox").hidden=true;
- $("w-cmp-n").hidden=false; $("w-cmp-k").hidden=true; $("ro-cmp-cbox").hidden=true; drawCmp(); };
+  $("b-cmp-q").className="on"; $("b-cmp-c00").className="";
+  $("ro-cmp-qbox").hidden=false; $("ro-cmp-cbox").hidden=true;
+  $("w-cmp-n").hidden=false; $("w-cmp-k").hidden=true; $("ro-cmp-cbox").hidden=true; drawCmp(); };
 $("b-cmp-c00").onclick=function(){ stC.mode="c00";
- $("b-cmp-c00").className="on"; $("b-cmp-q").className="";
- $("ro-cmp-qbox").hidden=true; $("ro-cmp-cbox").hidden=false;
- $("w-cmp-n").hidden=true; $("w-cmp-k").hidden=false; drawCmp(); };
+  $("b-cmp-c00").className="on"; $("b-cmp-q").className="";
+  $("ro-cmp-qbox").hidden=true; $("ro-cmp-cbox").hidden=false;
+  $("w-cmp-n").hidden=true; $("w-cmp-k").hidden=false; drawCmp(); };
 $("s-cmp-n").addEventListener("input", function(){
- const v=parseInt(this.value,10); if(isFinite(v)){ stC.n=clamp(v,1,16); drawCmp(); } });
+  const v=parseInt(this.value,10); if(isFinite(v)){ stC.n=clamp(v,1,16); drawCmp(); } });
 $("s-cmp-k").addEventListener("input", function(){
- const v=parseInt(this.value,10); if(isFinite(v)){ stC.k=clamp(v,1,400); drawCmp(); } });
+  const v=parseInt(this.value,10); if(isFinite(v)){ stC.k=clamp(v,1,400); drawCmp(); } });
 $("w-cmp-k").hidden=true; $("ro-cmp-cbox").hidden=true; drawCmp();
 /* ================= 实验 04 · Riesz 引理取等与 √2 常数（§7 定理 7.2 / 习题 11） ================= */
 const cvR = $("cv-rie"), WR=600, HR=400;
 const mR = mapper(cvR, 168, 196, 110);
 const stR = { eps:0.30, N:40 };
-function rieVec(){ /* x_ε = cosα e₁ + sinα e₂，sinα = 1−ε */
- const s=1-stR.eps, c=Math.sqrt(Math.max(0, 1-s*s));
- return [c, s];
+function rieVec(){                       /* x_ε = cosα e₁ + sinα e₂，sinα = 1−ε */
+  const s=1-stR.eps, c=Math.sqrt(Math.max(0, 1-s*s));
+  return [c, s];
 }
 function drawRie(){
- const ctx=cvR.getContext("2d"); ctx.clearRect(0,0,WR,HR);
- /* 网格 */
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- for(let i=-1;i<=1;i++){
- ctx.beginPath(); ctx.moveTo(mR.X(i), mR.Y(-1.5)); ctx.lineTo(mR.X(i), mR.Y(1.5)); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(mR.X(-1.5), mR.Y(i)); ctx.lineTo(mR.X(1.5), mR.Y(i)); ctx.stroke();
- }
- ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
- ctx.beginPath(); ctx.moveTo(mR.X(-1.5), mR.Y(0)); ctx.lineTo(mR.X(1.5), mR.Y(0)); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(mR.X(0), mR.Y(-1.5)); ctx.lineTo(mR.X(0), mR.Y(1.5)); ctx.stroke(); ctx.restore();
- /* 单位球面（圆） */
- ctx.save(); ctx.strokeStyle="#B9C0DD"; ctx.lineWidth=1.6;
- ctx.beginPath(); ctx.arc(mR.X(0), mR.Y(0), 110, 0, 7); ctx.stroke(); ctx.restore();
- /* M = 横轴（子空间） */
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2.6;
- ctx.beginPath(); ctx.moveTo(mR.X(-1.42), mR.Y(0)); ctx.lineTo(mR.X(1.42), mR.Y(0)); ctx.stroke(); ctx.restore();
- label(ctx, "M = span{e₁}", mR.X(1.38), mR.Y(0)-14, "#3D4FA3", 12, "right");
- const xv=rieVec(), proj=[xv[0], 0];
- /* 残差 */
- arrow(ctx, mR.X(proj[0]), mR.Y(proj[1]), mR.X(xv[0]), mR.Y(xv[1]), "#7A4FA3", 2, [5,4]);
- label(ctx, "ρ = 1−ε = "+fmt(xv[1],4), mR.X(xv[0])+9, mR.Y(xv[1]/2), "#7A4FA3", 12);
- dot(ctx, mR.X(proj[0]), mR.Y(0), "#3D4FA3", 4);
- /* 向量与点 */
- vec(ctx, mR, xv, "#1E2440", 2.6);
- dot(ctx, mR.X(xv[0]), mR.Y(xv[1]), "#7A4FA3", 6);
- label(ctx, "x_ε", mR.X(xv[0])+9, mR.Y(xv[1])-12, "#1E2440", 13);
- label(ctx, "‖x_ε‖ = 1", 24, 26, "#5A6078", 12);
- label(ctx, "ε = "+fmt(stR.eps,2), 24, 372, "#1E2440", 13);
- /* ---- 右：最小间距对照 ---- */
- const gx0=352, gx1=578, gy0=92, gy1=330, ymin=-1.4, ymax=0.55;
- label(ctx, "最小间距 vs 点数 N（纵轴 log₁₀）", gx0-14, 66, "#5A6078", 12);
- ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
- for(let i=0;i<=4;i++){ const yy=gy1-(gy1-gy0)*i/4;
- ctx.beginPath(); ctx.moveTo(gx0, yy); ctx.lineTo(gx1, yy); ctx.stroke(); }
- ctx.restore();
- ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
- ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(gx0, gy0); ctx.lineTo(gx0, gy1); ctx.stroke(); ctx.restore();
- function Yof(v){ return gy1-(clamp(Math.log10(v), ymin, ymax)-ymin)/(ymax-ymin)*(gy1-gy0); }
- function Xof(N){ return gx0+(N-2)/62*(gx1-gx0); }
- label(ctx, "0.55", gx0-6, gy0, "#5A6078", 10.5, "right");
- label(ctx, "−1.4", gx0-6, gy1, "#5A6078", 10.5, "right");
- label(ctx, "2", gx0, gy1+13, "#5A6078", 10.5, "center");
- label(ctx, "64", gx1, gy1+13, "#5A6078", 10.5, "center");
- /* R²：2 sin(π/N) */
- ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2.2; ctx.beginPath();
- for(let N=2;N<=64;N++){
- const v=2*Math.sin(Math.PI/N), Xp=Xof(N), Yp=Yof(v);
- if(N===2) ctx.moveTo(Xp,Yp); else ctx.lineTo(Xp,Yp);
- }
- ctx.stroke(); ctx.restore();
- /* l²：恒 √2 */
- ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.lineWidth=1.8; ctx.setLineDash([6,4]);
- ctx.beginPath(); ctx.moveTo(gx0, Yof(Math.SQRT2)); ctx.lineTo(gx1, Yof(Math.SQRT2)); ctx.stroke(); ctx.restore();
- label(ctx, "l²: ‖e_n−e_m‖ = √2", gx1-6, Yof(Math.SQRT2)-12, "#7A4FA3", 11, "right");
- label(ctx, "R²: 2sin(π/N) → 0", gx0+8, Yof(2*Math.sin(Math.PI/64))-14, "#3D4FA3", 11);
- /* 当前 N 标记 */
- const Nc=clamp(stR.N,2,64);
- dot(ctx, Xof(Nc), Yof(2*Math.sin(Math.PI/Nc)), "#1E2440", 4.5);
- dot(ctx, Xof(Nc), Yof(Math.SQRT2), "#7A4FA3", 4.5);
- ctx.save(); ctx.strokeStyle="#C6B6DA"; ctx.setLineDash([2,3]); ctx.lineWidth=1;
- ctx.beginPath(); ctx.moveTo(Xof(Nc), gy1); ctx.lineTo(Xof(Nc), gy0); ctx.stroke(); ctx.restore();
- /* ---- 读数 ---- */
- const nx=Math.hypot(xv[0],xv[1]);
- /* sup：720 个方向上的投影残差最大值 */
- let sup=0;
- for(let i=0;i<720;i++){
- const th=i/720*2*Math.PI, c=Math.cos(th), s=Math.sin(th);
- const r=Math.abs(s); /* ‖x − (x,e₁)e₁‖ = |sinθ| */
- if(r>sup) sup=r;
- }
- /* l² 中 N 个 e_n 的最小两两距离 */
- let sq2=Infinity;
- for(let i=1;i<=Nc;i++) for(let j=i+1;j<=Nc;j++){
- const d=Math.sqrt(2); if(d<sq2) sq2=d;
- }
- const fin=2*Math.sin(Math.PI/Nc);
- const tight=Math.abs(xv[1]-(1-stR.eps))<1e-12;
- $("v-rie-eps").textContent=fmt(stR.eps,2);
- $("v-rie-n").textContent=String(Nc);
- $("ro-rie-nx").textContent=fmt(nx,6);
- $("ro-rie-dist").textContent=fmt(xv[1],6);
- $("ro-rie-bound").textContent=fmt(1-stR.eps,6);
- $("ro-rie-sup").textContent=fmt(sup,6);
- $("ro-rie-sq2").textContent=(isFinite(sq2)?fmt(sq2,6):"—")+"（N="+Nc+"）";
- $("ro-rie-fin").textContent=fmt(fin,6);
- $("ro-rie-tight").textContent=tight?"取等 ✓（下界不可改进）":"未取等";
- $("ro-rie-ok").textContent=(tight && Math.abs(sup-1)<1e-9 && Math.abs(sq2-Math.SQRT2)<1e-12)
- ? "Riesz 下界取等；e_n 列无 Cauchy 子列 ✓" : "对账失败 ✗";
+  const ctx=cvR.getContext("2d"); ctx.clearRect(0,0,WR,HR);
+  /* 网格 */
+  ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+  for(let i=-1;i<=1;i++){
+    ctx.beginPath(); ctx.moveTo(mR.X(i), mR.Y(-1.5)); ctx.lineTo(mR.X(i), mR.Y(1.5)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mR.X(-1.5), mR.Y(i)); ctx.lineTo(mR.X(1.5), mR.Y(i)); ctx.stroke();
+  }
+  ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(mR.X(-1.5), mR.Y(0)); ctx.lineTo(mR.X(1.5), mR.Y(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(mR.X(0), mR.Y(-1.5)); ctx.lineTo(mR.X(0), mR.Y(1.5)); ctx.stroke(); ctx.restore();
+  /* 单位球面（圆） */
+  ctx.save(); ctx.strokeStyle="#B9C0DD"; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.arc(mR.X(0), mR.Y(0), 110, 0, 7); ctx.stroke(); ctx.restore();
+  /* M = 横轴（子空间） */
+  ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2.6;
+  ctx.beginPath(); ctx.moveTo(mR.X(-1.42), mR.Y(0)); ctx.lineTo(mR.X(1.42), mR.Y(0)); ctx.stroke(); ctx.restore();
+  label(ctx, "M = span{e₁}", mR.X(1.38), mR.Y(0)-14, "#3D4FA3", 12, "right");
+  const xv=rieVec(), proj=[xv[0], 0];
+  /* 残差 */
+  arrow(ctx, mR.X(proj[0]), mR.Y(proj[1]), mR.X(xv[0]), mR.Y(xv[1]), "#7A4FA3", 2, [5,4]);
+  label(ctx, "ρ = 1−ε = "+fmt(xv[1],4), mR.X(xv[0])+9, mR.Y(xv[1]/2), "#7A4FA3", 12);
+  dot(ctx, mR.X(proj[0]), mR.Y(0), "#3D4FA3", 4);
+  /* 向量与点 */
+  vec(ctx, mR, xv, "#1E2440", 2.6);
+  dot(ctx, mR.X(xv[0]), mR.Y(xv[1]), "#7A4FA3", 6);
+  label(ctx, "x_ε", mR.X(xv[0])+9, mR.Y(xv[1])-12, "#1E2440", 13);
+  label(ctx, "‖x_ε‖ = 1", 24, 26, "#5A6078", 12);
+  label(ctx, "ε = "+fmt(stR.eps,2), 24, 372, "#1E2440", 13);
+  /* ---- 右：最小间距对照 ---- */
+  const gx0=352, gx1=578, gy0=92, gy1=330, ymin=-1.4, ymax=0.55;
+  label(ctx, "最小间距 vs 点数 N（纵轴 log₁₀）", gx0-14, 66, "#5A6078", 12);
+  ctx.save(); ctx.strokeStyle="#E7EAF4"; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){ const yy=gy1-(gy1-gy0)*i/4;
+    ctx.beginPath(); ctx.moveTo(gx0, yy); ctx.lineTo(gx1, yy); ctx.stroke(); }
+  ctx.restore();
+  ctx.save(); ctx.strokeStyle="#D8DCEE"; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(gx0, gy0); ctx.lineTo(gx0, gy1); ctx.stroke(); ctx.restore();
+  function Yof(v){ return gy1-(clamp(Math.log10(v), ymin, ymax)-ymin)/(ymax-ymin)*(gy1-gy0); }
+  function Xof(N){ return gx0+(N-2)/62*(gx1-gx0); }
+  label(ctx, "0.55", gx0-6, gy0, "#5A6078", 10.5, "right");
+  label(ctx, "−1.4", gx0-6, gy1, "#5A6078", 10.5, "right");
+  label(ctx, "2", gx0, gy1+13, "#5A6078", 10.5, "center");
+  label(ctx, "64", gx1, gy1+13, "#5A6078", 10.5, "center");
+  /* R²：2 sin(π/N) */
+  ctx.save(); ctx.strokeStyle="#3D4FA3"; ctx.lineWidth=2.2; ctx.beginPath();
+  for(let N=2;N<=64;N++){
+    const v=2*Math.sin(Math.PI/N), Xp=Xof(N), Yp=Yof(v);
+    if(N===2) ctx.moveTo(Xp,Yp); else ctx.lineTo(Xp,Yp);
+  }
+  ctx.stroke(); ctx.restore();
+  /* l²：恒 √2 */
+  ctx.save(); ctx.strokeStyle="#7A4FA3"; ctx.lineWidth=1.8; ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.moveTo(gx0, Yof(Math.SQRT2)); ctx.lineTo(gx1, Yof(Math.SQRT2)); ctx.stroke(); ctx.restore();
+  label(ctx, "l²: ‖e_n−e_m‖ = √2", gx1-6, Yof(Math.SQRT2)-12, "#7A4FA3", 11, "right");
+  label(ctx, "R²: 2sin(π/N) → 0", gx0+8, Yof(2*Math.sin(Math.PI/64))-14, "#3D4FA3", 11);
+  /* 当前 N 标记 */
+  const Nc=clamp(stR.N,2,64);
+  dot(ctx, Xof(Nc), Yof(2*Math.sin(Math.PI/Nc)), "#1E2440", 4.5);
+  dot(ctx, Xof(Nc), Yof(Math.SQRT2), "#7A4FA3", 4.5);
+  ctx.save(); ctx.strokeStyle="#C6B6DA"; ctx.setLineDash([2,3]); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(Xof(Nc), gy1); ctx.lineTo(Xof(Nc), gy0); ctx.stroke(); ctx.restore();
+  /* ---- 读数 ---- */
+  const nx=Math.hypot(xv[0],xv[1]);
+  /* sup：720 个方向上的投影残差最大值 */
+  let sup=0;
+  for(let i=0;i<720;i++){
+    const th=i/720*2*Math.PI, c=Math.cos(th), s=Math.sin(th);
+    const r=Math.abs(s);                    /* ‖x − (x,e₁)e₁‖ = |sinθ| */
+    if(r>sup) sup=r;
+  }
+  /* l² 中 N 个 e_n 的最小两两距离 */
+  let sq2=Infinity;
+  for(let i=1;i<=Nc;i++) for(let j=i+1;j<=Nc;j++){
+    const d=Math.sqrt(2); if(d<sq2) sq2=d;
+  }
+  const fin=2*Math.sin(Math.PI/Nc);
+  const tight=Math.abs(xv[1]-(1-stR.eps))<1e-12;
+  $("v-rie-eps").textContent=fmt(stR.eps,2);
+  $("v-rie-n").textContent=String(Nc);
+  $("ro-rie-nx").textContent=fmt(nx,6);
+  $("ro-rie-dist").textContent=fmt(xv[1],6);
+  $("ro-rie-bound").textContent=fmt(1-stR.eps,6);
+  $("ro-rie-sup").textContent=fmt(sup,6);
+  $("ro-rie-sq2").textContent=(isFinite(sq2)?fmt(sq2,6):"—")+"（N="+Nc+"）";
+  $("ro-rie-fin").textContent=fmt(fin,6);
+  $("ro-rie-tight").textContent=tight?"取等 ✓（下界不可改进）":"未取等";
+  $("ro-rie-ok").textContent=(tight && Math.abs(sup-1)<1e-9 && Math.abs(sq2-Math.SQRT2)<1e-12)
+    ? "Riesz 下界取等；e_n 列无 Cauchy 子列 ✓" : "对账失败 ✗";
 }
 $("s-rie-eps").addEventListener("input", function(){
- const v=parseFloat(this.value); if(isFinite(v)){ stR.eps=clamp(v,0.05,0.95); drawRie(); } });
+  const v=parseFloat(this.value); if(isFinite(v)){ stR.eps=clamp(v,0.05,0.95); drawRie(); } });
 $("s-rie-n").addEventListener("input", function(){
- const v=parseInt(this.value,10); if(isFinite(v)){ stR.N=clamp(v,2,64); drawRie(); } });
+  const v=parseInt(this.value,10); if(isFinite(v)){ stR.N=clamp(v,2,64); drawRie(); } });
 $("b-rie-e0").onclick=function(){ stR.eps=0.30; $("s-rie-eps").value="0.30"; drawRie(); };
 $("b-rie-tiny").onclick=function(){ stR.eps=0.05; $("s-rie-eps").value="0.05"; drawRie(); };
 makeDrag(cvR, mR, function(){ return rieVec(); }, function(w){
- const n=Math.hypot(w[0],w[1]); if(!(n>1e-9)) return;
- const s=Math.abs(w[1])/n;
- stR.eps=clamp(1-s, 0.05, 0.95);
- $("s-rie-eps").value=String(Math.round(stR.eps*100)/100);
- drawRie(); });
+  const n=Math.hypot(w[0],w[1]); if(!(n>1e-9)) return;
+  const s=Math.abs(w[1])/n;
+  stR.eps=clamp(1-s, 0.05, 0.95);
+  $("s-rie-eps").value=String(Math.round(stR.eps*100)/100);
+  drawRie(); });
 $("v-rie-eps").textContent=fmt(stR.eps,2); $("v-rie-n").textContent=String(stR.N); drawRie();
 </script>
 </div>

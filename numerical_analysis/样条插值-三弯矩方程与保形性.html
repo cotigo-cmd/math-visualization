@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>样条插值 · 数值分析 第 2.6 讲</title>
+<!--
+ 维护说明（给未来的自己）：
+ 1. 内容骨架：样条的力学来源（Euler-Bernoulli 梁、模线）· 泛函 J(f)=∫(f'')² 的极小解（引理 1、定理 2）·
+    S⁽⁴⁾=0 推出「分段三次 + C²」· 定义 1（k 次样条）· 三弯矩法 (2.19)–(2.23) · 四类边界
+    （第一型固支、第二型/自然、第三型周期、Not-A-Knot）· 严格对角占优 + 追赶法 · 定理 1 的 Cₖ h^{4−k} ·
+    例 1（自然，4 点）· 例 2（固支 y'₀=0.2、y'₃=−1）· 简支梁 y⁗=δ(x−1) 与自然样条的一致性。
+ 2. 页内每个数字都由工作区根目录 _probe_na26.js / _probe_na26b.js 实测，闸门 verify_na26.js 换一条路复核
+    （闸门用「解 4n 个系数的全局方程组」而非三弯矩方程，Independent 路）。
+ 3. 与课件的分歧（页内第 05 节如实写出）：定理 1 的常数 Cₖ 只在边界条件与 f 相容时给出 h^{4−k}。
+    f''(a)≠0 时自然样条的全长误差退化为 O(h²)、k=2 完全不收敛（误差恒 = ‖f''‖ 端点值），
+    实测 e₀/(‖f⁗‖h⁴) 从 0.175 涨到 3217（每倍 n 涨 4 倍），超过 5/384 的界 15 倍以上。
+ 4. 公式改动后跑 `node ../../verify_formulas.js 样条插值-三弯矩方程与保形性.html`（要求 0 failed）；
+    行间公式只能用 $$，正文与公式里的 < 写成 &lt;。
+ 5. 与邻页分工：分段三次 Hermite 的构造、重结点差商在 2.4 讲页；分段的一般理论（支集、一致收敛）在 2.5 讲页；
+    本页只做「让二阶导也连续」这一步带来的三对角方程组与它的两个代价（边界、保形）。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false },
+  startup: { pageReady: function(){ document.body.classList.add("mjx-ready"); return MathJax.startup.defaultPageReady(); } }
+};
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+ --paper:#faf7f1; --sheet:#fffdf8; --ink:#23201a; --muted:#6d665a;
+ --line:#e3dccd; --line-2:#cfc6b2;
+ --orange:#c2531f; --orange-soft:#fbeee5;
+ --teal:#0d6b5d; --teal-soft:#e7f3ef;
+ --ch:#7d5a24; --ch-soft:#f4ecda;
+ --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ --ghost:rgba(160,148,124,.16);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);
+ background:
+ linear-gradient(var(--ghost) 1px,transparent 1px) 0 0/100% 28px,
+ linear-gradient(90deg,var(--ghost) 1px,transparent 1px) 0 0/28px 100%,
+ var(--paper);
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px 90px}
+a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(13,107,93,.3)}
+a:hover{border-bottom-color:var(--teal)}
+h1{font-size:29px;line-height:1.32;margin:0 0 10px;font-weight:650;letter-spacing:-.01em}
+h2{font-size:21px;margin:66px 0 14px;font-weight:650;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2 .no{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ch);
+ border:1px solid rgba(125,90,36,.36);border-radius:999px;padding:2px 9px;font-weight:500;white-space:nowrap}
+h3{font-size:16.5px;margin:32px 0 8px;font-weight:650}
+p{margin:12px 0;max-width:74ch}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.hero{padding:58px 0 6px}
+.hero p.lead{font-size:16.5px;color:#4a4438;max-width:74ch}
+#mjx-offline{display:none;margin:0 0 4px;padding:9px 16px;background:#fff4d6;border:1px solid #e8cf92;
+ border-radius:8px;font-size:13.5px;color:#6b5417}
+body:not(.mjx-ready) #mjx-offline{display:block}
+nav{position:sticky;top:0;z-index:20;margin:26px 0 0;
+ background:rgba(250,247,241,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .inner{max-width:900px;margin:0 auto;padding:9px 22px;display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
+nav a{color:var(--muted);border:0}
+nav a:hover{color:var(--ch)}
+
+.glance{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0 6px}
+.glance div{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.glance b{display:block;font-family:var(--mono);font-size:21px;font-weight:600;line-height:1.25;letter-spacing:-.02em}
+.glance span{font-size:12.5px;color:var(--muted);display:block;margin-top:3px}
+.glance .a b{color:var(--orange)}
+.glance .b b{color:var(--teal)}
+.glance .c b{color:var(--ch)}
+
+.lab{background:var(--sheet);border:1px solid var(--line);border-radius:14px;
+ padding:16px 16px 12px;margin:18px 0 8px;box-shadow:0 1px 0 rgba(35,32,26,.03)}
+.lab-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.lab-head .t{font-size:12.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted)}
+canvas{display:block;width:100%;border-radius:8px;background:#fff;border:1px solid var(--line)}
+#cv-j{height:390px}
+#cv-s{height:300px}
+#cv-m{height:230px}
+#cv-ex{height:330px}
+#cv-loc{height:330px}
+#cv-bc{height:370px}
+#cv-shape{height:360px}
+.ctrls{display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin:12px 2px 8px;font-size:13.5px}
+.ctrls .grp{display:flex;align-items:center;gap:9px}
+.ctrls .grp .lbl{color:var(--muted);font-size:12.5px;font-family:var(--mono)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:150px;height:3px;border-radius:3px;
+ background:var(--line-2);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+ background:var(--orange);border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--orange);
+ border:2px solid #fff;cursor:pointer}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;padding:5px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line-2)}
+.seg button[aria-pressed=true]{background:var(--ch-soft);color:var(--ch);font-weight:600}
+.reads{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+ border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+.reads div{background:#fffdf8;padding:10px 12px}
+.reads .k{font-size:11.5px;color:var(--muted)}
+.reads .v{font-family:var(--mono);font-size:15.5px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+.reads .v.orange{color:var(--orange)}
+.reads .v.teal{color:var(--teal)}
+.reads .v.ch{color:var(--ch)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:9px 2px 0}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:20px;height:0;border-top:2.2px solid var(--orange);border-radius:2px}
+.legend i.teal{border-color:var(--teal)}
+.legend i.ch{border-color:var(--ch)}
+.legend i.gray{border-top:1.6px solid rgba(109,102,90,.45)}
+.legend i.graydash{border-top:1.4px dashed rgba(109,102,90,.45)}
+.legend i.dot{border-top:0;border-radius:50%;width:8px;height:8px;background:var(--orange)}
+.hint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+
+.eq{font-size:17px;text-align:center;margin:18px 0;padding:12px 16px;background:var(--sheet);
+ border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{min-width:0!important;max-width:100%!important;
+ overflow-x:auto;overflow-y:hidden;padding:2px 0;text-align:center}
+mjx-container[jax="SVG"]:not([display="true"]){max-width:100%}
+mjx-container[jax="SVG"]:not([display="true"]) svg{max-width:100%;height:auto}
+mjx-assistive-mml{position:absolute!important;width:1px;height:1px;overflow:hidden!important;clip:rect(1px,1px,1px,1px)}
+.note{border-left:3px solid var(--orange);background:var(--orange-soft);padding:10px 16px;margin:16px 0;
+ border-radius:0 8px 8px 0;font-size:14.5px}
+.note.teal{border-left-color:var(--teal);background:var(--teal-soft)}
+.note.ch{border-left-color:var(--ch);background:var(--ch-soft)}
+.note p{margin:6px 0}
+table{width:100%;border-collapse:collapse;font-size:13.7px;margin:16px 0;background:var(--sheet)}
+th,td{border-bottom:1px solid var(--line);padding:7px 10px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:12.5px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line-2)}
+td.mono,th.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.hi td{background:var(--ch-soft)}
+ul,ol{max-width:74ch}
+li{margin:5px 0}
+footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line-2);font-size:12.8px;color:var(--muted)}
+footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var(--line);
+ border-radius:4px;padding:0 5px;font-size:12px}
+@media (max-width:680px){
+ #cv-j{height:320px} #cv-s{height:250px} #cv-m{height:200px}
+ #cv-ex{height:280px} #cv-loc{height:280px} #cv-bc{height:300px} #cv-shape{height:300px}
+ .glance{grid-template-columns:1fr}
+ .reads{grid-template-columns:repeat(2,1fr)}
+ h1{font-size:24px}
+ table{font-size:12.1px}
+ th,td{padding:6px 6px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+<p class="crumb" style="font-size:13px;margin:0 0 18px"><a href="./index.html">← 数值分析 · 全部讲次</a></p>
+<p class="kicker">数值分析 · 第 2.6 讲 · 样条插值</p>
+<h1>样条插值：从压铁下的木条，到一条三对角方程组</h1>
+<p class="lead">本节开头是一张手艺人的图：模线员把一根有弹性的窄木条用压铁压在一组型值点上，木条自己弯成光顺曲线。这根木条满足 \(y^{(4)}=M/EI\)——载荷加在哪儿，四阶导就在哪儿跳一下。<strong>样条不是某个多项式的公式，而是一个变分问题的解</strong>：在所有插值函数里挑弯曲能量最小的那条。把这件事写成代数，就是 \(n+1\) 个未知的弯矩 \(M_i=S''(x_i)\) 加上 \(n-1\) 个方程，系数矩阵三对角、严格对角占优、条件数不超过 3。这条方程组很漂亮，但它有两处代价，本页都会实测出来：<strong>自然边界在 \(f''\neq0\) 时把精度从 \(h^4\) 打回 \(h^2\)</strong>；<strong>\(C^2\) 光滑与保形互斥，边界层函数上有 45% 的区间连单调方向都是反的</strong>。</p>
+<div id="mjx-offline">公式渲染脚本未加载（离线打开时 MathJax 需要联网）。本页正文与读数不受影响。</div>
+
+<div class="glance">
+ <div class="a"><b>0.0026</b><span>固支样条实测 \(e/(\lVert f^{(4)}\rVert h^4)\)，界 \(1/16\) 的 4%</span></div>
+ <div class="b"><b>3.00</b><span>内部三对角系统的 \(\kappa_\infty\)：\(n\) 从 4 涨到 64 时恒 \(\le 3\)</span></div>
+ <div class="c"><b>0.268</b><span>改一个数据点后 \(\Delta M\) 的逐点衰减比 \(=2-\sqrt3\)</span></div>
+</div>
+
+<nav><div class="inner">
+<a href="#s1">01 从木条到变分</a>
+<a href="#s2">02 三弯矩方程</a>
+<a href="#s3">03 三个算例</a>
+<a href="#s4">04 局部性</a>
+<a href="#s5">05 边界的代价</a>
+<a href="#s6">06 保形性</a>
+</div></nav>
+</div>
+
+<!-- ================= 01 ================= -->
+<h2 id="s1"><span class="no">01</span>从压铁下的木条，到「弯曲能量最小」</h2>
+
+<p>
+把木条看成 Euler–Bernoulli 梁。曲率 \(\kappa\) 与弯矩 \(M\) 成正比、与抗弯刚度 \(EI\) 成反比，小形变下 \(\kappa\approx y''\)，于是 \(M(x)=EI\,y''(x)\)。没有集中载荷的段上，弯矩是线性的，等价于
+</p>
+$$y^{(4)}(x)=0 .$$
+<p>
+这句话就是三次样条的出生证明：<strong>四阶导为零 ⟹ 每段是三次多项式</strong>。而弯矩连续（\(M=EIy''\) 是内力，不许跳）给出二阶导连续；转角 \(y'\) 连续给出<strong>一阶导连续</strong>。三条合起来，就是「分段三次 + \(C^2\)」。反过来，集中载荷压在哪个结点，四阶导就在那里跳一下——第 03 节的简支梁算例会把这条物理事实变成一个可核验的读数。
+</p>
+
+<p>
+从「木条会怎样弯」到「数学上该选哪条曲线」，中间差一句变分原理：弹性梁的弯曲能量正比于曲率的平方积分，所以
+</p>
+$$J(f)=\int_a^b\bigl(f''(x)\bigr)^2\,dx .$$
+<p>
+在所有 \(C^2\)、过全部型值点的函数里让 \(J\) 最小，解就是样条。判据是一条正交性（引理 1）：\(S\) 是极小解的充要条件是对任意「在结点处为零、端点导数为零」的 \(\eta\) 都有
+</p>
+$$\int_a^b \eta''(x)\,S''(x)\,dx=0 .$$
+<p>
+证明只用了展开 \((S+\beta\eta)''^{\,2}\) 后交叉项配平方这一步：\(J(S+\beta\eta)=J(S)+\beta^2\int(\eta'')^2\)，交叉项被正交性消掉，所以 \(J\) 在 \(\beta=0\) 取到极小，且增量恰好是 \(\beta^2\int(\eta'')^2\)——一条开口向上的抛物线，顶点永远在原点。下面这台实验就把这条抛物线画出来。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 01 · 弯曲能量 \(J\) 在样条处取极小：抛物线顶点锁在 β = 0</span>
+ <span class="t" id="j-state">β = 0.60</span>
+ </div>
+ <canvas id="cv-j" aria-label="左：自然样条与扰动族；右：J(β) 的抛物线"></canvas>
+ <div class="legend">
+ <span><i class="graydash"></i>f(x) = sin x</span>
+ <span><i class="ch"></i>自然样条 S（J 最小）</span>
+ <span><i class="teal"></i>固支样条 S_c（同数据，端点导数给定）</span>
+ <span><i></i>S + β (S_c − S)</span>
+ <span><i class="dot"></i>结点</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">β</span>
+ <input type="range" id="j-b" min="-1.2" max="1.2" step="0.02" value="0.6" aria-label="扰动系数 β">
+ <span class="lbl" id="j-bv">0.60</span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">J(S) 弯曲能量</div><div class="v ch" id="j-j0">0.2385</div></div>
+ <div><div class="k">J(S + βη) 当前</div><div class="v orange" id="j-jb">0.2508</div></div>
+ <div><div class="k">ΔJ / β²（应恒 = ∫η″²）</div><div class="v teal" id="j-jq">0.03422</div></div>
+ <div><div class="k">抛物线顶点 β*</div><div class="v teal" id="j-star">0.0000</div></div>
+ </div>
+ <p class="hint">\(\eta=S_c-S\) 在六个结点上全为 0（两条样条插同一组数据），所以它属于引理 1 允许的扰动集合。\(\beta\) 拖到 \(+1\) 得 \(J=0.272675\)（固支样条），拖到 \(-1\) 得同一个数——<strong>关于 \(\beta=0\) 严格对称</strong>，线性项 \((J(1)-J(-1))/2\) 实测 \(3.6\times10^{-13}\)，是机器零。这不是巧合：它证明交叉项确实是 0，也就是「自然样条在所有插值样条里弯曲能量最小」。\(J\) 用 \(\int(S'')^2\) 的解析式算，\(S''\) 分段线性 ⟹ 每段 \(h(M_i^2+M_iM_{i+1}+M_{i+1}^2)/3\)，无积分误差。</p>
+</div>
+
+<p>
+顺带得到一个可以记住的判据：<strong>自然样条是「最不弯」的插值曲线</strong>。它的两个端点弯矩被强行设成 0（\(S''(a)=S''(b)=0\)），这正是「简支端」的力学条件——端部不承受弯矩。所以自然样条 = 两端简支的梁。这也解释了后面第 05 节的代价：如果真函数在端点处明明有曲率（\(f''\neq0\)），你硬把端部弯矩拧成 0，梁就得在端点附近多弯一点来补偿。
+</p>
+
+<h3>维数：为什么未知量是 \(n+1\) 个而不是 \(4n\) 个</h3>
+<p>
+\(n\) 段、每段 4 个系数，看着是 \(4n\) 个自由度。但要 \(C^2\)：每个内部结点给 3 个连续性条件（\(S,S',S''\)），共 \(3(n-1)\) 个；插值条件 \(n+1\) 个。净剩 \(4n-3(n-1)-(n+1)=2\) 个自由度——正好对应两个边界条件。这就是「三弯矩方程组有 \(n-1\) 个内部方程 + 2 个边界方程」的来源；也说清了为什么边界条件不是「补充说明」，而是<strong>构成解的一部分</strong>：没有它，样条不唯一。
+</p>
+
+<!-- ================= 02 ================= -->
+<h2 id="s2"><span class="no">02</span>三弯矩方程：把 C² 条件压成一条三对角系统</h2>
+
+<p>
+构造有两条等价的路。三转角法拿 \(m_i=S'(x_i)\) 当未知量，写出 \((1-\lambda_i)m_{i-1}+2m_i+\lambda_i m_{i+1}=\mu_i\)，其中 \(\lambda_i=\Delta x_{i-1}/(\Delta x_{i-1}+\Delta x_i)\)，\(\mu_i=3[(1-\lambda_i)f[x_{i-1},x_i]+\lambda_i f[x_i,x_{i+1}]]\)。<strong>三弯矩法</strong>改拿 \(M_i=S''(x_i)\) 当未知量，好处是 \(S''\) 在相邻结点之间是线性的，插值条件可以直接积分出闭式：
+</p>
+$$S(x)=M_{i-1}\frac{(x_i-x)^3}{6\Delta x_{i-1}}+M_i\frac{(x-x_{i-1})^3}{6\Delta x_{i-1}}
++\Bigl(y_{i-1}-\frac{M_{i-1}\Delta x_{i-1}^2}{6}\Bigr)\frac{x_i-x}{\Delta x_{i-1}}
++\Bigl(y_i-\frac{M_i\Delta x_{i-1}^2}{6}\Bigr)\frac{x-x_{i-1}}{\Delta x_{i-1}} .$$
+<p>
+对它求一阶导，再要求结点两侧的导数相等（这就是剩下的那个 \(C^1\) 条件），得到
+</p>
+$$\lambda_i M_{i-1}+2M_i+(1-\lambda_i)M_{i+1}=d_i,\qquad d_i=6f[x_{i-1},x_i,x_{i+1}] .$$
+<p>
+右端是<strong>二阶差商乘 6</strong>——插值的三次多项式上它恒为 0，所以「数据几乎落在一条三次曲线上」时 \(M\) 系统几乎是齐次的。<strong>\(\lambda_i+2+(1-\lambda_i)=3\)</strong>，对角元 2 恰好等于两非对角元之和；这就是严格对角占优，也是后面条件数不超过 3 的原因（\(\lVert A^{-1}\rVert_\infty\le 1/2\) 一类估计的来源）。
+</p>
+
+<p>四类边界条件各自给首末两行：</p>
+<ul>
+<li><strong>第一型（固支）</strong>：给定 \(S'(a)=y_0'\)、\(S'(b)=y_n'\)，得 \(2M_0+M_1=6(f[x_0,x_1]-y_0')/\Delta x_0\)，末行对称。</li>
+<li><strong>第二型</strong>：给定端点二阶导 \(M_0,M_n\)；取 \(0\) 即<strong>自然样条</strong>，此时首末两行退化为 \(M_0=0\)、\(M_n=0\)，方程组少两个未知量。</li>
+<li><strong>第三型（周期）</strong>：\(M_0=M_n\) 且首末方程联立，矩阵变成循环三对角。</li>
+<li><strong>Not-A-Knot</strong>：要求 \(S'''\) 在 \(x_1\)、\(x_{n-1}\) 处连续，即首两段是同一条三次多项式。<strong>它不需要任何导数或二阶导数据</strong>，是 MATLAB <code>csape</code> 与 <code>spline</code> 的默认边界。本页实测首两段的 x 幂基系数差为 \(4.4\times10^{-16}\)（8 点等距）与 \(1.8\times10^{-15}\)（非等距），这条恒等式可以直接当核验用。</li>
+</ul>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 02 · 三弯矩方程组：拖 n 看三对角矩阵怎么长出来，追赶法怎么解</span>
+ <span class="t" id="s-state">n = 8 · 自然</span>
+ </div>
+ <canvas id="cv-s" aria-label="三次样条曲线与数据点"></canvas>
+ <canvas id="cv-m" aria-label="弯矩 M 的分段线性折线（即 S 的二阶导）" style="margin-top:8px"></canvas>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">子区间数 n</span>
+ <input type="range" id="s-n" min="2" max="16" step="1" value="8" aria-label="子区间数">
+ <span class="lbl" id="s-nv">8</span>
+ </div>
+ <div class="grp">
+ <span class="lbl">边界</span>
+ <span class="seg">
+ <button id="s-b0" aria-pressed="true">自然</button>
+ <button id="s-b1" aria-pressed="false">固支</button>
+ <button id="s-b2" aria-pressed="false">Not-A-Knot</button>
+ </span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">max |Mᵢ| = max |S″|</div><div class="v orange" id="s-maxm">—</div></div>
+ <div><div class="k">max |S − f|</div><div class="v teal" id="s-err">—</div></div>
+ <div><div class="k">追赶法 vs 稠密解 最大差</div><div class="v ch" id="s-gap">—</div></div>
+ <div><div class="k">结点处 S′ 的左右跳变</div><div class="v teal" id="s-jump">—</div></div>
+ </div>
+ <p class="hint">下面那块画的是 \(M\) 的折线——它同时是 \(S''\) 的图像。注意 <strong>\(S'''\) 在结点处是跳的</strong>（折线的斜率跳变），这正是「集中载荷」在梁模型里的位置；第 03 节会把跳变量与载荷数值对上。自然边界下两端 \(M=0\)，所以折线从 0 出发、回到 0；固支边界下端点 \(M\) 由数据决定，通常不为 0。</p>
+</div>
+
+<p>
+矩阵是严格对角占优的三对角，用追赶法 \(O(n)\) 求解：前推算 \(c'_i=c_i/(b_i-a_ic'_{i-1})\)，再回代。实测它与直接稠密解的差在 \(10^{-14}\) 量级（就是舍入），说明这里<strong>没有</strong>需要主元的危险——和第 5 章要讲的高斯消元形成对照：系数矩阵的结构（占优）比算法本身更能决定稳定性。
+</p>
+
+$$
+\begin{aligned}
+\lambda_i&=\frac{\Delta x_{i-1}}{\Delta x_{i-1}+\Delta x_i}, &
+d_i&=6\,\frac{\dfrac{y_{i+1}-y_i}{\Delta x_i}-\dfrac{y_i-y_{i-1}}{\Delta x_{i-1}}}{\Delta x_{i-1}+\Delta x_i},\\
+\lambda_i&+2+(1-\lambda_i)=3\ \Rightarrow\ \text{严格对角占优}, &
+\kappa_\infty(A)&\le 3\ \text{（与 }n\text{ 无关，实测见下）}.
+\end{aligned}
+$$
+
+<table>
+<thead><tr><th>内部未知量个数 \(m=n-1\)</th><th class="mono">3</th><th class="mono">7</th><th class="mono">15</th><th class="mono">31</th><th class="mono">63</th></tr></thead>
+<tbody>
+<tr><td>\(\lVert A^{-1}\rVert_\infty\)（实测）</td><td class="mono">0.857</td><td class="mono">0.990</td><td class="mono">0.99995</td><td class="mono">1.00000</td><td class="mono">1.00000</td></tr>
+<tr><td>\(\kappa_\infty=3\lVert A^{-1}\rVert_\infty\)</td><td class="mono">2.571</td><td class="mono">2.969</td><td class="mono">3.000</td><td class="mono">3.000</td><td class="mono">3.000</td></tr>
+</tbody>
+</table>
+
+<p>
+这张表值得单独看一眼：网格从 4 段加密到 64 段，条件数<strong>不涨</strong>。对比第 5 章里差分矩阵的条件数按 \(n^2\) 涨，这里的三对角系统是「良态到几乎理想」。这就是样条能成为工程标配的数值理由——不只是光滑，而是光滑的代价只有 \(O(n)\) 次运算。
+</p>
+
+<!-- ================= 03 ================= -->
+<h2 id="s3"><span class="no">03</span>三个算例：把 M 解出来，再看它和物理量对不对得上</h2>
+
+<p>
+手算一次比读十遍公式有用。下面三组数据分别是：<strong>例 1</strong> 四点的自然样条（点 \( (1,1),(2,1/2),(3,1/3),(4,1/4) \)，数据来自 \(1/x\)，是条凸曲线）；<strong>例 2</strong> 四点的固支样条（端点斜率给定 \(y_0'=0.2\)、\(y_3'=-1\)）；<strong>简支梁</strong> 一个真实力学问题——长 2 的梁在 \(x=1\) 受单位集中力，受载点的挠度可以解析算出是 \(-1/6\)，把它当型值点喂给自然样条，看能不能复原整条挠度曲线。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 03 · 三个算例：M 的解、每段的三次系数、物理量的核对</span>
+ <span class="t" id="ex-state">例 1 · 自然</span>
+ </div>
+ <canvas id="cv-ex" aria-label="算例的样条曲线与数据点"></canvas>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">算例</span>
+ <span class="seg">
+ <button id="ex-b0" aria-pressed="true">例 1 · 自然</button>
+ <button id="ex-b1" aria-pressed="false">例 2 · 固支</button>
+ <button id="ex-b2" aria-pressed="false">简支梁</button>
+ </span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k" id="ex-k1">M 的解</div><div class="v orange" id="ex-m">—</div></div>
+ <div><div class="k" id="ex-k2">与参考值最大差</div><div class="v teal" id="ex-gap">—</div></div>
+ <div><div class="k" id="ex-k3">S‴ 在 x = 1 处的跳变</div><div class="v ch" id="ex-jump">—</div></div>
+ <div><div class="k" id="ex-k4">插值残差 max|S(xᵢ) − yᵢ|</div><div class="v teal" id="ex-res">—</div></div>
+ </div>
+ <div id="ex-tbl" style="margin-top:10px"></div>
+ <p class="hint">表格给的是每段在局部坐标 \(t=x-x_i\) 下的系数，即 \(S=a_3t^3+a_2t^2+a_1t+a_0\)。例 1 与前式给出的分段表达式逐项相差 \(2.2\times10^{-16}\)；例 2 的 \(M=(-0.36,\ 2.52,\ -3.72,\ 0.36)\) 与直接解方程的结果差 \(4.4\times10^{-16}\)。<strong>简支梁这一格是本页最漂亮的核对</strong>：自然样条的解与解析挠度在全区间上相差 \(4.5\times10^{-17}\)——不是「接近」，是在浮点意义下同一条曲线。原因在 01 节已经埋好：简支梁的精确解本身满足 \(y''(0)=y''(2)=0\)，它<strong>就是</strong>那条自然样条。</p>
+</div>
+
+<p>
+简支梁还提供一个纯物理的读数：受载点两侧的剪力（\(=EIy'''\)）跳变等于载荷 \(F\)。实测 \(S'''(1^-)-S'''(1^+)=1.0000\)，与 \(F=1\) 完全一致。这条关系是「四阶导为零的分段三次」与「弯矩连续、剪力跳变」之间的一一对应，也是判断任何样条实现对不对的<strong>结构性</strong>核验（比只看曲线顺眼强得多）。
+</p>
+
+<div class="note ch">
+<p><strong>例 1 的几何读法。</strong>\(M=(0,\ \tfrac12,\ 0,\ 0)\)：只有 \(x=2\) 那一点有正的弯矩，两端与 \(x=3\) 都是 0。曲线在 \(x=2\) 附近上凸，之后到 \(x=4\) 完全退化成直线段——这就是最后一段系数里 \(a_3=a_2=0\) 的含义。\(1/x\) 在 \([\tfrac14,1]\) 上本来处处有曲率，自然边界却把两端曲率按成 0，于是曲率全挤到中间那个结点上。这条「曲率被边界挤到中部」的机制，第 05 节会量化成误差阶的退化。</p>
+</div>
+
+<!-- ================= 04 ================= -->
+<h2 id="s4"><span class="no">04</span>局部性：看起来只动三格，实际按 \(0.268^{d}\) 衰减到全线</h2>
+
+<p>
+第 2.5 节讲分段插值时强调过：分段基函数的支撑只有两三格，改一个数据点只动自己那一段。样条不是这样——三对角系统的逆是<strong>稠密</strong>的，改一个 \(y_k\) 会同时改动所有的 \(M_i\)。但衰减极快，所以日常使用中「感觉是局部的」。多快？等距网格上三对角系统的差分方程特征根正好是 \(2-\sqrt3=0.2679\)，每一步衰减到四分之一强。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 04 · 改一个数据点：ΔM 的符号交替与 0.268 倍衰减</span>
+ <span class="t" id="loc-state">k = 5 · δ = +1.00</span>
+ </div>
+ <canvas id="cv-loc" aria-label="改一个数据点后弯矩增量的衰减，以及对曲线的影响"></canvas>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">改哪一点 k</span>
+ <input type="range" id="loc-k" min="1" max="9" step="1" value="5" aria-label="结点序号">
+ <span class="lbl" id="loc-kv">5</span>
+ </div>
+ <div class="grp">
+ <span class="lbl">增量 δ</span>
+ <input type="range" id="loc-d" min="-1" max="1" step="0.05" value="1" aria-label="数据增量">
+ <span class="lbl" id="loc-dv">+1.00</span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">|ΔM| 在 k 处</div><div class="v orange" id="loc-m0">—</div></div>
+ <div><div class="k">|ΔM| 在 k+3 段</div><div class="v teal" id="loc-m3">—</div></div>
+ <div><div class="k">相邻比 |ΔM_{i+1}/ΔM_i|（远离 k）</div><div class="v ch" id="loc-rat">—</div></div>
+ <div><div class="k">5 段之外的 max|ΔS|</div><div class="v orange" id="loc-far">—</div></div>
+ </div>
+ <p class="hint">柱状图画的是 \(\Delta M_i\)（对数纵轴，画 \(|·|\) 并标符号）。注意<strong>符号交替</strong>：\(+278,-439,+278\)——改高一个点，邻域弯矩先减后加地来回修正，这正是三次多项式「过冲—回调」的代数来源。相邻比实测 0.2679（与理论 \(2-\sqrt3\) 差 \(10^{-4}\)）。但请看最后一个读数：\(k\) 之隔 5 段的区间上 \(\Delta S\) 仍有 \(3.2\times10^{-3}\)，是 \(k\) 处变化量的 0.3%。<strong>理论上是全局的，只是尾巴小</strong>——这和分段 Hermite 的「严格零影响」是两回事。</p>
+</div>
+
+<p>
+一个使用上的推论：如果数据点有 \(10^{-6}\) 量级的噪声，改一个点会在整条曲线上叠加 \(10^{-8}\) 量级的波动，远小于本身误差，可以忽略；但如果数据点必须精确保持（例如有硬约束的几何设计），样条就不是「局部修改」的工具，得换成 B 样条局部细分或保形插值。这也是为什么工业上最终用的是 B 样条基而不是「解三弯矩方程」——两者在数学上给出同一条曲线，但 B 样条的局部支撑让修改有真正的局部性。
+</p>
+
+<!-- ================= 05 ================= -->
+<h2 id="s5"><span class="no">05</span>边界的代价：自然样条在 \(f''\neq0\) 时是 \(h^2\)，不是 \(h^4\)</h2>
+
+<p>
+定理（本节的收敛性定理）说：若 \(f\in C^4\)，\(S\) 是一型或二型插值样条，则
+</p>
+$$\bigl\lVert S^{(k)}-f^{(k)}\bigr\rVert_\infty\le C_k\bigl\lVert f^{(4)}\bigr\rVert_\infty h^{4-k},\qquad k=0,1,2 ,$$
+<p>
+其中第一型的常数 \(C_0=\tfrac1{16},\ C_1=\tfrac12,\ C_2=\tfrac12\)，第二型（自然）\(C_0=\tfrac5{384},\ C_1=\tfrac1{24},\ C_2=\tfrac38\)。这个式子看起来对两类边界一视同仁，只是常数不同。<strong>实测不是这样。</strong>
+</p>
+
+<p>
+取 \(f=e^x\) 在 \([0,1]\) 上，\(f''(0)=1\neq0\)，而自然样条强行令 \(M_0=0\)。端点的弯矩错了 1，这个错误进入三对角系统后按 \(0.268^i\) 衰减，但每段的贡献是 \(M h^2\) 量级，所以整条曲线的误差是 \(O(h^2)\)。把 \(e_0/(\lVert f^{(4)}\rVert h^4)\) 当成「实测常数」列出来，就看得更清楚：
+</p>
+
+<table>
+<thead><tr><th>\(n\)</th><th class="mono">4</th><th class="mono">8</th><th class="mono">16</th><th class="mono">32</th><th class="mono">64</th><th class="mono">128</th><th class="mono">256</th></tr></thead>
+<tbody>
+<tr><td>\(e_0\)（自然，全长）</td><td class="mono">8.2e−3</td><td class="mono">2.1e−3</td><td class="mono">5.2e−4</td><td class="mono">1.3e−4</td><td class="mono">3.3e−5</td><td class="mono">8.1e−6</td><td class="mono">2.0e−6</td></tr>
+<tr class="hi"><td>\(e_0/(\lVert f^{(4)}\rVert h^4)\)</td><td class="mono">0.175</td><td class="mono">0.774</td><td class="mono">3.14</td><td class="mono">12.6</td><td class="mono">50.3</td><td class="mono">201</td><td class="mono">3217</td></tr>
+</tbody>
+</table>
+
+<p>
+如果自然样条真是 \(h^4\)，第三行该是一条水平线（\(\le 5/384=0.0130\)）。实测它<strong>每倍 \(n\) 涨 4 倍</strong>，到 \(n=256\) 已经超出那个界 247 倍。反过来，同样的数据用固支边界（\(y_0'=e^0\)、\(y_n'=e^1\) 给准），第三行稳定在 \(0.0026\) 附近，始终在 \(1/16=0.0625\) 以内——只有界的 4%。两条曲线在下面这台实验里并排可以看。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 05 · 四条误差曲线：自然 / 固支 / Not-A-Knot / 自然的中段</span>
+ <span class="t" id="bc-state">eˣ · n = 32</span>
+ </div>
+ <canvas id="cv-bc" aria-label="不同边界条件的三次样条误差随 n 的收敛曲线（双对数）"></canvas>
+ <div class="legend">
+ <span><i></i>自然边界 · 全长误差</span>
+ <span><i class="ch"></i>自然边界 · 中段 [0.25, 0.75]</span>
+ <span><i class="teal"></i>固支边界 · 全长</span>
+ <span><i class="graydash"></i>Not-A-Knot · 全长</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">n</span>
+ <input type="range" id="bc-k" min="2" max="7" step="1" value="5" aria-label="分段数指数">
+ <span class="lbl" id="bc-nv">32</span>
+ </div>
+ <div class="grp">
+ <span class="lbl">被插函数</span>
+ <span class="seg">
+ <button id="bc-f0" aria-pressed="true">eˣ（f″ 端点 ≠ 0）</button>
+ <button id="bc-f1" aria-pressed="false">sin πx（f″ 端点 = 0）</button>
+ </span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">自然 · 全长误差</div><div class="v orange" id="bc-nat">—</div></div>
+ <div><div class="k">自然 · 中段 [0.25,0.75]</div><div class="v teal" id="bc-mid">—</div></div>
+ <div><div class="k">固支 · 全长误差</div><div class="v ch" id="bc-clm">—</div></div>
+ <div><div class="k">自然全长的实测阶（相邻两档）</div><div class="v orange" id="bc-ord">—</div></div>
+ </div>
+ <p class="hint">看两条自然曲线差几个量级：\(n=32\) 时全长 \(1.3\times10^{-4}\)、中段 \(5.9\times10^{-9}\)，<strong>差 2.2 万倍</strong>。中段误差的实测阶 4.17（最终趋 4），全长只有 2.00。<strong>边界污染只在端点附近，但它决定了 \(\lVert\cdot\rVert_\infty\)</strong>。切到 \(\sin\pi x\)（两端二阶导恰为 0，自然边界<em>恰好正确</em>）：两条自然曲线重合，收敛阶回到 4，与固支只差一个常数。<strong>结论：自然边界不是「精度低」，而是「只有在 \(f''(a)=f''(b)=0\) 时免费」。</strong></p>
+</div>
+
+<div class="note">
+<p><strong>这条实测比定理更有用。</strong>定理里的 \(C_k\) 隐含了一个前提：边界条件和 \(f\) 相容。写出界的时候没人会强调这一句，于是「自然样条是四阶方法」被记住了，「自然样条只在端点无曲率时是四阶」被忘了。工程上的对应做法：<strong>能用 Not-A-Knot 就别用自然边界</strong>——它不需要任何导数信息，实测误差与固支同量级（\(n=8\) 时 \(2.6\times10^{-4}\) 对 \(1.7\times10^{-6}\)，稍差但在 \(h^4\) 道上），代价是端点附近多一段「不是结点」的三次多项式。</p>
+</div>
+
+<p>
+还有一条极端情形值得记下来：\(k=2\)（二阶导）时，自然样条的误差<strong>完全不衰减</strong>。实测 \(n\) 从 2 到 256，\(\lVert S''-f''\rVert_\infty\) 恒为 \(2.71828=e\)——因为 \(S''(1)=0\) 而 \(f''(1)=e\)，端点误差是 \(O(1)\) 的常数，与网格无关。这也是为什么后面第 4 章用样条做数值微分时要格外小心：\(S''\) 在端点的误差不会随加密变小。
+</p>
+
+<!-- ================= 06 ================= -->
+<h2 id="s6"><span class="no">06</span>样条无往不利吗：45% 的区间，单调方向是反的</h2>
+
+<p>
+最后一个问题来自课件标题里那个问号。样条保证了 \(C^2\)、保证了最小弯曲能量，但<strong>没有保证形状</strong>。取一个边界层函数
+</p>
+$$f(x)=1-\frac{e^{100x}-1}{e^{100}-1},\qquad x\in[0,1],$$
+<p>
+它在 \(x=0\) 附近几乎是常数 1，到 \(x=1\) 的最后 \(0.02\) 宽度里从 1 掉到 0，全程<strong>严格单调递减</strong>。拿等距结点插值，样条在边界层前就开始上冲——因为要让曲线从「几乎水平」平滑地接到「斜率 −100」，\(C^2\) 约束下只能提前拐弯。
+</p>
+
+<div class="lab">
+ <div class="lab-head">
+ <span class="t">实验 06 · 边界层函数上的超调与单调性破坏（含保形插值对照）</span>
+ <span class="t" id="sh-state">n = 12</span>
+ </div>
+ <canvas id="cv-shape" aria-label="边界层函数的样条插值与保形 PCHIP 插值对比"></canvas>
+ <div class="legend">
+ <span><i class="graydash"></i>f(x) 真值（严格单调递减）</span>
+ <span><i class="ch"></i>三次样条 S（C²，最小弯曲能量）</span>
+ <span><i class="teal"></i>PCHIP 保形插值（C¹，分段保单调）</span>
+ <span><i class="dot"></i>结点</span>
+ </div>
+ <div class="ctrls">
+ <div class="grp">
+ <span class="lbl">n</span>
+ <input type="range" id="sh-n" min="6" max="40" step="1" value="12" aria-label="子区间数">
+ <span class="lbl" id="sh-nv">12</span>
+ </div>
+ </div>
+ <div class="reads">
+ <div><div class="k">样条最大值（真值为 1）</div><div class="v orange" id="sh-max">—</div></div>
+ <div><div class="k">超调 max S − 1</div><div class="v orange" id="sh-over">—</div></div>
+ <div><div class="k">S′ &gt; 0 的区间长度占比</div><div class="v orange" id="sh-bad">—</div></div>
+ <div><div class="k">max|PCHIP − f|（同结点）</div><div class="v teal" id="sh-p">—</div></div>
+ </div>
+ <p class="hint">把 n 从 8 拖到 32，超调从 \(7.9\%\) 只降到 \(4.8\%\)；<strong>「S′ &gt; 0 的区间长度」稳定在 45%–48%</strong>——近一半定义域上样条是<strong>递增</strong>的，而真值处处递减。这不是数值误差，是 \(C^2\) 约束的几何后果：曲线必须在边界层之前鼓起来，才能平滑地扎下去。同结点数的 PCHIP（Fritsch–Carlson 单调保形）超调为 0、单调破坏长度为 0，且在 \(n=8\) 时连 \(L^\infty\) 误差都更小（\(0.628\) 对 \(0.668\)）。</p>
+</div>
+
+<table>
+<thead><tr><th>\(n\)</th><th class="mono">8</th><th class="mono">12</th><th class="mono">16</th><th class="mono">20</th><th class="mono">32</th></tr></thead>
+<tbody>
+<tr><td>样条超调（max S − 1）</td><td class="mono">0.0789</td><td class="mono">0.0788</td><td class="mono">0.0776</td><td class="mono">0.0742</td><td class="mono">0.0484</td></tr>
+<tr><td>超调位置 \(x\)</td><td class="mono">0.827</td><td class="mono">0.885</td><td class="mono">0.914</td><td class="mono">0.930</td><td class="mono">0.955</td></tr>
+<tr class="hi"><td>单调反向的区间占比</td><td class="mono">44.8%</td><td class="mono">46.5%</td><td class="mono">47.4%</td><td class="mono">47.9%</td><td class="mono">48.4%</td></tr>
+<tr><td>max|S − f|</td><td class="mono">0.668</td><td class="mono">0.565</td><td class="mono">0.479</td><td class="mono">0.407</td><td class="mono">0.257</td></tr>
+<tr><td>max|PCHIP − f|</td><td class="mono">0.628</td><td class="mono">0.516</td><td class="mono">0.425</td><td class="mono">0.350</td><td class="mono">0.200</td></tr>
+</tbody>
+</table>
+
+<p>
+最后一行顺带量出了另一件事：样条误差的实测衰减阶只有 \(0.48\to1.78\)（\(n\) 每倍一档），远不是 \(h^4\)。原因不是实现错了，而是 \(f^{(4)}\sim100^4 f\) 太大——\(h^4\) 项前面的系数是 \(10^8\) 量级，这个 \(n\) 范围还没进渐近区。所以「阶到了就准」这句话在陡函数上会骗人：<strong>渐近阶与当前精度是两件事</strong>。
+</p>
+
+<div class="note teal">
+<p><strong>怎么选，一句话版本。</strong>要光滑（曲线、动画路径、几何造型）→ 三次样条，用 Not-A-Knot 或固支边界，别用自然边界除非端点真的无曲率。要形状可信（浓度、温度、概率密度这类非负/单调的物理量）→ 保形插值（PCHIP、单调三次 Hermite），宁可降到 \(C^1\)。两者的取舍不在精度，在<strong>你更需要「顺」还是更需要「真」</strong>。</p>
+</div>
+
+<h2><span class="no">附</span>本页数字的出处</h2>
+<p>
+全部读数由工作区脚本实测：<code>_probe_na26.js</code> 与 <code>_probe_na26b.js</code> 算锚点，<code>verify_na26.js</code> 用<strong>另一条路</strong>复核（闸门不复用本页的三弯矩代码，而是解 \(4n\) 个系数的全局方程组）。公式用 <code>verify_formulas.js</code> 在本地 MathJax 编译，要求 0 failed。锚点清单：例 1 的 \(M=(0,0.5,0,0)\) 与分段式逐项 \(2.2\times10^{-16}\)；例 2 的 \(M=(-0.36,2.52,-3.72,0.36)\) 与方程解 \(4.4\times10^{-16}\)；简支梁与解析挠度 \(4.5\times10^{-17}\)、\(S'''\) 跳变 \(1.0000\)；\(\Delta M\) 衰减比 \(0.2675\)（理论 \(2-\sqrt3=0.2679\)）；\(\kappa_\infty\le3.000\)；自然 vs 固支 \(e_0/(\lVert f^{(4)}\rVert h^4)\) 的 0.175→3217 与 0.0026；边界层函数超调 7.89%、单调反向 44.8%–48.4%。
+</p>
+
+<footer>
+<p>上一页：<a href="./分段插值-分段线性与分段三次Hermite.html">第 2.5 讲 · 分段插值</a>　｜　全部讲次：<a href="./index.html">数值分析索引</a></p>
+<p>校验：<code>node ../../verify_na26.js</code>（读数闸门，0 = 通过）· <code>node ../../verify_formulas.js 样条插值-三弯矩方程与保形性.html</code>（公式，要求 0 failed）。</p>
+</footer>
+
+</div>
+<script>
+(function(){
+'use strict';
+var $ = function(id){ return document.getElementById(id); };
+
+/* ============================================================
+ 格式
+ ============================================================ */
+var MINUS = '\u2212', SQ = '\u221a', PI = Math.PI;
+function fixed(v, d){
+ if (!isFinite(v)) return '\u2014';
+ var s = Math.abs(v).toFixed(d);
+ return (v < 0 ? MINUS : '') + s;
+}
+function exs(v, d){
+ if (!isFinite(v)) return '\u2014';
+ if (v === 0) return '0';
+ d = (d === undefined) ? 3 : d;
+ var e = Math.floor(Math.log10(Math.abs(v)));
+ var m = v / Math.pow(10, e);
+ if (Math.abs(m) >= 10){ m /= 10; e += 1; }
+ if (Math.abs(m) < 1){ m *= 10; e -= 1; }
+ return (m < 0 ? MINUS : '') + Math.abs(m).toFixed(d) + 'e' + (e < 0 ? MINUS : '') + Math.abs(e);
+}
+function num(v){
+ if (!isFinite(v)) return '\u2014';
+ var a = Math.abs(v);
+ if (a !== 0 && (a < 1e-3 || a >= 1e5)) return exs(v, 3);
+ return fixed(v, 4);
+}
+function setText(id, s){ var el = $(id); if (el) el.textContent = s; }
+function clamp(v, a, b){ return v < a ? a : (v > b ? b : v); }
+
+/* ============================================================
+ 画布工具
+ ============================================================ */
+function fit(cv){
+ var dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+ var r = cv.getBoundingClientRect();
+ var w = Math.round(r.width) || 600, h = Math.round(r.height) || 340;
+ cv.width = w * dpr; cv.height = h * dpr;
+ var g = cv.getContext('2d');
+ g.setTransform(dpr, 0, 0, dpr, 0, 0);
+ g.clearRect(0, 0, w, h);
+ return { g: g, w: w, h: h };
+}
+function mkMap(w, h, pad, xr, yr, ox){
+ ox = ox || 0;
+ var iw = w - pad.l - pad.r - ox, ih = h - pad.t - pad.b;
+ return {
+ X: function(x){ return pad.l + ox + (x - xr[0]) / (xr[1] - xr[0]) * iw; },
+ Y: function(y){ return pad.t + (yr[1] - y) / (yr[1] - yr[0]) * ih; },
+ xr: xr, yr: yr, pad: pad, iw: iw, ih: ih
+ };
+}
+function grid(g, M, nx, ny, col){
+ g.strokeStyle = col || '#eee7d8'; g.lineWidth = 1;
+ var i;
+ for (i = 0; i <= nx; i++){
+ var x = M.pad.l + M.iw * i / nx;
+ g.beginPath(); g.moveTo(x, M.pad.t); g.lineTo(x, M.pad.t + M.ih); g.stroke();
+ }
+ for (i = 0; i <= ny; i++){
+ var y = M.pad.t + M.ih * i / ny;
+ g.beginPath(); g.moveTo(M.pad.l, y); g.lineTo(M.pad.l + M.iw, y); g.stroke();
+ }
+}
+function gridY(g, M, ny){
+ grid(g, M, 0, ny);
+}
+function frame(g, M){
+ g.strokeStyle = '#cfc6b2'; g.lineWidth = 1;
+ g.strokeRect(M.pad.l, M.pad.t, M.iw, M.ih);
+}
+function label(g, s, x, y, col, align, size){
+ g.fillStyle = col || '#6d665a';
+ g.font = (size || 11) + 'px ui-monospace,SFMono-Regular,Consolas,monospace';
+ g.textAlign = align || 'left';
+ g.textBaseline = 'middle';
+ g.fillText(s, x, y);
+}
+function clipPlot(g, M){
+ g.save();
+ g.beginPath(); g.rect(M.pad.l, M.pad.t, M.iw, M.ih); g.clip();
+}
+function unclip(g){ g.restore(); }
+function curve(g, M, f, a, b, col, width, dash, n){
+ var i, N = n || 400;
+ g.strokeStyle = col; g.lineWidth = width || 2;
+ g.setLineDash(dash || []);
+ g.beginPath();
+ for (i = 0; i <= N; i++){
+ var x = a + (b - a) * i / N, y = f(x);
+ if (!isFinite(y)) continue;
+ if (i === 0) g.moveTo(M.X(x), M.Y(y)); else g.lineTo(M.X(x), M.Y(y));
+ }
+ g.stroke(); g.setLineDash([]);
+}
+function polyline(g, M, xs, ys, col, width){
+ var i;
+ g.strokeStyle = col; g.lineWidth = width || 2; g.setLineDash([]);
+ g.beginPath();
+ for (i = 0; i < xs.length; i++){
+ if (i === 0) g.moveTo(M.X(xs[i]), M.Y(ys[i])); else g.lineTo(M.X(xs[i]), M.Y(ys[i]));
+ }
+ g.stroke();
+}
+function dot(g, M, x, y, r, fill){
+ g.beginPath(); g.arc(M.X(x), M.Y(y), r || 3.2, 0, Math.PI * 2);
+ g.fillStyle = fill || '#c2531f'; g.fill();
+ g.strokeStyle = '#fff'; g.lineWidth = 1.2; g.stroke();
+}
+
+/* ============================================================
+ 数值核心：三弯矩法
+ 闸门 verify_na26.js 通过 window.NA26 复核（不复用这里的代码）
+ ============================================================ */
+function uni(a, b, n){
+ var xs = [], i;
+ for (i = 0; i <= n; i++) xs.push(a + (b - a) * i / n);
+ return xs;
+}
+/* 稠密高斯消元（部分主元）：Not-A-Knot / 周期边界不是三对角，统一走这里 */
+function solve(A, b){
+ var n = b.length, i, j, k, p, t, f, piv, s;
+ var M = [], row;
+ for (i = 0; i < n; i++){ row = A[i].slice(); row.push(b[i]); M.push(row); }
+ for (k = 0; k < n; k++){
+ p = k;
+ for (i = k + 1; i < n; i++) if (Math.abs(M[i][k]) > Math.abs(M[p][k])) p = i;
+ if (p !== k){ t = M[p]; M[p] = M[k]; M[k] = t; }
+ piv = M[k][k];
+ for (i = k + 1; i < n; i++){
+ f = M[i][k] / piv;
+ if (f === 0) continue;
+ for (j = k; j <= n; j++) M[i][j] -= f * M[k][j];
+ }
+ }
+ var x = [];
+ for (i = 0; i < n; i++) x.push(0);
+ for (i = n - 1; i >= 0; i--){
+ s = M[i][n];
+ for (j = i + 1; j < n; j++) s -= M[i][j] * x[j];
+ x[i] = s / M[i][i];
+ }
+ return x;
+}
+/* 三弯矩方程组：λi Mi-1 + 2 Mi + (1-λi) Mi+1 = di  (i=1..n-1)，加两行边界 */
+function splineSys(xs, ys, bc, d0, dn){
+ var n = xs.length - 1, h = [], lam = [], d = [], i, j, row;
+ for (i = 0; i < n; i++) h.push(xs[i + 1] - xs[i]);
+ for (i = 0; i <= n; i++){ lam.push(0); d.push(0); }
+ for (i = 1; i < n; i++){
+ lam[i] = h[i - 1] / (h[i - 1] + h[i]);
+ d[i] = 6 * ((ys[i + 1] - ys[i]) / h[i] - (ys[i] - ys[i - 1]) / h[i - 1]) / (h[i - 1] + h[i]);
+ }
+ var A = [];
+ for (i = 0; i <= n; i++){ row = []; for (j = 0; j <= n; j++) row.push(0); A.push(row); }
+ if (bc === 'natural' || bc === 'clamped'){
+ for (i = 1; i < n; i++){ A[i][i - 1] = lam[i]; A[i][i] = 2; A[i][i + 1] = 1 - lam[i]; }
+ if (bc === 'natural'){ A[0][0] = 1; A[n][n] = 1; }
+ else {
+ A[0][0] = 2; A[0][1] = 1;
+ d[0] = 6 * ((ys[1] - ys[0]) / h[0] - d0) / h[0];
+ A[n][n - 1] = 1; A[n][n] = 2;
+ d[n] = 6 * (dn - (ys[n] - ys[n - 1]) / h[n - 1]) / h[n - 1];
+ }
+ } else if (bc === 'notaknot'){
+ if (n < 3) { A[0][0] = 1; A[n][n] = 1; }
+ else {
+ for (i = 1; i < n; i++){ A[i][i - 1] = lam[i]; A[i][i] = 2; A[i][i + 1] = 1 - lam[i]; }
+ A[0][0] = h[1]; A[0][1] = -(h[0] + h[1]); A[0][2] = h[0]; d[0] = 0;
+ A[n][n] = h[n - 2]; A[n][n - 1] = -(h[n - 2] + h[n - 1]); A[n][n - 2] = h[n - 1]; d[n] = 0;
+ }
+ }
+ return { A: A, b: d, h: h, lam: lam, d: d };
+}
+function splineM(xs, ys, bc, d0, dn){
+ var S = splineSys(xs, ys, bc, d0, dn);
+ return { xs: xs, ys: ys, M: solve(S.A, S.b), h: S.h, lam: S.lam, bc: bc };
+}
+/* 追赶法（Thomas）：只对三对角（自然 / 固支）有效 */
+function thomas(sys){
+ var A = sys.A, b = sys.b, n = b.length, i;
+ var a = [], bb = [], c = [];
+ for (i = 0; i < n; i++){
+ a.push(i > 0 ? A[i][i - 1] : 0);
+ bb.push(A[i][i]);
+ c.push(i < n - 1 ? A[i][i + 1] : 0);
+ }
+ var cp = [], dp = [];
+ cp.push(c[0] / bb[0]); dp.push(b[0] / bb[0]);
+ for (i = 1; i < n; i++){
+ var den = bb[i] - a[i] * cp[i - 1];
+ cp.push(c[i] / den); dp.push((b[i] - a[i] * dp[i - 1]) / den);
+ }
+ var x = [], k;
+ for (i = 0; i < n; i++) x.push(0);
+ x[n - 1] = dp[n - 1];
+ for (i = n - 2; i >= 0; i--) x[i] = dp[i] - cp[i] * x[i + 1];
+ return { x: x, cp: cp };
+}
+function segIndex(xs, x){
+ var n = xs.length - 1, i = 0;
+ if (x <= xs[0]) return 0;
+ if (x >= xs[n]) return n - 1;
+ while (i < n - 1 && x > xs[i + 1]) i++;
+ return i;
+}
+/* 三弯矩形式的求值与导数 */
+function sEval(sp, x){
+ var xs = sp.xs, ys = sp.ys, M = sp.M, n = xs.length - 1;
+ var i = segIndex(xs, x), h = xs[i + 1] - xs[i], A = xs[i + 1] - x, B = x - xs[i];
+ return M[i] * A * A * A / (6 * h) + M[i + 1] * B * B * B / (6 * h)
+ + (ys[i] - M[i] * h * h / 6) * A / h + (ys[i + 1] - M[i + 1] * h * h / 6) * B / h;
+}
+function sD(sp, x){
+ var xs = sp.xs, ys = sp.ys, M = sp.M, n = xs.length - 1;
+ var i = segIndex(xs, x), h = xs[i + 1] - xs[i], A = xs[i + 1] - x, B = x - xs[i];
+ return -M[i] * A * A / (2 * h) + M[i + 1] * B * B / (2 * h)
+ + (ys[i + 1] - ys[i]) / h - (M[i + 1] - M[i]) * h / 6;
+}
+function sDD(sp, x){
+ var xs = sp.xs, M = sp.M, n = xs.length - 1;
+ var i = segIndex(xs, x), h = xs[i + 1] - xs[i], A = xs[i + 1] - x, B = x - xs[i];
+ return M[i] * A / h + M[i + 1] * B / h;
+}
+/* 段 j 在其右端点 x_{j+1} 处的单侧导数（C¹ 核验用，解析极限而非差分） */
+function segD_R(sp, j){
+ var h = sp.xs[j + 1] - sp.xs[j], M0 = sp.M[j], M1 = sp.M[j + 1];
+ return M1 * h / 2 + (sp.ys[j + 1] - sp.ys[j]) / h - (M1 - M0) * h / 6;
+}
+/* 段 j 在其左端点 x_j 处的单侧导数 */
+function segD_L(sp, j){
+ var h = sp.xs[j + 1] - sp.xs[j], M0 = sp.M[j], M1 = sp.M[j + 1];
+ return -M0 * h / 2 + (sp.ys[j + 1] - sp.ys[j]) / h - (M1 - M0) * h / 6;
+}
+/* 每段局部坐标 t = x - x_i 下的三次系数 a3 t³ + a2 t² + a1 t + a0 */
+function segCoef(sp, i){
+ var h = sp.xs[i + 1] - sp.xs[i], Mi = sp.M[i], Mj = sp.M[i + 1], yi = sp.ys[i], yj = sp.ys[i + 1];
+ return [(Mj - Mi) / (6 * h), Mi / 2, (yj - yi) / h - (2 * Mi + Mj) * h / 6, yi];
+}
+/* x 幂基（同一坐标系下比较两段是否同一条多项式） */
+function segCoefX(sp, i){
+ var c = segCoef(sp, i), xi = sp.xs[i];
+ var a3 = c[0], a2 = c[1], a1 = c[2], a0 = c[3];
+ return [a3, a2 - 3 * a3 * xi, a1 - 2 * a2 * xi + 3 * a3 * xi * xi,
+ a0 - a1 * xi + a2 * xi * xi - a3 * xi * xi * xi];
+}
+/* 弯曲能量 ∫(S'')²：S'' 分段线性 → 每段 h(Mi²+MiMi+1+Mi+1²)/3 */
+function bendEnergy(sp){
+ var s = 0, i;
+ for (i = 0; i < sp.xs.length - 1; i++){
+ var h = sp.xs[i + 1] - sp.xs[i], a = sp.M[i], b = sp.M[i + 1];
+ s += h * (a * a + a * b + b * b) / 3;
+ }
+ return s;
+}
+function maxErr(f, g, a, b, N){
+ var e = 0, at = a, k, x, v;
+ for (k = 0; k <= N; k++){
+ x = a + (b - a) * k / N; v = Math.abs(f(x) - g(x));
+ if (v > e){ e = v; at = x; }
+ }
+ return { e: e, at: at };
+}
+/* 矩阵 ∞-范数条件数（直接求逆的列和估计） */
+function condInf(A){
+ var n = A.length, i, j, k, inv = [], rhs, col, mx = 0, s;
+ for (j = 0; j < n; j++){
+ rhs = [];
+ for (i = 0; i < n; i++) rhs.push(i === j ? 1 : 0);
+ inv.push(solve(A, rhs));
+ }
+ for (i = 0; i < n; i++){
+ s = 0;
+ for (j = 0; j < n; j++) s += Math.abs(inv[j][i]);
+ if (s > mx) mx = s;
+ }
+ var nrm = 0;
+ for (i = 0; i < n; i++){
+ s = 0;
+ for (j = 0; j < n; j++) s += Math.abs(A[i][j]);
+ if (s > nrm) nrm = s;
+ }
+ col = mx;
+ return { norm1: nrm, invInf: col, kappa: nrm * col };
+}
+/* 保形插值 PCHIP（Fritsch–Carlson） */
+function pchip(xs, ys){
+ var n = xs.length - 1, h = [], dl = [], i;
+ for (i = 0; i < n; i++){ h.push(xs[i + 1] - xs[i]); dl.push((ys[i + 1] - ys[i]) / h[i]); }
+ var d = [];
+ for (i = 0; i <= n; i++) d.push(0);
+ for (i = 1; i < n; i++){
+ if (dl[i - 1] * dl[i] <= 0) d[i] = 0;
+ else {
+ var w1 = 2 * h[i] + h[i - 1], w2 = h[i] + 2 * h[i - 1];
+ d[i] = (w1 + w2) / (w1 / dl[i - 1] + w2 / dl[i]);
+ }
+ }
+ function endSlope(h0, h1, d0, d1){
+ var s = ((2 * h0 + h1) * d0 - h0 * d1) / (h0 + h1);
+ if (s * d0 <= 0) s = 0;
+ else if (d0 * d1 < 0 && Math.abs(s) > Math.abs(3 * d0)) s = 3 * d0;
+ return s;
+ }
+ d[0] = endSlope(h[0], h[1], dl[0], dl[1]);
+ d[n] = endSlope(h[n - 1], h[n - 2], dl[n - 1], dl[n - 2]);
+ return { xs: xs, ys: ys, d: d, h: h };
+}
+function pEval(pp, x){
+ var xs = pp.xs, ys = pp.ys, d = pp.d, n = xs.length - 1;
+ var i = segIndex(xs, x), h = xs[i + 1] - xs[i], t = (x - xs[i]) / h, t2 = t * t, t3 = t2 * t;
+ return (2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h * d[i]
+ + (-2 * t3 + 3 * t2) * ys[i + 1] + (t3 - t2) * h * d[i + 1];
+}
+function pD(pp, x){
+ var xs = pp.xs, ys = pp.ys, d = pp.d, n = xs.length - 1;
+ var i = segIndex(xs, x), h = xs[i + 1] - xs[i], t = (x - xs[i]) / h, t2 = t * t;
+ return ((6 * t2 - 6 * t) * ys[i] + (3 * t2 - 4 * t + 1) * h * d[i]
+ + (-6 * t2 + 6 * t) * ys[i + 1] + (3 * t2 - 2 * t) * h * d[i + 1]) / h;
+}
+/* 平移一个 map（左右分屏用） */
+function pan(M, dx){
+ return { X: function(x){ return M.X(x) + dx; }, Y: M.Y, xr: M.xr, yr: M.yr,
+ pad: { l: M.pad.l + dx, r: M.pad.r, t: M.pad.t, b: M.pad.b }, iw: M.iw, ih: M.ih };
+}
+function F1(x){ return Math.sin(PI * x); }
+function D1(x){ return PI * Math.cos(PI * x); }
+var FB = function(x){ return 1 - (Math.exp(100 * x) - 1) / (Math.exp(100) - 1); };
+
+/* ============================================================
+ 实验 01 · 弯曲能量 J(β) 的抛物线
+ ============================================================ */
+var J_N = 6;
+var J_XS = uni(0, 1, J_N);
+var J_F = function(x){ return Math.sin(x); };
+var J_YS = J_XS.map(J_F);
+var J_SP = splineM(J_XS, J_YS, 'natural');
+var J_SPC = splineM(J_XS, J_YS, 'clamped', Math.cos(0), Math.cos(1));
+var J_J0 = bendEnergy(J_SP);
+/* J(β)：S + βη 仍是同一组结点上的 C² 分段三次，M 线性组合后弯曲能量解析可得 */
+function jBend(beta){
+ var M = [], i;
+ for (i = 0; i <= J_N; i++) M.push(J_SP.M[i] + beta * (J_SPC.M[i] - J_SP.M[i]));
+ return bendEnergy({ xs: J_XS, ys: J_YS, M: M });
+}
+var J_A = (jBend(1) + jBend(-1) - 2 * jBend(0)) / 2;
+var J_B = (jBend(1) - jBend(-1)) / 2;
+function jDraw(){
+ var beta = clamp(parseFloat($('j-b').value) || 0, -1.2, 1.2);
+ var jb = jBend(beta);
+ var jq = Math.abs(beta) > 1e-9 ? (jb - J_J0) / (beta * beta) : J_A;
+ var bstar = J_A > 1e-15 ? -J_B / (2 * J_A) : 0;
+
+ var cv = $('cv-j'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var half = Math.floor(w / 2);
+ var MA = mkMap(half, h, { l: 45, r: 14, t: 18, b: 32 }, [0, 1], [-0.22, 1.22]);
+ var MB = pan(mkMap(half, h, { l: 50, r: 14, t: 18, b: 32 }, [-1.25, 1.25],
+ [J_J0 - 0.006, J_J0 + J_A * 1.7]), half);
+ grid(g, MA, 5, 6); frame(g, MA);
+ grid(g, MB, 5, 6); frame(g, MB);
+ label(g, 'S(x) 与扰动族', MA.pad.l + 2, MA.pad.t + 9, '#6d665a', 'left', 11);
+ label(g, 'J(β)', MB.pad.l + 2, MB.pad.t + 9, '#6d665a', 'left', 11);
+ var t;
+ for (t = 0; t <= 1.001; t += 0.25) label(g, t.toFixed(2), MA.X(t), MA.pad.t + MA.ih + 14, '#6d665a', 'center', 10);
+ for (t = 0; t <= 1.001; t += 0.25) label(g, t.toFixed(0), MA.pad.l - 7, MA.Y(t), '#6d665a', 'right', 10);
+ for (t = -1; t <= 1.001; t += 0.5) label(g, (t > 0 ? '+' : '') + t.toFixed(1), MB.X(t), MB.pad.t + MB.ih + 14, '#6d665a', 'center', 10);
+ label(g, '\u03b2', MB.pad.l + MB.iw - 4, MB.pad.t + MB.ih - 10, '#6d665a', 'right', 11);
+
+ clipPlot(g, MA);
+ curve(g, MA, J_F, 0, 1, '#b8b0a0', 1.3, [5, 4], 400);
+ curve(g, MA, function(x){ return sEval(J_SPC, x); }, 0, 1, '#0d6b5d', 1.7, [6, 3], 600);
+ curve(g, MA, function(x){ return sEval(J_SP, x) + beta * (sEval(J_SPC, x) - sEval(J_SP, x)); },
+ 0, 1, '#c2531f', 2.4, [], 700);
+ curve(g, MA, function(x){ return sEval(J_SP, x); }, 0, 1, '#7d5a24', 2.0, [], 600);
+ unclip(g);
+ var i;
+ for (i = 0; i <= J_N; i++) dot(g, MA, J_XS[i], J_YS[i], 3.0);
+
+ clipPlot(g, MB);
+ g.strokeStyle = 'rgba(109,102,90,.35)'; g.lineWidth = 1; g.setLineDash([3, 4]);
+ g.beginPath(); g.moveTo(MB.X(0), MB.pad.t); g.lineTo(MB.X(0), MB.pad.t + MB.ih); g.stroke();
+ g.setLineDash([]);
+ var k, px, py, started = false;
+ g.strokeStyle = '#0d6b5d'; g.lineWidth = 2; g.beginPath();
+ for (k = 0; k <= 240; k++){
+ px = -1.25 + 2.5 * k / 240; py = J_A * px * px + J_B * px + J_J0;
+ if (!isFinite(py)){ started = false; continue; }
+ if (!started){ g.moveTo(MB.X(px), MB.Y(py)); started = true; } else g.lineTo(MB.X(px), MB.Y(py));
+ }
+ g.stroke();
+ g.fillStyle = 'rgba(194,83,31,.18)';
+ g.beginPath(); g.arc(MB.X(beta), MB.Y(jb), 7, 0, PI * 2); g.fill();
+ unclip(g);
+ dot(g, MB, beta, jb, 3.6, '#c2531f');
+ dot(g, MB, 0, J_J0, 3.2, '#7d5a24');
+ label(g, 'min', MB.X(0) + 5, MB.Y(J_J0) + 11, '#7d5a24', 'left', 10);
+
+ setText('j-bv', fixed(beta, 2));
+ setText('j-state', '\u03b2 = ' + fixed(beta, 2) + ' \u00b7 J = ' + fixed(jb, 6));
+ setText('j-j0', fixed(J_J0, 6));
+ setText('j-jb', fixed(jb, 6));
+ setText('j-jq', fixed(jq, 6));
+ setText('j-star', Math.abs(bstar) < 1e-6 ? '0.0000' : num(bstar));
+ return { beta: beta, J0: J_J0, Jb: jb, jq: jq, A: J_A, B: J_B, bstar: bstar };
+}
+
+/* ============================================================
+ 实验 02 · 三弯矩方程组与追赶法
+ ============================================================ */
+var S_MODE = 0;   // 0 自然 1 固支 2 notaknot
+function sBC(){ return S_MODE === 0 ? 'natural' : (S_MODE === 1 ? 'clamped' : 'notaknot'); }
+function sStat(n, mode){
+ var xs = uni(0, 1, n), ys = xs.map(F1);
+ var bc = mode === 0 ? 'natural' : (mode === 1 ? 'clamped' : 'notaknot');
+ var sp = splineM(xs, ys, bc, D1(0), D1(1));
+ var sys = splineSys(xs, ys, bc, D1(0), D1(1));
+ var mxM = 0, i;
+ for (i = 0; i <= n; i++) mxM = Math.max(mxM, Math.abs(sp.M[i]));
+ var err = maxErr(F1, function(x){ return sEval(sp, x); }, 0, 1, 12000).e;
+ var gap = NaN, cond = null;
+ if (bc !== 'notaknot'){
+ var th = thomas(sys), d = 0;
+ for (i = 0; i <= n; i++) d = Math.max(d, Math.abs(th.x[i] - sp.M[i]));
+ gap = d; cond = condInf(sys.A);
+ } else {
+ cond = condInf(sys.A);
+ }
+ /* 结点处 S' 的左右极限差 */
+ var jump = 0;
+ for (i = 1; i < n; i++) jump = Math.max(jump, Math.abs(segD_R(sp, i - 1) - segD_L(sp, i)));
+ return { xs: xs, ys: ys, sp: sp, mxM: mxM, err: err, gap: gap, kappa: cond ? cond.kappa : NaN, jump: jump };
+}
+function sDraw(){
+ var n = clamp(parseInt($('s-n').value, 10) || 8, 2, 16);
+ var st = sStat(n, S_MODE);
+ var sp = st.sp, xs = st.xs;
+
+ var cv = $('cv-s'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var M = mkMap(w, h, { l: 46, r: 16, t: 16, b: 28 }, [0, 1], [-0.18, 1.18]);
+ grid(g, M, 8, 6); frame(g, M);
+ var t, i;
+ for (t = 0; t <= 1.001; t += 0.25) label(g, t.toFixed(2), M.X(t), M.pad.t + M.ih + 13, '#6d665a', 'center', 10);
+ for (t = 0; t <= 1.001; t += 0.5) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right', 10);
+ clipPlot(g, M);
+ for (i = 0; i <= n; i++){
+ g.strokeStyle = 'rgba(109,102,90,.22)'; g.lineWidth = 1; g.setLineDash([2, 5]);
+ g.beginPath(); g.moveTo(M.X(xs[i]), M.pad.t); g.lineTo(M.X(xs[i]), M.pad.t + M.ih); g.stroke();
+ }
+ g.setLineDash([]);
+ curve(g, M, F1, 0, 1, '#b8b0a0', 1.3, [5, 4], 500);
+ curve(g, M, function(x){ return sEval(sp, x); }, 0, 1, '#c2531f', 2.4, [], 900);
+ unclip(g);
+ for (i = 0; i <= n; i++) dot(g, M, xs[i], st.ys[i], n > 12 ? 2.4 : 3.2);
+
+ var cv2 = $('cv-m'), Z2 = fit(cv2), g2 = Z2.g, w2 = Z2.w, h2 = Z2.h;
+ var lo = 0, hi = 0;
+ for (i = 0; i <= n; i++){ lo = Math.min(lo, sp.M[i]); hi = Math.max(hi, sp.M[i]); }
+ var padY = Math.max(0.12, (hi - lo) * 0.22);
+ if (hi - lo < 0.4){ hi = 0.25; lo = -0.25; }
+ var M2 = mkMap(w2, h2, { l: 46, r: 16, t: 12, b: 26 }, [0, 1], [lo - padY, hi + padY]);
+ grid(g2, M2, 8, 4); frame(g2, M2);
+ for (t = 0; t <= 1.001; t += 0.5) label(g2, t.toFixed(1), M2.X(t), M2.pad.t + M2.ih + 12, '#6d665a', 'center', 10);
+ label(g2, hi.toFixed(2), M2.pad.l - 7, M2.Y(hi), '#6d665a', 'right', 10);
+ label(g2, lo.toFixed(2), M2.pad.l - 7, M2.Y(lo), '#6d665a', 'right', 10);
+ if (lo < 0 && hi > 0) label(g2, '0', M2.pad.l - 7, M2.Y(0), '#6d665a', 'right', 10);
+ clipPlot(g2, M2);
+ g2.strokeStyle = 'rgba(109,102,90,.4)'; g2.lineWidth = 1; g2.setLineDash([4, 4]);
+ g2.beginPath(); g2.moveTo(M2.pad.l, M2.Y(0)); g2.lineTo(M2.pad.l + M2.iw, M2.Y(0)); g2.stroke();
+ g2.setLineDash([]);
+ polyline(g2, M2, xs, sp.M, '#7d5a24', 2.2);
+ unclip(g2);
+ for (i = 0; i <= n; i++) dot(g2, M2, xs[i], sp.M[i], n > 12 ? 2.4 : 3.2, '#7d5a24');
+ label(g2, 'M\u1d62 = S\u2033(x\u1d62)（分段线性 \u21d2 S\u2033\u2032 在结点跳变）',
+ M2.pad.l + 4, M2.pad.t + 9, '#6d665a', 'left', 10);
+
+ setText('s-nv', String(n));
+ setText('s-state', 'n = ' + n + ' \u00b7 ' + (S_MODE === 0 ? '自然' : (S_MODE === 1 ? '固支' : 'Not-A-Knot')));
+ setText('s-maxm', fixed(st.mxM, 4));
+ setText('s-err', exs(st.err, 3));
+ setText('s-gap', isFinite(st.gap) ? exs(st.gap, 2) : '\u2014');
+ setText('s-jump', exs(Math.max(st.jump, 1e-16), 2));
+ return { n: n, mode: S_MODE, mxM: st.mxM, err: st.err, gap: st.gap, kappa: st.kappa, jump: st.jump };
+}
+function setSMode(m){
+ S_MODE = m;
+ var b = [$('s-b0'), $('s-b1'), $('s-b2')];
+ var i;
+ for (i = 0; i < 3; i++) if (b[i]) b[i].setAttribute('aria-pressed', i === m ? 'true' : 'false');
+ sDraw();
+}
+
+/* ============================================================
+ 实验 03 · 三算例
+ ============================================================ */
+var EX = [
+ { tag: '例 1 \u00b7 自然', xs: [1, 2, 3, 4], ys: [1, 1 / 2, 1 / 3, 1 / 4], bc: 'natural',
+ refM: [0, 0.5, 0, 0], refTag: '与分段表达式逐项比对', truth: null },
+ { tag: '例 2 \u00b7 固支', xs: [0, 1, 2, 3], ys: [0, 0.5, 2.0, 1.5], bc: 'clamped',
+ d0: 0.2, dn: -1, refM: [-0.36, 2.52, -3.72, 0.36], refTag: '与方程组的解比对', truth: null },
+ { tag: '简支梁', xs: [0, 1, 2], ys: [0, -1 / 6, 0], bc: 'natural',
+ refM: [0, 0.5, 0], refTag: '与解析挠度比对',
+ truth: function(x){ return x <= 1 ? x * x * x / 12 - x / 4
+ : -Math.pow(x - 1, 3) / 12 + Math.pow(x - 1, 2) / 4 - 1 / 6; } }
+];
+var EX_MODE = 0;
+function exStat(idx){
+ var E = EX[idx];
+ var sp = splineM(E.xs, E.ys, E.bc, E.d0, E.dn);
+ var gap = 0, i;
+ for (i = 0; i < E.refM.length; i++) gap = Math.max(gap, Math.abs(sp.M[i] - E.refM[i]));
+ if (E.truth){
+ gap = maxErr(E.truth, function(x){ return sEval(sp, x); }, E.xs[0], E.xs[E.xs.length - 1], 20001).e;
+ }
+ var res = 0;
+ for (i = 0; i < E.xs.length; i++) res = Math.max(res, Math.abs(sEval(sp, E.xs[i]) - E.ys[i]));
+ /* 第一个内部结点处 S''' 的跳变 */
+ var j = 1, h0 = E.xs[1] - E.xs[0], h1 = E.xs[2] - E.xs[1];
+ var s3l = (sp.M[1] - sp.M[0]) / h0, s3r = (sp.M[2] - sp.M[1]) / h1;
+ return { sp: sp, gap: gap, res: res, jump: s3r - s3l, node: E.xs[j], tag: E.tag };
+}
+function exDraw(){
+ var E = EX[EX_MODE], st = exStat(EX_MODE), sp = st.sp;
+ var x0 = E.xs[0], x1 = E.xs[E.xs.length - 1];
+ var lo = Math.min.apply(null, E.ys), hi = Math.max.apply(null, E.ys);
+ if (E.truth){ lo = Math.min(lo, -0.2); hi = Math.max(hi, 0.05); }
+ var pd = Math.max(0.15, (hi - lo) * 0.2);
+
+ var cv = $('cv-ex'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var M = mkMap(w, h, { l: 50, r: 46, t: 16, b: 30 }, [x0, x1], [lo - pd, hi + pd]);
+ grid(g, M, 8, 6); frame(g, M);
+ var t, i;
+ var step = (x1 - x0) <= 3 ? 0.5 : 1;
+ for (t = x0; t <= x1 + 1e-9; t += step) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 13, '#6d665a', 'center', 10);
+ for (t = Math.ceil((lo - pd) * 2) / 2; t <= hi + pd; t += 0.5) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right', 10);
+ clipPlot(g, M);
+ for (i = 0; i < E.xs.length; i++){
+ g.strokeStyle = 'rgba(109,102,90,.25)'; g.lineWidth = 1; g.setLineDash([2, 5]);
+ g.beginPath(); g.moveTo(M.X(E.xs[i]), M.pad.t); g.lineTo(M.X(E.xs[i]), M.pad.t + M.ih); g.stroke();
+ }
+ g.setLineDash([]);
+ if (E.truth) curve(g, M, E.truth, x0, x1, '#b8b0a0', 1.2, [5, 4], 400);
+ curve(g, M, function(x){ return sEval(sp, x); }, x0, x1, '#c2531f', 2.4, [], 800);
+ unclip(g);
+ for (i = 0; i < E.xs.length; i++) dot(g, M, E.xs[i], E.ys[i], 3.4);
+ /* M 的折线：独立的右轴（S 与 M 量纲不同，绝不能共用一根轴） */
+ var mHi = Math.max.apply(null, sp.M.concat([0])), mLo = Math.min.apply(null, sp.M.concat([0]));
+ var mPad = Math.max(1e-9, (mHi - mLo) * 0.10);
+ if (mHi - mLo < 1e-12){ mHi = 0.5; mLo = -0.5; }
+ var MR = { X: M.X, iw: M.iw, ih: M.ih, pad: M.pad,
+ Y: function(v){ return M.pad.t + (mHi + mPad - v) / (mHi - mLo + 2 * mPad) * M.ih; } };
+ clipPlot(g, M);
+ polyline(g, MR, E.xs, sp.M, 'rgba(125,90,36,.85)', 1.7);
+ unclip(g);
+ for (i = 0; i < E.xs.length; i++) dot(g, MR, E.xs[i], sp.M[i], 2.6, '#7d5a24');
+ g.strokeStyle = 'rgba(125,90,36,.45)'; g.lineWidth = 1;
+ g.beginPath(); g.moveTo(M.pad.l + M.iw, M.pad.t); g.lineTo(M.pad.l + M.iw, M.pad.t + M.ih); g.stroke();
+ label(g, mHi.toFixed(2), M.pad.l + M.iw + 5, MR.Y(mHi), '#7d5a24', 'left', 9);
+ label(g, mLo.toFixed(2), M.pad.l + M.iw + 5, MR.Y(mLo), '#7d5a24', 'left', 9);
+ label(g, 'M\u1d62', M.pad.l + M.iw + 5, M.pad.t + 9, '#7d5a24', 'left', 10);
+
+ setText('ex-state', E.tag);
+ setText('ex-m', '(' + sp.M.map(function(v){ return Math.abs(v) < 1e-12 ? '0' : fixed(v, 4); }).join(', ') + ')');
+ setText('ex-gap', st.gap < 1e-13 ? exs(st.gap, 1) : fixed(st.gap, 6));
+ setText('ex-jump', fixed(st.jump, 4));
+ setText('ex-res', exs(st.res, 1));
+ setText('ex-k1', 'M 的解（' + (E.xs.length - 1) + ' 段）');
+ setText('ex-k2', E.truth ? '与解析挠度的最大差' : '与参考 M 的最大差');
+ setText('ex-k3', 'S\u2034 在 x = ' + st.node + ' 处的跳变');
+ setText('ex-k4', '插值残差 max|S(x\u1d62) \u2212 y\u1d62|');
+
+ /* 段系数表 */
+ var rows = '<table><thead><tr><th>段</th><th class="mono">a\u2083 (t\u00b3)</th><th class="mono">a\u2082 (t\u00b2)</th>' +
+ '<th class="mono">a\u2081 (t)</th><th class="mono">a\u2080</th><th class="mono">M\u1d62</th><th class="mono">M\u1d62\u208a\u2081</th></tr></thead><tbody>';
+ for (i = 0; i < E.xs.length - 1; i++){
+ var c = segCoef(sp, i);
+ rows += '<tr><td>[' + E.xs[i] + ', ' + E.xs[i + 1] + ']</td>' +
+ c.map(function(v){ return '<td class="mono">' + (Math.abs(v) < 1e-13 ? '0' : v.toFixed(5)) + '</td>'; }).join('') +
+ '<td class="mono">' + sp.M[i].toFixed(4) + '</td><td class="mono">' + sp.M[i + 1].toFixed(4) + '</td></tr>';
+ }
+ rows += '</tbody></table><p class="hint">局部坐标 \(t=x-x_i\) 下 \\(S=a_3t^3+a_2t^2+a_1t+a_0\\)。' +
+ (EX_MODE === 0 ? '与 \(1/x\) 的真值对比：最后一段 \\(a_3=a_2=0\\) 说明它退化成直线——自然边界把曲率全挤到了 \\(x=2\\) 那一点。'
+ : (EX_MODE === 1 ? '本例端点斜率被固定为 0.2 与 −1，所以 \\(M_0\\)、\\(M_3\\) 都不为零（0.36 的量级）。'
+ : '本格是物理核对：受载点的挠度 \\(-1/6\\) 由解析解给出，喂进自然样条后整条曲线被逐点复原。')) + '</p>';
+ var tb = $('ex-tbl');
+ if (tb) tb.innerHTML = rows;
+ return { mode: EX_MODE, M: sp.M.slice(), gap: st.gap, jump: st.jump, res: st.res };
+}
+function setExMode(m){
+ EX_MODE = m;
+ var b = [$('ex-b0'), $('ex-b1'), $('ex-b2')], i;
+ for (i = 0; i < 3; i++) if (b[i]) b[i].setAttribute('aria-pressed', i === m ? 'true' : 'false');
+ exDraw();
+}
+/* ============================================================
+ 实验 04 · 局部性
+ ============================================================ */
+var LOC_N = 10;
+var LOC_XS = uni(0, 1, LOC_N);
+var LOC_YS = LOC_XS.map(F1);
+var LOC_BASE = splineM(LOC_XS, LOC_YS, 'natural');
+function locStat(k, d){
+ var ys2 = LOC_YS.slice();
+ ys2[k] = ys2[k] + d;
+ var pert = splineM(LOC_XS, ys2, 'natural');
+ var dM = [], i;
+ for (i = 0; i <= LOC_N; i++) dM.push(pert.M[i] - LOC_BASE.M[i]);
+ /* 各段 max|ΔS| */
+ var seg = [];
+ for (i = 0; i < LOC_N; i++){
+ var m = 0, q, x;
+ for (q = 0; q <= 60; q++){
+ x = LOC_XS[i] + (LOC_XS[i + 1] - LOC_XS[i]) * q / 60;
+ m = Math.max(m, Math.abs(sEval(pert, x) - sEval(LOC_BASE, x)));
+ }
+ seg.push(m);
+ }
+ /* 远离 k 的相邻比：取 i 与 i+1 都在 k+3 之外、且量级未落到噪声 */
+ var rat = NaN, ri = -1;
+ for (i = 1; i < LOC_N; i++){
+ if (i >= k + 3 && Math.abs(dM[i]) > 1e-9 && Math.abs(dM[i - 1]) > 1e-9 && !isFinite(rat)){ rat = Math.abs(dM[i] / dM[i - 1]); ri = i; }
+ }
+ if (!isFinite(rat)){
+ for (i = 1; i < LOC_N; i++){
+ if (i <= k - 3 && Math.abs(dM[i]) > 1e-9 && Math.abs(dM[i - 1]) > 1e-9 && !isFinite(rat)) rat = Math.abs(dM[i] / dM[i - 1]);
+ }
+ }
+ var far = 0;
+ for (i = 0; i < LOC_N; i++) if (Math.abs(i - k) >= 5) far = Math.max(far, seg[i]);
+ return { dM: dM, seg: seg, rat: rat, ri: ri, far: far, pert: pert };
+}
+function locDraw(){
+ var k = clamp(parseInt($('loc-k').value, 10) || 5, 1, LOC_N - 1);
+ var d = clamp(parseFloat($('loc-d').value), -1, 1);
+ if (!isFinite(d)) d = 1;
+ var st = locStat(k, d);
+ var dM = st.dM, i;
+
+ var cv = $('cv-loc'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var hTop = Math.round(h * 0.60);
+ var amax = 0;
+ for (i = 0; i <= LOC_N; i++) amax = Math.max(amax, Math.abs(dM[i]));
+ var top = amax > 0 ? Math.log10(amax) + 0.15 : 0;
+ var bot = top - 4.2;
+ var MT = mkMap(w, hTop, { l: 48, r: 16, t: 16, b: 26 }, [-0.5, LOC_N + 0.5], [bot, top]);
+ grid(g, MT, LOC_N, 4); frame(g, MT);
+ for (i = 0; i <= LOC_N; i++) label(g, String(i), MT.X(i), MT.pad.t + MT.ih + 12, '#6d665a', 'center', 10);
+ var e10;
+ for (e10 = Math.ceil(bot); e10 <= Math.floor(top); e10++){
+ if ((e10 - Math.ceil(bot)) % 2 === 0) label(g, '1e' + (e10 < 0 ? MINUS : '') + Math.abs(e10), MT.pad.l - 7, MT.Y(e10), '#6d665a', 'right', 10);
+ }
+ label(g, 'log|\u0394M|', MT.pad.l + 4, MT.pad.t + 9, '#6d665a', 'left', 10);
+ clipPlot(g, MT);
+ var bw = MT.iw / (LOC_N + 1) * 0.5;
+ for (i = 0; i <= LOC_N; i++){
+ var v = Math.abs(dM[i]);
+ if (v < 1e-16) continue;
+ var y = MT.Y(Math.log10(v));
+ g.fillStyle = dM[i] >= 0 ? 'rgba(194,83,31,.72)' : 'rgba(13,107,93,.62)';
+ g.fillRect(MT.X(i) - bw / 2, y, bw, MT.Y(bot) - y);
+ }
+ g.strokeStyle = 'rgba(109,102,90,.35)'; g.lineWidth = 1; g.setLineDash([3, 4]);
+ g.beginPath(); g.moveTo(MT.X(k), MT.pad.t); g.lineTo(MT.X(k), MT.pad.t + MT.ih); g.stroke();
+ g.setLineDash([]);
+ unclip(g);
+ label(g, '\u6a59 = \u0394M>0', MT.X(LOC_N) - 2, MT.pad.t + 9, '#c2531f', 'right', 10);
+ label(g, '\u9752 = \u0394M<0', MT.X(LOC_N) - 2, MT.pad.t + 24, '#0d6b5d', 'right', 10);
+
+ var sMax = 0;
+ for (i = 0; i < LOC_N; i++) sMax = Math.max(sMax, st.seg[i]);
+ if (sMax < 1e-15) sMax = 1;
+ var MB = mkMap(w, h, { l: 48, r: 16, t: hTop + 26, b: 24 }, [0, 1], [-sMax * 1.12, sMax * 1.12]);
+ grid(g, MB, LOC_N, 2); frame(g, MB);
+ for (i = 0; i <= LOC_N; i++) label(g, String(i), MB.X(i), MB.pad.t + MB.ih + 12, '#6d665a', 'center', 10);
+ label(g, '\u0394S(x)', MB.pad.l + 4, MB.pad.t + 9, '#6d665a', 'left', 10);
+ label(g, '\u00b1' + exs(sMax, 2), MB.pad.l + 4, MB.pad.t + 22, '#6d665a', 'left', 9);
+ clipPlot(g, MB);
+ g.strokeStyle = 'rgba(109,102,90,.4)'; g.lineWidth = 1; g.setLineDash([4, 4]);
+ g.beginPath(); g.moveTo(MB.pad.l, MB.Y(0)); g.lineTo(MB.pad.l + MB.iw, MB.Y(0)); g.stroke();
+ g.setLineDash([]);
+ curve(g, MB, function(x){ return sEval(st.pert, x) - sEval(LOC_BASE, x); }, 0, 1, '#c2531f', 2.2, [], 900);
+ unclip(g);
+
+ setText('loc-kv', String(k));
+ setText('loc-dv', (d >= 0 ? '+' : MINUS) + Math.abs(d).toFixed(2));
+ setText('loc-state', 'k = ' + k + ' \u00b7 \u03b4 = ' + (d >= 0 ? '+' : MINUS) + Math.abs(d).toFixed(2));
+ setText('loc-m0', exs(Math.abs(dM[k]), 3));
+ setText('loc-m3', exs(Math.abs(dM[Math.min(LOC_N, k + 3)]), 3));
+ setText('loc-rat', isFinite(st.rat) ? fixed(st.rat, 4) : '\u2014');
+ setText('loc-far', exs(st.far, 2));
+ return { k: k, d: d, dM: dM, seg: st.seg, rat: st.rat, far: st.far };
+}
+
+/* ============================================================
+ 实验 05 · 边界条件的代价
+ ============================================================ */
+var BC_FCN = 0;   // 0 = exp, 1 = sin(pi x)
+var BC_CACHE = {};
+function bcData(){
+ var key = 'k' + BC_FCN;
+ if (BC_CACHE[key]) return BC_CACHE[key];
+ var f = BC_FCN === 0 ? Math.exp : F1;
+ var df = BC_FCN === 0 ? Math.exp : D1;
+ var arr = [], k, n, xs, ys, sp;
+ for (k = 2; k <= 7; k++){
+ n = Math.pow(2, k);
+ xs = uni(0, 1, n); ys = xs.map(f);
+ var row = { k: k, n: n, h: 1 / n };
+ var spn = splineM(xs, ys, 'natural');
+ var spc = splineM(xs, ys, 'clamped', df(0), df(1));
+ var spk = splineM(xs, ys, 'notaknot');
+ row.nat = maxErr(f, function(x){ return sEval(spn, x); }, 0, 1, 12001).e;
+ row.mid = maxErr(f, function(x){ return sEval(spn, x); }, 0.25, 0.75, 6001).e;
+ row.clm = maxErr(f, function(x){ return sEval(spc, x); }, 0, 1, 12001).e;
+ row.nak = maxErr(f, function(x){ return sEval(spk, x); }, 0, 1, 12001).e;
+ /* k = 2 的二阶导误差（自然）：常数不衰减 */
+ row.dd = maxErr(df, function(x){ return sDD(spn, x); }, 0, 1, 6001).e;
+ arr.push(row);
+ }
+ void sp;
+ BC_CACHE[key] = arr;
+ return arr;
+}
+function bcDraw(){
+ var k = clamp(parseInt($('bc-k').value, 10) || 5, 2, 7);
+ var S = bcData(), cur = S[k - 2];
+ var f = BC_FCN === 0 ? Math.exp : F1;
+ var ord = k >= 3 ? Math.log2(S[k - 3].nat / cur.nat) : NaN;
+ var ordMid = k >= 3 ? Math.log2(S[k - 3].mid / cur.mid) : NaN;
+
+ var cv = $('cv-bc'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var lo = Math.log10(S[S.length - 1].clm) - 0.5, hi = Math.log10(S[0].nat) + 0.5;
+ if (BC_FCN === 1) hi = Math.log10(Math.max(S[0].nat, S[0].nak)) + 0.5;
+ var M = mkMap(w, h, { l: 58, r: 18, t: 18, b: 34 }, [1.75, 7.25], [lo, hi]);
+ grid(g, M, 5, 8); frame(g, M);
+ var i, t;
+ for (i = 2; i <= 7; i++) label(g, '1/' + Math.pow(2, i), M.X(i), M.pad.t + M.ih + 14, '#6d665a', 'center', 10);
+ for (t = Math.ceil(lo); t <= Math.floor(hi); t++){
+ if (Math.abs(t) % 2 === 0 || Math.abs(t) % 2 === 1)
+ label(g, '1e' + (t < 0 ? MINUS : '') + Math.abs(t), M.pad.l - 7, M.Y(t), '#6d665a', 'right', 10);
+ }
+ label(g, '纵轴：‖误差‖∞（对数）', M.pad.l + M.iw - 6, M.pad.t + 9, '#6d665a', 'right', 10);
+
+ function plot(key, col, wd, dash){
+ var j, started = false;
+ g.strokeStyle = col; g.lineWidth = wd; g.setLineDash(dash || []);
+ g.beginPath();
+ for (j = 0; j < S.length; j++){
+ var v = Math.log10(S[j][key]);
+ if (!isFinite(v)){ started = false; continue; }
+ if (!started){ g.moveTo(M.X(S[j].k), M.Y(v)); started = true; } else g.lineTo(M.X(S[j].k), M.Y(v));
+ }
+ g.stroke(); g.setLineDash([]);
+ }
+ clipPlot(g, M);
+ plot('nat', '#c2531f', 2.4);
+ plot('mid', '#7d5a24', 1.8, [6, 4]);
+ plot('clm', '#0d6b5d', 2.0);
+ plot('nak', '#8a8578', 1.6, [2, 3]);
+ unclip(g);
+ for (i = 0; i < S.length; i++){
+ dot(g, M, S[i].k, Math.log10(S[i].nat), i === k - 2 ? 4.2 : 3.0, '#c2531f');
+ dot(g, M, S[i].k, Math.log10(S[i].clm), i === k - 2 ? 4.0 : 2.8, '#0d6b5d');
+ }
+
+ setText('bc-nv', String(cur.n));
+ setText('bc-state', (BC_FCN === 0 ? 'e\u02e3' : 'sin \u03c0x') + ' \u00b7 n = ' + cur.n);
+ setText('bc-nat', exs(cur.nat, 3));
+ setText('bc-mid', exs(cur.mid, 3));
+ setText('bc-clm', exs(cur.clm, 3));
+ setText('bc-ord', isFinite(ord) ? fixed(ord, 3) : '\u2014');
+ return { n: cur.n, nat: cur.nat, mid: cur.mid, clm: cur.clm, nak: cur.nak, ord: ord,
+ ordMid: ordMid, dd: cur.dd, series: S };
+}
+function setBcFcn(m){
+ BC_FCN = m;
+ var b = [$('bc-f0'), $('bc-f1')], i;
+ for (i = 0; i < 2; i++) if (b[i]) b[i].setAttribute('aria-pressed', i === m ? 'true' : 'false');
+ bcDraw();
+}
+
+/* ============================================================
+ 实验 06 · 保形性
+ ============================================================ */
+function shStat(n){
+ var xs = uni(0, 1, n), ys = xs.map(FB);
+ var sp = splineM(xs, ys, 'natural');
+ var pp = pchip(xs, ys);
+ var K = 20000, k, x, v, mx = -Infinity, mn = Infinity, atMax = 0, bad = 0;
+ for (k = 0; k <= K; k++){
+ x = k / K; v = sEval(sp, x);
+ if (v > mx){ mx = v; atMax = x; }
+ if (v < mn) mn = v;
+ if (k < K && sD(sp, (k + 0.5) / K) > 0) bad += 1 / K;
+ }
+ var eS = maxErr(FB, function(x2){ return sEval(sp, x2); }, 0, 1, 12001).e;
+ var eP = maxErr(FB, function(x2){ return pEval(pp, x2); }, 0, 1, 12001).e;
+ return { xs: xs, sp: sp, pp: pp, mx: mx, mn: mn, atMax: atMax, bad: bad, eS: eS, eP: eP };
+}
+function shDraw(){
+ var n = clamp(parseInt($('sh-n').value, 10) || 12, 6, 40);
+ var st = shStat(n);
+
+ var cv = $('cv-shape'), Z = fit(cv), g = Z.g, w = Z.w, h = Z.h;
+ var M = mkMap(w, h, { l: 48, r: 18, t: 16, b: 30 }, [0, 1], [-0.10, 1.14]);
+ grid(g, M, 5, 6); frame(g, M);
+ var t, i;
+ for (t = 0; t <= 1.001; t += 0.2) label(g, t.toFixed(1), M.X(t), M.pad.t + M.ih + 13, '#6d665a', 'center', 10);
+ for (t = 0; t <= 1.001; t += 0.2) label(g, t.toFixed(1), M.pad.l - 7, M.Y(t), '#6d665a', 'right', 10);
+ /* y=1 参考线：真值的最大处 */
+ clipPlot(g, M);
+ g.strokeStyle = 'rgba(13,107,93,.45)'; g.lineWidth = 1.2; g.setLineDash([5, 4]);
+ g.beginPath(); g.moveTo(M.pad.l, M.Y(1)); g.lineTo(M.pad.l + M.iw, M.Y(1)); g.stroke();
+ g.setLineDash([]);
+ curve(g, M, FB, 0, 1, '#b8b0a0', 1.4, [5, 4], 1200);
+ curve(g, M, function(x){ return pEval(st.pp, x); }, 0, 1, '#0d6b5d', 2.0, [], 1200);
+ curve(g, M, function(x){ return sEval(st.sp, x); }, 0, 1, '#7d5a24', 2.4, [], 1500);
+ unclip(g);
+ for (i = 0; i <= n; i++) if (n <= 24) dot(g, M, st.xs[i], FB(st.xs[i]), 2.6);
+ g.strokeStyle = 'rgba(194,83,31,.55)'; g.lineWidth = 1; g.setLineDash([3, 3]);
+ g.beginPath(); g.moveTo(M.X(st.atMax), M.Y(st.mx)); g.lineTo(M.X(st.atMax), M.pad.t + M.ih); g.stroke();
+ g.setLineDash([]);
+ label(g, 'max S = ' + fixed(st.mx, 4), M.X(st.atMax) - 6, M.Y(st.mx) - 12, '#c2531f', 'right', 10);
+ label(g, 'y = 1', M.pad.l + M.iw - 4, M.Y(1) - 10, '#0d6b5d', 'right', 10);
+
+ setText('sh-nv', String(n));
+ setText('sh-state', 'n = ' + n);
+ setText('sh-max', fixed(st.mx, 4));
+ setText('sh-over', '+' + fixed(st.mx - 1, 4));
+ setText('sh-bad', fixed(st.bad * 100, 1) + '%');
+ setText('sh-p', fixed(st.eP, 4));
+ return { n: n, mx: st.mx, over: st.mx - 1, bad: st.bad, eS: st.eS, eP: st.eP, atMax: st.atMax };
+}
+
+/* ============================================================
+ 事件绑定
+ ============================================================ */
+function on(id, fn){ var el = $(id); if (el && el.addEventListener) el.addEventListener('input', fn); }
+function onClick(id, fn){ var el = $(id); if (el && el.addEventListener) el.addEventListener('click', fn); }
+on('j-b', jDraw);
+on('s-n', sDraw); on('loc-k', locDraw); on('loc-d', locDraw);
+on('bc-k', bcDraw); on('sh-n', shDraw);
+onClick('s-b0', function(){ setSMode(0); });
+onClick('s-b1', function(){ setSMode(1); });
+onClick('s-b2', function(){ setSMode(2); });
+onClick('ex-b0', function(){ setExMode(0); });
+onClick('ex-b1', function(){ setExMode(1); });
+onClick('ex-b2', function(){ setExMode(2); });
+onClick('bc-f0', function(){ setBcFcn(0); });
+onClick('bc-f1', function(){ setBcFcn(1); });
+
+var rt = null;
+if (typeof window !== 'undefined' && window.addEventListener){
+ window.addEventListener('resize', function(){
+ if (rt) clearTimeout(rt);
+ rt = setTimeout(function(){ jDraw(); sDraw(); exDraw(); locDraw(); bcDraw(); shDraw(); }, 120);
+ });
+}
+
+jDraw(); sDraw(); exDraw(); locDraw(); bcDraw(); shDraw();
+
+window.NA26 = {
+ PI: PI, F1: F1, D1: D1, FB: FB,
+ fixed: fixed, exs: exs, num: num, clamp: clamp,
+ uni: uni, solve: solve, splineSys: splineSys, splineM: splineM, thomas: thomas,
+ segIndex: segIndex, sEval: sEval, sD: sD, sDD: sDD,
+ segCoef: segCoef, segCoefX: segCoefX, bendEnergy: bendEnergy,
+ maxErr: maxErr, condInf: condInf, pchip: pchip, pEval: pEval, pD: pD,
+ jDraw: jDraw, jBend: jBend, jConst: function(){ return { A: J_A, B: J_B, J0: J_J0, bstar: J_A > 1e-15 ? -J_B / (2 * J_A) : 0 }; },
+ sStat: sStat, sDraw: sDraw, setSMode: setSMode,
+ exStat: exStat, exDraw: exDraw, setExMode: setExMode, EX: EX,
+ locStat: locStat, locDraw: locDraw,
+ bcData: bcData, bcDraw: bcDraw, setBcFcn: setBcFcn,
+ shStat: shStat, shDraw: shDraw,
+ getSMode: function(){ return S_MODE; },
+ getExMode: function(){ return EX_MODE; },
+ getBcFcn: function(){ return BC_FCN; }
+};
+
+})();
+</script>
+</body>
+</html>

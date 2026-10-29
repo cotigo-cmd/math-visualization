@@ -98,7 +98,27 @@ footer code{font-family:var(--mono);background:var(--sheet);border:1px solid var
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">第 2.5 讲</span>分段插值：分段线性与分段三次 Hermite</p>
 <p class="d">引例「改一个数据点的 0.5，整条抛物线跟着动」（中点误差 0.0785 → 0.5135）· 支集对照（全局 Lagrange 的 Lebesgue 常数 10.946，分段基函数 max = 1.0000、支集长 2.000）· 分段线性折线（结点处导数跃变，误差 4.99e−3 对界 5.31e−3）· 双对数实测阶 1.955、实测/界 0.9398 · 三条曲线同台（分段线性 4.99e−3 / 分段三次 Hermite 1.62e−6 / 全局 Lagrange 1.76e−10，Hermite 误差贴住 h⁴/384 界 1.73e−6）· 导数逼近与支集（导数阶 2.916，改一个点只动 3 格）</p>
 <p class="d" style="margin-top:6px">与第 2.4 讲的分工：三次 Hermite 的单区间构造与重结点差商在那边，本页做「把它分段拼起来」的一般理论——支集、一致收敛、误差阶为什么从 h² 跳到 h⁴。第 2.6 讲的样条 = 分段三次 Hermite + 一组关于导数的方程。2026-10-25 起本目录由课本（张平文、李铁军《数值分析》，北京大学出版社 2007）切换为课件讲序；张平文教材降为参考书目，课件未覆盖的课本章节（FFT、常微分方程数值方法、Monte Carlo）暂不排期。</p>
-<p>已上线七页的课件归属：「绪论」= 第 1 讲，「Lagrange 插值」= 第 2.1–2.2 讲，「Newton 插值」= 第 2.3 讲，「Hermite 插值」= 第 2.4 讲，「分段插值」= 第 2.5 讲，「数值积分」= 第 4.1–4.2 讲，「非线性方程迭代法」= 第 5.5 讲前半；七页内容均可用课件对应讲次复核。</p>
+</a>
+<a class="card" href="./样条插值-三弯矩方程与保形性.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">第 2.6 讲</span>三次样条：三弯矩方程与它的两处代价</p>
+<p class="d">弯曲能量最小的插值曲线：三对角追赶法、自然边界的 h² 代价、保形失效</p>
+<p class="d" style="margin-top:6px">接第 2.5 讲：让二阶导也连续，换来一条三对角方程组和两个坑</p>
+</a>
+<h2>第 4 章 · 数值积分 <span>ch04</span></h2>
+
+<a class="card" href="./数值积分-面积-代数精度-Romberg.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">第 4.1–4.2 讲</span>数值积分：面积、代数精度与 Romberg</p>
+<p class="d">把面积换成节点上的加权和：代数精度、复合 Simpson 的 h⁴、Romberg 外推</p>
+</a>
+
+<h2>第 5 章 · 非线性方程 <span>ch05</span></h2>
+
+<a class="card" href="./非线性方程-迭代法与收敛阶.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">第 5.5 讲</span>迭代法：收敛阶与加速</p>
+<p class="d">一次只看一个点：Newton 的二次收敛、割线法的黄金比阶</p>
+</a>
+
+<p>已上线八页的讲次归属：「绪论」= 第 1 讲，「Lagrange 插值」= 第 2.1–2.2 讲，「Newton 插值」= 第 2.3 讲，「Hermite 插值」= 第 2.4 讲，「分段插值」= 第 2.5 讲，「三次样条」= 第 2.6 讲，「数值积分」= 第 4.1–4.2 讲，「非线性方程迭代法」= 第 5.5 讲前半；八页内容均可用对应讲次复核。</p>
 <p>校验：数值脚本在工作区根 <code>math_visualization/</code>（相对路径 <code>../../verify_runge.js</code> 等）；公式用 <code>../../verify_formulas.js</code> 本地编译，要求 0 failed。</p>
 </footer>
 

@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>谱与预解式 · 泛函分析</title>
+<!--
+ 维护说明（给未来的自己）：
+ 1. 本页 = 泛函分析系列第 4 页（图号 FA-04），第 4 章 §1 有界线性算子的谱 + §3 紧算子。
+ 2. 版式身份「靛纸」沿用 FA-01/02/03；实验台结构 .lab/.lab-head/.lab-sub/canvas/.ctrls/.readouts 全站统一。
+ 3. 四个实验台：01 预解式地图（‖R(λ)‖·dist ≥ 1，正规时取等）、02 单侧移位（σ = 闭盘而特征值只有开盘）、
+ 03 乘法算子（λ∈[0,1] 全在谱里、一个特征值也没有 = 连续谱）、04 紧算子 diag(1/n)（谱全是特征值、只在 0 聚）。
+ 4. 读数闸门 verify_readout_fa04.js（工作区根，vm + DOM 桩）；公式 verify_formulas.js。
+ 5. 数学要点（易错，改代码前先读）：
+ · ‖R(λ)‖·dist(λ,σ(T)) ≥ 1 恒成立；正规算子取等。非正规时远大于 1（伪谱），
+ A=[[0.8,0.6],[0,0.5]] 在 λ=0.65 处乘积 4.2361。
+ · 复 2×2 的奇异值要用 Σ|a_ij|² 与 |det|²，把虚部当 0 会静默算错（本页第一版就踩了）。
+ · 单侧移位：向后移位 T=S* 的 σ_p=开盘（特征向量 (1,λ,λ²,…)），向前移位 S 一个特征值都没有；
+ 两者 σ 都是闭盘。圆周 |λ|=1 上特征向量候选的归一化残差 = 1/√N → 0，但向量不收敛 ——
+ 「残差小」不等于「有特征向量」，别只用残差判。
+ · 乘法算子离散成 N 点对角阵后，每个 λ 看起来都可逆，但 ‖R‖ ~ 2N 随 N 线性爆炸；
+ 只有 λ∉[0,1] 时 ‖R‖=1/dist 才与 N 无关。
+ · 紧算子 diag(1/n)：尾部 sup_{n>N}1/n = 1/(N+1) → 0（定理 3.6 的可算版）；谱 {1/n}∪{0}。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+ --paper:#f4f5fa; --card:#ffffff; --ink:#1e2440; --ink2:#5a6078;
+ --line:#d8dcee; --line2:#b9c0dd; --grid:#e7eaf4;
+ --indigo:#3d4fa3; --indigo-soft:#e9ecfa;
+ --violet:#7a4fa3; --violet-soft:#f1eaf8;
+ --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;background:var(--paper);color:var(--ink);
+ font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
+.crumb{font-size:13px;margin:0 0 16px}
+.crumb a{color:var(--indigo);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
+ overflow:hidden;margin:0 0 14px;background:var(--card)}
+.sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
+.sheet .cell:last-child{border-right:none}
+.sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
+.sheet .v{font-size:14.5px;margin:0;font-weight:600}
+.sheet .no{font-family:var(--mono);color:var(--indigo)}
+h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:#3c4260;font-size:15px;margin:0 0 8px;max-width:70ch}
+.tag{display:inline-block;font-size:11.5px;font-family:var(--mono);
+ border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+ background:var(--indigo-soft);color:var(--indigo)}
+.tag.v{background:var(--violet-soft);color:var(--violet)}
+h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
+ border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:var(--mono);font-size:12.5px;color:var(--indigo);font-weight:600}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:4px 0}
+.mono{font-family:var(--mono)}
+.lab{border:1px solid var(--line);border-radius:12px;background:var(--card);
+ margin:22px 0;padding:18px 20px 20px}
+.lab-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
+.lab-head .t{font-size:15.5px;font-weight:680}
+.lab-head .no{font-family:var(--mono);font-size:12px;color:#fff;
+ background:var(--ink);border-radius:4px;padding:2px 8px;letter-spacing:.05em}
+.lab-sub{font-size:13px;color:var(--ink2);margin:0 0 12px}
+canvas{display:block;width:100%;height:auto;background:var(--card);
+ border:1px solid var(--line);border-radius:8px;touch-action:none}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
+.ctrl{display:flex;align-items:center;gap:7px;font-size:13px}
+.ctrl label{color:var(--ink2);white-space:nowrap}
+.ctrl .nm{font-family:var(--mono);color:var(--ink);min-width:44px}
+input[type=range]{width:104px;accent-color:var(--indigo)}
+button{font:13px system-ui;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+ border-radius:7px;padding:5px 13px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:none;border-radius:0;padding:5px 12px}
+.seg button.on{background:var(--indigo);color:#fff}
+.readouts{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
+ display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:4px 18px}
+.ro{display:flex;justify-content:space-between;gap:10px;font-size:13px;
+ border-bottom:1px dotted var(--grid);padding:3px 0}
+.ro .k{color:var(--ink2)}
+.ro .v{font-family:var(--mono);font-weight:600;text-align:right}
+.eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
+ border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.note{border-left:3px solid var(--violet);background:var(--violet-soft);padding:10px 16px;margin:16px 0;
+ border-radius:0 8px 8px 0;font-size:14px}
+.note.b{border-left-color:var(--indigo);background:#eef1fb}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
+mjx-container[display="true"]{min-width:0 !important}
+table.tb{border-collapse:collapse;margin:12px 0;font-size:14px}
+table.tb td,table.tb th{border:1px solid var(--line);padding:5px 14px;text-align:center}
+table.tb th{background:var(--card);font-weight:600}
+table.tb tr.hi td{background:var(--indigo-soft)}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+ font-size:13px;color:var(--ink2)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0 0}
+.pager a{color:var(--indigo);text-decoration:none;font-size:13.5px}
+.pager a:hover{text-decoration:underline}
+.hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
+@media print{
+ .noprint{display:none}
+ h2{page-break-after:avoid}
+ .lab,table.tb,.eq{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">泛函分析</a></p>
+
+<div class="sheet">
+ <div class="cell"><p class="k">图号</p><p class="v no">FA-04</p></div>
+ <div class="cell" style="flex:2 1 260px"><p class="k">主题</p><p class="v">谱与预解式</p></div>
+ <div class="cell"><p class="k">教材</p><p class="v">第 4 章 §1、§3</p></div>
+ <div class="cell"><p class="k">状态</p><p class="v">已上线</p></div>
+</div>
+
+<h1>谱不是特征值</h1>
+<p class="lead">有限维里，\(\lambda\) 不是特征值就等于 \(\lambda I-A\) 可逆——两件事是同一件事。到了无穷维，这个等价断了：<strong>\(\lambda I-T\) 可能单射、可能值域稠密，却仍然不可逆</strong>。谱 \(\sigma(T)\) 收集的是「不可逆」这件事本身，特征值只是其中一个子集。这一页用四张实验台把断点找出来：预解式 \(\|R(\lambda)\|\) 在谱附近怎样爆炸（\(1/\mathrm{dist}\) 是它唯一的下界）、单侧移位为什么谱是整个闭盘却几乎没有特征值、\(L^2[0,1]\) 上的乘法算子为什么「每个 \(\lambda\) 都是特征值」只是离散化的假象、以及紧算子为什么反过来——谱全是特征值，且只可能在 \(0\) 处堆积。</p>
+<p class="hint">拖动画布里的圆点改 \(\lambda\)。页内每个数字都由工作区脚本独立复算，读数闸门逐项对账。</p>
+
+<h2><span class="no">01</span>预解式：\(\lambda I-T\) 有多难求逆</h2>
+<p>设 \(T\in L(X)\)。若 \(\lambda I-T\) 是双射（有界逆自动成立，见第 3 章逆算子定理），就称 \(\lambda\) 属于<strong>预解集</strong> \(\rho(T)\)，并把</p>
+$$R(\lambda,T)=(\lambda I-T)^{-1},\qquad \lambda\in\rho(T)$$
+<p>叫作 \(T\) 的<strong>预解式</strong>；剩下的 \(\sigma(T)=\mathbb{C}\setminus\rho(T)\) 就是<strong>谱</strong>。\(\rho(T)\) 是开集、\(\sigma(T)\) 是闭集（定理 1.2），且 \(\sigma(T)\) 非空、整个落在闭盘 \(\{|\lambda|\le\|T\|\}\) 里（定理 1.1、定理 1.5）。</p>
+<p>关键量是 \(\|R(\lambda)\|\) 的<strong>大小</strong>——它量的是「求逆有多不稳」。有一条不等式，比任何谱半径估计都常用：</p>
+$$\|R(\lambda,T)\|\;\ge\;\frac{1}{\mathrm{dist}(\lambda,\sigma(T))}$$
+<p>理由极简：若 \(\lambda\notin\sigma(T)\) 且 \(d=\mathrm{dist}(\lambda,\sigma)>0\)，取谱点 \(\mu\) 使 \(|\lambda-\mu|=d\)，则 \((\lambda I-T)-(\mu I-T)=(\lambda-\mu)I\)，两边左乘 \(R(\lambda)\) 得 \(I-(\lambda-\mu)R(\lambda)=(\mu I-T)R(\lambda)\)，右边不可逆，故 \(\|(\lambda-\mu)R(\lambda)\|\ge 1\)。所以 \(\|R\|\cdot d\ge 1\)：<strong>谱离得越近，求逆至少坏到那个程度</strong>。</p>
+<p>下界是否取到，取决于 \(T\) 是否正规：</p>
+<table class="tb">
+<tr><th>情形</th><th>\(\|R(\lambda)\|\cdot\mathrm{dist}(\lambda,\sigma)\)</th><th>含义</th></tr>
+<tr class="hi"><td>Hermitian / 酉（正规）</td><td>恒等于 1</td><td>\(1/\mathrm{dist}\) 就是精确答案</td></tr>
+<tr><td>非正规</td><td>可以远大于 1</td><td>「谱离得远」不代表好求逆（伪谱）</td></tr>
+</table>
+
+<section class="lab">
+<div class="lab-head"><span class="no">实验台 01</span><span class="t">预解式的等高线：\(\|R(\lambda)\|\) 的复平面地图</span></div>
+<p class="lab-sub">2×2 实矩阵 \(T\)。底色是 \(\log_{10}\|R(\lambda)\|\)（固定色标：浅 = 好求逆，深 = 快爆炸），十字星是谱点。拖动白点改 \(\lambda\)，或改四个矩阵元。</p>
+<canvas id="cv-rs" width="640" height="420"></canvas>
+<div class="ctrls">
+ <span class="seg"><button id="b-rs-non" class="on">非正规</button><button id="b-rs-sym">对称（正规）</button><button id="b-rs-rot">旋转</button><button id="b-rs-nil">幂零</button></span>
+</div>
+<div class="ctrls">
+ <div class="ctrl"><label>a₁₁</label><input type="range" id="s-rs-a" min="-1.6" max="1.6" step="0.02" value="0.8"><span class="nm" id="v-rs-a"></span></div>
+ <div class="ctrl"><label>a₁₂</label><input type="range" id="s-rs-b" min="-1.6" max="1.6" step="0.02" value="0.6"><span class="nm" id="v-rs-b"></span></div>
+ <div class="ctrl"><label>a₂₁</label><input type="range" id="s-rs-c" min="-1.6" max="1.6" step="0.02" value="0"><span class="nm" id="v-rs-c"></span></div>
+ <div class="ctrl"><label>a₂₂</label><input type="range" id="s-rs-d" min="-1.6" max="1.6" step="0.02" value="0.5"><span class="nm" id="v-rs-d"></span></div>
+</div>
+<div class="readouts">
+ <div class="ro"><span class="k">探针 λ</span><span class="v" id="ro-rs-lam"></span></div>
+ <div class="ro"><span class="k">‖R(λ)‖₂（= 1/σ_min(λI−T)）</span><span class="v" id="ro-rs-R"></span></div>
+ <div class="ro"><span class="k">dist(λ, σ(T))</span><span class="v" id="ro-rs-d"></span></div>
+ <div class="ro"><span class="k">乘积 ‖R‖·dist（≥ 1）</span><span class="v" id="ro-rs-prod"></span></div>
+ <div class="ro"><span class="k">σ_min(λI−T)</span><span class="v" id="ro-rs-smin"></span></div>
+ <div class="ro"><span class="k">谱点 λ₁, λ₂</span><span class="v" id="ro-rs-spec"></span></div>
+ <div class="ro"><span class="k">‖T‖₂（最大奇异值）</span><span class="v" id="ro-rs-norm"></span></div>
+ <div class="ro"><span class="k">λ 是否在 ρ(T) 内</span><span class="v" id="ro-rs-reg"></span></div>
+ <div class="ro"><span class="k">正规性核对（乘积 → 1）</span><span class="v" id="ro-rs-norm2"></span></div>
+ <div class="ro"><span class="k">判定</span><span class="v" id="ro-rs-ok"></span></div>
+</div>
+<p class="note">读这张图：<strong>谱点周围有一圈「山」</strong>，而山的形状由算子的非正规程度决定。切到「对称」时，所有等高线都是同心圆（乘积 1.000000，误差在 \(10^{-12}\) 内）；切回「非正规」，同一个 \(\lambda=0.65\) 的乘积跳到 4.2361——谱离它 0.15，可 \(\lambda I-T\) 已经难求逆四倍。<strong>「谱离得远」只保证不爆炸得太快，不保证好算。</strong></p>
+</section>
+
+<h2><span class="no">02</span>谱可以是一整块：单侧移位</h2>
+<p>设 \(H\) 有正规正交基 \(e_0,e_1,\dots\)，<strong>单侧（向前）移位</strong> \(S\) 定义为</p>
+$$Se_n=e_{n+1},\qquad S\{\xi_0,\xi_1,\xi_2,\dots\}=\{0,\xi_0,\xi_1,\dots\}$$
+<p>它保范（\(\|Sx\|=\|x\|\)，把 \(\ell^2\) 右移一格滴水不漏），所以 \(\|S\|=1\)，由定理 1.1 立刻得到 \(\sigma(S)\subseteq\{|\lambda|\le 1\}\)。它的共轭 \(T=S^*\) 是<strong>向后移位</strong>：</p>
+$$T\{\eta_0,\eta_1,\eta_2,\dots\}=\{\eta_1,\eta_2,\eta_3,\dots\}\ \Longrightarrow\ (T-\lambda I)y=0\iff y\propto\{1,\lambda,\lambda^2,\dots\}$$
+<p>而 \(\{1,\lambda,\lambda^2,\dots\}\in\ell^2\) 当且仅当 \(|\lambda|&lt;1\)。于是（式 (1.6)、(1.7)）</p>
+$$\sigma(T)=\sigma_p(T)=\{|\lambda|&lt;1\},\qquad \dim N(T-\lambda I)=1$$
+<p>再由 \(\sigma(S)=\sigma(S^*)\)（定理 1.3）与 \(\sigma(S^*)\subseteq\sigma(S)\subseteq\overline{\mathbb{D}}\) 夹逼，得到<strong>两者的谱都是闭单位盘</strong>：</p>
+$$\sigma(S)=\sigma(S^*)=\overline{\mathbb{D}}=\{|\lambda|\le 1\}$$
+<p>可 \(S\) 自己<strong>一个特征值也没有</strong>：若 \(Sx=\lambda x\)，则 \(0=\lambda \xi_0\)、\(\xi_n=\lambda\xi_{n+1}\)，只推出 \(x=0\)（教材明确指出 \(|λ|\le 1\) 时 \(\lambda\) 都不是 \(S\) 的特征值，且 \(0\in\sigma_r(S)\) 因为 \(R(S)\) 不稠密）。<strong>谱是整个盘，特征值却是空集</strong>——这是无穷维第一个反直觉处。</p>
+
+<section class="lab">
+<div class="lab-head"><span class="no">实验台 02</span><span class="t">特征向量候选 \(\{1,\lambda,\lambda^2,\dots\}\)：什么时候它是 \(\ell^2\) 里的向量</span></div>
+<p class="lab-sub">右图是 \(|\lambda|^n\) 的衰减剖面，左图是 \(\lambda\) 在闭盘里的位置。\(N\) 是截断维数。逐项检查：残差 \(\|(T-\lambda I)y_N\|/\|y_N\|\) 与 \(\ell^2\) 范数 \(\|y_N\|\)。</p>
+<canvas id="cv-sh" width="640" height="360"></canvas>
+<div class="ctrls">
+ <div class="ctrl"><label>|λ|</label><input type="range" id="s-sh-r" min="0" max="1.20" step="0.01" value="0.60"><span class="nm" id="v-sh-r"></span></div>
+ <div class="ctrl"><label>N</label><input type="range" id="s-sh-n" min="8" max="320" step="2" value="80"><span class="nm" id="v-sh-n"></span></div>
+ <span class="seg"><button id="b-sh-i" class="on">盘内 0.6</button><button id="b-sh-b">圆周 1</button><button id="b-sh-o">盘外 1.2</button></span>
+</div>
+<div class="readouts">
+ <div class="ro"><span class="k">λ（本页取实轴）</span><span class="v" id="ro-sh-lam"></span></div>
+ <div class="ro"><span class="k">‖y_N‖²（= Σ|λ|^2n）</span><span class="v" id="ro-sh-n2"></span></div>
+ <div class="ro"><span class="k">‖y_N‖（N→∞ 时 = 1/√(1−|λ|²)）</span><span class="v" id="ro-sh-nrm"></span></div>
+ <div class="ro"><span class="k">1/√(1−|λ|²)（|λ|<1 时）</span><span class="v" id="ro-sh-lim"></span></div>
+ <div class="ro"><span class="k">归一化残差 ‖(T−λI)y_N‖/‖y_N‖</span><span class="v" id="ro-sh-res"></span></div>
+ <div class="ro"><span class="k">上界 |λ|^N / ‖y_N‖</span><span class="v" id="ro-sh-bnd"></span></div>
+ <div class="ro"><span class="k">1/√N（圆周上的残差）</span><span class="v" id="ro-sh-cir"></span></div>
+ <div class="ro"><span class="k">y_N 是否趋于 ℓ² 中的向量</span><span class="v" id="ro-sh-inl2"></span></div>
+ <div class="ro"><span class="k">λ 的分类</span><span class="v" id="ro-sh-class"></span></div>
+ <div class="ro"><span class="k">判定</span><span class="v" id="ro-sh-ok"></span></div>
+</div>
+<p class="note">圆周上这条最容易读错：残余量随 \(N\) 掉到 0（等于 \(1/\sqrt{N}\)，实测 \(N=640\) 时 0.03953），但<strong>向量本身并不收敛</strong>——\(\|y_N\|=\sqrt{N}\to\infty\)，归一化后 \(\widehat{y}_N\) 每个坐标都趋于 0，只能弱收敛到 0。\(0\notin H\) 不是向量，所以 \(\lambda=1\) 不是特征值，却在谱里。「残差小」是必要不充分条件，判特征值必须看<strong>向量本身是否有 \(\ell^2\) 极限</strong>。</p>
+</section>
+
+<h2><span class="no">03</span>连续谱：每个点都在谱里，一个特征值也没有</h2>
+<p>取 \(L^2[0,1]\) 上的<strong>乘法算子</strong>（例 2）</p>
+$$(Tx)(t)=t\,x(t)$$
+<p>它的谱是整条区间 \(\sigma(T)=[0,1]\)。分两步看：</p>
+<ul>
+<li>\(\lambda\notin[0,1]\)：\((\lambda-t)^{-1}\) 在 \([0,1]\) 上有界连续，乘它的算子<strong>就是</strong> \((\lambda I-T)^{-1}\)，且 \(\|R(\lambda)\|=1/\mathrm{dist}(\lambda,[0,1])\)。</li>
+<li>\(\lambda\in[0,1]\)：\((\lambda-t)x(t)=0\) 几乎处处，只推出 \(x=0\)（\(t=\lambda\) 是零测集），所以 \(\lambda I-T\) <strong>是单射</strong>；但 \((\lambda-t)^{-1}\notin L^2[0,1]\)，所以 \(x\equiv1\notin R(\lambda I-T)\)（值域不满）。</li>
+</ul>
+<p>值域虽然不满，却<strong>稠密</strong>（截断 \((\lambda-t)^{-1}\) 在 \(|t-\lambda|>\epsilon\) 上再逼近连续函数即可）。三条判据合起来，\(\lambda\in[0,1]\) 属于<strong>连续谱</strong> \(\sigma_c(T)\)：单射、值域稠密、值域不闭。于是</p>
+$$\sigma(T)=\sigma_c(T)=[0,1],\qquad \sigma_p(T)=\varnothing$$
+<p>这里最容易被离散化骗到。把 \([0,1]\) 切成 \(N\) 个格点、\(T\) 变成对角阵 \(\mathrm{diag}(t_i)\)，<strong>每个</strong> \(t_i\) 都是特征值，谱跑出一堆点；\(N\to\infty\) 时这些点铺满区间，点谱坍缩成连续谱，<strong>一个特征值都不剩</strong>。</p>
+
+<section class="lab">
+<div class="lab-head"><span class="no">实验台 03</span><span class="t">离散化之后：\(\lambda\) 永远「可逆」，代价是范数随 \(N\) 爆炸</span></div>
+<p class="lab-sub">上限 \(T=\mathrm{diag}(t_i)\)，\(t_i=(i+\tfrac12)/N\)。读 \(\|R(\lambda)\|=\max_i 1/|\lambda-t_i|\)。拖 \(\lambda\) 进出 \([0,1]\)，或改 \(N\)。</p>
+<canvas id="cv-mp" width="640" height="330"></canvas>
+<div class="ctrls">
+ <div class="ctrl"><label>λ</label><input type="range" id="s-mp-l" min="-0.60" max="1.60" step="0.005" value="0.50"><span class="nm" id="v-mp-l"></span></div>
+ <div class="ctrl"><label>N</label><input type="range" id="s-mp-n" min="0" max="4" step="0.02" value="1"><span class="nm" id="v-mp-n"></span></div>
+ <span class="seg"><button id="b-mp-in" class="on">谱内 0.5</button><button id="b-mp-out">谱外 1.4</button><button id="b-mp-neg">左侧 −0.3</button></span>
+</div>
+<div class="readouts">
+ <div class="ro"><span class="k">λ</span><span class="v" id="ro-mp-lam"></span></div>
+ <div class="ro"><span class="k">离谱距离 dist(λ,[0,1])</span><span class="v" id="ro-mp-d"></span></div>
+ <div class="ro"><span class="k">N = 10^s</span><span class="v" id="ro-mp-N"></span></div>
+ <div class="ro"><span class="k">‖R(λ)‖（离散）</span><span class="v" id="ro-mp-R"></span></div>
+ <div class="ro"><span class="k">1/dist（连续情形的真值）</span><span class="v" id="ro-mp-1d"></span></div>
+ <div class="ro"><span class="k">比值（谱外应为 1）</span><span class="v" id="ro-mp-ratio"></span></div>
+ <div class="ro"><span class="k">最近格点 t* </span><span class="v" id="ro-mp-star"></span></div>
+ <div class="ro"><span class="k">‖R‖ 的理论量级</span><span class="v" id="ro-mp-scale"></span></div>
+ <div class="ro"><span class="k">λ 的归属</span><span class="v" id="ro-mp-class"></span></div>
+ <div class="ro"><span class="k">判定</span><span class="v" id="ro-mp-ok"></span></div>
+</div>
+<p class="note">把 \(\lambda=0.5\) 拖在区间内、\(N\) 从 \(10\) 拉到 \(10^4\)：\(\|R\|\) 从 20 涨到 20000，<strong>严格按 \(N\) 线性增长</strong>——这就是「值域不闭」的数值面孔：逆算子存在，但不有界。把 \(\lambda\) 拖到 1.4 再把 \(N\) 拉满：比值从 0.889 爬到 0.9999，<strong>趋于 1 且与 \(N\) 无关</strong>，因为此时 \(\lambda\) 真的在 \(\rho(T)\) 里；谱内的比值则随 \(N\) 一起发散，永远回不到 1。</p>
+</section>
+
+<h2><span class="no">04</span>紧算子：谱全是特征值，且只在 0 处堆积</h2>
+<p>第 2 节那个 \(S\) 之所以谱大，是因为它把单位球<strong>原样搬走</strong>（保范），像永远不紧凑。把「像」压紧，谱就散不开了。</p>
+<p><strong>定义 3.1</strong>：\(A\in L(X)\) 称为<strong>紧算子</strong>，若它把每个有界集映成列紧集（等价：单位球的像的闭包紧）。最简例子是 \(\ell^2\) 上的对角算子</p>
+$$Ae_n=\frac1n e_n,\qquad \|A\|=1$$
+<p>它的单位球像是椭球，半轴 \(1,\tfrac12,\tfrac13,\dots\)（有无限多根，但长度趋于 0）：这正是「紧而不有限秩」。两条定量事实：</p>
+<ul>
+<li><strong>有限秩逼近</strong>（定理 3.6）：令 \(P_N\) 投到 \(\mathrm{span}\{e_1,\dots,e_N\}\)，则 \(\|A-P_NA\|=\sup_{n>N}\tfrac1n=\tfrac{1}{N+1}\to0\)。紧算子就是<strong>能被有限秩算子一致逼近</strong>的那一类。</li>
+<li><strong>紧 ⇒ 弱收敛变强收敛</strong>（定理 3.3）：\(e_n\to0\) 弱（对每个 \(y\)，\((e_n,y)\to0\)），但 \(\|e_n\|=1\) 不强收敛；而 \(\|Ae_n\|=1/n\to0\)。<strong>紧算子把「弱」变「强」</strong>，这一条就是谱变小的机制。</li>
+</ul>
+<p>于是（定理 3.10 + 命题 3.5）：\(\sigma(A)\) 没有非零聚点，非零谱点<strong>全是特征值</strong>、都是孤立的、重数有限。对本例 \(\sigma(A)=\{1,\tfrac12,\tfrac13,\dots\}\cup\{0\}\)——<strong>接上盘外是空集、谱自己收敛到 0</strong>，与第 2 节那个「整个闭盘都是谱却没有特征值」正好是两个极端。</p>
+
+<section class="lab">
+<div class="lab-head"><span class="no">实验台 04</span><span class="t">\(A=\mathrm{diag}(1/n)\)：单位球的像与尾部</span></div>
+<p class="lab-sub">左侧画半轴 \(1/n\)（对数刻度），右侧是尾部范数 \(\|A-P_NA\|=1/(N+1)\)。拖 \(N\) 看截断到第几项就够了。</p>
+<canvas id="cv-cp" width="640" height="340"></canvas>
+<div class="ctrls">
+ <div class="ctrl"><label>N（保留项数）</label><input type="range" id="s-cp-n" min="1" max="64" step="1" value="8"><span class="nm" id="v-cp-n"></span></div>
+ <span class="seg"><button id="b-cp-id" class="on">A = diag(1/n)</button><button id="b-cp-i">I（恒等，非紧）</button></span>
+</div>
+<div class="readouts">
+ <div class="ro"><span class="k">N</span><span class="v" id="ro-cp-n"></span></div>
+ <div class="ro"><span class="k">‖A‖（最大半轴）</span><span class="v" id="ro-cp-norm"></span></div>
+ <div class="ro"><span class="k">第 N+1 个半轴 1/(N+1)</span><span class="v" id="ro-cp-tail"></span></div>
+ <div class="ro"><span class="k">尾部范数 ‖A−P_N A‖ 实测</span><span class="v" id="ro-cp-tailm"></span></div>
+ <div class="ro"><span class="k">第 N+1 个基向量的放大倍数</span><span class="v" id="ro-cp-weak"></span></div>
+ <div class="ro"><span class="k">Σ 1/n² 部分和（HS 范数²）</span><span class="v" id="ro-cp-hs"></span></div>
+ <div class="ro"><span class="k">右侧尾巴是否趋于 0</span><span class="v" id="ro-cp-decay"></span></div>
+ <div class="ro"><span class="k">谱 σ(A)</span><span class="v" id="ro-cp-spec"></span></div>
+ <div class="ro"><span class="k">0 是不是特征值</span><span class="v" id="ro-cp-zero"></span></div>
+ <div class="ro"><span class="k">判定</span><span class="v" id="ro-cp-ok"></span></div>
+</div>
+<p class="note">切到「恒等算子」对照：半轴全是 1，尾部范数恒为 1，<strong>怎么截断都下不去</strong>——这就是非紧。紧性在数值上就是「尾巴能被掐掉」，而这恰好是定理 3.6 的内容。\(0\) 在谱里却不是特征值（\(Ax=0\Rightarrow x=0\)），它是<strong>唯一可能的非特征谱点</strong>，也是唯一的聚点。</p>
+</section>
+
+<h2><span class="no">05</span>把四张台并起来</h2>
+<table class="tb">
+<tr><th>算子</th><th>\(\sigma(T)\)</th><th>\(\sigma_p(T)\)</th><th>其余谱点的身份</th></tr>
+<tr><td>2×2 矩阵（实验台 01）</td><td>两个点</td><td>全部（重数计）</td><td>无</td></tr>
+<tr class="hi"><td>单侧移位 \(S\)（实验台 02）</td><td>闭单位盘</td><td>空（\(S\) 无特征值）</td><td>盘内与圆周都不满足可逆</td></tr>
+<tr><td>向后移位 \(S^*\)（实验台 02）</td><td>闭单位盘</td><td>开单位盘</td><td>圆周是剩余谱</td></tr>
+<tr><td>乘法算子 \(t\cdot\)（实验台 03）</td><td>\([0,1]\)</td><td>空</td><td>连续谱整条</td></tr>
+<tr><td>紧算子 \(\mathrm{diag}(1/n)\)（实验台 04）</td><td>\(\{1/n\}\cup\{0\}\)</td><td>\(\{1/n\}\)</td><td>只有 \(0\)</td></tr>
+</table>
+<p>一句话概括这张表：<strong>「不可逆」有三种坏法</strong>（不单射 / 值域不闭 / 值域不稠密），有限维只有第一种，无穷维三种都会出现。紧算子把后两种赶到 0 这一个点上；保范算子（移位）则让两种铺满整个闭盘。</p>
+<p>再往前一步是 Fredholm 理论（定理 3.8–3.12：\(I-A\) 的两择一、Fredholm 交替定理）——那需要第 3 章 §6 的闭值域定理做工具，本页只到谱的几何为止。下一页接着讲紧算子的不变子空间与 Riesz–Schauder 理论的具体算法。</p>
+
+<div class="pager">
+ <a href="算子范数与共轭空间.html">← FA-03 算子范数与共轭空间</a>
+ <a href="./index.html">泛函分析索引 →</a>
+</div>
+
+<footer>
+<p>图号 FA-04 · 泛函分析系列第 4 页 · 主题「谱与预解式」· 教材第 4 章 §1、§3。</p>
+<p>覆盖：定义 1.1（谱/预解集）、定理 1.1–1.3、定理 1.5–1.7（非空、Neumann、谱半径公式）、例 2（乘法算子）、例 3 与式 (1.5)–(1.7)（单侧移位）、命题 1.2–1.3；定义 3.1–3.2、定理 3.2–3.3、3.6–3.7、3.10、命题 3.2、3.5。定理 3.10/命题 3.5（谱无聚点）在页内由有限秩逼近的尾部估计数值呈现，完整证明略。</p>
+<p>数值结论全部由工作区脚本实测：正规矩阵 \(\|R\|\cdot\mathrm{dist}\) 与 1 的偏差 &lt; \(10^{-12}\)；非正规 \(A=[[0.8,0.6],[0,0.5]]\) 在 \(\lambda=0.65\) 处乘积 4.2361、在 dist\(=0.1\) 圆周上最大 3.1977；圆周特征向量候选的归一化残差 \(1/\sqrt{N}\)（\(N=640\) 时 0.03953）；乘法算子离散范数 \(N=10^4\) 时 \(2\times10^4\)、谱外比值恒 1.000000；紧算子尾部 \(1/(N+1)\) 与 \(\Sigma1/n^2\to\pi^2/6\)。闸门 <code>verify_readout_fa04.js</code> 逐项对账；公式 <code>verify_formulas.js</code> 0 failed。</p>
+</footer>
+
+</div>
+
+<script>
+"use strict";
+function fmt(x, d){ if(!isFinite(x)) return "∞"; d=(d===undefined)?3:d;
+ if(x!==0 && (Math.abs(x)>=1e5||Math.abs(x)<1e-4)) return x.toExponential(2);
+ return x.toFixed(d); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+const $ = function(id){ return document.getElementById(id); };
+function setTxt(id, s){ const el=$(id); if(el) el.textContent = s; }
+function mapper(cx, cy, s){
+ return { X:function(x){ return cx + x*s; }, Y:function(y){ return cy - y*s; },
+ x:function(px){ return (px-cx)/s; }, y:function(py){ return (cy-py)/s; } };
+}
+function dot(ctx, x, y, color, r){ ctx.save(); ctx.fillStyle=color;
+ ctx.beginPath(); ctx.arc(x,y,r||4,0,7); ctx.fill(); ctx.restore(); }
+function label(ctx, txt, x, y, color, size, align){
+ ctx.save(); ctx.fillStyle=color||"#1e2440";
+ ctx.font=(size||12)+'px ui-monospace, Consolas, monospace';
+ ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+ ctx.fillText(txt, x, y); ctx.restore(); }
+function seg(ctx, x1,y1,x2,y2,color,w,dash){
+ ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=w||1.4;
+ if(dash) ctx.setLineDash(dash);
+ ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.restore(); }
+function pt2world(cv, m, e){
+ const r = cv.getBoundingClientRect();
+ return [ m.x((e.clientX - r.left) * cv.width / r.width), m.y((e.clientY - r.top) * cv.height / r.height) ];
+}
+function makeDrag(cv, m, get, set){
+ let dragging=false;
+ cv.addEventListener("pointerdown", function(e){
+ const w=pt2world(cv,m,e), g=get();
+ if(Math.hypot(w[0]-g[0], w[1]-g[1]) < 0.45){ dragging=true;
+ try{ cv.setPointerCapture(e.pointerId); }catch(_){ }
+ set(w); }
+ });
+ cv.addEventListener("pointermove", function(e){ if(dragging) set(pt2world(cv,m,e)); });
+ cv.addEventListener("pointerup", function(){ dragging=false; });
+ cv.addEventListener("pointerleave", function(){ dragging=false; });
+}
+
+/* ---- 复 2×2：奇异值、谱、平移 ---- */
+function sv2c(M){
+ const S = M[0][0].re*M[0][0].re + M[0][0].im*M[0][0].im
+  + M[0][1].re*M[0][1].re + M[0][1].im*M[0][1].im
+  + M[1][0].re*M[1][0].re + M[1][0].im*M[1][0].im
+  + M[1][1].re*M[1][1].re + M[1][1].im*M[1][1].im;
+ const dr = M[0][0].re*M[1][1].re - M[0][0].im*M[1][1].im
+  - (M[0][1].re*M[1][0].re - M[0][1].im*M[1][0].im);
+ const di = M[0][0].re*M[1][1].im + M[0][0].im*M[1][1].re
+  - (M[0][1].re*M[1][0].im + M[0][1].im*M[1][0].re);
+ const P = dr*dr + di*di;
+ const disc = Math.max(0, S*S - 4*P);
+ const s1 = Math.sqrt(Math.max(0, (S + Math.sqrt(disc))/2));
+ const s2 = s1 > 1e-13 ? Math.sqrt(P)/s1 : Math.sqrt(Math.max(0, (S - Math.sqrt(disc))/2));
+ return [s1,s2];
+}
+function shift2(A, lam){
+ return [[{re:A[0][0]-lam.re, im:-lam.im}, {re:A[0][1], im:0}],
+  [{re:A[1][0], im:0}, {re:A[1][1]-lam.re, im:-lam.im}]];
+}
+function eig2(A){
+ const tr = A[0][0]+A[1][1], det = A[0][0]*A[1][1]-A[0][1]*A[1][0];
+ const d = tr*tr - 4*det;
+ if(d >= 0){ const s=Math.sqrt(d); return [[(tr+s)/2,0],[(tr-s)/2,0]]; }
+ const s = Math.sqrt(-d); return [[tr/2, s/2],[tr/2, -s/2]];
+}
+
+/* ==================== 01 预解式地图 ==================== */
+const RS = { a:0.8, b:0.6, c:0.0, d:0.5, lam:{re:0.65, im:0.35} };
+const rsCv = $("cv-rs");
+const rsM = mapper(300, 210, 190);
+function rsA(){ return [[RS.a, RS.b],[RS.c, RS.d]]; }
+function rsRes(A, lam){ return 1/sv2c(shift2(A, lam))[1]; }
+function rsDist(A, lam){
+ const e = eig2(A);
+ return Math.min(Math.hypot(lam.re-e[0][0], lam.im-e[0][1]),
+  Math.hypot(lam.re-e[1][0], lam.im-e[1][1]));
+}
+function rsDraw(){
+ const ctx = rsCv.getContext("2d");
+ const W = rsCv.width, H = rsCv.height;
+ ctx.clearRect(0,0,W,H);
+ ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,W,H);
+ /* 热图：log10 ‖R‖，固定色标 [-1.2, 3.2]（浅=好求逆，深=快爆炸） */
+ const A = rsA(), step = 4;
+ const nx = Math.ceil(W/step), ny = Math.ceil(H/step);
+ const grid = new Float64Array(nx*ny);
+ for(let j=0; j<ny; j++){
+  for(let i=0; i<nx; i++){
+   const wx = rsM.x(i*step+step/2), wy = rsM.y(j*step+step/2);
+   const smin = sv2c(shift2(A, {re:wx, im:wy}))[1];
+   const lg = smin > 1e-9 ? Math.log10(1/smin) : 9.5;
+   grid[j*nx+i] = lg;
+   const t = Math.pow(clamp((lg + 0.8)/3.6, 0, 1), 1.8);
+   ctx.fillStyle = "rgba(46,62,138," + (0.02 + 0.86*t).toFixed(3) + ")";
+   ctx.fillRect(i*step, j*step, step, step);
+  }
+ }
+ /* 等值线：‖R‖ = 10, 100, 1000 的分界（白色细线，让远处的层也看得出来） */
+ const TH = [1, 2];
+ for(let j=0; j<ny; j++){
+  for(let i=0; i<nx; i++){
+   const a = grid[j*nx+i];
+   const r0 = i+1<nx ? grid[j*nx+i+1] : a;
+   const d0 = j+1<ny ? grid[(j+1)*nx+i] : a;
+   for(let k=0; k<TH.length; k++){
+    const th = TH[k];
+    if((a-th)*(r0-th) < 0 || (a-th)*(d0-th) < 0){
+     ctx.fillStyle = "rgba(255,255,255,.9)";
+     ctx.fillRect(i*step+1, j*step+1, step-2, step-2);
+     break;
+    }
+   }
+  }
+ }
+ /* 坐标轴 */
+ seg(ctx, 0, rsM.Y(0), W, rsM.Y(0), "rgba(30,36,64,.35)", 1);
+ seg(ctx, rsM.X(0), 0, rsM.X(0), H, "rgba(30,36,64,.35)", 1);
+ label(ctx, "Re λ", W-46, rsM.Y(0)+14, "#5a6078", 11);
+ label(ctx, "Im λ", rsM.X(0)+8, 12, "#5a6078", 11);
+ /* 谱点 */
+ const e = eig2(A);
+ e.forEach(function(z){
+  const px = rsM.X(z[0]), py = rsM.Y(z[1]);
+  seg(ctx, px-9, py, px+9, py, "#1e2440", 2.2);
+  seg(ctx, px, py-9, px, py+9, "#1e2440", 2.2);
+  label(ctx, "σ", px+11, py-11, "#1e2440", 10);
+ });
+ /* 探针 */
+ const lx = rsM.X(RS.lam.re), ly = rsM.Y(RS.lam.im);
+ dot(ctx, lx, ly, "#7a4fa3", 6);
+ dot(ctx, lx, ly, "#ffffff", 2.6);
+ label(ctx, "λ", lx+9, ly+13, "#7a4fa3", 11);
+ updateRS();
+}
+function updateRS(){
+ const A = rsA(), lam = RS.lam;
+ const smin = sv2c(shift2(A, lam))[1];
+ const R = 1/smin, dd = rsDist(A, lam), prod = R*dd;
+ const n2 = sv2c(shift2(A, {re:0, im:0}))[0];
+ const e = eig2(A);
+ setTxt("ro-rs-lam", fmt(lam.re,2) + (lam.im>=0?" + ":" − ") + fmt(Math.abs(lam.im),2) + "i");
+ setTxt("ro-rs-R", fmt(R,4));
+ setTxt("ro-rs-d", fmt(dd,4));
+ setTxt("ro-rs-prod", fmt(prod,4));
+ setTxt("ro-rs-smin", smin.toExponential(3));
+ setTxt("ro-rs-spec", e.map(function(z){
+  return fmt(z[0],3) + (Math.abs(z[1])<1e-12 ? "" : (z[1]>0?"+":"−") + fmt(Math.abs(z[1]),3) + "i");
+ }).join(" , "));
+ setTxt("ro-rs-norm", fmt(n2,4));
+ setTxt("ro-rs-reg", dd > 1e-9 ? "是（λ ∈ ρ(T)）" : "否（λ 就是谱点）");
+ const dev = Math.abs(prod - 1);
+ setTxt("ro-rs-norm2", dev < 1e-9 ? "= 1.000000（正规：下界取等）" : "≠ 1（非正规，乘积 = " + fmt(prod,3) + "）");
+ setTxt("ro-rs-ok", dev < 1e-9 ? "下界取等" : "下界不取等，‖R‖ 更大");
+}
+makeDrag(rsCv, rsM, function(){ return [RS.lam.re, RS.lam.im]; },
+ function(w){ RS.lam = {re: clamp(w[0],-1.5,1.5), im: clamp(w[1],-1.0,1.0)}; rsDraw(); });
+["a","b","c","d"].forEach(function(k){
+ $("s-rs-"+k).addEventListener("input", function(){
+  RS[k] = parseFloat(this.value); rsDraw();
+ });
+});
+function rsPreset(a,b,c,d){
+ RS.a=a; RS.b=b; RS.c=c; RS.d=d;
+ $("s-rs-a").value=a; $("s-rs-b").value=b; $("s-rs-c").value=c; $("s-rs-d").value=d;
+ rsDraw();
+}
+$("b-rs-non").addEventListener("click", function(){ rsPreset(0.8,0.6,0,0.5); });
+$("b-rs-sym").addEventListener("click", function(){ rsPreset(0.5,0.3,0.3,-0.2); });
+$("b-rs-rot").addEventListener("click", function(){ rsPreset(0.6,-0.8,0.8,0.6); });
+$("b-rs-nil").addEventListener("click", function(){ rsPreset(0,1,0,0); });
+
+/* ==================== 02 单侧移位 ==================== */
+const SH = { r:0.60, N:80 };
+const shCv = $("cv-sh");
+function shGeom(){
+ /* 左：闭盘，中心 (150,180)，半径 110 */
+ return { cx:150, cy:180, rad:110 };
+}
+function shDraw(){
+ const ctx = shCv.getContext("2d");
+ const W = shCv.width, H = shCv.height, G = shGeom();
+ ctx.clearRect(0,0,W,H); ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H);
+ /* 闭盘 */
+ ctx.save(); ctx.beginPath(); ctx.arc(G.cx, G.cy, G.rad, 0, 7);
+ ctx.fillStyle = "rgba(61,79,163,.07)"; ctx.fill();
+ ctx.strokeStyle = "#3d4fa3"; ctx.lineWidth = 1.6; ctx.stroke(); ctx.restore();
+ seg(ctx, G.cx-G.rad-14, G.cy, G.cx+G.rad+14, G.cy, "rgba(30,36,64,.3)", 1);
+ seg(ctx, G.cx, G.cy-G.rad-14, G.cx, G.cy+G.rad+14, "rgba(30,36,64,.3)", 1);
+ label(ctx, "σ(T) = 闭单位盘", G.cx, G.cy+G.rad+26, "#3d4fa3", 11, "center");
+ label(ctx, "Re", G.cx+G.rad+8, G.cy+14, "#5a6078", 10);
+ /* 探针 */
+ const px = G.cx + SH.r*G.rad, py = G.cy;
+ dot(ctx, px, py, "#7a4fa3", 6); dot(ctx, px, py, "#ffffff", 2.6);
+ label(ctx, "λ=" + fmt(SH.r,2), px, py-16, "#7a4fa3", 11, "center");
+ /* 右：|λ|^n 条形 */
+ const x0 = 288, x1 = 620, base = 300, top = 120;
+ /* 纵轴半对数：log10|λ|^n 从 0 到 −3，直条；几何衰减 = 一条直线 */
+ const LG = 3;
+ const yy = function(n){ return base - clamp(-Math.log10(Math.max(Math.pow(SH.r, n), 1e-9))/LG, 0, 1)*(base-top); };
+ seg(ctx, x0, base, x1, base, "#d8dcee", 1);
+ for(let d=1; d<=LG; d++){
+  seg(ctx, x0, base - d/LG*(base-top), x1, base - d/LG*(base-top), "rgba(61,79,163,.16)", 1, [3,4]);
+  label(ctx, "1e−" + d, x0-8, base - d/LG*(base-top), "#5a6078", 10, "right");
+ }
+ const N = SH.N, bw = (x1-x0)/N;
+ let shown = 0;
+ for(let n=0; n<N; n++){
+  const yv = yy(n), v = Math.pow(SH.r, n);
+  if(v < 1e-4 && n > 0) break;        /* 再小就落到底线以下，不再画 */
+  ctx.fillStyle = v > 1.0001 ? "#c0392b" : (n%5===0 ? "#3d4fa3" : "#8f9bd0");
+  ctx.fillRect(x0+n*bw, yv, Math.max(1, bw*0.8), base-yv);
+  shown++;
+ }
+ label(ctx, "|λ|^n（对数纵轴）", x0, top-16, "#5a6078", 11);
+ label(ctx, "1", x0-8, top, "#5a6078", 10, "right");
+ label(ctx, "前 " + shown + " 项在 1e−4 以上", x1, top-16, "#5a6078", 11, "right");
+ seg(ctx, x0, top, x1, top, "rgba(30,36,64,.25)", 1, [4,4]);
+ updateSH();
+}
+function shRes(){
+ /* 残差 = |λ|^N / ‖y_N‖（(T−λI)y 只有最后一项非零，大小 |λ|^N） */
+ const N = SH.N, r = SH.r;
+ const n2 = Math.abs(r-1) < 1e-9 ? N : (1 - Math.pow(r, 2*N))/(1 - r*r);
+ return Math.pow(r, N)/Math.sqrt(n2);
+}
+function updateSH(){
+ const N = SH.N, r = SH.r;
+ const n2 = Math.abs(r-1) < 1e-9 ? N : (1 - Math.pow(r, 2*N))/(1 - r*r);
+ const nrm = Math.sqrt(n2);
+ setTxt("ro-sh-lam", fmt(r,2) + "（实轴）");
+ setTxt("ro-sh-n2", fmt(n2,4));
+ setTxt("ro-sh-nrm", fmt(nrm,4));
+ setTxt("ro-sh-lim", r < 1 ? fmt(1/Math.sqrt(1-r*r),4) : "∞（|λ|≥1）");
+ setTxt("ro-sh-res", shRes().toExponential(3));
+ setTxt("ro-sh-bnd", (Math.pow(r,N)/nrm).toExponential(3));
+ setTxt("ro-sh-cir", fmt(1/Math.sqrt(N),4));
+ setTxt("ro-sh-inl2", r < 1 ? "是：‖y_N‖ 收敛到 " + fmt(1/Math.sqrt(1-r*r),4) : "否：‖y_N‖ = √N 发散");
+ setTxt("ro-sh-class", r < 0.999 ? "σ_p（特征值，重数 1）"
+  : (Math.abs(r-1) < 0.005 ? "圆周：不是特征值，但在 σ(T) 内"
+  : "λ ∉ σ(T)，属预解集 ρ(T)"));
+ setTxt("ro-sh-ok", r < 0.999 ? "候选向量属于 ℓ²" : (Math.abs(r-1)<0.005 ? "残差→0 但向量不收敛" : "‖λI−T‖ 有正下界，可逆"));
+}
+const shM = { x:function(px){ const G=shGeom(); return (px-G.cx)/G.rad; },
+ y:function(py){ const G=shGeom(); return (G.cy-py)/G.rad; },
+ X:function(x){ const G=shGeom(); return G.cx + x*G.rad; },
+ Y:function(y){ const G=shGeom(); return G.cy - y*G.rad; } };
+makeDrag(shCv, shM, function(){ return [SH.r, 0]; },
+ function(w){ SH.r = clamp(w[0], 0, 1.2); $("s-sh-r").value = SH.r; shDraw(); });
+$("s-sh-r").addEventListener("input", function(){ SH.r = clamp(parseFloat(this.value),0,1.2); shDraw(); });
+$("s-sh-n").addEventListener("input", function(){ SH.N = Math.round(parseFloat(this.value)); shDraw(); });
+$("b-sh-i").addEventListener("click", function(){ SH.r=0.60; $("s-sh-r").value=0.60; shDraw(); });
+$("b-sh-b").addEventListener("click", function(){ SH.r=1.00; $("s-sh-r").value=1.00; shDraw(); });
+$("b-sh-o").addEventListener("click", function(){ SH.r=1.20; $("s-sh-r").value=1.20; shDraw(); });
+
+/* ==================== 03 乘法算子 ==================== */
+const MP = { l:0.50, s:1 };
+const mpCv = $("cv-mp");
+function mpN(){ return Math.round(Math.pow(10, MP.s)); }
+function mpNorm(lam, N){
+ /* ‖(λI−T_N)⁻¹‖ = max_i 1/|λ−t_i|，t_i=(i+½)/N */
+ let mn = 1e9, star = 0;
+ for(let i=0; i<N; i++){ const t=(i+0.5)/N, dd=Math.abs(lam-t);
+  if(dd < mn){ mn = dd; star = t; } }
+ return { R: 1/Math.max(mn,1e-12), star: star, mind: mn };
+}
+function mpXT(t){ return 70 + (t + 0.6)/2.2*540; }
+function mpDraw(){
+ const ctx = mpCv.getContext("2d");
+ const W = mpCv.width, H = mpCv.height;
+ ctx.clearRect(0,0,W,H); ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H);
+ const x0 = 70, x1 = 610;
+ const X = mpXT;
+ /* 谱带 [0,1] */
+ ctx.fillStyle = "rgba(61,79,163,.12)"; ctx.fillRect(X(0), 58, X(1)-X(0), 44);
+ ctx.strokeStyle = "#3d4fa3"; ctx.lineWidth = 1.4;
+ ctx.strokeRect(X(0), 58, X(1)-X(0), 44);
+ label(ctx, "0", X(0), 118, "#5a6078", 10, "center");
+ label(ctx, "1", X(1), 118, "#5a6078", 10, "center");
+ label(ctx, "灰带 = σ(T) = [0,1]", x1, 26, "#3d4fa3", 11, "right");
+ /* λ 竖线 */
+ const lam = MP.l;
+ const lx = X(lam);
+ seg(ctx, lx, 40, lx, 300, "#7a4fa3", 2);
+ dot(ctx, lx, 80, "#7a4fa3", 5);
+ label(ctx, "λ=" + fmt(lam,2), lx, 34, "#7a4fa3", 11, "center");
+ /* 最近格点 */
+ const N = mpN(), info = mpNorm(lam, N);
+ if(N <= 400){
+  for(let i=0; i<N; i++){ const t=(i+0.5)/N;
+   dot(ctx, X(t), 80, "rgba(30,36,64,.45)", 1.8); }
+ }
+ dot(ctx, X(info.star), 80, "#c0392b", 3.4);
+ /* 1/|λ−t| 曲线，t 扫 [-0.6, 1.6] */
+ const top = 130, base = 300, cap = 24;
+ ctx.save(); ctx.beginPath(); ctx.strokeStyle = "#3d4fa3"; ctx.lineWidth = 1.8;
+ for(let k=0; k<=800; k++){
+  const t = -0.6 + 2.2*k/800, v = 1/Math.max(Math.abs(lam-t), 1e-6);
+  const yv = base - Math.min(v, cap)/cap*(base-top);
+  const px = X(t);
+  if(k===0) ctx.moveTo(px, yv); else ctx.lineTo(px, yv);
+ }
+ ctx.stroke(); ctx.restore();
+ seg(ctx, x0, base, x1, base, "#d8dcee", 1);
+ label(ctx, "1/|λ−t|", x1-4, top-8, "#3d4fa3", 11, "right");
+ label(ctx, fmt(cap,0), x0-8, top, "#5a6078", 10, "right");
+ label(ctx, "0", x0-8, base, "#5a6078", 10, "right");
+ label(ctx, "-0.6", x0, base+16, "#5a6078", 10, "center");
+ label(ctx, "1.6", x1, base+16, "#5a6078", 10, "center");
+ /* 最近格点与 R 的读数 */
+ label(ctx, "最近格点 t* = " + fmt(info.star,5), X(info.star), 322, "#c0392b", 11, "center");
+ updateMP();
+}
+function updateMP(){
+ const lam = MP.l, N = mpN(), info = mpNorm(lam, N);
+ const dd = lam < 0 ? -lam : (lam > 1 ? lam-1 : 0);
+ const inv = dd > 0 ? 1/dd : Infinity;
+ setTxt("ro-mp-lam", fmt(lam,3));
+ setTxt("ro-mp-d", fmt(dd,4));
+ setTxt("ro-mp-N", String(N));
+ setTxt("ro-mp-R", info.R >= 1e5 ? info.R.toExponential(3) : fmt(info.R,4));
+ setTxt("ro-mp-1d", dd > 0 ? fmt(inv,4) : "∞（在谱内）");
+ setTxt("ro-mp-ratio", dd > 0 ? fmt(info.R*dd,6) : "∞");
+ setTxt("ro-mp-star", fmt(info.star,5));
+ setTxt("ro-mp-scale", dd > 0 ? "1/dist（与 N 无关）" : "≈ 2N（随 N 线性增长）");
+ setTxt("ro-mp-class", dd > 0 ? "λ ∈ ρ(T)：可逆" : "λ ∈ σ_c(T)：单射、值域稠密但不闭");
+ setTxt("ro-mp-ok", dd > 0 ? (Math.abs(info.R*dd - 1) < 0.02 ? "乘积 → 1，逆算子有界" : "N 还小，离散谱偏低估")
+  : (info.R > 100 ? "逆无界，离散化把它藏起来了" : "N 太小，还看不出爆炸"));
+}
+makeDrag(mpCv, { x:function(px){ return (px-70)/540*2.2 - 0.6; }, y:function(){ return 0; },
+ X:mpXT, Y:function(){ return 80; } },
+ function(){ return [MP.l, 0]; },
+ function(w){ MP.l = clamp(w[0], -0.6, 1.6); $("s-mp-l").value = MP.l; mpDraw(); });
+$("s-mp-l").addEventListener("input", function(){ MP.l = clamp(parseFloat(this.value),-0.6,1.6); mpDraw(); });
+$("s-mp-n").addEventListener("input", function(){ MP.s = clamp(parseFloat(this.value),0,4); mpDraw(); });
+$("b-mp-in").addEventListener("click", function(){ MP.l=0.50; $("s-mp-l").value=0.50; mpDraw(); });
+$("b-mp-out").addEventListener("click", function(){ MP.l=1.40; $("s-mp-l").value=1.40; mpDraw(); });
+$("b-mp-neg").addEventListener("click", function(){ MP.l=-0.30; $("s-mp-l").value=-0.30; mpDraw(); });
+
+/* ==================== 04 紧算子 ==================== */
+const CP = { N:8, mode:"A" };
+const cpCv = $("cv-cp");
+function cpVal(n){ return CP.mode === "A" ? 1/n : 1; }
+function cpTail(N){ return CP.mode === "A" ? 1/(N+1) : 1; }
+function cpDraw(){
+ const ctx = cpCv.getContext("2d");
+ const W = cpCv.width, H = cpCv.height;
+ ctx.clearRect(0,0,W,H); ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H);
+ /* 左：半轴 1/n，n=1..30 */
+ const x0 = 56, x1 = 380, base = 290, top = 90;
+ const M = 30, bw = (x1-x0)/M;
+ for(let n=1; n<=M; n++){
+  const v = cpVal(n), h = v*(base-top);
+  ctx.fillStyle = n <= CP.N ? "#3d4fa3" : "rgba(61,79,163,.28)";
+  ctx.fillRect(x0+(n-1)*bw, base-h, Math.max(1,bw*0.7), h);
+ }
+ seg(ctx, x0, base, x1, base, "#d8dcee", 1);
+ label(ctx, "单位球像的半轴 a_n（n ≤ 30）", x0, top-24, "#5a6078", 11);
+ label(ctx, "1", x0-8, top, "#5a6078", 10, "right");
+ label(ctx, "0", x0-8, base, "#5a6078", 10, "right");
+ label(ctx, "保留的 N 项", x0+ (CP.N > M ? M : CP.N)*bw, top-6, "#3d4fa3", 10);
+ /* 右：尾部范数 vs N */
+ const rx0 = 440, rx1 = 612, ry0 = 90, ry1 = 290;
+ seg(ctx, rx0, ry1, rx1, ry1, "#d8dcee", 1);
+ seg(ctx, rx0, ry0, rx0, ry1, "#d8dcee", 1);
+ ctx.save(); ctx.beginPath(); ctx.strokeStyle = CP.mode==="A" ? "#7a4fa3" : "#c0392b";
+ ctx.lineWidth = 1.8;
+ for(let n=1; n<=64; n++){
+  const v = cpTail(n);
+  const px = rx0 + (n-1)/63*(rx1-rx0), py = ry1 - v*(ry1-ry0);
+  if(n===1) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+ }
+ ctx.stroke(); ctx.restore();
+ const cN = clamp(CP.N,1,64);
+ const cpx = rx0 + (cN-1)/63*(rx1-rx0), cpy = ry1 - cpTail(cN)*(ry1-ry0);
+ dot(ctx, cpx, cpy, "#c0392b", 4);
+ label(ctx, "‖A − P_N A‖", rx0, ry0-14, "#5a6078", 11);
+ label(ctx, "N=1", rx0, ry1+16, "#5a6078", 10, "center");
+ label(ctx, "64", rx1, ry1+16, "#5a6078", 10, "center");
+ label(ctx, (CP.mode==="A" ? "1/(N+1)" : "恒为 1"), (rx0+rx1)/2, ry0-30, "#7a4fa3", 11, "center");
+ updateCP();
+}
+function updateCP(){
+ const N = CP.N, A = CP.mode === "A";
+ let hs = 0; for(let n=1; n<=N; n++) hs += A ? 1/(n*n) : 1;
+ let tailMax = 0;
+ for(let n=N+1; n<=N+400; n++) tailMax = Math.max(tailMax, cpVal(n));
+ setTxt("ro-cp-n", String(N));
+ setTxt("ro-cp-norm", A ? "1.000000" : "1.000000");
+ setTxt("ro-cp-tail", A ? fmt(1/(N+1),6) : "1.000000");
+ setTxt("ro-cp-tailm", fmt(tailMax,6));
+ setTxt("ro-cp-weak", fmt(cpVal(N+1),6));
+ setTxt("ro-cp-hs", fmt(hs,6) + (A ? "（→ π²/6 = 1.644934）" : ""));
+ setTxt("ro-cp-decay", A ? "是：1/(N+1) → 0" : "否：恒为 1（非紧）");
+ setTxt("ro-cp-spec", A ? "{1, 1/2, 1/3, …} ∪ {0}" : "整个闭单位盘（非紧）");
+ setTxt("ro-cp-zero", A ? "否（Ax=0 ⇒ x=0），但 0 ∈ σ(A)" : "否，且 0 ∈ σ(I)");
+ setTxt("ro-cp-ok", A ? "紧：尾部可掐掉" : "非紧：尾部掐不掉");
+}
+$("s-cp-n").addEventListener("input", function(){ CP.N = Math.round(parseFloat(this.value)); cpDraw(); });
+$("b-cp-id").addEventListener("click", function(){ CP.mode="A"; cpDraw(); });
+$("b-cp-i").addEventListener("click", function(){ CP.mode="I"; cpDraw(); });
+
+/* 初始化 */
+rsDraw(); shDraw(); mpDraw(); cpDraw();
+</script>
+</body>
+</html>

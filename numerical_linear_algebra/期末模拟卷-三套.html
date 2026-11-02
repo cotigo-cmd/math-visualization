@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>期末模拟卷 · 三套 · 数值线性代数</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 图号 NLA-R4，与 R2（期中两套）同一版式。每套 8 题、100 分、120 分钟，
+     范围到第 13 讲（后向稳定性）；第三套第 7 题是特征值选做题，老师没讲就划掉。
+  2. 所有数值答案由工作区根 verify_exam_numbers.py 实测：
+     SET1-3 的 SVD(2√2,√2)/U=I/κ=2/面积 4π；SET1-2 的循环矩阵 ‖A‖₂=2；
+     SET1-5 的 LS 解 (0.8,1.8)/残差 √0.6；SET1-6 的 κ₂=14.933；
+     SET2-2 的秩一伪逆 (1/25)A；SET2-4 的 H 与 −5e₁；SET2-6 的达界构造；
+     SET3-2 的 σ=(3,1)/秩一近似；SET3-3 的 x=(1/3,2/15)；SET3-5 的两种求和顺序。
+  3. 改题时先跑脚本再改答案，别凭印象。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
+.crumb{font-size:13px;margin:0 0 16px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
+.sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
+.sheet .cell:last-child{border-right:none}
+.sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
+.sheet .v{font-size:14.5px;margin:0;font-weight:600}
+.sheet .no{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;color:var(--cinn)}
+h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:72ch}
+h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+h3{font-size:15px;font-weight:680;margin:26px 0 8px;color:var(--ink)}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:4px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
+  border-radius:0 8px 8px 0;font-size:14px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+.note.a{border-left-color:var(--amber);background:#FBF6E7}
+.note .h{font-weight:680;display:block;margin-bottom:2px}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
+table.tb{border-collapse:collapse;margin:14px 0;font-size:14px;width:100%}
+table.tb td,table.tb th{border:1px solid var(--line);padding:6px 12px;text-align:left;vertical-align:top}
+table.tb th{background:#F2F5F8;font-weight:650;text-align:center;white-space:nowrap}
+table.tb td.c{text-align:center}
+table.tb.small{font-size:13px}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--ink2)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:22px 0 0;flex-wrap:wrap}
+.pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
+.pager a:hover{text-decoration:underline}
+.hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
+.paper{border:1px solid var(--line);border-radius:12px;background:var(--card);
+  padding:18px 20px 6px;margin:18px 0}
+.q{margin:22px 0 26px}
+.q .qhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  border-bottom:1px dashed var(--line);padding-bottom:6px;margin-bottom:8px}
+.q .qt{font-weight:680;font-size:15px}
+.q .pts,.q .tm{font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
+  padding:1px 7px;border-radius:5px}
+.q .pts{background:#FBF1ED;color:var(--cinn)}
+.q .tm{background:#EEF3F8;color:var(--steel)}
+.ans{border-left:3px solid var(--green);background:#F7FBF8;padding:2px 16px 10px;margin:14px 0 0;
+  border-radius:0 8px 8px 0}
+.ans .ah{font-weight:680;font-size:13.5px;color:var(--green);margin:10px 0 2px}
+.step{font-size:13.5px;color:var(--ink2)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 0}
+.tabs a{font-size:13px;text-decoration:none;color:var(--steel);border:1px solid var(--line);
+  border-radius:999px;padding:3px 12px;background:var(--card)}
+.tabs a:hover{background:#EFF4F9}
+@media print{
+  body{background:#fff;font-size:12px}
+  .wrap{max-width:none;padding:0 6mm}
+  .crumb,.pager,footer,.noprint,.tabs{display:none}
+  h2{page-break-before:always;page-break-after:avoid;margin-top:16px}
+  .q,.note,table.tb,.eq{page-break-inside:avoid}
+  a{color:var(--ink);text-decoration:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb noprint"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
+
+<div class="sheet">
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-R4</p></div>
+  <div class="cell" style="flex:2 1 230px"><p class="k">主题</p><p class="v">期末模拟卷 · 三套 + 详解</p></div>
+  <div class="cell"><p class="k">规格</p><p class="v">各 8 题 · 100 分 · 120 分钟</p></div>
+  <div class="cell"><p class="k">范围</p><p class="v">到后向稳定性</p></div>
+</div>
+
+<h1>期末模拟卷：三套，从找手感 → 试上限</h1>
+<p class="lead">按 27 道作业题的题型对位设计，每套 8 题、100 分、120 分钟。数字全部换过，但<strong>结构照抄作业</strong>——因为期中 8/8 是原题，期末的改法最可能是「换矩阵 + 加一问 + 反向问」。三套的难度是递进的：第一套对标作业难度，第二套偏证明，第三套按真题强度并留一道特征值选做题。</p>
+
+<div class="tabs noprint">
+  <a href="#s1q">第一套 · 题目</a><a href="#s1a">第一套 · 详解</a>
+  <a href="#s2q">第二套 · 题目</a><a href="#s2a">第二套 · 详解</a>
+  <a href="#s3q">第三套 · 题目</a><a href="#s3a">第三套 · 详解</a>
+  <a href="#how">怎么用</a>
+</div>
+
+<div class="note b">
+<span class="h">三套各自考什么（用之前先看一眼）</span>
+<table class="tb small" style="margin:8px 0 0">
+<tr><th>套</th><th>定位</th><th>覆盖重心</th></tr>
+<tr><td class="c">一</td><td>常规全覆盖，对标作业难度</td><td>初等变换 · 范数 · SVD · 投影 · MGS/最小二乘 · 条件数 · 浮点 · 后向稳定（各一题，均衡）</td></tr>
+<tr><td class="c">二</td><td>偏证明，试上限</td><td>范数不等式紧性 · 秩一全套 · 斜投影 · Householder 手算 · 正规方程平方 · 条件数达界构造 · 回代误差算例</td></tr>
+<tr><td class="c">三</td><td>真题强度</td><td>反射与酉性 · 对称 SVD 综合 · QR 解系统 · 条件数 vs 稳定性辨析 · 浮点吸收 · 精度定理 · 特征值（选做）</td></tr>
+</table>
+</div>
+
+<h2 id="s1q"><span class="no">SET 1</span>第一套 · 题目</h2>
+
+<div class="paper">
+<p class="hint" style="margin:0 0 6px">数值线性代数 · 期末模拟（一）· 120 分钟 · 满分 100 · 闭卷。计算题保留根号，中途不转小数。</p>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 1 题</span><span class="pts">10 分</span><span class="tm">建议 8 分钟</span></div>
+<p>设 \(B\in\mathbb{R}^{4\times4}\)，对它依次执行五个操作：</p>
+<ol>
+<li>交换第 1 行与第 3 行；</li>
+<li>将第 2 列乘以 \(-2\)；</li>
+<li>把第 2 行加到第 4 行；</li>
+<li>删去第 1 行；</li>
+<li>交换第 1 列与第 2 列。</li>
+</ol>
+<p>（a）把最终结果写成含 \(B\) 的矩阵乘积（用初等阵、置换阵、对角阵、选择矩阵表示）。（5 分）<br>
+（b）合并成 \(ABC\) 的形式（\(B\) 为原矩阵），写出 \(A\)、\(C\) 的阶数。（3 分）<br>
+（c）最终矩阵是 \(3\times4\)。此时还能谈 \(\kappa(A)\) 吗？若能，用哪个对象定义？（2 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 2 题</span><span class="pts">15 分</span><span class="tm">建议 14 分钟</span></div>
+<p>设 \(A=\begin{bmatrix}1&1&0\\0&1&1\\1&0&1\end{bmatrix}\)。</p>
+<p>（a）求 \(\|A\|_1,\ \|A\|_\infty,\ \|A\|_F\)。（4 分）<br>
+（b）求 \(A\) 的全部特征值，并由此确定 \(\|A\|_2\)。（5 分）<br>
+（c）证明对任意 \(m\times n\) 矩阵 \(\|A\|_2\le\sqrt{\|A\|_1\|A\|_\infty}\)。（4 分）<br>
+（d）本题的 \(A\) 是否使（c）的等号成立？这说明什么？（2 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 3 题</span><span class="pts">20 分</span><span class="tm">建议 24 分钟</span></div>
+<p>设 \(A=\begin{bmatrix}2&2\\-1&1\end{bmatrix}\)。</p>
+<p>（a）求 \(A^{\mathrm T}A\) 的特征值与 \(A\) 的奇异值。（5 分）<br>
+（b）求完整的 SVD \(A=U\Sigma V^{\mathrm T}\)，并说明 \(U=I_2\) 是否唯一。（6 分）<br>
+（c）求 \(\|A\|_2,\ \|A\|_F,\ \kappa_2(A)\)。（4 分）<br>
+（d）求 \(A\) 的特征值，验证 \(|\det A|=\sigma_1\sigma_2\)，并解释为何这里 \(\sigma_1\ne|\lambda|_{\max}\)。（3 分）<br>
+（e）单位圆经 \(A\) 映射后所得椭圆的面积，以及最佳秩一近似的误差 \(\|A-A_1\|_2\)。（2 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 4 题</span><span class="pts">10 分</span><span class="tm">建议 9 分钟</span></div>
+<p>（a）设 \(P\in\mathbb{C}^{m\times m}\) 是正交投影。证明 \(I-P\) 也是正交投影，且对任意 \(x\) 有 \(\|(I-P)x\|_2\le\|x\|_2\)。（5 分）<br>
+（b）举一个非正交投影 \(P\) 的例子，算出它的 \(\|P\|_2\)，说明它严格大于 1。（5 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 5 题</span><span class="pts">12 分</span><span class="tm">建议 14 分钟</span></div>
+<p>设 \(A=\begin{bmatrix}1&0\\1&1\\0&1\\1&1\end{bmatrix}\)，\(b=(1,2,2,3)^{\mathrm T}\)。</p>
+<p>（a）用改进的 Gram–Schmidt（MGS）求约化 QR 分解 \(A=\hat Q\hat R\)，保留根号。（7 分）<br>
+（b）求最小二乘解 \(x\) 与残差 \(r=b-Ax\)。（3 分）<br>
+（c）验证 \(A^{\mathrm T}r=0\)，并用 \(\|r\|_2^2=\|b\|_2^2-\|\hat Q^{\mathrm T}b\|_2^2\) 复核。（2 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 6 题</span><span class="pts">13 分</span><span class="tm">建议 12 分钟</span></div>
+<p>设 \(A=\begin{bmatrix}1&2\\3&4\end{bmatrix}\)，\(b=(1,1)^{\mathrm T}\)。</p>
+<p>（a）求 \(A\) 的奇异值（保留根号）与 \(\kappa_2(A)\)。（5 分）<br>
+（b）设 \(b\) 有相对扰动 \(10^{-6}\)，给出解 \(x\) 相对误差的上界；若不是 \(b\) 而是 \(A\) 有相对扰动 \(10^{-6}\)，上界是什么？（4 分）<br>
+（c）若改用正规方程 \(A^{\mathrm T}Ax=A^{\mathrm T}b\) 求解，误差放大的倍数是多少？（4 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 7 题</span><span class="pts">10 分</span><span class="tm">建议 8 分钟</span></div>
+<p>（a）写出机器 epsilon 的定义式，并给出双精度与单精度的数值。（3 分）<br>
+（b）用浮点运算的两条基本公理证明：当 \(x+y\ne0\) 时，\(\mathrm{fl}(x+y)=(x+y)(1+\epsilon)\)，\(|\epsilon|\le\epsilon_{\text{machine}}\)。（3 分）<br>
+（c）在双精度下 \(0.1+0.2-0.3=5.55\times10^{-17}\)。用（b）解释这个数的量级（它与 \(\epsilon\) 什么关系）。（2 分）<br>
+（d）为什么 \((1+2^{-53})-1=0\) 而 \((1+2^{-52})-1=2^{-52}\)？（2 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 8 题</span><span class="pts">10 分</span><span class="tm">建议 10 分钟</span></div>
+<p>（a）写出「稳定」与「后向稳定」的定义，并指出后者强在哪里。（4 分）<br>
+（b）证明：若算法 \(\tilde f\) 对问题 \(f\) 后向稳定、\(f\) 在 \(x\) 处的条件数为 \(\kappa(x)\)，则
+\(\dfrac{\|\tilde f(x)-f(x)\|}{\|f(x)\|}=O(\kappa(x)\epsilon_{\text{machine}})\)。（4 分）<br>
+（c）若 \(\kappa(A)=10^{16}\)，双精度下这个界说明解还有几位有效数字？此时算法还能是后向稳定的吗？（2 分）</p>
+</div>
+</div>
+
+<h2 id="s1a"><span class="no">SET 1</span>第一套 · 详解</h2>
+
+<div class="ans">
+<div class="ah">第 1 题 · 答案（10 分）</div>
+<p>（a）逐条写。① 交换行是<strong>左乘</strong>置换阵：\(B_1=P_{13}B\)。② 第 2 列乘 \(-2\) 是<strong>右乘</strong>对角阵 \(D_2(-2)=\mathrm{diag}(1,-2,1,1)\)：\(B_2=P_{13}BD_2(-2)\)。③ 第 2 行加到第 4 行：左乘 \(E_{42}=I+e_4e_2^{\mathrm T}\)（非对角元在（行 4，列 2））：\(B_3=E_{42}P_{13}BD_2(-2)\)。④ 删第 1 行：左乘 \(3\times4\) 选择矩阵 \(S_1\)（把 \(I_4\) 的第 1 行去掉）：\(B_4=S_1E_{42}P_{13}BD_2(-2)\)。⑤ 交换第 1、2 列：此时是 \(3\times4\)，右乘的置换阵是 \(4\times4\)：</p>
+<div class="eq">$$B_5=S_1\,E_{42}\,P_{13}\,B\,D_2(-2)\,P_{12}.$$</div>
+<p>（b）左乘因子合并为 \(A=S_1E_{42}P_{13}\)（\(3\times4\)），右乘因子合并为 \(C=D_2(-2)P_{12}\)（\(4\times4\)），故 \(B_5=ABC\)，其中 \(A\in\mathbb{R}^{3\times4}\)、\(C\in\mathbb{R}^{4\times4}\)。<strong>左右两侧各自内部顺序不能交换</strong>，且先做的靠 \(B\)。</p>
+<p>（c）不能直接谈 \(\kappa(A)=\|A\|\|A^{-1}\|\)——它不是方阵，没有逆。此时条件数要用伪逆定义：\(\kappa(A)=\|A\|_2\|A^+\|_2=\sigma_1/\sigma_3\)（若满列秩）。</p>
+<p class="step">易错点：删行是左乘（\(3\times4\)），删列才是右乘（\(4\times3\)）；第 5 步的置换阵阶数由“此时矩阵有几列”决定，不是 3。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 2 题 · 答案（15 分）</div>
+<p>（a）\(\|A\|_1=\max\{2,2,2\}=2\)（列和）；\(\|A\|_\infty=\max\{2,2,2\}=2\)（行和）；\(\|A\|_F=\sqrt{1+1+1+1+1+1}=\sqrt6\approx2.4495\)。</p>
+<p>（b）\(A\) 是循环矩阵，特征向量为 \((1,1,1)^{\mathrm T}\)、\((1,\omega,\omega^2)^{\mathrm T}\)、\((1,\omega^2,\omega)^{\mathrm T}\)（\(\omega=e^{2\pi i/3}\)），对应特征值</p>
+<div class="eq">$$\lambda_1=1+1+0=2,\qquad \lambda_2=1+\omega+\omega^2\cdot0=1+\omega,\qquad \lambda_3=1+\omega^2 .$$</div>
+<p>因 \(\omega^2+\omega+1=0\)，有 \(|1+\omega|=|-\omega^2|=1\)，同理 \(|1+\omega^2|=1\)。\(A\) 是正规矩阵（循环矩阵可酉对角化），故</p>
+<div class="eq">$$\|A\|_2=\max_j|\lambda_j|=2 .$$</div>
+<p>（c）对任意 \(x\)，记 \(A\) 的行、列分别考虑：</p>
+<div class="eq">$$\|Ax\|_2^2=\sum_i\Big|\sum_j a_{ij}x_j\Big|^2
+\le\sum_i\Big(\sum_j|a_{ij}|\Big)\Big(\sum_j|a_{ij}||x_j|^2\Big)
+\le\|A\|_\infty\sum_j\Big(\sum_i|a_{ij}|\Big)|x_j|^2\le\|A\|_\infty\|A\|_1\|x\|_2^2 .$$</div>
+<p>第一、二个不等号都是 Cauchy–Schwarz（把 \(\sqrt{|a_{ij}|}\cdot\sqrt{|a_{ij}|}|x_j|\) 拆开），第三个是把列和换成最大值。除以 \(\|x\|_2^2\) 并取上确界即得 \(\|A\|_2^2\le\|A\|_1\|A\|_\infty\)。</p>
+<p>（d）成立：\(\|A\|_1\|A\|_\infty=2\cdot2=4\)，而 \(\|A\|_2^2=4\)。说明该界可以取等；一般地等号当且仅当“最坏行”与“最坏列”在同一批元素上同时达到（全 1 矩阵是标准等号例）。</p>
+<p class="step">注意：\(\|A\|_2\) 不等于 \(\rho(A)\) 的公式在非正规时失效；本题能直接用谱半径，是因为循环矩阵正规。若不正规只能用 \(\sqrt{\lambda_{\max}(A^{\mathrm T}A)}\)。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 3 题 · 答案（20 分）</div>
+<p>（a）\(A^{\mathrm T}A=\begin{bmatrix}5&3\\3&5\end{bmatrix}\)，特征值 \(\lambda=8,2\)（解 \(\lambda^2-10\lambda+16=0\)），故 \(\sigma_1=2\sqrt2\approx2.8284\)、\(\sigma_2=\sqrt2\approx1.4142\)。</p>
+<p>（b）\(\lambda_1=8\) 的单位特征向量 \(v_1=\frac{1}{\sqrt2}(1,1)^{\mathrm T}\)，\(\lambda_2=2\) 的 \(v_2=\frac{1}{\sqrt2}(-1,1)^{\mathrm T}\)。于是</p>
+<div class="eq">$$u_1=\frac{Av_1}{\sigma_1}=\frac{1}{\sqrt2}\cdot\frac{(4,0)^{\mathrm T}}{2\sqrt2}=(1,0)^{\mathrm T},\qquad
+u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}\cdot\frac{(0,2)^{\mathrm T}}{\sqrt2}=(0,1)^{\mathrm T},$$</div>
+<div class="eq">$$A=U\Sigma V^{\mathrm T}=\begin{bmatrix}1&0\\0&1\end{bmatrix}
+\begin{bmatrix}2\sqrt2&0\\0&\sqrt2\end{bmatrix}
+\frac{1}{\sqrt2}\begin{bmatrix}1&-1\\1&1\end{bmatrix}.$$</div>
+<p>\(U=I_2\) 这一取法<strong>不唯一</strong>：把 \(u_1,u_2\) 同时变号（\(U\to-U\)）或分别与 \(v_j\) 同时变号，乘积不变。本题因 \(\sigma_1\ne\sigma_2\)，奇异向量只能各自相差一个模为 1 的相位，所以“负号最少”的形式就是上面这个。</p>
+<p>（c）\(\|A\|_2=2\sqrt2\)；\(\|A\|_F=\sqrt{\sigma_1^2+\sigma_2^2}=\sqrt{8+2}=\sqrt{10}\)；\(\kappa_2=\sigma_1/\sigma_2=2\)。</p>
+<p>（d）\(\mathrm{tr}A=3,\ \det A=2\cdot1-2\cdot(-1)=4\)，特征值满足 \(\lambda^2-3\lambda+4=0\)：</p>
+<div class="eq">$$\lambda=\frac{3\pm\sqrt{9-16}}{2}=\frac{3}{2}\pm\frac{\sqrt7}{2}i,\qquad |\lambda|=\sqrt{\tfrac94+\tfrac74}=2 .$$</div>
+<p>于是 \(|\det A|=4=2\sqrt2\cdot\sqrt2=\sigma_1\sigma_2\)（这条对任何方阵都成立），但 \(\sigma_1=2.8284&gt;|\lambda|_{\max}=2\)。原因：\(A\) 非正规（\(A^{\mathrm T}A\ne AA^{\mathrm T}\)，实测 \(A^{\mathrm T}A=\begin{bmatrix}5&3\\3&5\end{bmatrix}\) 而 \(AA^{\mathrm T}=\begin{bmatrix}8&0\\0&2\end{bmatrix}\)），此时 \(\|A\|_2\ne\rho(A)\)，只有正规矩阵才有等号。</p>
+<p>（e）椭圆面积 \(=\pi\sigma_1\sigma_2=\pi\cdot4=4\pi\approx12.566\)。最佳秩一近似 \(A_1=\sigma_1u_1v_1^{\mathrm T}=2\sqrt2\cdot\frac{1}{\sqrt2}(1,0)^{\mathrm T}(1,1)=\begin{bmatrix}2&2\\0&0\end{bmatrix}\)，误差 \(\|A-A_1\|_2=\sigma_2=\sqrt2\)。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 4 题 · 答案（10 分）</div>
+<p>（a）记 \(Q=I-P\)。幂等：\(Q^2=(I-P)^2=I-2P+P^2=I-P=Q\)。自伴：\(Q^*=I-P^*=I-P=Q\)。故 \(Q\) 是正交投影。对范数，用勾股：\(x=Px+Qx\) 且 \(Px\perp Qx\)（因为 \(P^*Q=P^*(I-P)=P-P^*P=P-P=0\)），于是</p>
+<div class="eq">$$\|x\|_2^2=\|Px\|_2^2+\|Qx\|_2^2\ \Longrightarrow\ \|Qx\|_2\le\|x\|_2 .$$</div>
+<p>（b）取 \(P=\begin{bmatrix}1&1\\0&0\end{bmatrix}\)：\(P^2=P\)，但 \(P\ne P^{\mathrm T}\)，故是斜投影。它把 \((x_1,x_2)^{\mathrm T}\) 映到 \((x_1+x_2,0)^{\mathrm T}\)，即“沿 \((1,-1)\) 方向投影到 \(x\) 轴”。</p>
+<div class="eq">$$P^{\mathrm T}P=\begin{bmatrix}1&1\\1&1\end{bmatrix},\quad \lambda=2,0\ \Longrightarrow\ \|P\|_2=\sqrt2&gt;1 .$$</div>
+<p>取 \(x=(1,-1)^{\mathrm T}\) 验证：\(Px=(0,0)^{\mathrm T}\)；取 \(x=(1,0)^{\mathrm T}\)：\(Px=(1,0)^{\mathrm T}\)，\(\|Px\|/\|x\|=1\)；取 \(x=(1,1)^{\mathrm T}\)：\(Px=(2,0)^{\mathrm T}\)，比值 \(\sqrt2\) 取到。<strong>几何上</strong>：斜投影会把某些方向拉长（沿投影方向的分量被“压平”时长度反而变大），正交投影才不放大。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 5 题 · 答案（12 分）</div>
+<p>（a）\(a_1=(1,1,0,1)^{\mathrm T}\)，\(\|a_1\|=\sqrt3\)，\(q_1=\frac{1}{\sqrt3}(1,1,0,1)^{\mathrm T}\)。\(a_2=(0,1,1,1)^{\mathrm T}\)，</p>
+<div class="eq">$$r_{12}=q_1^{\mathrm T}a_2=\frac{0+1+0+1}{\sqrt3}=\frac{2}{\sqrt3},\qquad
+v_2=a_2-r_{12}q_1=\Big(-\tfrac23,\tfrac13,1,\tfrac13\Big)^{\mathrm T},$$</div>
+<p>\(\|v_2\|=\sqrt{\tfrac49+\tfrac19+1+\tfrac19}=\sqrt{\tfrac{5}{3}}\)，\(r_{22}=\sqrt{5/3}\)，\(q_2=\sqrt{\tfrac35}\big(-\tfrac23,\tfrac13,1,\tfrac13\big)^{\mathrm T}\)。故</p>
+<div class="eq">$$\hat R=\begin{bmatrix}\sqrt3&2/\sqrt3\\[2pt]0&\sqrt{5/3}\end{bmatrix}
+=\begin{bmatrix}1.7321&1.1547\\0&1.2910\end{bmatrix},\qquad
+\hat Q=\begin{bmatrix}q_1&q_2\end{bmatrix}\in\mathbb{R}^{4\times2}.$$</div>
+<p>（b）先算 \(y=\hat Q^{\mathrm T}b\)，关键是第二个分量：</p>
+<div class="eq">$$q_2^{\mathrm T}b=\sqrt{3/5}\Big(-\tfrac23+\tfrac23+2+1\Big)\cdot1=\sqrt{3/5}\cdot3=3\sqrt{3/5}.$$</div>
+<p>括号里是分量加权和：\(b_1=1\) 乘 \(-2/3\) 与 \(b_2=2\) 乘 \(1/3\) 恰好部分抵消。</p>
+<div class="eq">$$y=\Big(\frac{6}{\sqrt3},\ 3\sqrt{\frac35}\Big)^{\mathrm T}=(3.4641,\ 2.3238)^{\mathrm T}.$$</div>
+<p>回代 \(\hat Rx=y\)：</p>
+<div class="eq">$$x_2=\frac{3\sqrt{3/5}}{\sqrt{5/3}}=\frac{3\sqrt3/\sqrt5}{\sqrt5/\sqrt3}=\frac{9}{5}=1.8,\qquad
+x_1=\frac{2\sqrt3-\frac{2}{\sqrt3}\cdot\frac95}{\sqrt3}=2-\frac{18}{15}=\frac45=0.8 .$$</div>
+<p>残差 \(r=b-Ax=(0.2,-0.6,0.2,0.4)^{\mathrm T}\)，\(\|r\|_2=\sqrt{0.04+0.36+0.04+0.16}=\sqrt{0.6}\approx0.7746\)。</p>
+<p>（c）逐分量内积：</p>
+<div class="eq">$$A^{\mathrm T}r=(0.2-0.6+0.2+0.4,\ -0.6+0.2+0.4)^{\mathrm T}=(0,0)^{\mathrm T}.$$</div>
+<p>数值上约为 \(10^{-16}\) 而非精确 0。复核：\(\|b\|_2^2=1+4+4+9=18\)，\(\|y\|_2^2=12+\frac{27}{5}=17.4\)，差 \(0.6\) ✓。</p>
+<p class="step">这题最容易错在 \(q_2^{\mathrm T}b\)：MGS 里 \(q_2\) 已经减掉了 \(a_2\) 在 \(q_1\) 上的分量，直接算内积即可，不要再补 \(r_{12}\) 的贡献。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 6 题 · 答案（13 分）</div>
+<p>（a）\(A^{\mathrm T}A=\begin{bmatrix}10&14\\14&20\end{bmatrix}\)，\(\mathrm{tr}=30,\ \det=200-196=4\)，故</p>
+<div class="eq">$$\lambda=\frac{30\pm\sqrt{900-16}}{2}=15\pm\sqrt{221},\qquad \sigma_{1,2}=\sqrt{15\pm\sqrt{221}}\approx\sqrt{29.866},\ \sqrt{0.134}\approx(5.46499,\ 0.36597).$$</div>
+<div class="eq">$$\kappa_2=\frac{\sigma_1}{\sigma_2}=\sqrt{\frac{15+\sqrt{221}}{15-\sqrt{221}}}\approx14.933 .$$</div>
+<p>（b）两个扰动的条件数<strong>不是同一个数</strong>，这是本题的考点。先算 \(x=A^{-1}b=\frac{1}{4-6}\begin{bmatrix}4&-2\\-3&1\end{bmatrix}\begin{bmatrix}1\\1\end{bmatrix}=(-1,1)^{\mathrm T}\)，于是 \(\|x\|_2=\|b\|_2=\sqrt2\)。</p>
+<p>b 扰动：条件数为 \(\|A^{-1}\|_2\|b\|_2/\|x\|_2=\|A^{-1}\|_2=1/\sigma_2\approx2.732\)；A 扰动：条件数为 \(\kappa(A)=14.933\)。故</p>
+<div class="eq">$$\frac{\|\delta x\|}{\|x\|}\lesssim
+\begin{cases}2.73\times10^{-6}, & \text{仅 }b\text{ 有 }10^{-6}\text{ 相对扰动}\\[2pt]
+1.49\times10^{-5}, & \text{仅 }A\text{ 有 }10^{-6}\text{ 相对扰动}\end{cases}$$</div>
+<p>差 5 倍多的原因：\(b\) 的扰动只过一遍 \(A^{-1}\)（放大 \(1/\sigma_{\min}\)）；\(A\) 的扰动在 \(\delta x=-A^{-1}(\delta A)x\) 里过<strong>两遍</strong>——\(\delta A\) 先把 \(x\) 送到最敏感方向，再由 \(A^{-1}\) 放大，两次乘起来就是 \(\sigma_1/\sigma_2=\kappa\)。做题时把这两个条件数混用是典型扣分点。</p>
+<p>（c）正规方程的条件数是 \(\kappa_2(A^{\mathrm T}A)=\kappa_2(A)^2\approx223.0\)，所以同样的相对扰动会在解上放大到 \(223\times10^{-6}=2.23\times10^{-4}\)，比用 QR（放大 \(14.9\) 倍）差一个数量级。这就是“最小二乘别用正规方程”的定量理由。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 7 题 · 答案（10 分）</div>
+<p>（a）\(\epsilon_{\text{machine}}=\frac12\beta^{1-t}\)；双精度 \(\beta=2,t=53\)：\(2^{-53}\approx1.11\times10^{-16}\)；单精度 \(t=24\)：\(2^{-24}\approx5.96\times10^{-8}\)。</p>
+<p>（b）由公理（2），\(\mathrm{fl}(x+y)=(x+y)(1+\epsilon)\)，\(|\epsilon|\le\epsilon_{\text{machine}}\)；只要 \(x+y\ne0\)，两边同除即得相对误差不超过 \(\epsilon_{\text{machine}}\)。<strong>注意</strong>这里不需要 \(x,y\) 本身是浮点数之外的任何假设，也不需要 \(x+y\) 精确可表示——“就近舍入”就是公理的内容。</p>
+<p>（c）\(0.1,0.2,0.3\) 在二进制下都不能精确表示，三次舍入各引入不超过 \(\epsilon\) 的相对误差，故结果量级为 \(O(\epsilon)\sim10^{-16}\)。实测值 \(5.55\times10^{-17}=0.5\epsilon\)，正好落在界内。这说明<strong>它不是 bug，是浮点的定义</strong>。</p>
+<p>（d）\(\epsilon=2^{-53}\) 的定义是“\(1\) 与下一个浮点数距离的<strong>一半</strong>”，所以相邻浮点数的间距是 \(2\epsilon=2^{-52}\)。于是：\(1+2^{-52}\) 正好是<strong>下一个浮点数</strong>，可以精确表示，减 1 得 \(2^{-52}=2\epsilon\)；而 \(1+2^{-53}\) 正落在两个浮点数的<strong>中点</strong>，按“舍向偶数”的规则取回 \(1\)，减 1 得 0。</p>
+<p class="step">第（d）问的常见错答是“因为 \(2^{-53}\) 太小被截断”。正确表述是“\(2^{-53}\) 恰好是半个间距（中点），\(2^{-52}\) 才是一整个间距”。另外注意 \((1+2^{-52})-1=2^{-52}=2\epsilon\)，不是 \(\epsilon\)——\(\epsilon\) 是相对误差的单位，不是最小可分辨增量。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 8 题 · 答案（10 分）</div>
+<p>（a）<strong>稳定</strong>：\(\exists\tilde x\)，\(\|\tilde x-x\|/\|x\|=O(\epsilon)\)，且 \(\|\tilde f(x)-f(\tilde x)\|/\|f(\tilde x)\|=O(\epsilon)\)。<strong>后向稳定</strong>：\(\exists\tilde x\)，\(\|\tilde x-x\|/\|x\|=O(\epsilon)\)，且 \(\tilde f(x)=f(\tilde x)\) <strong>精确成立</strong>。后向稳定强在第二个条件从 \(O(\epsilon)\) 收紧成 0。</p>
+<p>（b）取后向稳定定义中的 \(\tilde x\)：</p>
+<div class="eq">$$\frac{\|\tilde f(x)-f(x)\|}{\|f(x)\|}=\frac{\|f(\tilde x)-f(x)\|}{\|f(x)\|}
+\le\frac{\|J\|\,\|\tilde x-x\|}{\|f(x)\|}
+=\underbrace{\frac{\|J\|}{\|f(x)\|/\|x\|}}_{=\ \kappa(x)}\cdot\frac{\|\tilde x-x\|}{\|x\|}
+=O(\kappa(x)\epsilon).$$</div>
+<p>关键是第一步：把 \(\tilde f(x)\) 换成 \(f(\tilde x)\) 不是近似，而是后向稳定给出的<strong>精确等式</strong>；第二步用一阶 Taylor（\(\delta f\approx J\delta x\)）。</p>
+<p>（c）双精度约 16 位十进制，\(\kappa=10^{16}\) 时 \(16-16=0\)：可能<strong>一位有效数字都不剩</strong>。但算法仍可以是后向稳定的——它精确地解了一个被扰动 \(10^{-16}\) 的相对量的邻近问题，只是这个问题本身对扰动极端敏感。<strong>“后向稳定”讲的是算法的品质，“准确”讲的是问题 × 算法的合成结果</strong>，这正是这道题要考的分界。</p>
+</div>
+
+<h2 id="s2q"><span class="no">SET 2</span>第二套 · 题目</h2>
+
+<div class="paper">
+<p class="hint" style="margin:0 0 6px">数值线性代数 · 期末模拟（二）· 满分 100 · 闭卷。本套证明题占 54 分，计算题要求写出中间步骤。</p>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 1 题</span><span class="pts">15 分</span><span class="tm">建议 14 分钟</span></div>
+<p>（a）证明对任意 \(m\times n\) 矩阵：\(\|A\|_2\le\sqrt{\|A\|_1\|A\|_\infty}\)，并说明常数可以取等。（8 分）<br>
+（b）证明 \(\|A\|_2\le\|A\|_F\le\sqrt{n}\,\|A\|_2\)，并各举一例说明两个不等号都可以取等。（7 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 2 题</span><span class="pts">14 分</span><span class="tm">建议 12 分钟</span></div>
+<p>设 \(A=\begin{bmatrix}1&2\\2&4\end{bmatrix}\)。</p>
+<p>（a）写出 \(A\) 的 SVD（奇异值、左/右奇异向量）。（4 分）<br>
+（b）求伪逆 \(A^+\)，验证 \(AA^+A=A\)。（4 分）<br>
+（c）求 \(\kappa_2(A)\)，并说明为什么不能用 \(\sigma_1/\sigma_2\) 以外的定义。（3 分）<br>
+（d）对 \(b=(1,1)^{\mathrm T}\)，求最小二乘的最小范数解。（3 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 3 题</span><span class="pts">15 分</span><span class="tm">建议 13 分钟</span></div>
+<p>设 \(P=\begin{bmatrix}1&1\\0&0\end{bmatrix}\)。</p>
+<p>（a）验证 \(P^2=P\)，写出 \(\mathcal{C}(P)\) 与 \(\mathcal{N}(P)\)，并说明这两个子空间是否正交。（5 分）<br>
+（b）求 \(\|P\|_2\) 并给出取到该值的向量 \(x\)。（5 分）<br>
+（c）写出 \(P\) 的几何作用（往哪个方向、沿什么方向投影），并解释为什么斜投影会放大长度。（5 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 4 题</span><span class="pts">14 分</span><span class="tm">建议 12 分钟</span></div>
+<p>设 \(a=(3,4)^{\mathrm T}\)。</p>
+<p>（a）构造 Householder 矩阵 \(H=I-2vv^{\mathrm T}/v^{\mathrm T}v\) 使 \(Ha=-5e_1\)，写出 \(v\) 与 \(H\)。（6 分）<br>
+（b）验证 \(H\) 对称、正交、\(\det H=-1\)，并写出其特征值与特征向量。（5 分）<br>
+（c）说明为什么取 \(v=a+\mathrm{sign}(a_1)\|a\|_2e_1\) 而不是 \(v=a-\|a\|_2e_1\)。（3 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 5 题</span><span class="pts">12 分</span><span class="tm">建议 10 分钟</span></div>
+<p>设 \(A=\begin{bmatrix}1&1\\1&1+10^{-4}\end{bmatrix}\)。</p>
+<p>（a）求 \(\sigma_1,\sigma_2\) 的量级，证明 \(\kappa_2(A)\approx4\times10^{4}\)。（6 分）<br>
+（b）求 \(\kappa_2(A^{\mathrm T}A)\)，并据此说明正规方程的误差放大倍数。（4 分）<br>
+（c）若用 Householder QR 求 \(A^{-1}b\)，误差放大倍数是多少？为什么？（2 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 6 题</span><span class="pts">10 分</span><span class="tm">建议 9 分钟</span></div>
+<p>设 \(A=\mathrm{diag}(1,2)\)，\(x=(0,1)^{\mathrm T}\)，取 \(\delta A=\varepsilon\begin{bmatrix}0&1\\0&0\end{bmatrix}\)。</p>
+<p>（a）计算 \(\delta x=-A^{-1}(\delta A)x\)（一阶近似），求 \(\|\delta x\|_2/\|x\|_2\)。（4 分）<br>
+（b）验证 \(\dfrac{\|\delta x\|/\|x\|}{\|\delta A\|/\|A\|}=\kappa_2(A)\)，即该扰动使界取等。（3 分）<br>
+（c）一般地，要构造“使界取等”的 \(\delta A\)，应该让它的非零奇异方向对准什么？（3 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 7 题</span><span class="pts">10 分</span><span class="tm">建议 8 分钟</span></div>
+<p>（a）用浮点公理证明：若 \(x,y\) 是同号非零浮点数，则 \(\mathrm{fl}(x+y)\) 的相对误差不超过 \(\epsilon_{\text{machine}}\)；若 \(x\approx -y\)，相对误差会怎样？（4 分）<br>
+（b）用条件数解释“消去误差”：计算 \(x_1-x_2\) 时，为什么 \(x_1\approx x_2\) 会让结果几乎全是噪声？（3 分）<br>
+（c）取 \(x_1=1.0000,\ x_2=0.9999\)，算这个减法的条件数（用 2.2 节公式，\(\|\cdot\|_\infty\)）。（3 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 8 题</span><span class="pts">10 分</span><span class="tm">建议 10 分钟</span></div>
+<p>设 \(R=\begin{bmatrix}2&1\\0&3\end{bmatrix}\)，\(b=(1,5)^{\mathrm T}\)。用三位有效数字的十进制浮点做回代。</p>
+<p>（a）写出每一步的舍入结果 \(\tilde x\)。（4 分）<br>
+（b）求 \(\delta R\) 使 \((R+\delta R)\tilde x=b\) 精确成立，并计算 \(|\delta r_{22}|/|r_{22}|\)。（4 分）<br>
+（c）与回代的分项界 \(|\delta r_{ij}|/|r_{ij}|\le m\epsilon\) 比较（\(m=2\)，三位十进制 \(\epsilon\approx5\times10^{-3}\)），说明这体现了什么性质。（2 分）</p>
+</div>
+</div>
+
+<h2 id="s2a"><span class="no">SET 2</span>第二套 · 详解</h2>
+
+<div class="ans">
+<div class="ah">第 1 题 · 答案（15 分）</div>
+<p>（a）见第一套第 2 题（c）的三步放缩。等号：取全 1 矩阵 \(J_{m\times n}\)，\(\|J\|_1=n,\ \|J\|_\infty=m,\ \|J\|_2=\sqrt{mn}=\sqrt{nm}\) ✓。</p>
+<p>（b）左：\(\|A\|_2^2=\sigma_1^2\le\sum_j\sigma_j^2=\|A\|_F^2\)。右：\(\|A\|_F^2=\sum_j\sigma_j^2\le n\sigma_1^2=n\|A\|_2^2\)（共 \(n\) 个奇异值，按降序）——严格说 \(A\) 有 \(\min(m,n)=n\) 个奇异值，故右端常数是 \(\sqrt n\)（按列数）。</p>
+<p>取等例：左取任意秩一矩阵（如 \(\begin{bmatrix}1&0\\0&0\end{bmatrix}\)，\(\|A\|_2=\|A\|_F=1\)）；右取 \(A=I_n\)（\(\|I\|_F=\sqrt n\)，\(\|I\|_2=1\)）。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 2 题 · 答案（14 分）</div>
+<p>（a）\(A=uv^{\mathrm T}\) 型：\(u=(1,2)^{\mathrm T},v=(1,2)^{\mathrm T}\)。\(\sigma_1=\|u\|_2\|v\|_2=\sqrt5\cdot\sqrt5=5\)，\(\sigma_2=0\)。单位化：\(u_1=v_1=\frac{1}{\sqrt5}(1,2)^{\mathrm T}\)，\(u_2=v_2=\frac{1}{\sqrt5}(-2,1)^{\mathrm T}\)（与 \(v_1\) 正交，对应 \(\sigma_2=0\)）。</p>
+<p>（b）\(A^+=\frac{1}{\sigma_1}v_1u_1^{\mathrm T}=\frac15\cdot\frac15\begin{bmatrix}1\\2\end{bmatrix}\begin{bmatrix}1&2\end{bmatrix}=\frac{1}{25}\begin{bmatrix}1&2\\2&4\end{bmatrix}\)。验证：\(AA^+=\frac{1}{5}\begin{bmatrix}1&2\\2&4\end{bmatrix}\)，再乘 \(A\)：\(\frac{1}{5}\begin{bmatrix}1&2\\2&4\end{bmatrix}\begin{bmatrix}1&2\\2&4\end{bmatrix}=\frac{5}{5}\begin{bmatrix}1&2\\2&4\end{bmatrix}=A\) ✓</p>
+<p>（c）\(\sigma_2=0\)，故 \(\kappa_2(A)=+\infty\)——与“\(A\) 奇异时条件数为无穷”一致。<strong>不能</strong>用 \(\|A\|\|A^{-1}\|\)（\(A\) 不可逆），只能用伪逆定义 \(\|A\|_2\|A^+\|_2=\sigma_1/\sigma_2\)。</p>
+<p>（d）最小范数最小二乘解：\(A^+b=\frac{1}{25}\begin{bmatrix}1&2\\2&4\end{bmatrix}\begin{bmatrix}1\\1\end{bmatrix}=\frac{1}{25}(3,6)^{\mathrm T}=(0.12,0.24)^{\mathrm T}\)。它在 \(\mathcal{C}(A^{\mathrm T})=\mathrm{span}\{(1,2)\}\) 方向上，即所有最小二乘解中范数最小的那个（一般解加任意 \((2,-1)\) 的倍数）。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 3 题 · 答案（15 分）</div>
+<p>（a）\(P^2=\begin{bmatrix}1&1\\0&0\end{bmatrix}\)，故幂等。\(\mathcal{C}(P)=\mathrm{span}\{(1,0)^{\mathrm T}\}\)（第二列等于第一列），\(\mathcal{N}(P)=\{(x_1,x_2):x_1+x_2=0\}=\mathrm{span}\{(1,-1)^{\mathrm T}\}\)。二者<strong>不正交</strong>：\((1,0)\cdot(1,-1)=1\ne0\)。</p>
+<p>（b）\(P^{\mathrm T}P=\begin{bmatrix}1&1\\1&1\end{bmatrix}\)，特征值 \(2,0\)，故 \(\|P\|_2=\sqrt2\)。取 \(x=(1,1)^{\mathrm T}\)：\(Px=(2,0)^{\mathrm T}\)，\(\|Px\|/\|x\|=2/\sqrt2=\sqrt2\) ✓</p>
+<p>（c）几何：把平面沿 \((1,-1)\) 方向“压”到 \(x\) 轴（第一坐标变成两坐标之和，第二坐标清零）。放大长度的原因：投影沿的方向与值域不垂直，于是把沿 \((1,1)\) 的分量搬到 \(x\) 轴上时长度被拉长 \(\sqrt2\) 倍。<strong>正交投影满足勾股 \(\|x\|^2=\|Px\|^2+\|(I-P)x\|^2\)，故不放大；斜投影破坏勾股，界 \(\|P\|\ge1\) 不再紧。</strong></p>
+</div>
+
+<div class="ans">
+<div class="ah">第 4 题 · 答案（14 分）</div>
+<p>（a）\(\|a\|=5\)，取 \(v=a+5e_1=(8,4)^{\mathrm T}\)（因 \(a_1&gt;0\) 取 \(+\)），\(v^{\mathrm T}v=80\)，\(2/v^{\mathrm T}v=1/40\)，</p>
+<div class="eq">$$H=I-\frac{2vv^{\mathrm T}}{v^{\mathrm T}v}=\begin{bmatrix}1&0\\0&1\end{bmatrix}-\frac{1}{40}\begin{bmatrix}64&32\\32&16\end{bmatrix}
+=\begin{bmatrix}-0.6&-0.8\\-0.8&0.6\end{bmatrix}.$$</div>
+<p>验证：</p>
+<div class="eq">$$Ha=(-0.6\cdot3-0.8\cdot4,\ -0.8\cdot3+0.6\cdot4)=(-5,0)=-5e_1 .$$</div>
+<p>（b）\(H^{\mathrm T}=H\)（对称）；\(H^{\mathrm T}H=H^2\)，而 \(H\) 是镜射故 \(H^2=I\)（也可直接乘）。行列式：</p>
+<div class="eq">$$\det H=(-0.6)(0.6)-(-0.8)(-0.8)=-0.36-0.64=-1 .$$</div>
+<p>特征值：沿 \(v=(8,4)\) 方向 \(Hv=-v\)（\(\lambda=-1\)），沿 \(v^\perp=(-4,8)\) 方向 \(Hw=w\)（\(\lambda=+1\)）——即“关于与 \(v\) 垂直的超平面（这里是直线 \(\mathrm{span}\{(-4,8)\}\)）作镜像”。</p>
+<p>（c）若取 \(v=a-\|a\|e_1=(-2,4)\)，数学上仍可得 \(Ha=+5e_1\)（符号相反），但当 \(a\approx\|a\|e_1\) 时 \(v\) 的两个分量会发生<strong>灾难性相消</strong>（\(3-5=-2\)，几乎丢掉全部有效数字），\(v\) 的方向严重不准，进而 \(H\) 不准。取 \(v=a+\mathrm{sign}(a_1)\|a\|e_1\) 时同号相加，无相消。这就是“\(\mathrm{sign}\) 取法”的全部理由。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 5 题 · 答案（12 分）</div>
+<p>（a）\(A^{\mathrm T}A=\begin{bmatrix}2&2+\delta\\2+\delta&2+2\delta+\delta^2\end{bmatrix}\)（\(\delta=10^{-4}\)）。\(\mathrm{tr}\approx4\)、\(\det=\delta^2=10^{-8}\)，故</p>
+<div class="eq">$$\lambda_1\approx\mathrm{tr}\approx4,\qquad \lambda_2=\frac{\det}{\lambda_1}\approx\frac{\delta^2}{4}=2.5\times10^{-9},$$</div>
+<p>于是 \(\sigma_1\approx2\)、\(\sigma_2=\sqrt{\lambda_2}\approx\delta/2=5\times10^{-5}\)，\(\kappa_2\approx4/\delta=4\times10^{4}\)（实测 \(\sigma=(2.00005,\ 4.99988\times10^{-5})\)、\(\kappa_2=40002.0\)）。<strong>关键观察</strong>：\(\kappa\approx4/\delta\) 之所以干净，是因为 \(\sigma_2\) 只由 \(\delta\)（两列的"几乎相关"程度）决定。</p>
+<p>（b）\(\kappa_2(A^{\mathrm T}A)=\kappa_2(A)^2\approx1.6\times10^9\)（实测 \(1.6016\times10^{9}\)）。用正规方程时，右端 \(A^{\mathrm T}b\) 的舍入误差被放大 \(\kappa^2\) 倍，双精度下 \(10^{-16}\times1.6\times10^{9}\approx10^{-7}\) 的相对误差——看着还能用，但若 \(\delta=10^{-8}\) 就彻底失效。</p>
+<p>（c）QR 只放大 \(\kappa\)（\(\approx4\times10^4\)），因为 \(\kappa_2(\hat R)=\kappa_2(A)\) 且 \(\hat Q\) 是酉阵、不改条件数。<strong>这就是“用 QR 不用正规方程”的完整理由链</strong>：\(\kappa(A^{\mathrm T}A)=\kappa(A)^2\) vs \(\kappa(\hat R)=\kappa(A)\)。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 6 题 · 答案（10 分）</div>
+<p>（a）\(\delta Ax=(0\cdot0+1\cdot1,\ 0)=(1,0)^{\mathrm T}\)，\(A^{-1}\delta Ax=(1,0)^{\mathrm T}\)，故 \(\delta x=(-1,0)^{\mathrm T}\cdot\varepsilon\)，\(\|\delta x\|/\|x\|=\varepsilon\)。</p>
+<p>（b）\(\|\delta A\|_2=\varepsilon\)（唯一非零奇异值），\(\|A\|_2=2\)，\(\kappa_2=2\)，于是</p>
+<div class="eq">$$\frac{\|\delta x\|/\|x\|}{\|\delta A\|/\|A\|}=\frac{\varepsilon}{\varepsilon/2}=2=\kappa_2(A)\ \checkmark$$</div>
+<p>（c）让 \(\delta A\) 的非零奇异方向“交叉”对准：\(\delta A\) 把 \(x\)（最小奇异值对应的右奇异向量 \(e_2\)）送到最大奇异值对应的左奇异向量 \(e_1\) 方向，然后 \(A^{-1}\) 把这个分量再放大 \(1/\sigma_{\min}=1\) 倍、同时 \(\|x\|\) 用的是最小奇异方向的单位向量——总放大率恰为 \(\sigma_{\max}/\sigma_{\min}\)。<strong>一句话：\(\delta A\) 要连接“最敏感输入方向”和“最敏感输出方向”。</strong></p>
+</div>
+
+<div class="ans">
+<div class="ah">第 7 题 · 答案（10 分）</div>
+<p>（a）由公理，\(\mathrm{fl}(x+y)=(x+y)(1+\epsilon)\)，\(|\epsilon|\le\epsilon_{\text{machine}}\)，<strong>无论同号异号都成立</strong>——公理本身就是相对误差形式。所以（a）前半几乎是定义直译。真正的问题在异号相消：绝对误差仍是 \(\epsilon|x+y|\)，但相对误差是 \(\epsilon|x+y|/|x+y|=\epsilon\)（相对自己），<strong>而相对于结果的“有效位数”却被吃掉了</strong>——如果 \(x+y\) 本身很小，那么结果里几乎没有可信数字。所以“相对误差不大”与“结果有几位有效数字”是两件事。</p>
+<p>（b）\(x_1-x_2\) 的条件数 \(=2/(|x_1-x_2|/\max_i|x_i|)\)。当 \(x_1\approx x_2\) 时分母趋 0，条件数趋于无穷：输入的第 16 位误差会被放大成结果的主要部分。</p>
+<p>（c）\(\max|x_i|=1.0000\)，\(|x_1-x_2|=10^{-4}\)，\(\kappa=2/(10^{-4}/1.0000)=2\times10^{4}\)。双精度 16 位减去 \(\log_{10}(2\times10^4)\approx4.3\) 位，只剩约 11–12 位。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 8 题 · 答案（10 分）</div>
+<p>（a）\(x_2=5/3=1.666\ldots\to\tilde x_2=1.67\)；\(x_1=(1-1\cdot\tilde x_2)/2=(1-1.67)/2=-0.335\)（三位有效数字正好是 \(-0.335\)）。</p>
+<p>（b）\(R\tilde x=(2(-0.335)+1.67,\ 3(1.67))=(1.0,\ 5.01)^{\mathrm T}\)。第一式已成立，故 \(\delta r_{11}=\delta r_{12}=\delta r_{21}=0\)，只需</p>
+<div class="eq">$$\delta r_{22}\cdot\tilde x_2=5-5.01=-0.01\ \Longrightarrow\ \delta r_{22}=-0.005988,\qquad
+\frac{|\delta r_{22}|}{|r_{22}|}=\frac{0.005988}{3}=2.0\times10^{-3}.$$</div>
+<p>（c）\(m\epsilon=2\times5\times10^{-3}=10^{-2}\)，实测 \(2.0\times10^{-3}&lt;10^{-2}\) ✓，界成立且不紧（界是最坏情况，本例恰只错一处）。体现的性质：<strong>误差只落在被“用过”的那个元素上</strong>（\(\delta r_{22}\ne0\) 而其他为零），这正是“分项后向误差界”的含义——扰动不弥散，只出现在计算路径经过的项上。</p>
+</div>
+
+<h2 id="s3q"><span class="no">SET 3</span>第三套 · 题目</h2>
+
+<div class="paper">
+<p class="hint" style="margin:0 0 6px">数值线性代数 · 期末模拟（三）· 满分 100 · 闭卷。第 7 题为选做（仅当课程已讲特征值算法时计分，否则按 90 分制折算）。</p>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 1 题</span><span class="pts">12 分</span><span class="tm">建议 10 分钟</span></div>
+<p>（a）设 \(P\) 是正交投影。用代数方法证明 \(I-2P\) 是酉矩阵，并给出几何解释。（7 分）<br>
+（b）取 \(P=\frac12\begin{bmatrix}1&1\\1&1\end{bmatrix}\)，写出 \(I-2P\)，验证它是酉阵、对称阵，并说明它是什么变换。（5 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 2 题</span><span class="pts">20 分</span><span class="tm">建议 22 分钟</span></div>
+<p>设 \(A=\begin{bmatrix}1&2\\2&1\end{bmatrix}\)。</p>
+<p>（a）求 \(A\) 的特征值与特征向量，并写出正交对角化。（5 分）</p>
+<p>（b）求 SVD \(A=U\Sigma V^{\mathrm T}\)，说明 \(U\) 与 \(V\) 的关系。（5 分）</p>
+<p>（c）求 \(\kappa_2(A)\)，并用（a）验证 \(|\lambda|_{\max}=\sigma_1\) 在此成立。（4 分）</p>
+<p>（d）求最佳秩一近似 \(A_1\) 与 \(\|A-A_1\|_2\)，以及 \(A_1\) 相对 \(A\) 的“信息压缩比”。（3 分）<br>
+（e）单位圆像的面积。（3 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 3 题</span><span class="pts">13 分</span><span class="tm">建议 12 分钟</span></div>
+<p>设 \(A=\begin{bmatrix}3&0\\4&5\end{bmatrix}\)，\(b=(1,2)^{\mathrm T}\)。</p>
+<p>（a）先用 Householder 把 \(A\) 化成上三角（只需第一步），再写出 \(A=QR\)。（6 分）<br>
+（b）用 QR 解 \(Ax=b\)，把答案与直接回代/求逆的结果比较。（5 分）<br>
+（c）若 \(A\) 的条件数很大，用 QR 解和用 \(A^{-1}\) 解，谁的误差更可控？为什么？（2 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 4 题</span><span class="pts">15 分</span><span class="tm">建议 13 分钟</span></div>
+<p>设 \(A=\begin{bmatrix}1&1\\1&1+10^{-4}\end{bmatrix}\)（\(\kappa_2\approx4\times10^{4}\)）。</p>
+<p>（a）用双精度解 \(Ax=b\)，大致能保留几位有效数字？（4 分）</p>
+<p>（b）有人说“解不准一定是算法不稳定”。请构造一个反例说明：<strong>问题病态但算法后向稳定</strong>，并构造“问题良态但算法不稳定”的例子（可用 Gram–Schmidt 的两种变体作答）。（7 分）<br>
+（c）给定一个算错的解，你怎么判断是“问题病态”还是“算法不稳”？（4 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 5 题</span><span class="pts">10 分</span><span class="tm">建议 8 分钟</span></div>
+<p>（a）说明 \(1.0\times10^{16}+1-1.0\times10^{16}\) 在双精度下的结果，并解释原因。（4 分）<br>
+（b）设 \(a=1,\ b=10^{16},\ c=-10^{16}\)，分别计算 \(\mathrm{fl}((\mathrm{fl}(a+b))+c)\) 与 \(\mathrm{fl}(a+\mathrm{fl}(b+c))\)，说明求和的<strong>顺序</strong>为什么会改变结果。（4 分）<br>
+（c）由上说明“浮点加法不满足结合律”，并指出这与“相对误差 ≤ ε”是否矛盾。（2 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 6 题</span><span class="pts">10 分</span><span class="tm">建议 10 分钟</span></div>
+<p>（a）叙述后向稳定的定义，并用一句话概括它与“精确”的区别。（4 分）<br>
+（b）证明后向稳定算法的精度定理 \(\|\tilde f(x)-f(x)\|/\|f(x)\|=O(\kappa\epsilon)\)。（4 分）<br>
+（c）\(\kappa(A)=10^{12}\)、双精度时能保留几位？若已知算法后向稳定，是否应当改用一个“前向误差更小”的不稳定算法？（2 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 7 题</span><span class="pts">10 分 · 选做</span><span class="tm">建议 9 分钟</span></div>
+<p>设 \(A=\begin{bmatrix}2&1\\1&2\end{bmatrix}\)，\(x_0=(1,0)^{\mathrm T}\)。</p>
+<p>（a）做两步未归一化的幂法迭代，写出 \(x_1,x_2\)。（4 分）<br>
+（b）计算对应的 Rayleigh 商序列 \(\{x_k^{\mathrm T}Ax_k/x_k^{\mathrm T}x_k\}\)，说明收敛到哪个特征值。（4 分）<br>
+（c）若要求最小特征值对应的特征向量，幂法为什么不行？应改用什么方法？（2 分）</p>
+</div>
+
+<div class="q">
+<div class="qhead"><span class="qt">第 8 题</span><span class="pts">10 分</span><span class="tm">建议 9 分钟</span></div>
+<p>（a）证明：若 \(A\) 非奇异，则 \(\sigma_{\min}(A)=1/\|A^{-1}\|_2\)，并由此推出 \(\kappa_2(A)=\|A\|_2\|A^{-1}\|_2\)。（5 分）<br>
+（b）证明：对任意方阵，\(\rho(A)\le\|A\|_2\)，并举例说明等号可以不成立。（5 分）</p>
+</div>
+</div>
+
+<h2 id="s3a"><span class="no">SET 3</span>第三套 · 详解</h2>
+
+<div class="ans">
+<div class="ah">第 1 题 · 答案（12 分）</div>
+<p>（a）记 \(H=I-2P\)，验证酉性：</p>
+<div class="eq">$$H^*H=(I-2P)^*(I-2P)=(I-2P)(I-2P)=I-4P+4P^2=I,$$</div>
+<p>其中用到 \(P^*=P\) 与 \(P^2=P\)。故 \(H\) 酉，且 \(H=H^*\) 自伴。</p>
+<p>几何：\(P\) 把向量投到子空间 \(M\) 上，\(H\) 保持 \(M\) 方向的分量、把 \(M^\perp\) 方向的分量翻号，即<strong>关于超平面 \(M\) 的镜射</strong>（\(H^2=I\)，\(\det H=\pm1\)）。</p>
+<p>（b）\(P=\frac12\begin{bmatrix}1&1\\1&1\end{bmatrix}\)，\(I-2P=\begin{bmatrix}0&-1\\-1&0\end{bmatrix}\)。<strong>酉/正交</strong>：两列正交且范数为 1 ✓；<strong>对称</strong> ✓；\(\det=-1\)，特征值 \(1,-1\)。它是关于直线 \(x_2=x_1\) 的镜射（\(M=\mathrm{span}\{(1,1)\}\) 被固定，\(M^\perp=\mathrm{span}\{(1,-1)\}\) 被翻号）。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 2 题 · 答案（20 分）</div>
+<p>（a）\(\det=1-4=-3\)，\(\mathrm{tr}=2\)，\(\lambda^2-2\lambda-3=0\Rightarrow\lambda=3,-1\)。\(\lambda=3\)：\(\begin{bmatrix}-1&2\\2&-1\end{bmatrix}v=0\Rightarrow v_1=\frac{1}{\sqrt2}(1,1)^{\mathrm T}\)；\(\lambda=-1\)：\(v_2=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}\)。故</p>
+<div class="eq">$$A=Q\Lambda Q^{\mathrm T},\qquad Q=\frac{1}{\sqrt2}\begin{bmatrix}1&1\\1&-1\end{bmatrix},\ \Lambda=\mathrm{diag}(3,-1).$$</div>
+<p>（b）对称矩阵的 SVD 与谱分解重合，只是把负特征值取绝对值并调整符号：\(\sigma_1=3,\sigma_2=1\)，\(u_1=v_1=\frac{1}{\sqrt2}(1,1)^{\mathrm T}\)，\(u_2=-v_2=\frac{1}{\sqrt2}(-1,1)^{\mathrm T}\)。于是 \(U=\frac{1}{\sqrt2}\begin{bmatrix}1&-1\\1&1\end{bmatrix}\)，\(V=Q\)。\(U\ne V\) 仅差一个符号（第二列反号），这正是“\(\lambda_2&lt;0\) 必须靠 \(u_2\) 翻号来吸收”。</p>
+<p>（c）\(\kappa_2=3/1=3\)。因 \(A\) 对称，\(\|A\|_2=\rho(A)=3=\sigma_1\) ✓（对称矩阵是正规矩阵，这里等号成立）。</p>
+<p>（d）\(A_1=\sigma_1u_1v_1^{\mathrm T}=3\cdot\frac12\begin{bmatrix}1\\1\end{bmatrix}\begin{bmatrix}1&1\end{bmatrix}=\begin{bmatrix}1.5&1.5\\1.5&1.5\end{bmatrix}\)，\(\|A-A_1\|_2=\sigma_2=1\)。压缩比：用 2 个数（\(u_1,v_1\) 各 2 分量 + 1 个奇异值，共 5 个数）代替 4 个数——<strong>小矩阵没有压缩收益</strong>，秩一近似的价值只在大矩阵上体现（\(m n\to m+n+1\)）。</p>
+<p>（e）面积 \(=\pi\sigma_1\sigma_2=3\pi\approx9.4248\)。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 3 题 · 答案（13 分）</div>
+<p>（a）第一列 \(a_1=(3,4)^{\mathrm T}\)，\(\|a_1\|=5\)，取 \(v=a_1+5e_1=(8,4)^{\mathrm T}\)（\(a_1&gt;0\) 故取 \(+\)），\(v^{\mathrm T}v=80\)，\(H=\begin{bmatrix}-0.6&-0.8\\-0.8&0.6\end{bmatrix}\)（同第二套第 4 题），则</p>
+<div class="eq">$$H A=\begin{bmatrix}-0.6&-0.8\\-0.8&0.6\end{bmatrix}\begin{bmatrix}3&0\\4&5\end{bmatrix}=\begin{bmatrix}-5&-4\\0&3\end{bmatrix}.$$</div>
+<p>取 \(R=\begin{bmatrix}5&4\\0&3\end{bmatrix}\)（第一行乘 \(-1\) 归一，等价于左乘 \(\mathrm{diag}(-1,1)\) 并入 \(Q\)），则 \(Q=H^{\mathrm T}\mathrm{diag}(-1,1)=\begin{bmatrix}0.6&-0.8\\0.8&0.6\end{bmatrix}\)。验证 \(QR=\begin{bmatrix}0.6&-0.8\\0.8&0.6\end{bmatrix}\begin{bmatrix}5&4\\0&3\end{bmatrix}=\begin{bmatrix}3&0\\4&5\end{bmatrix}\) ✓</p>
+<p>（b）\(Q^{\mathrm T}b=\begin{bmatrix}0.6&0.8\\-0.8&0.6\end{bmatrix}\begin{bmatrix}1\\2\end{bmatrix}=\begin{bmatrix}2.2\\0.4\end{bmatrix}\)。回代：\(x_2=0.4/3=2/15\)，\(x_1=(2.2-4\cdot\frac{2}{15})/5=\big(\frac{11}{5}-\frac{8}{15}\big)/5=\frac{25}{15}/5=\frac{1}{3}\)。故 \(x=(1/3,\ 2/15)\)。直接验证：\(3\cdot\frac13=1\) ✓，\(4\cdot\frac13+5\cdot\frac{2}{15}=\frac43+\frac23=2\) ✓，残差为零（本例是方阵、相容方程）。</p>
+<p>（c）QR 解：\(\hat R\) 的条件数等于 \(A\) 的，前向误差 \(\sim\kappa(A)\epsilon\)；显式求逆 \(A^{-1}\) 再乘 \(b\)，误差界更差（多一次矩阵乘、且 \(A^{-1}\) 的元素可能巨大），且中间量 \(A^{-1}\) 的舍入会被再次放大。<strong>结论：解线性系统不要显式求逆</strong>。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 4 题 · 答案（15 分）</div>
+<p>（a）\(\kappa\approx4\times10^4\)，\(\log_{10}\kappa\approx4.6\)，双精度 16 位减去约 4.6 位，剩约 <strong>11 位</strong>。这不是灾难，但也意味着“第 12 位以后不可信”。</p>
+<p>（b）<strong>病态 + 稳定</strong>：本题的 \(A\) 就是——Householder QR 是后向稳定的（\(\|\tilde Q\tilde R-A\|/\|A\|=O(\epsilon)\)），但 \(\kappa\sim4\times10^4\) 使前向误差到 \(10^{-12}\)。**良态 + 不稳**：取 \(A\) 为良态矩阵（如列近似正交的 \(m\times n\) 矩阵），用<strong>经典 Gram–Schmidt</strong> 做 QR：\(\kappa(A)\) 小而算出的 \(\hat Q\) 严重失去正交性（误差可达 \(\kappa(A)^2\epsilon\) 量级），MGS 则只有 \(\kappa(A)\epsilon\) 量级。同样的良态问题，CGS 的输出可以完全不可用——这就是“算法不稳”。</p>
+<p>（c）<strong>做后向检验</strong>：把算得的 \(\tilde x\) 代回算残差 \(\|b-A\tilde x\|/(\|A\|\|\tilde x\|)\)。若残差是 \(O(\epsilon)\) 量级，则算法后向稳定，误差来自条件数；若残差远大于 \(\epsilon\)（比如 \(10^{-8}\)），则是算法（或你的实现）有问题。<strong>先查后向误差，再谈前向误差——这是唯一可操作的判据。</strong></p>
+</div>
+
+<div class="ans">
+<div class="ah">第 5 题 · 答案（10 分）</div>
+<p>（a）结果为 \(0\)。因为 \(10^{16}&gt;2^{53}\approx9.007\times10^{15}\)，在这个量级上相邻浮点数的间距已是 2，\(10^{16}+1\) 恰好落在两可表示数的中点，就近舍入回到 \(10^{16}\)，再减 \(10^{16}\) 得 \(0\)。<strong>“大数吃小数”</strong>（吸收）。</p>
+<p>（b）\(\mathrm{fl}(a+b)=10^{16}\)（1 被吸收），加 \(c=-10^{16}\) 得 \(0\)。另一种顺序：\(\mathrm{fl}(b+c)=0\)，再 \(a+0=1\)。所以</p>
+<div class="eq">$$\mathrm{fl}((\mathrm{fl}(a+b))+c)=0\ \ne\ 1=\mathrm{fl}(a+\mathrm{fl}(b+c)).$$</div>
+<p>（c）浮点加法<strong>不满足结合律</strong>，这与“每次运算相对误差 ≤ ε”完全不矛盾：公理只保证<strong>单次</strong>运算的误差界，不保证多次运算的误差不累积、不改变结果的结构（这里是“吸收”把 1 整个丢掉了，绝对误差 1，相对误差 100%，但发生在一个被吞掉的加数上）。<strong>所以求和的顺序、算法结构（如 Kahan 求和、分块求和）是数值算法设计的一部分。</strong></p>
+</div>
+
+<div class="ans">
+<div class="ah">第 6 题 · 答案（10 分）</div>
+<p>（a）后向稳定：\(\exists\tilde x\)，\(\|\tilde x-x\|/\|x\|=O(\epsilon)\)，且 \(\tilde f(x)=f(\tilde x)\) <strong>精确成立</strong>。区别：稳定只要求 \(O(\epsilon)\) 的残差，后向稳定要求“算出来的东西精确地是某个邻近问题的解”。</p>
+<p>（b）见第一套第 8 题（b）：把 \(\tilde f(x)\) 换成 \(f(\tilde x)\)（精确），再用一阶 Taylor \(\|f(\tilde x)-f(x)\|\approx\|J\|\|\tilde x-x\|\)，最后除以 \(\|f(x)\|\) 凑出 \(\kappa=\|J\|/(\|f\|/\|x\|)\)。</p>
+<p>（c）\(16-12=4\) 位。<strong>不应该</strong>换：不稳定算法给不出“某个邻近问题的精确解”，它的误差无法用条件数解释，可能比 \(\kappa\epsilon\) 还大；而后向稳定的算法已经达到了“给定问题在双精度下所能达到的最好程度”（这是后向误差分析的核心结论）。<strong>精度由问题决定，不该拿算法的花招去骗。</strong></p>
+</div>
+
+<div class="ans">
+<div class="ah">第 7 题 · 答案（10 分 · 选做）</div>
+<p>（a）\(x_1=Ax_0=(2,1)^{\mathrm T}\)，\(x_2=Ax_1=(2\cdot2+1\cdot1,\ 1\cdot2+2\cdot1)=(5,4)^{\mathrm T}\)。（继续：\(x_3=(14,13)^{\mathrm T}\)。）</p>
+<p>（b）Rayleigh 商 \(r_k=x_k^{\mathrm T}Ax_k/x_k^{\mathrm T}x_k\)：</p>
+<div class="eq">$$r_1=\frac{(2,1)A(2,1)^{\mathrm T}}{5}=\frac{14}{5}=2.8,\quad
+r_2=\frac{(5,4)A(5,4)^{\mathrm T}}{41}=\frac{122}{41}=2.9756,\quad r_3=\frac{365}{122}=2.9973 .$$</div>
+<p>收敛到 \(\lambda_1=3\)（\(A\) 的特征值 \(3,1\)），且误差比值恒约 \((3-r_{k+1})/(3-r_k)\approx1/3=|\lambda_2/\lambda_1|\)（一阶收敛）。</p>
+<p>（c）幂法每次乘 \(A\) 都会把最大特征值方向放大得最快，最终只剩 \(\lambda_1\) 方向。要求最小特征值：对 \(A^{-1}\)（或 \((A-\mu I)^{-1}\)）做幂法，即<strong>反迭代</strong>——乘 \(A^{-1}\) 等价于把 \(1/\lambda\) 当特征值，最大的 \(1/\lambda\) 对应最小的 \(\lambda\)。</p>
+</div>
+
+<div class="ans">
+<div class="ah">第 8 题 · 答案（10 分）</div>
+<p>（a）\(A^{-1}\) 的奇异值是 \(1/\sigma_j\)（倒序），故 \(\|A^{-1}\|_2=\sigma_{\max}(A^{-1})=1/\sigma_{\min}(A)\)，即 \(\sigma_{\min}(A)=1/\|A^{-1}\|_2\)。代入：</p>
+<div class="eq">$$\kappa_2(A)=\frac{\sigma_1}{\sigma_m}=\sigma_1\cdot\frac{1}{\sigma_m}=\|A\|_2\|A^{-1}\|_2 .$$</div>
+<p>（b）设 \(Ax=\lambda x,\ x\ne0\)，则 \(|\lambda|\|x\|=\|Ax\|\le\|A\|_2\|x\|\)，约掉 \(\|x\|\) 得 \(|\lambda|\le\|A\|_2\)；对所有特征值取最大得 \(\rho(A)\le\|A\|_2\)。等号不成立的例子：\(A=\begin{bmatrix}0&1\\0&0\end{bmatrix}\)，\(\rho(A)=0\) 而 \(\|A\|_2=1\)（非正规矩阵的典型现象）。</p>
+</div>
+
+<h2 id="how"><span class="no">用法</span>三套怎么用</h2>
+
+<table class="tb">
+<tr><th>阶段</th><th>做什么</th><th>判据</th></tr>
+<tr><td>D-13 / D-8 / D-4</td><td>各闭卷做一套，严格计时 120 分钟，中途不查书</td><td>记录每题实际用时；卡壳超过 3 分钟的题号单独标出</td></tr>
+<tr><td>做完当天</td><td>对答案，把错题归到六类：① 引理不熟 ② 放缩方向错 ③ 忘了证紧性 ④ 手算错 ⑤ 概念写反 ⑥ 时间不够</td><td>每个错题必须落到一类，否则不算订正</td></tr>
+<tr><td>次日</td><td>只重做错题，不看答案，限时 ½</td><td>一次过才划掉</td></tr>
+<tr><td>考前</td><td>三张错题表合看 + <a href="./期末复习-指南.html">R3 §05 速查表</a></td><td>26 条能立刻答 ≥22 条</td></tr>
+</table>
+
+<div class="note">
+<span class="h">关于分数预期</span>
+第一套能到 75+ 说明基础已经稳（它的难度不超过作业）；第二套 60+ 就够（证明题本来就扣分重）；第三套主要用来看时间分配是否合理——如果第 3 题（QR 手算）花了 20 分钟以上，说明流程卡不熟，回去练 §07 卡 2、卡 3。
+</div>
+
+<footer>
+<p>NLA-R4 · 期末模拟卷三套 · 范围到第 13 讲。所有数值答案由 <span class="mono">verify_exam_numbers.py</span> 实测：SET1-5 的 \(x=(0.8,1.8)\)、\(\|r\|=\sqrt{0.6}\)；SET1-6 的 \(\kappa_2=14.933\)；SET2-4 的 \(H\) 与 \(-5e_1\)；SET2-6 的达界验证；SET3-2 的 \(\sigma=(3,1)\) 与秩一近似；SET3-3 的 \(x=(1/3,2/15)\)；SET3-8 的幂法序列。</p>
+</footer>
+
+<div class="pager noprint">
+  <a href="./期末复习-指南.html">← NLA-R3 期末复习指南</a>
+  <a href="./期中模拟卷-两套.html">NLA-R2 期中模拟卷 →</a>
+</div>
+
+</div>
+</body>
+</html>

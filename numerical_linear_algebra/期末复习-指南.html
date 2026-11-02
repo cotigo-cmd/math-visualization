@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>期末复习 · 数值线性代数（截至后向稳定性）</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 本页 = 复习材料，图号 NLA-R3，是 NLA-R1（期中）的续集与总装版。
+     R1 的组织方式保留（考点地图 → 模块 → 模板 → 速查 → 日程），新增的是第 10–13 讲
+     （条件数、浮点、稳定性、Householder 后向稳定），以及"误差三角"这一条总装线。
+  2. 考试范围的不确定性写在 §09：最后两周若讲特征值（教材 L24–27），按 §09 的清单补。
+     不要提前把特征值写成"必考"——老师没讲的不会考。
+  3. 数值结论来源：工作区根 verify_exam_numbers.py（SVD、κ₂、LS 解、3 位舍入回代、幂法序列）。
+     第 13 讲数值实验的定性结论（Q̃R̃−A 小而 Q̃ 前向误差大）来自课程结论，不是我编的例子。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.85 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
+.crumb{font-size:13px;margin:0 0 16px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.sheet{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--ink);border-radius:6px;
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
+.sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
+.sheet .cell:last-child{border-right:none}
+.sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
+.sheet .v{font-size:14.5px;margin:0;font-weight:600}
+.sheet .no{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;color:var(--cinn)}
+h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:72ch}
+.tag{display:inline-block;font-size:11.5px;font-family:ui-monospace,Consolas,monospace;
+  border-radius:5px;padding:1px 8px;margin-right:8px;vertical-align:2px;font-weight:500;
+  background:#EEF3F8;color:var(--steel)}
+h2{font-size:17px;font-weight:680;margin:44px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+h3{font-size:15px;font-weight:680;margin:26px 0 8px;color:var(--ink)}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:4px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.eq{font-size:16.5px;text-align:center;margin:16px 0;padding:12px 14px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:10px 16px;margin:16px 0;
+  border-radius:0 8px 8px 0;font-size:14px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+.note.a{border-left-color:var(--amber);background:#FBF6E7}
+.note .h{font-weight:680;display:block;margin-bottom:2px}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;font-size:.93em}
+table.tb{border-collapse:collapse;margin:14px 0;font-size:14px;width:100%}
+table.tb td,table.tb th{border:1px solid var(--line);padding:6px 12px;text-align:left;vertical-align:top}
+table.tb th{background:#F2F5F8;font-weight:650;text-align:center;white-space:nowrap}
+table.tb td.c{text-align:center}
+table.tb.small{font-size:13px}
+table.tb tr.hi td{background:#FBF1ED}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--ink2)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:22px 0 0;flex-wrap:wrap}
+.pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
+.pager a:hover{text-decoration:underline}
+.hint{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
+.ladder{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+.ladder .st{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--card);position:relative}
+.ladder .st .n{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--cinn);letter-spacing:.08em}
+.ladder .st .t{font-weight:680;font-size:14.5px;margin:3px 0 4px}
+.ladder .st .d{font-size:12.5px;color:var(--ink2);line-height:1.6}
+.tri{display:grid;grid-template-columns:1fr 44px 1fr;align-items:center;gap:0;margin:18px 0}
+.tri .box{border:1.5px solid var(--ink);border-radius:8px;padding:12px 14px;background:var(--card)}
+.tri .box .t{font-weight:680;font-size:14.5px}
+.tri .box .d{font-size:12.5px;color:var(--ink2);line-height:1.65}
+.tri .op{text-align:center;font-size:20px;color:var(--cinn);font-weight:700}
+@media print{
+  body{background:#fff;font-size:12px}
+  .wrap{max-width:none;padding:0 6mm}
+  .crumb,.pager,footer,.noprint{display:none}
+  h2{page-break-after:avoid;margin-top:20px}
+  .lab,.note,table.tb,.eq{page-break-inside:avoid}
+  a{color:var(--ink);text-decoration:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb noprint"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
+
+<div class="sheet">
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-R3</p></div>
+  <div class="cell" style="flex:2 1 230px"><p class="k">主题</p><p class="v">期末复习 · 知识点、考点与 14 天日程</p></div>
+  <div class="cell"><p class="k">依据</p><p class="v">课程 13 讲 · 测试 27 题</p></div>
+  <div class="cell"><p class="k">范围</p><p class="v">到后向稳定性</p></div>
+</div>
+
+<h1>期末复习：把「条件数 × 稳定性」这条主线接上</h1>
+<p class="lead">期中考到最小二乘，期末在它后面接了四讲——条件数、浮点、稳定性、Householder 后向稳定。这四讲不是新章节，而是给前面整条链条装上一个<strong>误差刻度</strong>：同一批公式，现在要能回答「这个量算出来能有几位有效数字」。本页按这个口径重排：前四模块仍是期中那四个（速览，不重复展开），后三模块是新增内容（重点展开），最后一节是考前 14 天怎么分配。</p>
+<p class="hint noprint">配套：知识点详版见 <a href="./期中复习-指南.html">NLA-R1 期中复习</a>；练习见 <a href="./期末模拟卷-三套.html">NLA-R4 期末模拟卷（三套）</a>；可视化 <a href="./条件数-几何与误差放大.html">NLA-10 条件数</a>、<a href="./QR分解-Gram-Schmidt与Householder.html">NLA-05 QR</a>。</p>
+
+<div class="note a">
+<span class="h">先说一句最有用的话</span>
+期中 8 道题全是作业原题。这件事的含义不是「背答案」（数字一换就死），而是：<strong>老师出题的题库就是这 27 道作业</strong>。期末原题比例会降，但改法通常是「换矩阵、加一问、反向问」。所以复习的主要动作是<strong>把 27 道题每题写成三行提纲（用的什么引理 → 关键一步 → 结论形状）</strong>，而不是重读教材。
+</div>
+
+<h2><span class="no">00</span>一页看懂：范围、卷面、配比</h2>
+
+<table class="tb">
+<tr><th>项目</th><th>判断</th><th>依据</th></tr>
+<tr><td>范围</td><td>第 1–13 讲全在范围内，<strong>期中之前的内容不会因为考过就不考</strong>（期末是累加的）</td><td>期中 8 题覆盖 1–8 讲仍是最基础的工具</td></tr>
+<tr><td>最后两周</td><td>大概率进特征值（幂法 / 反迭代 / QR 迭代），按「讲了就考 1 题」准备，见 §09</td><td>教材 Part V 紧接 Part III，且 §09 给了最小准备集</td></tr>
+<tr><td>题量</td><td>8–10 题，120 分钟，满分 100</td><td>四次测试各 4–11 题，期中 8 题</td></tr>
+<tr><td>题型比</td><td>纯证明 ≈ 60%，计算 + 证明混合 ≈ 30%，纯计算 ≈ 10%</td><td>27 道作业里纯证明 18 道</td></tr>
+<tr><td>最可能的大题</td><td>① SVD 综合（分解 + 范数 + 条件数 + 逆）② QR/最小二乘全流程 ③ 条件数与扰动分析</td><td>三次测试都出现了同类综合题</td></tr>
+<tr><td>最容易丢分</td><td>「证明界是紧的」（不构造取等例子）、「后向稳定 ≠ 精确」（概念题写反）</td><td>作业里这两处批改痕迹最多</td></tr>
+</table>
+
+<p>配比按复习收益排（不是按课时排）：</p>
+<div class="eq">
+$$\text{条件数 · 稳定性 }30\%\quad\text{SVD }20\%\quad\text{范数 · 矩阵代数 }20\%\quad\text{QR/最小二乘 }20\%\quad\text{浮点 }10\%$$
+</div>
+<p>理由：前四模块期中已经过一遍脑，边际收益低；后四讲是新内容且<strong>几乎全是可考的小证明 + 一个小计算</strong>（算 \(\kappa_2\)、算 eps、算误差界），是性价比最高的一块。</p>
+
+<h2><span class="no">01</span>课程地图：13 讲对到教材、测试、可视化</h2>
+
+<table class="tb small">
+<tr><th>讲</th><th>主题</th><th>教材</th><th>测试对应</th><th>可视化</th></tr>
+<tr><td class="c">1</td><td>向量与矩阵、初等变换、秩</td><td>L1–L2</td><td>1-1, 1-2</td><td><a href="./线性映射-矩阵向量乘积与正交性.html">NLA-01</a></td></tr>
+<tr><td class="c">2</td><td>内积、正交、向量范数</td><td>L2–L3</td><td>1-7, 1-10</td><td><a href="./范数-单位球与诱导范数.html">NLA-02</a></td></tr>
+<tr><td class="c">3</td><td>矩阵范数、诱导范数、谱半径</td><td>L3</td><td>1-4~1-6, 1-9, 1-11</td><td><a href="./范数-单位球与诱导范数.html">NLA-02</a></td></tr>
+<tr><td class="c">4</td><td>SVD 的存在性与几何</td><td>L4</td><td>2-1~2-4, 2-6</td><td><a href="./SVD-几何与低秩近似.html">NLA-03</a></td></tr>
+<tr><td class="c">5</td><td>SVD 续：低秩近似、Eckart–Young</td><td>L5</td><td>2-5</td><td><a href="./SVD手算-超椭圆与最少负号.html">NLA-07</a></td></tr>
+<tr><td class="c">6</td><td>投影算子（正交 / 斜）</td><td>L6</td><td>3-1, 3-3</td><td><a href="./投影算子-正交与斜投影.html">NLA-04</a></td></tr>
+<tr><td class="c">7</td><td>QR 分解、经典与改进 Gram–Schmidt</td><td>L7–L8</td><td>3-4, 3-6</td><td><a href="./QR分解-Gram-Schmidt与Householder.html">NLA-05</a></td></tr>
+<tr><td class="c">8</td><td>Householder 三角化</td><td>L10</td><td>4-1, 4-2</td><td><a href="./Givens与Householder-旋转反射与flop账本.html">NLA-08</a></td></tr>
+<tr><td class="c">9</td><td>最小二乘</td><td>L11</td><td>3-2, 3-5, 4-3, 4-4</td><td><a href="./最小二乘-几何与三种解法.html">NLA-06</a></td></tr>
+<tr class="hi"><td class="c">10</td><td><strong>适定性与条件数</strong></td><td>L12</td><td>新增，未考</td><td><a href="./条件数-几何与误差放大.html">NLA-10</a></td></tr>
+<tr class="hi"><td class="c">11</td><td><strong>浮点运算与稳定性定义</strong></td><td>L13–L14</td><td>新增，未考</td><td>待建（NLA-12）</td></tr>
+<tr class="hi"><td class="c">12</td><td><strong>算法的稳定性（回代）</strong></td><td>L15</td><td>新增，未考</td><td>待建（NLA-12）</td></tr>
+<tr class="hi"><td class="c">13</td><td><strong>Householder 后向稳定</strong></td><td>L16</td><td>新增，未考</td><td>待建（NLA-12）</td></tr>
+</table>
+
+<p class="hint">读表方法：右边两列是「考过几次 + 有没有图可看」。第 10–13 讲这一栏没有测试题，意味着<strong>期末它们必然第一次出现</strong>——第一次出现的考点，通常是最标准的那几条定理，不会是刁钻变形。</p>
+
+<h2><span class="no">02</span>模块五：适定性与条件数（第 10 讲）</h2>
+
+<h3>2.1 两个数：问题本身 vs 算法</h3>
+<p><strong>适定性（conditioning）刻画问题</strong>：数据抖一点，解会不会抖很多。<strong>稳定性（stability）刻画算法</strong>：计算机上的算法会不会额外引入抖动。这两件事必须分开说——第 13 讲的数值实验就是"问题病态 + 算法稳定"的组合。</p>
+
+<p>把问题看成映射 \(f:X\to Y\)（\(X\) 数据空间，\(Y\) 解空间，都赋范）。绝对与相对条件数：</p>
+<div class="eq">
+$$\hat\kappa(x)=\lim_{\delta\to0}\sup_{\|\delta x\|\le\delta}\frac{\|\delta f\|}{\|\delta x\|},\qquad
+\kappa(x)=\lim_{\delta\to0}\sup_{\|\delta x\|\le\delta}\frac{\|\delta f\|/\|f(x)\|}{\|\delta x\|/\|x\|}$$
+</div>
+<p>\(f\) 可微时，令 \(J(x)\) 为 Jacobi 矩阵，则 \(\hat\kappa=\|J(x)\|\)，\(\kappa=\|J(x)\|\big/\big(\|f(x)\|/\|x\|\big)\)。<strong>相对</strong>条件数更重要，因为浮点误差是相对误差。</p>
+
+<h3>2.2 四个例子（每个都可能被改成考题）</h3>
+<table class="tb">
+<tr><th>问题</th><th>条件数</th><th>结论与用途</th></tr>
+<tr><td>\(f(x)=x^2\)</td><td>\(1\)</td><td>\(\kappa=1\)，绝对适定；乘法的模型</td></tr>
+<tr><td>\(f(x)=\sqrt{x}\)</td><td>\(1/2\)</td><td>同样适定；开方不放大相对误差</td></tr>
+<tr><td>\(f(x)=x_1-x_2\)</td><td>\(\dfrac{2}{|x_1-x_2|/\max_i|x_i|}\)</td><td>用 \(\|\cdot\|_\infty\) 时 \(\|J\|_\infty=2\)；\(x_1\approx x_2\) 时爆炸 ⇒ <strong>消去误差</strong></td></tr>
+<tr><td>\(A\) 的特征值（非对称）</td><td>可任意大</td><td>\(\begin{bmatrix}1&1000\\0&1\end{bmatrix}\to\{1,1\}\)，把 \(a_{21}\) 改成 \(0.001\) 后变 \(\{0,2\}\)：扰动 \(10^{-3}\) 换来特征值变动 \(1\)</td></tr>
+<tr><td>\(A\) 的特征值（对称）</td><td>\(\hat\kappa=1\)，\(\kappa=\|A\|_2/|\lambda|\)</td><td>\(|\delta\lambda|\le\|\delta A\|_2\)，等号当 \(\delta A\) 是单位阵倍数 ⇒ 对称特征值问题绝对适定</td></tr>
+</table>
+<p class="hint">第二行和第五行是同一个"谱"问题的两面，考试常拿来对照出题：<strong>对称适定、非对称可能极病态</strong>。</p>
+
+<h3>2.3 三个必须会证的定理</h3>
+<p><strong>（i）矩阵—向量乘的两个条件数。</strong>设 \(A\) 非奇异，\(Ax=b\)。</p>
+<div class="eq">
+$$\text{给定 }x\text{ 算 }b:\ \kappa=\frac{\|A\|\,\|x\|}{\|Ax\|}\le\|A\|\|A^{-1}\|;\qquad
+\text{给定 }b\text{ 算 }x:\ \kappa=\frac{\|A^{-1}\|\,\|b\|}{\|x\|}\le\|A\|\|A^{-1}\|$$
+</div>
+<p>证明各两行：\(A(x+\delta x)-Ax=A\delta x\)，取上确界即 \(\|A\|\|x\|/\|Ax\|\)；反向用 \(x=A^{-1}b\) 与次乘性 \(\|x\|\le\|A^{-1}\|\|b\|\)。</p>
+<p><strong>等号什么时候取到（2-范数）</strong>：第一式在 \(x\) 平行于 \(\sigma_{\min}\) 对应的右奇异向量时取等；第二式在 \(b\) 平行于 \(\sigma_1\) 对应的右奇异向量时取等。这两句话几乎必考一句，因为它把"上界"变成了"精确值"。</p>
+
+<p><strong>（ii）扰动 \(A\) 的条件数。</strong>固定 \(b\)，\((A+\delta A)(x+\delta x)=b\)，丢掉 \((\delta A)(\delta x)\)：</p>
+<div class="eq">
+$$\delta x=-A^{-1}(\delta A)x\ \Longrightarrow\ \frac{\|\delta x\|/\|x\|}{\|\delta A\|/\|A\|}\le\|A^{-1}\|\|A\|=\kappa(A)$$
+</div>
+<p>紧性：存在 \(\delta A\)（秩一，方向由对偶范数给出）使等号成立，故<strong>扰动 \(A\) 的条件数恰为 \(\kappa(A)\)</strong>。</p>
+
+<p><strong>（iii）\(\kappa(A)=\|A\|\|A^{-1}\|\) 的六条性质</strong>（考试爱考其中 2–3 条）：</p>
+<ol>
+<li>\(\kappa(A)\ge1\)（因 \(1=\|I\|=\|AA^{-1}\|\le\|A\|\|A^{-1}\|\)）；</li>
+<li>\(\kappa(\alpha A)=\kappa(A)\)（\(\alpha\ne0\)），故条件数与<strong>尺度</strong>无关；</li>
+<li>\(\kappa_2(A)=\sigma_1/\sigma_m\)；长方形满秩时 \(\kappa_2(A)=\|A\|_2\|A^+\|_2=\sigma_1/\sigma_n\)；</li>
+<li>\(\kappa_2(QA)=\kappa_2(AQ)=\kappa_2(A)\)（\(Q\) 酉）：<strong>左乘/右乘酉阵不改条件数</strong>——这就是为什么 QR 是"手术刀"；</li>
+<li>\(A\) 奇异时 \(\kappa(A)=+\infty\)；</li>
+<li>\(\kappa_2(A^*A)=\kappa_2(A)^2\) ⇒ <strong>正规方程把条件数平方</strong>，这是"别用正规方程"的定量理由。</li>
+</ol>
+
+<div class="note b">
+<span class="h">一句能写进任何解释题的话</span>
+若 \(\kappa(A)=10^{k}\)，则在 \(t\) 位十进制的机器上（\(t\approx16\) 双精度），求解 \(Ax=b\) 一般会<strong>丢失约 \(k\) 位有效数字</strong>，只剩 \(t-k\) 位可信。\(\kappa=10^{16}\) 时解可以完全无意义——但算法仍然可能是后向稳定的，见 §04。
+</div>
+
+<h2><span class="no">03</span>模块六：浮点数与「稳定」的定义（第 11 讲）</h2>
+
+<h3>3.1 只需要记两条公理</h3>
+<p>理想浮点系统 \(F(\beta,t)\)：\(\beta\) 为基，\(t\) 为精度，机器 epsilon</p>
+<div class="eq">
+$$\epsilon_{\text{machine}}=\tfrac12\beta^{1-t};\qquad
+\text{双精度 } \epsilon=2^{-53}\approx1.11\times10^{-16},\qquad
+\text{单精度 } \epsilon=2^{-24}\approx5.96\times10^{-8}$$
+</div>
+<p>本课程所有误差分析只基于下面两条，不依赖硬件细节：</p>
+<div class="eq">
+$$\text{(1) }\ \mathrm{fl}(x)=x(1+\epsilon),\ |\epsilon|\le\epsilon_{\text{machine}};\qquad
+\text{(2) }\ x\odot y=(x\circ y)(1+\epsilon),\ |\epsilon|\le\epsilon_{\text{machine}}$$
+</div>
+<p>常用复述：<strong>每一次舍入都相当于给输入加一个相对误差不超过 \(\epsilon\) 的扰动</strong>。所有后向误差证明就是反复用这一句把误差"折回输入"。</p>
+<p class="hint">实测（在双精度下跑）：\(0.1+0.2-0.3=5.551\times10^{-17}\)，恰为 \(0.5\epsilon\)；\((1+2^{-52})-1=2.22\times10^{-16}=\epsilon\)，而 \((1+2^{-53})-1=0\)——这正是 \(\epsilon\) 定义中"距离的一半"的来源。</p>
+
+<h3>3.2 稳定 / 后向稳定：一字之差</h3>
+<table class="tb">
+<tr><th>概念</th><th>定义</th><th>白话</th></tr>
+<tr><td>精确</td><td>\(\dfrac{\|\tilde f(x)-f(x)\|}{\|f(x)\|}=O(\epsilon)\)</td><td>答案对</td></tr>
+<tr><td>稳定</td><td>\(\exists\tilde x:\ \dfrac{\|\tilde x-x\|}{\|x\|}=O(\epsilon)\) 且 \(\dfrac{\|\tilde f(x)-f(\tilde x)\|}{\|f(\tilde x)\|}=O(\epsilon)\)</td><td>对"邻近的问题"给出"邻近的答案"</td></tr>
+<tr class="hi"><td>后向稳定</td><td>\(\exists\tilde x:\ \dfrac{\|\tilde x-x\|}{\|x\|}=O(\epsilon)\) 且 \(\tilde f(x)=f(\tilde x)\) <strong>精确成立</strong></td><td>对"邻近的问题"给出"精确的答案"</td></tr>
+</table>
+<p>注意三点，都是易错点：</p>
+<ul>
+<li>后向稳定比稳定<strong>强</strong>（要求精确等式，不是 \(O(\epsilon)\) 的残差）；</li>
+<li>后向稳定的算法<strong>不一定</strong>精确——精度还取决于问题的条件数（§04 定理 1）；</li>
+<li>\(O(\epsilon)\) 里的常数<strong>依赖维度 \(m,n\)，不依赖 \(A,b\)</strong>，且关于数据一致；实际含义约为 \(100\sim1000\) 倍的 \(\epsilon\)。</li>
+</ul>
+
+<p><strong>必背的一条"免费定理"</strong>：精度、稳定性、后向稳定性的成立与否<strong>与范数选择无关</strong>（有限维空间上范数等价）。这条让所有证明可以随手挑最好算的范数。</p>
+
+<h2><span class="no">04</span>模块七：后向稳定 ⇒ 精度，以及三个具体算法（第 12–13 讲）</h2>
+
+<div class="tri">
+  <div class="box"><div class="t">问题本身</div><div class="d">条件数 \(\kappa\)<br>数据抖 1% 解抖几 %</div></div>
+  <div class="op">×</div>
+  <div class="box"><div class="t">算法</div><div class="d">后向稳定：\(\tilde f(x)=f(\tilde x)\)<br>把舍入折成数据的小扰动</div></div>
+</div>
+<div class="eq">
+$$\Longrightarrow\qquad \frac{\|\tilde f(x)-f(x)\|}{\|f(x)\|}=O\big(\kappa(x)\,\epsilon_{\text{machine}}\big)$$
+</div>
+<p>这就是整门课的"误差三角"。三块各一讲：条件数（第 10 讲）、稳定性定义（第 11 讲）、具体算法的后向稳定证明（第 12–13 讲）。考试若出论述题，写这三行就够骨架。</p>
+
+<h3>4.1 定理 1（精度定理）：后向稳定 + 条件数 = 精度</h3>
+<p>若 \(\tilde f\) 后向稳定，则存在 \(\tilde x\) 使 \(\|\tilde x-x\|/\|x\|=O(\epsilon)\) 且 \(\tilde f(x)=f(\tilde x)\)。于是</p>
+<div class="eq">
+$$\frac{\|\tilde f(x)-f(x)\|}{\|f(x)\|}
+=\frac{\|f(\tilde x)-f(x)\|}{\|f(x)\|}
+\approx\frac{\|J\|\,\|\tilde x-x\|}{\|f(x)\|}
+=\underbrace{\frac{\|J\|}{\|f(x)\|/\|x\|}}_{\kappa(x)}\cdot
+\underbrace{\frac{\|\tilde x-x\|}{\|x\|}}_{O(\epsilon)}=O(\kappa\epsilon)$$
+</div>
+<p>关键一步只是"把 \(\tilde f(x)\) 换成 \(f(\tilde x)\)"——这一步能换，正是后向稳定的定义。</p>
+
+<h3>4.2 回代（上三角求解）的后向稳定性</h3>
+<p>结论形式：存在上三角 \(\delta R\) 使 \((R+\delta R)\tilde x=b\)，且<strong>分项</strong>界</p>
+<div class="eq">
+$$\frac{|\delta r_{ij}|}{|r_{ij}|}\le m\,\epsilon+O(\epsilon^2)\qquad(\text{逐元素，而非整体范数})$$
+</div>
+<p>"分项"的含义：\(r_{ij}=0\) 的位置 \(\delta r_{ij}=0\)，扰动的稀疏性与 \(R\) 相同；这比 \(\|\delta R\|/\|R\|=O(\epsilon)\) 更强，且对变量的对角缩放不敏感。做题时若题目问"为什么分项界更好"，答这两句。</p>
+
+<h3>4.3 Householder 三角化与解 \(Ax=b\)</h3>
+<p>核心结论：存在 \(\delta A\) 使</p>
+<div class="eq">
+$$\tilde Q\tilde R=A+\delta A,\qquad \frac{\|\delta A\|}{\|A\|}=O(\epsilon)$$
+</div>
+<p>注意 \(\tilde Q\) 的定义：<strong>不显式构造 \(Q\)</strong>，而是把算法每一列得到的浮点镜射向量 \(\tilde v_k\) 拼成 \(\tilde Q=\tilde Q_1\tilde Q_2\cdots\tilde Q_n\)。<strong>这是这道题最容易被扣分的细节</strong>：问"\(\tilde Q\) 是什么"，要答"由浮点 \(\tilde v_k\) 定义的镜射之积"，不能说"\(Q\) 的计算值"。</p>
+
+<p>解线性系统的算法分三步，每步各自后向稳定：</p>
+<table class="tb">
+<tr><th>步骤</th><th>后向稳定形式</th></tr>
+<tr><td>① \(\tilde Q\tilde R=A+\delta A\)</td><td>\(\|\delta A\|/\|A\|=O(\epsilon)\)</td></tr>
+<tr><td>② \(\tilde y=\tilde Q^*b\) 的计算</td><td>\((\tilde Q+\delta Q)\tilde y=b\)，\(\|\delta Q\|=O(\epsilon)\)</td></tr>
+<tr><td>③ 回代 \(\tilde x=\tilde R^{-1}\tilde y\)</td><td>\((\tilde R+\delta R)\tilde x=\tilde y\)，\(\|\delta R\|/\|\tilde R\|=O(\epsilon)\)</td></tr>
+</table>
+<p>三步复合（把 \(\delta Q,\delta R\) 顺着等式往后传，每传一步只多一个 \(O(\epsilon^2)\) 项），得到</p>
+<div class="eq">
+$$(A+\Delta A)\tilde x=b,\qquad \frac{\|\Delta A\|}{\|A\|}=O(\epsilon)$$
+</div>
+<p>再套定理 1：\(\dfrac{\|\tilde x-x\|}{\|x\|}=O\big(\kappa(A)\epsilon\big)\)。<strong>这条链（三步 → 整体后向稳定 → 精度）是可以整段背下来当论述题答案的。</strong></p>
+
+<div class="note g">
+<span class="h">第 13 讲数值实验的读法（很可能考"解释现象"）</span>
+实验里 \(\tilde Q,\tilde R\) 的<strong>前向误差</strong>（与真 \(Q,R\) 逐项比）可以很大，而 \(\|\tilde Q\tilde R-A\|/\|A\|\) 很小。解释：<strong>列空间作为矩阵元素的函数本身是病态的</strong>（\(A\) 抖一点，列空间转很多），所以 \(Q\) 前向误差大是<em>问题病态</em>，不是算法不稳；而 \(\tilde Q\tilde R-A\) 小正说明算法<strong>后向稳定</strong>。一句话：<strong>前向误差大可以完全由条件数解释，后向误差小才是算法的功劳。</strong>
+</div>
+
+<h2><span class="no">05</span>速查表：26 条结论，考前 10 分钟扫一遍</h2>
+
+<table class="tb small">
+<tr><th>#</th><th>结论</th><th>出处</th></tr>
+<tr><td class="c">1</td><td>\(\|A\|_2=\sigma_1\)，\(\|A\|_F=\sqrt{\sum\sigma_j^2}\)，\(\|A\|_1\) 最大列和、\(\|A\|_\infty\) 最大行和</td><td>L3</td></tr>
+<tr><td class="c">2</td><td>\(\rho(A)\le\|A\|\)；正规矩阵取等</td><td>L3</td></tr>
+<tr><td class="c">3</td><td>\(\|A\|_2\le\sqrt{\|A\|_1\|A\|_\infty}\)（常数 \(\sqrt{\|A\|_1\|A\|_\infty}\) 可紧，全 1 矩阵）</td><td>L3</td></tr>
+<tr><td class="c">4</td><td>\(A=U\Sigma V^*\)，\(\sigma_1=\max_{\|x\|=1}\|Ax\|\)，\(\sigma_{\min}=\min\)</td><td>L4</td></tr>
+<tr><td class="c">5</td><td>\(\|A\|_2=\sqrt{\lambda_{\max}(A^*A)}\)；\(A^*A\) 与 \(AA^*\) 非零谱相同</td><td>L4</td></tr>
+<tr><td class="c">6</td><td>Eckart–Young：\(\|A-A_k\|_2=\sigma_{k+1}\)，F-范数下为 \(\sqrt{\sum_{j>k}\sigma_j^2}\)</td><td>L5</td></tr>
+<tr><td class="c">7</td><td>\(P^2=P\) 是投影；\(P^*=P\) 才是正交投影；\(\|P\|_2\ge1\)，等号 \(\iff\) 正交</td><td>L6</td></tr>
+<tr><td class="c">8</td><td>\(P_{\mathcal{C}(A)}=A A^+\)，\(P_{\mathcal{N}(A^*)}=I-AA^+\)</td><td>L6</td></tr>
+<tr><td class="c">9</td><td>\(\mathcal{C}(A)^\perp=\mathcal{N}(A^*)\)；\(A\) 列满秩 \(\iff A^*A\) 非奇异</td><td>L2</td></tr>
+<tr><td class="c">10</td><td>约化 QR：\(\hat Q\hat R\)；\(A^*A=\hat R^*\hat R\)，故 \(\kappa_2(\hat R)=\kappa_2(A)\)</td><td>L7</td></tr>
+<tr><td class="c">11</td><td>CGS 不稳定（\(q_1^*q_2\) 可偏离到 \(O(\epsilon\kappa)\)），MGS 稳定</td><td>L8</td></tr>
+<tr><td class="c">12</td><td>Householder \(H=I-2vv^*/v^*v\)：Hermite、酉、\(H^2=I\)、\(\det H=-1\)、特征值 \(\pm1\)</td><td>L10</td></tr>
+<tr><td class="c">13</td><td>使 \(Ha=\pm\|a\|_2e_1\) 的取法：\(v=a+\mathrm{sign}(a_1)\|a\|_2e_1\)（防相消）</td><td>L10</td></tr>
+<tr><td class="c">14</td><td>最小二乘：\(\hat x=\hat R^{-1}\hat Q^*b\)；\(r\perp\mathcal{C}(A)\)；\(\kappa\) 放大 \(O(\kappa^2)\) on 正规方程</td><td>L11</td></tr>
+<tr class="hi"><td class="c">15</td><td>\(\hat\kappa(x)=\|J(x)\|\)，\(\kappa(x)=\|J\|/(\|f\|/\|x\|)\)</td><td>L12</td></tr>
+<tr class="hi"><td class="c">16</td><td>\(x_1-x_2\) 的条件数 \(=2/(|x_1-x_2|/\max|x_i|)\) ⇒ 消去误差</td><td>L12</td></tr>
+<tr class="hi"><td class="c">17</td><td>对称特征值 \(|\delta\lambda|\le\|\delta A\|_2\)；非对称可任意病态</td><td>L12</td></tr>
+<tr class="hi"><td class="c">18</td><td>\(\kappa(A)=\|A\|\|A^{-1}\|=\sigma_1/\sigma_m\)；长方形用 \(A^+\)</td><td>L12</td></tr>
+<tr class="hi"><td class="c">19</td><td>\(\kappa(\alpha A)=\kappa(A)\)，\(\kappa_2(QA)=\kappa_2(A)\)，\(\kappa(A^*A)=\kappa(A)^2\)，\(\kappa\ge1\)</td><td>L12</td></tr>
+<tr class="hi"><td class="c">20</td><td>\(\epsilon=\tfrac12\beta^{1-t}\)：双 \(1.11\times10^{-16}\)、单 \(5.96\times10^{-8}\)</td><td>L13</td></tr>
+<tr class="hi"><td class="c">21</td><td>\(\mathrm{fl}(x)=x(1+\epsilon)\)，\(x\odot y=(x\circ y)(1+\epsilon)\)</td><td>L13</td></tr>
+<tr class="hi"><td class="c">22</td><td>稳定 = 邻近问题给邻近答案；后向稳定 = 邻近问题给<strong>精确</strong>答案</td><td>L14</td></tr>
+<tr class="hi"><td class="c">23</td><td>稳定性与范数选择无关</td><td>L14</td></tr>
+<tr class="hi"><td class="c">24</td><td>回代后向稳定：\(|\delta r_{ij}|/|r_{ij}|\le m\epsilon\)（分项）</td><td>L15</td></tr>
+<tr class="hi"><td class="c">25</td><td>Householder：\(\tilde Q\tilde R=A+\delta A\)，\(\|\delta A\|/\|A\|=O(\epsilon)\)</td><td>L16</td></tr>
+<tr class="hi"><td class="c">26</td><td>后向稳定 + 条件数 \(\kappa\) ⇒ 相对误差 \(O(\kappa\epsilon)\)</td><td>L16</td></tr>
+</table>
+
+<h2><span class="no">06</span>证明题六个模板（27 道作业归纳）</h2>
+
+<div class="ladder">
+  <div class="st"><div class="n">模板 1</div><div class="t">范数不等式</div><div class="d">放缩链（次乘性 / Cauchy–Schwarz / Hölder）→ 取上确界 → <strong>再构造取等例子</strong>。没有第三段就是半道题。</div></div>
+  <div class="st"><div class="n">模板 2</div><div class="t">算子范数转谱</div><div class="d">\(\|A\|_2^2=\max_{\|x\|=1}x^*A^*Ax=\lambda_{\max}(A^*A)\)；用 Rayleigh 商把 sup 变成特征值问题。</div></div>
+  <div class="st"><div class="n">模板 3</div><div class="t">投影三件套</div><div class="d">幂等 \(P^2=P\)、自伴 \(P^*=P\)、值域/零空间互补。三者两两推出第三个。</div></div>
+  <div class="st"><div class="n">模板 4</div><div class="t">非奇异 / 可逆</div><div class="d">证 \(Mx=0\Rightarrow x=0\)；或证 \(\sigma_{\min}&gt;0\)；或证 \(\|I-M\|&lt;1\) 用 Neumann 级数。</div></div>
+  <div class="st"><div class="n">模板 5</div><div class="t">误差放大</div><div class="d">写 \((A+\delta A)(x+\delta x)=b\)，减掉 \(Ax=b\)，丢二阶项，解出 \(\delta x=-A^{-1}\delta Ax\)，再取范数。</div></div>
+  <div class="st"><div class="n">模板 6</div><div class="t">后向稳定</div><div class="d">逐步用公理 \(\mathrm{fl}(a\circ b)=(a\circ b)(1+\epsilon)\)，把每步误差挪到"输入"里，最后写成 \((A+\Delta A)\tilde x=b\)，并数清 \(\Delta A\) 的阶。</div></div>
+</div>
+
+<div class="note">
+<span class="h">模板 1 的考场细节</span>
+<p>「证明 \(\|A\|_2\le\sqrt{\|A\|_1\|A\|_\infty}\)」这类题，同学常只证左边。完整答案三段。</p>
+<p>① 对任意 \(x\)，两次 Cauchy–Schwarz 加交换求和：</p>
+<div class="eq">$$\|Ax\|_2^2=\sum_i\Big|\sum_j a_{ij}x_j\Big|^2\le\sum_i\Big(\sum_j|a_{ij}|\Big)\Big(\sum_j|a_{ij}||x_j|^2\Big)\le\|A\|_\infty\|A\|_1\|x\|_2^2 .$$</div>
+<p>② 除以 \(\|x\|_2^2\) 取上确界；③ 全 1 矩阵 \(J_{m\times n}\) 使 \(\|J\|_1=n,\|J\|_\infty=m,\|J\|_2=\sqrt{mn}\)，等号成立。<strong>第三段是拿分点。</strong></p>
+</div>
+
+<h2><span class="no">07</span>计算题四张流程卡</h2>
+
+<h3>卡 1 · \(2\times2\) 手算 SVD</h3>
+<ol>
+<li>算 \(A^*A\)（对称 \(2\times2\)），解 \(\lambda^2-\mathrm{tr}\lambda+\det=0\) 得 \(\lambda_1\ge\lambda_2\ge0\)；</li>
+<li>\(\sigma_j=\sqrt{\lambda_j}\)；解 \((A^*A-\lambda_j I)v_j=0\) 取单位 \(v_j\)；</li>
+<li>\(u_j=Av_j/\sigma_j\)（\(\sigma_j=0\) 时补正交向量）；</li>
+<li>自检三件事：\(U,V\) 正交、\(A=U\Sigma V^*\)、\(\sigma_1\sigma_2=|\det A|\)、\(\sigma_1/\sigma_2=\kappa_2\)。</li>
+</ol>
+<p class="hint">实测样例：\(A=\begin{bmatrix}2&2\\-1&1\end{bmatrix}\)，\(\sigma=(2\sqrt2,\sqrt2)=(2.8284,1.4142)\)，\(U=I\)，\(V=\frac{1}{\sqrt2}\begin{bmatrix}1&-1\\1&1\end{bmatrix}\)，\(\kappa_2=2\)，\(|\det|=4=\sigma_1\sigma_2\)，椭圆面积 \(=4\pi\approx12.566\)。注意其特征值是 \(1.5\pm1.3229i\)，模 \(2\ne\sigma_1\)——非正规矩阵的典型反差。</p>
+
+<h3>卡 2 · MGS 做约化 QR</h3>
+<ol>
+<li>\(r_{ij}=q_i^*a_j\)（\(i&lt;j\)），\(v_j=a_j-\sum_{i&lt;j}r_{ij}q_i\)，\(r_{jj}=\|v_j\|_2\)，\(q_j=v_j/r_{jj}\)；</li>
+<li>保持根号、不转小数；<strong>顺序不能倒</strong>（先减完再归一化）；</li>
+<li>自检：\(Q^*Q=I\)、\(A=QR\)、\(R\) 对角元通常取正（约定唯一）。</li>
+</ol>
+
+<h3>卡 3 · 最小二乘（只用 QR）</h3>
+<ol>
+<li>\(A=\hat Q\hat R\)（约化），\(y=\hat Q^*b\)；</li>
+<li>回代 \(\hat Rx=y\)；</li>
+<li>残差 \(r=b-Ax\)，验证 \(\hat Q^*r=0\)（即 \(A^*r=0\)）；\(\|r\|_2^2=\|b\|_2^2-\|y\|_2^2\) 可当第二重校验。</li>
+</ol>
+<p class="hint">实测样例：\(A=\begin{bmatrix}1&0\\1&1\\0&1\\1&1\end{bmatrix}\)，\(b=(1,2,2,3)^{\mathrm T}\)，MGS 得 \(\hat R=\begin{bmatrix}\sqrt3&2/\sqrt3\\0&\sqrt{5/3}\end{bmatrix}\)，解 \(x=(0.8,1.8)\)，残差 \((0.2,-0.6,0.2,0.4)\)，\(\|r\|=0.7746=\sqrt{0.6}\)，且 \(A^{\mathrm T}r\approx10^{-16}\)。</p>
+
+<h3>卡 4 · 算条件数</h3>
+<ol>
+<li>2-范数：算 \(\sigma_1,\sigma_m\) 取比值；对 \(2\times2\) 用 \(\kappa=\sqrt{\lambda_{\max}(A^*A)/\lambda_{\min}(A^*A)}\)；</li>
+<li>1-范数/\(\infty\)-范数：\(A^{-1}\) 的最大列和/行和再乘回去；</li>
+<li>长方形：用 \(A^+\)（SVD 倒数奇异值）；</li>
+<li>近似捷径（作业常用）：若 \(A\) 近似奇异，\(\kappa_2\approx\) 两列（两行）的"几乎线性相关"程度的倒数。</li>
+</ol>
+<p class="hint">实测样例：\(A=\begin{bmatrix}1&1\\1&1+\delta\end{bmatrix}\)，\(\sigma_1\approx2\)、\(\sigma_2\approx\delta/2\)，故 \(\kappa_2\approx4/\delta\)：\(\delta=10^{-3}\) 时 \(\kappa_2=4002.0\)，\(\delta=10^{-4}\) 时 \(40002.0\)。这个 \(4/\delta\) 是最该背下来的量级估计。</p>
+
+<h2><span class="no">08</span>27 道作业题：按"可复现"重排成 3 组</h2>
+
+<table class="tb small">
+<tr><th>组</th><th>题目</th><th>考什么</th><th>期末改法预测</th></tr>
+<tr>
+<td class="c">A<br><span class="hint">必须闭卷写出</span></td>
+<td>测试1-3（三角酉阵必对角）、1-6（\(uv^*\) 的 2-范数）、1-8（Hermitian 两条）、1-9（\(\rho\le\|A\|\)）、1-10（范数等价 + 紧性）、3-1（\(I-2P\) 酉）、3-2（\(A^*A\) 非奇异）、3-3（\(\|P\|_2\ge1\)）</td>
+<td>全是 3–5 行的短证明，考"引理熟不熟"</td>
+<td>换成 \(I-\alpha P\)、换 \(uv^*\) 为秩 \(k\)、把 Hermitian 换成正规矩阵</td>
+</tr>
+<tr>
+<td class="c">B<br><span class="hint">必须能全程算完</span></td>
+<td>测试2-1（三类小矩阵 SVD）、2-5（SVD 七小问）、4-4（MGS/Householder QR + 最小二乘）、3-4（棋盘结构）、3-5（三平面 QR 求交）、3-6（CGS 计数）</td>
+<td>流程 + 自检；考"中途算错能不能自己发现"</td>
+<td>换 \(3\times2\)、换 4 阶、把 7 小问拆成 4 小问并加 "求 \(\kappa_2\)"</td>
+</tr>
+<tr>
+<td class="c">C<br><span class="hint">要能讲清思路</span></td>
+<td>测试1-1（八个矩阵乘）、1-2（求值矩阵）、1-4/1-5（对角、行向量范数）、2-2（旋转 90°）、2-3（实 SVD）、2-6（分块谱）、4-1（Householder 谱/行列式）、4-2（F 与 J、6 flops）、4-3（\(\|A^+\|\le\|A_1^{-1}\|\)）、1-7（勾股）、1-11（秩一 F-范数）</td>
+<td>概念辨析 + 一句结论配一句证明</td>
+<td>条件数、浮点、稳定性会以同一风格"借壳"：形如"请证明 \(\kappa(A)\ge1\) 并举一例说明等号"</td>
+</tr>
+</table>
+
+<div class="note b">
+<span class="h">原题复用的正确姿势（结合期中 8/8 这件事）</span>
+<ol style="margin:6px 0 0">
+<li><strong>先按题号遮住答案重做一遍</strong>，只允许看自己写的三行提纲；</li>
+<li>对每一题补一句"这题如果换成数字会怎么变"——例如 1-9 若要你"举出 \(\rho&lt;\|A\|\) 的例子"，就答 \(\begin{bmatrix}0&1\\0&0\end{bmatrix}\)；</li>
+<li>把 27 题按上面的 A/B/C 分组贴到一张纸上，考前一晚只看 A 组；</li>
+<li>重点标记「同一个结论出现两次」的：\(\|A\|_2=\sigma_1\)（测试1-5、1-6、1-11、2-4 共 4 次）、正交投影（3-1、3-3 两次）、SVD 手算（2-1、2-5 两次）。<strong>出现 3 次以上的，期末几乎必考。</strong></li>
+</ol>
+</div>
+
+<h2><span class="no">09</span>最后两周若讲特征值：最小准备集</h2>
+<p>教材 Part V 紧接在稳定性之后，课时也刚好排得下 2–3 讲。如果老师讲了，按下面这张最小表准备（没讲就整块跳过，不要提前花时间）：</p>
+
+<table class="tb">
+<tr><th>主题</th><th>要会的最小集</th></tr>
+<tr><td>特征值问题</td><td>\(Ax=\lambda x\)；特征多项式；\(\det A=\prod\lambda_i\)，\(\mathrm{tr}A=\sum\lambda_i\)；相似变换保谱</td></tr>
+<tr><td>Schur 分解</td><td>任意方阵 \(A=QTQ^*\)（\(T\) 上三角）；正规矩阵时 \(T\) 对角（= 可酉对角化）</td></tr>
+<tr><td>幂法</td><td>\(x_{k+1}=Ax_k/\|Ax_k\|\)，收敛到 \(\sigma_1\) 方向；收敛比 \(|\lambda_2/\lambda_1|\)；Rayleigh 商二阶收敛</td></tr>
+<tr><td>反迭代</td><td>\((A-\mu I)^{-1}\) 放大最靠近 \(\mu\) 的特征向量</td></tr>
+<tr><td>QR 迭代</td><td>\(A_k=Q_kR_k\)，\(A_{k+1}=R_kQ_k\)；无移位时收敛比 \(|\lambda_{k+1}/\lambda_k|\)；带 Wilkinson 移位</td></tr>
+</table>
+<p class="hint">实测样例（可直接当手算练习）：\(A=\begin{bmatrix}2&1\\1&2\end{bmatrix}\)，\(x_0=(1,0)^{\mathrm T}\)，未归一化迭代 \((1,0)\to(2,1)\to(5,4)\to(14,13)\)，Rayleigh 商 \(2.8\to2.9756\to2.9973\to2.9997\)，比值恒约 \(1/3=|\lambda_2/\lambda_1|\)，\(\lambda=3,1\)。</p>
+
+<h2><span class="no">10</span>考前 14 天日程（按 11/16 开考排，日期不同整体平移）</h2>
+
+<table class="tb small">
+<tr><th>日</th><th>主任务（90 分钟）</th><th>产出 / 自检</th></tr>
+<tr><td class="c">D-14</td><td>读本页 §02–§04，合上电脑复述"误差三角"</td><td>能不看笔记写出 \(\kappa\to\) 稳定 \(\to\) 精度的三步推理</td></tr>
+<tr><td class="c">D-13</td><td>模拟卷第一套，闭卷计时 120 分钟</td><td>记录每题用时与卡壳点；不查书</td></tr>
+<tr><td class="c">D-12</td><td>第一套对答案，把错题归到 §06 的六个模板</td><td>错题表（题号 → 模板号 → 缺哪一步）</td></tr>
+<tr><td class="c">D-11</td><td>条件数专练：§02 三个定理自己证一遍 + 卡 4 算 3 个矩阵</td><td>\(\kappa_2\) 三个值全对；\(\kappa(A^*A)=\kappa^2\) 能证</td></tr>
+<tr><td class="c">D-10</td><td>浮点专练：默写两条公理，推 \(\mathrm{fl}(a+b)\)、\((1+\epsilon)-1\) 两个小结论</td><td>能算 \(\epsilon\) 的十进制值，能解释 \(0.1+0.2\ne0.3\)</td></tr>
+<tr><td class="c">D-9</td><td>后向稳定专题：回代分项界 + 算法三步复合，各写一遍</td><td>两项都能独立写出等式链</td></tr>
+<tr><td class="c">D-8</td><td>模拟卷第二套（闭卷）</td><td>同 D-13</td></tr>
+<tr><td class="c">D-7</td><td>第二套对答案 + A 组作业题（8 道）闭卷重做</td><td>A 组 8 道必须一次过</td></tr>
+<tr><td class="c">D-6</td><td>SVD + QR + 最小二乘各手算一题（卡 1–3）</td><td>\(Q^*Q=I\)、\(A^*r=0\) 自检通过</td></tr>
+<tr><td class="c">D-5</td><td>B 组作业题重做（6 道），只写关键步</td><td>能复现 2-5 的七小问</td></tr>
+<tr><td class="c">D-4</td><td>模拟卷第三套（闭卷）</td><td>同 D-13</td></tr>
+<tr><td class="c">D-3</td><td>第三套对答案 + §05 速查表逐条自问</td><td>26 条里能立刻答出 ≥22 条</td></tr>
+<tr><td class="c">D-2</td><td>只看错题表 + §06 模板 + §07 流程卡；不碰新题</td><td>错题表上每条都能口述正确做法</td></tr>
+<tr><td class="c">D-1</td><td>§11 自测 15 问；§05 速查一眼扫；早睡</td><td>15 问 ≥12 立刻答出</td></tr>
+</table>
+<p class="hint">两条纪律：① 每天只做一件主任务，不做"今天把整章看完"这种不可验收的任务；② 错题表是唯一允许在 D-2 之后翻的材料——它比笔记有效，因为上面全是自己漏过的点。</p>
+
+<h2><span class="no">11</span>考前自测 15 问（能脱口而出就稳了）</h2>
+<ol>
+<li>条件数和稳定性的区别，各举一个反例说明"一个好一个坏"。</li>
+<li>\(\kappa(A)\ge1\) 怎么证？等号什么时候成立？</li>
+<li>为什么左乘酉阵不改 \(\kappa_2\)？这跟 QR 分解有什么关系？</li>
+<li>\(\kappa_2(A^*A)\) 与 \(\kappa_2(A)\) 的关系，由此说明正规方程的缺点。</li>
+<li>\(\kappa_2\begin{bmatrix}1&1\\1&1+\delta\end{bmatrix}\) 的量级是多少？怎么一眼看出？</li>
+<li>对称矩阵特征值问题的绝对条件数为什么是 1？非对称为什么可能无穷大？</li>
+<li>机器 epsilon 的定义式，双精度与单精度的数值。</li>
+<li>用两条公理推 \(\mathrm{fl}(x+y)\) 的相对误差界。</li>
+<li>"稳定"与"后向稳定"的差别，各写一行公式。</li>
+<li>为什么说后向稳定的算法不一定精确？谁决定了精度？</li>
+<li>回代的误差界为什么叫"分项"的？它比范数界强在哪？</li>
+<li>\(\tilde Q\) 到底是什么？为什么不写成"\(Q\) 的计算值"？</li>
+<li>把"QR → 乘 \(b\) → 回代"三步合成整体后向稳定的关键一步是什么？</li>
+<li>第 13 讲实验里 \(\tilde Q,\tilde R\) 前向误差很大，为什么不说明算法不稳？</li>
+<li>若 \(\kappa(A)=10^{12}\)，双精度下解能有几位有效数字？算法还能后向稳定吗？</li>
+</ol>
+
+<h2><span class="no">12</span>可视化计划调整：从「按教材推进」改成「按考纲收敛」</h2>
+
+<p>原先的计划是顺着教材往下做（SVD → QR → 最小二乘 → CG → …）。既然只剩两周、且考试范围锁死在第 13 讲，计划改成：<strong>考纲内只补一个真正缺的页，其余精力全给刷题</strong>。判断依据是「这一页能不能在我做题卡住时救我一命」。</p>
+
+<table class="tb">
+<tr><th>优先级</th><th>页面</th><th>为什么</th><th>交互核心</th></tr>
+<tr class="hi"><td class="c">P0</td><td><strong>NLA-12 浮点 · 稳定 · 后向稳定</strong>（新建）</td><td>第 11–13 讲完全没有图，而这三讲占分最高、概念最抽象。<strong>唯一值得在考前做的页</b></td><td>① \(\beta,t\) 两个滑杆实时算 \(\epsilon\) 并在数轴上显示间隙；② 同一问题三种误差条形（前向 / 后向 / 相对）对照；③ 后向稳定演示：给算法喂 \(10^{-16}\) 扰动，看 \(\|\tilde Q\tilde R-A\|\) 不动而 \(\tilde Q\) 乱转</td></tr>
+<tr><td class="c">P1</td><td>NLA-13 特征值预热（视情况）</td><td>只有老师讲 Part V 才做；否则纯属浪费</td><td>幂法轨迹 + Rayleigh 商收敛曲线（比值 \(|\lambda_2/\lambda_1|\) 可拖）</td></tr>
+<tr><td class="c">P1</td><td>NLA-10 条件数页补一节（就地改）</td><td>已有页只讲了几何放大，缺"丢失位数"和 \(\kappa(A^*A)=\kappa^2\) 两张小图</td><td>加一个 \(\kappa\) 滑杆 → 十进制位数刻度；加正规方程对比</td></tr>
+<tr><td class="c">P2</td><td>R3/R4 打印版式</td><td>复习要纸笔，屏幕分屏做卷子不现实</td><td>已有 <code>@media print</code>，只需在页首加"打印"提示</td></tr>
+<tr><td class="c">停</td><td>CG / Krylov 后续（L32–40）、Preconditioning</td><td>不在期末范围，做了也用不上</td><td>考后再做，作为下学期的入口</td></tr>
+</table>
+
+<div class="note g">
+<span class="h">为什么只做一页就够</span>
+现有 11 个可视化页已覆盖第 1–10 讲的全部核心（映射、范数、SVD、投影、QR、最小二乘、条件数）。缺的只有第 11–13 讲那一条"误差"线，而它恰好是三条公式加一张误差三角——<strong>一页能装下，而且必须装在同一页</strong>，因为这三讲的知识点是同一条推理链上的三环，拆成三页反而看不见链条。
+</div>
+
+<p class="hint">建成后的验收（沿用本系列的规矩）：页面里每个读数都要有 <code>verify_readout_nla12.js</code> 独立重算比对；\(\epsilon\) 的十进制值与 §03 的实测数一致；后向稳定演示的 \(\|\delta A\|/\|A\|\) 必须落在 \(10^{-16}\) 量级而不是 0。</p>
+
+<footer>
+<p>NLA-R3 · 期末复习指南 · 范围到第 13 讲（后向稳定性）。数值结论由工作区根 <span class="mono">verify_exam_numbers.py</span> 实测：\(2\times2\) SVD、\(\kappa_2\) 量级、MGS 最小二乘解与残差、三位舍入回代的后向误差、幂法 Rayleigh 序列。</p>
+</footer>
+
+<div class="pager noprint">
+  <a href="./期中复习-指南.html">← NLA-R1 期中复习</a>
+  <a href="./期末模拟卷-三套.html">NLA-R4 期末模拟卷（三套）→</a>
+</div>
+
+</div>
+</body>
+</html>

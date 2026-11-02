@@ -83,7 +83,7 @@ footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
 </a>
 
 <h2>第三部分 · 作业向专题与复习（当前课程）</h2>
-<p class="lead" style="font-size:14px;margin-bottom:14px">教材页讲的是「这个定理为什么对」，这部分讲的是「考场上这道题怎么写」。范围到最小二乘为止，条件数、浮点不在考察范围。</p>
+<p class="lead" style="font-size:14px;margin-bottom:14px">教材页讲的是「这个定理为什么对」，这部分讲的是「考场上这道题怎么写」。期末范围到第 13 讲（后向稳定性）为止：条件数、浮点、稳定性都在里面。</p>
 
 <a class="card" href="./期中复习-指南.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">R1</span>期中复习 · 知识点与考点地图</p>
@@ -92,6 +92,14 @@ footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
 <a class="card" href="./期中模拟卷-两套.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">R2</span>期中模拟卷 · 两套 + 详解</p>
 <p class="d">各 7 题、100 分、100 分钟，题型对位四次测试但数字全换：第一套偏常规（初等变换乘积链、范数与紧性、SVD 综合、投影 ‖P‖₂、MGS、最小二乘、分块谱），第二套偏综合（斜 Hermitian、秩一画像、3×2 SVD 与伪逆、I−2P、Householder、最小二乘、棋盘结构证明）。每题附评分要点、易错提示与建议用时；打印时题目与详解自动分页。</p>
+</a>
+<a class="card" href="./期末复习-指南.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">R3</span>期末复习 · 条件数 × 稳定性 = 精度</p>
+<p class="d">把第 10–13 讲接回前九讲的总装页：条件数三条定理与六个性质（κ≥1、κ(αA)=κ(A)、κ₂(QA)=κ₂(A)、κ(AᵀA)=κ²）· 浮点两条公理与 eps 实测 · 稳定/后向稳定对照表 · 回代分项界、Householder Q̃R̃=A+δA、算法三步复合与精度定理 · 26 条速查 · 六个证明模板 · 四张计算流程卡 · 27 道作业按可复现性分三组 · 考前 14 天日程 · 15 问自测 · 可视化计划调整。</p>
+</a>
+<a class="card" href="./期末模拟卷-三套.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">R4</span>期末模拟卷 · 三套 + 详解</p>
+<p class="d">各 8 题、100 分、120 分钟，递进三档：一套对标作业难度（全覆盖）、二套偏证明（范数紧性、秩一全套、斜投影、Householder 手算、正规方程平方、条件数达界构造、回代舍入算例）、三套真题强度（反射与酉性、对称 SVD、QR 解系统、病态 vs 不稳辨析、浮点吸收、精度定理、特征值选做）。所有数值经脚本实测，附评分要点与易错提示。</p>
 </a>
 <a class="card" href="./SVD手算-超椭圆与最少负号.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">NLA-07</span>SVD 手算 · 超椭圆与最少负号</p>
@@ -116,8 +124,8 @@ footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
 <p class="d">为什么 O(m³) 是一道墙（迭代法把 A 当黑箱）· Krylov 子空间与四格表 · 2×2 实验台：等高椭圆半轴比实测 = √κ、p₀ 与 p₁ 的 A-共轭、残差正交、κ=1 退化成圆 · Algorithm 38.1 与三定理 · 收敛速率（m=400 真跑 CG vs 最速下降 vs 2ρⁿ 上界；κ=10⁴ 时 142 步对 &gt;400 步）· Chebyshev 多项式等幅振荡与 1/Tₙ(γ) 对账 · 预条件四档实测（一维变系数扩散 m=127：无 276 步 / Jacobi 127 / 块 Jacobi 7 / 两层 V-cycle 6）· 粗网格修正 = 空间预条件，直通「神经网络修正粗网格解」</p>
 </a>
 <div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L13–19</span>浮点灾难与抵消 · 最小二乘的稳定性</p>
-<p class="d">机器精度探测、相近数相减的误差爆炸；QR/SVD 解最小二乘为何稳（NLA-06 实验 03 的续篇）。</p>
+<p class="t"><span class="tag plan">筹备中 · P0</span><span class="tag ch">NLA-12</span>浮点 · 稳定 · 后向稳定（误差三角一页装下）</p>
+<p class="d">考前唯一值得新建的页：β、t 两滑杆实时算 ε 并在数轴上显示浮点间隙；同一问题的前向/后向/相对误差三色对照；后向稳定演示——喂 10⁻¹⁶ 扰动看 ‖Q̃R̃−A‖ 不动而 Q̃ 乱转。三讲是同一条推理链的三环，拆页反而看不见链条。</p>
 </div>
 <div class="card planned">
 <p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L20–23</span>直接法：高斯消元到 Cholesky</p>

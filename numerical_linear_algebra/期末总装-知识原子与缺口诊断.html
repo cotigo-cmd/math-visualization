@@ -154,7 +154,7 @@ details .ans{border-left:3px solid var(--green);background:#F7FBF8;padding:2px 1
   <span class="cnt" id="cnt">0 / 32 已标未解</span>
 </div>
 
-<h1>期末总装：25 个知识原子，32 道题，一张缺口地图</h1>
+<h1>期末总装：33 个知识原子，38 道题，一张缺口地图</h1>
 <p class="lead">这一页只解决一件事：<strong>做不出来的时候，知道缺的是哪一条</strong>。方法是三步——① 在「症状检索」里认出你的卡点；② 跳到对应原子，看那三条错法里有没有你；③ 做标了同一个原子的题，做不出来就勾一下，页面自动汇总你缺哪几个原子。</p>
 
 <div class="note b">
@@ -173,7 +173,7 @@ details .ans{border-left:3px solid var(--green);background:#F7FBF8;padding:2px 1
 </div>
 
 <h2><span class="no">00</span>症状检索：从「我卡在哪」倒推「缺哪条」</h2>
-<p class="hint" style="font-size:12.5px;color:var(--ink2);margin:6px 0">21 条卡点，逐条对应到原子。左边这句是你脑子里的原话，右边是缺的东西。</p>
+<p class="hint" style="font-size:12.5px;color:var(--ink2);margin:6px 0">33 条卡点，逐条对应到原子。左边这句是你脑子里的原话，右边是缺的东西。</p>
 
 <div class="sym">
 <a href="#a1"><span class="id">A1</span><span class="sq">一串行/列操作，要我写成一个矩阵乘积，顺序总搞反</span></a>
@@ -199,6 +199,14 @@ details .ans{border-left:3px solid var(--green);background:#F7FBF8;padding:2px 1
 <a href="#f1"><span class="id">F1</span><span class="sq">机器 eps 会背，但 \((1+2^{-53})-1\) 到底等于多少说不准</span></a>
 <a href="#f2"><span class="id">F2</span><span class="sq">"0.1+0.2≠0.3" 只会说"精度不够"，讲不深</span></a>
 <a href="#f3"><span class="id">F3</span><span class="sq">稳定 / 后向稳定，两个定义一写就写反</span></a>
+<a href="#g1"><span class="id">G1</span><span class="sq">要我证"LU 存在当且仅当顺序主子式非零"，不知道从哪下手</span></a>
+<a href="#g2"><span class="id">G2</span><span class="sq">Schur 补那块矩阵乘开对，但说不清"消元后右下块为什么还是它"</span></a>
+<a href="#g3"><span class="id">G3</span><span class="sq">\(PA=LU\) 会写，但求 det 时忘了符号、或把 \(L\) 的行列式算成 \(\prod l_{jj}\)</span></a>
+<a href="#g4"><span class="id">G4</span><span class="sq">"严格对角占优不用选主元"只会背结论，证不下去</span></a>
+<a href="#g5"><span class="id">G5</span><span class="sq">正定、Cholesky、QR 的 \(R\) 三者关系绕不清</span></a>
+<a href="#g6"><span class="id">G6</span><span class="sq">Cholesky 解 \(Ax=b\) 的稳定性证明，不知道三步怎么写</span></a>
+<a href="#h1"><span class="id">H1</span><span class="sq">对偶范数定义看不懂，也不知道它有什么用</span></a>
+<a href="#h2"><span class="id">H2</span><span class="sq">大 \(O\) 判断题（\(\sin x\)、\(n!\)）凭感觉</span></a>
 <a href="#f4"><span class="id">F4</span><span class="sq">"后向稳定能推精度"这一步的推导接不上</span></a>
 <a href="#f5"><span class="id">F5</span><span class="sq">回代 / Householder 的后向稳定证明，背不下来</span></a>
 </div>
@@ -573,6 +581,123 @@ details .ans{border-left:3px solid var(--green);background:#F7FBF8;padding:2px 1
 <li>说"\(\|\delta R\|/\|R\|=O(\epsilon)\) 就够了"（题目若问"分项更强在哪"，要答：零元不被扰动、对列缩放不敏感）；</li>
 <li>\(\tilde Q\) 写成"\(Q\) 的计算值"（应为"由浮点 \(\tilde v_k\) 定义的镜射之积"）；</li>
 <li>三步复合时忘了每传一步只多 \(O(\epsilon^2)\)，可以直接合并。</li>
+</ul>
+</div>
+
+
+<div class="grp">G 组 · 直接法：消元、主元、Cholesky（6 条，11 月新课）</div>
+
+<div class="atom" id="g1">
+<div class="ah"><span class="aid">G1</span><span class="at">LU 存在性与唯一性</span><span class="aq">考它：HW7-1 · R6 §01</span></div>
+<span class="lab">一句话</span>
+<p>非奇异 \(A\) 有 \(A=LU\)（\(L\) 单位下三角）\(\iff\) 所有顺序主子阵 \(A_{1:k,1:k}\) 非奇异；此时分解唯一。核心中间结论：<strong>第 \(k\) 步主元 \(u_{kk}=\det(A_{1:k})/\det(A_{1:k-1})\)</strong>（行消元不改行列式）。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}2&1\\1&1\end{bmatrix}\)：主子式 \(2\)、\(1\) 都非零 ⇒ 有 LU。而 \(A=\begin{bmatrix}0&1\\1&0\end{bmatrix}\) 的 \(A_{1:1}=0\) ⇒ 没有 LU（必须换行，即要 \(PA=LU\)）。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>只证一个方向（题目写的是"当且仅当"）；</li>
+<li>唯一性不写「左边单位下三角、右边上三角 ⇒ 两者都是 \(I\)」这句关键；</li>
+<li>把条件写成"\(\det A\ne0\)"（那是"可逆"，不是"有 LU"——反例就是上面的交换阵）。</li>
+</ul>
+</div>
+
+<div class="atom" id="g2">
+<div class="ah"><span class="aid">G2</span><span class="at">Schur 补与分块消元</span><span class="aq">考它：HW7-2 · R6 §02</span></div>
+<span class="lab">一句话</span>
+<p>\(\begin{bmatrix}I&0\\-A_{21}A_{11}^{-1}&I\end{bmatrix}\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}=\begin{bmatrix}A_{11}&A_{12}\\0&S\end{bmatrix}\)，其中 \(S=A_{22}-A_{21}A_{11}^{-1}A_{12}\) 是 \(A_{11}\) 的 <strong>Schur 补</strong>。\(n\) 步行消元与左乘这个分块阵等价，故右下块就是 \(S\)。</p>
+<span class="lab">最小可算例</span>
+<p>\(\begin{bmatrix}1&0\\3&1\end{bmatrix}\) 消去 \((2,1)\) 位置，\(A_{11}=1\)、\(A_{21}=3\)、\(A_{12}=0\)，得 \(S=a_{22}-3\cdot0=a_{22}=1\)：分块阵就是 \(\begin{bmatrix}1&0\\-3&1\end{bmatrix}\)。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把 \(S\) 写成 \(A_{22}-A_{12}A_{11}^{-1}A_{21}\)（乘法顺序反，阶数都对不上）；</li>
+<li>以为要真去算 \(A_{11}^{-1}\)（实际计算里从不解逆，只是记号）；</li>
+<li>（b）问答"消元会改变 \(A_{11}\)"（分块消元不动左上块）。</li>
+</ul>
+</div>
+
+<div class="atom" id="g3">
+<div class="ah"><span class="aid">G3</span><span class="at">选主元：PA=LU、行主元、行列式</span><span class="aq">考它：HW8-2 · HW8-3 · R6 §03</span></div>
+<span class="lab">一句话</span>
+<p>部分主元给 \(PA=LU\)，故 \(\det A=\det(P)^{-1}\prod u_{jj}=(-1)^{s}\prod u_{jj}\)（\(s\) 为行交换次数）。列主元给 \(AQ=LU\)：\(A\) 非奇异时总存在，奇异时不一定。</p>
+<span class="lab">最小可算例</span>
+<p>若消元中交换了 1 次行，\(U\) 的对角元为 \(2,3,5\)，则 \(\det A=-30\)。检验：\(\det P=-1\)，\(\det L=1\)。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>求 det 时把 \(\det L\) 算成 \(\prod l_{jj}\)（\(L\) 对角全 1 ⇒ \(\det L=1\)）；</li>
+<li>漏掉符号（\(P\) 的行列式是 \(\pm1\)，不是 1）；</li>
+<li>举反例说明 \(AQ=LU\) 不存在时用了非奇异矩阵（必须用奇异的，如 \(\begin{bmatrix}0&1\\0&0\end{bmatrix}\)）。</li>
+</ul>
+</div>
+
+<div class="atom" id="g4">
+<div class="ah"><span class="aid">G4</span><span class="at">严格对角占优 ⇒ 不选主元</span><span class="aq">考它：HW8-4 · R6 §03.3</span></div>
+<span class="lab">一句话</span>
+<p>严格列对角占优（\(|a_{kk}|&gt;\sum_{j\ne k}|a_{jk}|\)）⇒ 列主元消元不会出现行交换。两步：① 对角元必是该列最大元，第一步不用换；② 消元后右下子块<strong>仍严格列对角占优</strong>，归纳。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}4&1\\1&3\end{bmatrix}\)：列 1 有 \(4&gt;1\)，列 2 有 \(3&gt;1\) ⇒ 占优。直接消元主元 4，无需交换。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把"列占优"与"行占优"混用（结论对偶，但证明里的估计式要换）；</li>
+<li>只证第一步就收尾（必须写"归纳到第 \(k\) 步"）；</li>
+<li>说"不换行所以稳定"（不换行 ⇒ 无增长；稳定性另说）。</li>
+</ul>
+</div>
+
+<div class="atom" id="g5">
+<div class="ah"><span class="aid">G5</span><span class="at">Hermite 正定与 Cholesky</span><span class="aq">考它：HW8-5/6/7 · R6 §04</span></div>
+<span class="lab">一句话</span>
+<p>三个等价：特征值全正 \(\iff\) \(x^*Ax&gt;0\)（\(x\ne0\)）\(\iff\) 所有顺序主子式 \(&gt;0\)；此时 \(A=R^*R\)（\(R\) 上三角、对角正、唯一），成本 \(m^3/3\)。又因 \(A^*A=R^*R\)，<strong>QR 的 \(R\) 就是 \(A^*A\) 的 Cholesky 因子</strong>。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}2&1\\1&2\end{bmatrix}\)：特征值 \(1,3\) 全正 ⇒ 正定；\(R=\begin{bmatrix}\sqrt2&1/\sqrt2\\0&\sqrt{3/2}\end{bmatrix}\)，验 \(R^{\mathrm T}R=A\) ✓</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>用"对角元全正"当正定判据（必要不充分，反例 \(\begin{bmatrix}1&2\\2&1\end{bmatrix}\)）；</li>
+<li>说 \(R\) 与 QR 的 \(R\) 只差符号（差的是对角符号约定；对角都取正时完全相同）；</li>
+<li>把 Cholesky 成本写成 \(2m^3/3\)（那是 LU；对称省一半）。</li>
+</ul>
+</div>
+
+<div class="atom" id="g6">
+<div class="ah"><span class="aid">G6</span><span class="at">Cholesky 解 Ax=b 的后向稳定</span><span class="aq">考它：HW8-8 · R6 §04.4</span></div>
+<span class="lab">一句话</span>
+<p>三步各后向稳定：① \(A=R^*R\)（\(\|\delta A\|/\|A\|=O(\epsilon)\)）；② 前代 \(R^*y=b\)；③ 回代 \(Rx=y\)。复合得 \((A+\Delta A)\tilde x=b\)，再套精度定理得 \(O(\kappa\epsilon)\)。<strong>与 Householder 解 \(Ax=b\) 的三步完全同构</strong>。</p>
+<span class="lab">最小可算例</span>
+<p>把三个扰动顺着等式往后传，每传一步只多 \(O(\epsilon^2)\)，所以不必逐项展开——写"三步各自后向稳定 ⇒ 复合后向稳定"就够骨架。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>只证分解那一步（题目要整体）；</li>
+<li>忘记最后要套"后向稳定 ⇒ 精度"（少了 \(\kappa\) 这一步）；</li>
+<li>把前代写成回代（顺序：先 \(R^*y=b\)，再 \(Rx=y\)）。</li>
+</ul>
+</div>
+
+<div class="grp">H 组 · 范数与浮点的边角（2 条，HW5/HW6 专有）</div>
+
+<div class="atom" id="h1">
+<div class="ah"><span class="aid">H1</span><span class="at">对偶范数与"达到范数"的秩一算子</span><span class="aq">考它：HW5-1 · HW5-2</span></div>
+<span class="lab">一句话</span>
+<p>\(\|x\|'=\sup_{\|y\|=1}|y^*x|\) 是范数（对偶范数）；\(\|\cdot\|_1\) 与 \(\|\cdot\|_\infty\) 互为对偶，\(\|\cdot\|_2\) 自对偶。用它可造秩一 \(B=yz^*\) 使 \(Bx=y\) 且 \(\|B\|=1\)。</p>
+<span class="lab">最小可算例</span>
+<p>取 \(\|\cdot\|=\|\cdot\|_2\)、\(x,y\) 单位：令 \(z=y\)，则 \(B=yx^*\) 满足 \(Bx=y\)，且 \(\|B\|_2=\|y\|\|x\|=1\)。一般范数下用引理「存在 \(z\) 使 \(|z^*x|=\|z\|'\|x\|\)」。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>证范数三条时漏掉齐次性的 \(|c|\)（写成 \(c\)）；</li>
+<li>把对偶范数当成"另一个随便的范数"（它由原范数唯一确定）；</li>
+<li>构造 \(B\) 后不验证 \(\|B\|=1\)（这题的重点正是"范数恰好为 1"）。</li>
+</ul>
+</div>
+
+<div class="atom" id="h2">
+<div class="ah"><span class="aid">H2</span><span class="at">大 O 判断与 eps 代数</span><span class="aq">考它：HW5-6 · HW5-7</span></div>
+<span class="lab">一句话</span>
+<p>\(\phi=O(\psi)\) 指存在常数 \(C\)，使足够靠近极限时 \(|\phi|\le C|\psi|\)。所以"有界"就是 \(O(1)\)：\(\sin x=O(1)\) 在 \(x\to\infty\) 与 \(x\to0\) 都成立；\(\log x=O(x^{1/100})\) 成立；<strong>\(n!\ne O((n/e)^n)\)</strong>（Stirling 多一个 \(\sqrt{2\pi n}\)）。</p>
+<span class="lab">最小可算例</span>
+<p>\((1+O(\epsilon))(1+O(\epsilon))=1+2O(\epsilon)+O(\epsilon)^2=1+O(\epsilon)\)；\((1+O(\epsilon))^{-1}=1-O(\epsilon)+O(\epsilon^2)=1+O(\epsilon)\)。两问都靠"交叉项是更高阶"这一句。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把 \(O(1)\) 当成"等于常数 1"；</li>
+<li>判断 \(n!\) 时只比"指数部分"（阶乘的 \(\sqrt n\) 因子不能丢）；</li>
+<li>\((1+O(\epsilon))^{-1}\) 展开后把 \(-O(\epsilon)\) 与 \(+O(\epsilon)\) 当成不同结论（\(O\) 带符号，两者都是 \(1+O(\epsilon)\)）。</li>
 </ul>
 </div>
 
@@ -955,13 +1080,73 @@ details .ans{border-left:3px solid var(--green);background:#F7FBF8;padding:2px 1
 <label class="mark"><input type="checkbox" data-q="L3-8">我还不会</label>
 </div>
 
+
+<div class="grp">L2b · Part IV 作业原题 6 道（11 月新课，最可能原样出现）</div>
+
+<div class="q" data-atoms="g1">
+<div class="qh"><span class="qn">L2-13</span><span class="qt">HW7-1：LU 存在 \(\iff\) 顺序主子式非零</span><span class="tags"><a href="#g1">G1</a></span></div>
+<div class="body"><p>\(A\in\mathbb{C}^{m\times m}\) 非奇异。证明 \(A\) 有 LU 分解当且仅当每个 \(A_{1:k,1:k}\)（\(1\le k\le m\)）非奇异，并证明此时分解唯一。</p></div>
+<details><summary>看答案（骨架）</summary><div class="ans">
+<p>关键中间量：行消元不改行列式 ⇒ \(\det A_{1:k}=\prod_{j\le k}u_{jj}\) ⇒ \(u_{kk}=\det A_{1:k}/\det A_{1:k-1}\)。</p>
+<p>(⇐) 主子式全非零 ⇒ 主元全非零 ⇒ 消元走得通。(⇒) \(A_{1:k}=L_{1:k}U_{1:k}\) ⇒ \(\det=\prod u_{jj}\ne0\)。</p>
+<p>唯一性：\(L_2^{-1}L_1=U_2U_1^{-1}\) 左边单位下三角、右边上三角 ⇒ 都是 \(I\)。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-13">我还不会</label>
+</div>
+
+<div class="q" data-atoms="g2">
+<div class="qh"><span class="qn">L2-14</span><span class="qt">HW7-2：Schur 补恒等式</span><span class="tags"><a href="#g2">G2</a></span></div>
+<div class="body"><p>（a）验证 \(\begin{bmatrix}I&0\\-A_{21}A_{11}^{-1}&I\end{bmatrix}\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}=\begin{bmatrix}A_{11}&A_{12}\\0&A_{22}-A_{21}A_{11}^{-1}A_{12}\end{bmatrix}\)；（b）证明 \(n\) 步高斯消元后右下块就是这个 Schur 补。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）按分块乘法逐块验证：第二块行 = \(-A_{21}A_{11}^{-1}A_{11}+A_{21}=0\)，第二块列 = \(-A_{21}A_{11}^{-1}A_{12}+A_{22}=S\)。</p>
+<p>（b）\(n\) 步消去第一列的乘子等价于一次性左乘该分块阵；它不改 \(A_{11},A_{12}\)，只把右下块替换成 \(S\)。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-14">我还不会</label>
+</div>
+
+<div class="q" data-atoms="g3">
+<div class="qh"><span class="qn">L2-15</span><span class="qt">HW8-2：由 LU / PA=LU 求 det</span><span class="tags"><a href="#g3">G3</a></span></div>
+<div class="body"><p>（a）由 \(A=LU\) 求 \(\det A\)；（b）由 \(PA=LU\) 求 \(\det A\)；（c）描述部分主元消元如何求一般方阵的行列式。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）\(\det A=1\cdot\prod u_{jj}\)（\(\det L=1\)）。（b）\(\det A=(-1)^{s}\prod u_{jj}\)，\(s\) 为行交换次数。（c）做部分主元消元、数交换次数、乘 \(U\) 的对角元、乘符号；成本 \(2m^3/3\)。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-15">我还不会</label>
+</div>
+
+<div class="q" data-atoms="g4">
+<div class="qh"><span class="qn">L2-16</span><span class="qt">HW8-4：严格列对角占优 ⇒ 不换行</span><span class="tags"><a href="#g4">G4</a></span></div>
+<div class="body"><p>\(|a_{kk}|&gt;\sum_{j\ne k}|a_{jk}|\)。证明列主元高斯消元不会出现行交换。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>第一步：对角元绝对值大于同列其余元素之和 ⇒ 它是该列最大元，无需交换。第二步：证明消元后的子块仍严格列对角占优（对 \(a_{ij}-a_{i1}a_{1j}/a_{11}\) 作估计），归纳即得每一步都不换。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-16">我还不会</label>
+</div>
+
+<div class="q" data-atoms="g5">
+<div class="qh"><span class="qn">L2-17</span><span class="qt">HW8-7：QR 的 R 与 Cholesky 的 U 是否相同</span><span class="tags"><a href="#g5">G5</a></span></div>
+<div class="body"><p>\(A=QR\)、\(A^*A=U^*U\)，\(r_{jj},u_{jj}&gt;0\)。问 \(R=U\) 是否正确。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>正确。\(A^*A=R^*Q^*QR=R^*R\) ⇒ \(R\) 是 \(A^*A\) 的 Cholesky 因子；对角元为正时分解唯一 ⇒ \(U=R\)。<strong>没有对角正的条件只能说 \(R=DU\)。</strong></p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-17">我还不会</label>
+</div>
+
+<div class="q" data-atoms="g6 f4">
+<div class="qh"><span class="qn">L2-18</span><span class="qt">HW8-8：Cholesky 解 Ax=b 的后向稳定</span><span class="tags"><a href="#g6">G6</a><a href="#f4">F4</a></span></div>
+<div class="body"><p>仿 QR 的证明：用 Cholesky 的后向稳定定理 + 三角求解的稳定性，证明该算法后向稳定，并给出精度结论。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>三步各写一个扰动等式（\(A+\delta A=R^*R\)、前代、回代），顺着传得 \((A+\Delta A)\tilde x=b\)，\(\|\Delta A\|/\|A\|=O(\epsilon)\)；再套后向稳定 ⇒ 精度定理，得 \(O(\kappa(A)\epsilon)\)。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-18">我还不会</label>
+</div>
+
 <div class="note">
 <span class="h">做完之后</span>
 勾了 5 道以上的人，缺口地图会告诉你 2–3 个原子——<strong>只补那几个</strong>，然后把 R4 的三套卷按"限时 120 分钟"做一遍。反过来，如果 32 道里几乎全勾，别补原子了：直接做 R4 第一套，按整套节奏走，比补知识点有效。
 </div>
 
 <footer>
-<p>NLA-R5 · 期末总装 · 25 个知识原子 + 32 道题 + 缺口诊断。知识编号 A1–F5 与 <a href="./期末复习-指南.html">R3 复习指南</a>、<a href="./期末模拟卷-三套.html">R4 三套卷</a>一致。所有最小可算例的数字由 <span class="mono">verify_exam_numbers.py</span> 实测。</p>
+<p>NLA-R5 · 期末总装 · 33 个知识原子 + 38 道题 + 缺口诊断。知识编号 A1–F5 与 <a href="./期末复习-指南.html">R3 复习指南</a>、<a href="./期末模拟卷-三套.html">R4 三套卷</a>一致。所有最小可算例的数字由 <span class="mono">verify_exam_numbers.py</span> 实测。</p>
 </footer>
 
 <script>

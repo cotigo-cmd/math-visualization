@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part IV · 高斯消元、主元与 Cholesky（含 HW7–HW8 逐题）</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 图号 NLA-R6。2026-11-18 发现作业已更新到 HW_8（11/16），其中 HW7 = LU/Schur 补、
+     HW8 = PA=LU/行主元/对角占优/Hermite 正定/Cholesky。而课件只入库到 L13（11/2 快照），
+     所以这一块**没有课件可依**，内容是教材 L20–L23 的定理 + HW7/HW8 的题目反推出来的。
+     若后续拿到 L14–L17 课件，用课件口径校一遍（术语、编号、例题）。
+  2. 考试 11/25（周三）。这块是 11 月新课，之前 R3 押"特征值"是错的，已在本页 §00 更正。
+  3. 数字：GE 2m³/3、Cholesky m³/3、Householder 4m³/3、回代 m²；增长因子 ρ ≤ 2^{m−1}（部分主元）。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 22px 64px}
+.crumb{font-size:13px;margin:18px 0 14px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.sheet{display:flex;flex-wrap:wrap;border:1.5px solid var(--ink);border-radius:6px;
+  overflow:hidden;margin:0 0 14px;background:var(--card)}
+.sheet .cell{padding:10px 16px;border-right:1px solid var(--line);flex:1 1 auto}
+.sheet .cell:last-child{border-right:none}
+.sheet .k{font-size:11px;letter-spacing:.12em;color:var(--ink2);margin:0 0 2px;font-weight:600}
+.sheet .v{font-size:14.5px;margin:0;font-weight:600}
+.sheet .no{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;color:var(--cinn)}
+h1{font-size:25px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:72ch}
+h2{font-size:17px;font-weight:680;margin:42px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+h3{font-size:15px;font-weight:680;margin:24px 0 8px}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:22px}
+li{margin:3px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.eq{font-size:16px;text-align:center;margin:12px 0;padding:10px 12px;background:var(--card);
+  border:1px solid var(--line);border-radius:9px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:9px 14px;margin:14px 0;
+  border-radius:0 8px 8px 0;font-size:13.5px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+.note.a{border-left-color:var(--amber);background:#FBF6E7}
+.note .h{font-weight:680;display:block;margin-bottom:2px}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden;padding:2px 0;font-size:.92em}
+table.tb{border-collapse:collapse;margin:12px 0;font-size:13.5px;width:100%}
+table.tb td,table.tb th{border:1px solid var(--line);padding:5px 10px;text-align:left;vertical-align:top}
+table.tb th{background:#F2F5F8;font-weight:650;white-space:nowrap}
+table.tb td.c{text-align:center}
+.q{border:1px solid var(--line);border-radius:10px;background:var(--card);
+  padding:11px 14px 10px;margin:11px 0;scroll-margin-top:70px}
+.q .qh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:4px}
+.q .qn{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--steel);
+  background:#EEF3F8;border-radius:5px;padding:1px 7px}
+.q .qt{font-weight:650;font-size:14.5px;flex:1 1 auto}
+.q .body{font-size:14px}
+.q .body p{margin:5px 0}
+details{margin-top:6px}
+details summary{cursor:pointer;font-size:12.5px;color:var(--steel);user-select:none}
+details summary:hover{text-decoration:underline}
+details .ans{border-left:3px solid var(--green);background:#F7FBF8;padding:2px 12px 8px;
+  border-radius:0 7px 7px 0;font-size:13.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink2)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:22px 0 0;flex-wrap:wrap}
+.pager a{color:var(--steel);text-decoration:none;font-size:13.5px}
+.hint{font-size:12.5px;color:var(--ink2);margin:8px 0}
+@media print{
+  body{background:#fff;font-size:11.5px}
+  .wrap{max-width:none;padding:0 6mm}
+  .crumb,.pager,footer,.noprint{display:none}
+  h2{page-break-before:always;page-break-after:avoid;margin-top:16px}
+  .q,.note,table.tb,.eq{page-break-inside:avoid}
+  details{display:block}
+  details summary{display:none}
+  details .ans{display:block}
+  a{color:var(--ink);text-decoration:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb noprint"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
+
+<div class="sheet">
+  <div class="cell"><p class="k">图号</p><p class="v no">NLA-R6</p></div>
+  <div class="cell" style="flex:2 1 220px"><p class="k">主题</p><p class="v">Part IV · 高斯消元 / 主元 / Cholesky</p></div>
+  <div class="cell"><p class="k">依据</p><p class="v">HW7 三题 · HW8 八题</p></div>
+  <div class="cell"><p class="k">状态</p><p class="v">11 月新课 · 必考</p></div>
+</div>
+
+<h1>高斯消元、主元与 Cholesky：考试最后一块</h1>
+<p class="lead">作业到第 8 次（11/16），考点已经从「浮点与稳定性」推进到<strong>直接法</strong>：LU 分解、Schur 补、选主元、行列式、对角占优、Hermite 正定、Cholesky。这一块共 11 道题，是 11 月的新课，之前所有复习材料都没覆盖——本页把它补齐，并给每道题的答案要点。</p>
+
+<div class="note">
+<span class="h">先纠正一条判断（重要）</span>
+之前按「教材第 13 讲之后紧接 Part V 特征值」推过"最后两周可能讲幂法/QR 迭代"。<strong>错了</strong>：HW7（11/9）是 LU 与 Schur 补、HW8（11/16）是 PA=LU 与 Cholesky，对应教材 <strong>L20–L23</strong>。特征值算法（L24 以后）大概率不考，别再花时间在幂法上。<br>
+另外：课件目录只到 L13（11/2 的快照），**11 月的课没有课件可看**，本页内容由教材 L20–L23 的定理 + 两道作业题的结构反推，术语以课上为准。
+</div>
+
+<h2><span class="no">00</span>这一块在整门课里的位置</h2>
+
+<table class="tb">
+<tr><th>阶段</th><th>主题</th><th>代表算法</th><th>成本</th><th>稳定性</th></tr>
+<tr><td>Part I–II</td><td>正交化（已考）</td><td>QR / Householder</td><td>\(4m^3/3\)</td><td>无条件后向稳定，无需选主元</td></tr>
+<tr class="hi"><td><strong>Part IV（本页）</strong></td><td><strong>消元</strong></td><td>LU / 部分主元 / Cholesky</td><td>\(2m^3/3\) · \(m^3/3\)</td><td>LU 可能不稳（需要主元）；Cholesky 稳定</td></tr>
+<tr><td>Part V</td><td>特征值</td><td>QR 迭代</td><td>—</td><td>大概率不考</td></tr>
+</table>
+
+<p>一句话把这一块和前面接起来：<strong>QR 用正交变换（不放大误差），LU 用初等变换（可能放大误差）</strong>——所以 QR 无条件稳定、LU 要选主元，而"放大多少"就由增长因子 \(\rho\) 度量。这是本页所有题目的共同背景。</p>
+
+<h2><span class="no">01</span>LU 分解：存在性、唯一性、怎么算</h2>
+
+<h3>1.1 定义与算法</h3>
+<p>\(A=LU\)，\(L\) 单位下三角（对角全 1），\(U\) 上三角。高斯消元第 \(k\) 步就是左乘</p>
+<div class="eq">$$L_k=I+\tau_ke_k^{\mathrm T},\qquad \tau_k=(0,\dots,0,-\tau_{k+1,k},\dots,-\tau_{m,k})^{\mathrm T},$$</div>
+<p>于是 \(L_{m-1}\cdots L_1A=U\)，而 \(A=LU\) 中 \(L=L_1^{-1}\cdots L_{m-1}^{-1}=I-\sum_{k=1}^{m-1}\tau_ke_k^{\mathrm T}\)——<strong>乘子直接填进 \(L\)，不用真求逆</strong>。这是考试最爱问的一句。</p>
+
+<h3>1.2 存在性定理（HW7-1）</h3>
+<div class="note b">
+<span class="h">定理</span>
+非奇异 \(A\in\mathbb{C}^{m\times m}\) 有 LU 分解 \(\iff\) 每个顺序主子阵 \(A_{1:k,1:k}\)（\(1\le k\le m\)）非奇异。此时 \(L,U\) 唯一。
+</div>
+<p><strong>证明骨架</strong>（两条都要写）：</p>
+<ul>
+<li><strong>(⇐)</strong> 消元第 \(k\) 步的主元是 \(u_{kk}=\det(A_{1:k})/\det(A_{1:k-1})\)（因为行消元不改行列式，而 \(A_{1:k}\) 的消元结果就是 \(U_{1:k}\)，其行列式是 \(\prod_{j\le k}u_{jj}\)）。主子式全非零 ⇒ 每步主元非零 ⇒ 消元走得通。</li>
+<li><strong>(⇒)</strong> 若 \(A=LU\)，则分块得 \(A_{1:k}=L_{1:k}U_{1:k}\)（\(L\) 的左上块仍单位下三角），故 \(\det A_{1:k}=1\cdot\prod_{j\le k}u_{jj}\ne0\)。</li>
+</ul>
+<p><strong>唯一性</strong>：若 \(L_1U_1=L_2U_2\)，则 \(L_2^{-1}L_1=U_2U_1^{-1}\)。左边单位下三角、右边上三角，两者相等 ⇒ 只能都是 \(I\)。于是 \(L_1=L_2,\ U_1=U_2\)。<em>这套「左边一类、右边另一类，交集只有 \(I\)」的论证是这类题的标准模板。</em></p>
+
+<h3>1.3 成本</h3>
+<table class="tb">
+<tr><th>步骤</th><th>flops</th><th>怎么来的</th></tr>
+<tr><td>消元（\(A\to U\)）</td><td>\(2m^3/3\)</td><td>第 \(k\) 步更新 \((m-k)\times(m-k)\) 子块，每元素 2 flops</td></tr>
+<tr><td>回代</td><td>\(m^2\)</td><td>每行一次除法 + 若干乘加</td></tr>
+<tr class="hi"><td>合计</td><td>\(2m^3/3+m^2\)</td><td>是 Householder QR（\(4m^3/3\)）的<strong>一半</strong></td></tr>
+<tr><td>Cholesky</td><td>\(m^3/3\)</td><td>对称性把成本再砍一半</td></tr>
+</table>
+
+<h2><span class="no">02</span>Schur 补：分块消元的那一块（HW7-2）</h2>
+
+<p>设 \(A=\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}\)，\(A_{11}\) 为 \(n\times n\) 非奇异。直接乘开就能验证：</p>
+<div class="eq">$$\begin{bmatrix}I&0\\-A_{21}A_{11}^{-1}&I\end{bmatrix}
+\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}
+=\begin{bmatrix}A_{11}&A_{12}\\0&A_{22}-A_{21}A_{11}^{-1}A_{12}\end{bmatrix}.$$</div>
+<p>右下角 \(S=A_{22}-A_{21}A_{11}^{-1}A_{12}\) 叫 <strong>\(A_{11}\) 在 \(A\) 中的 Schur 补</strong>。</p>
+<p>（b）问「用 \(n\) 步行消元消掉 \(A_{21}\)，右下块还是 \(S\) 吗」——<strong>是</strong>。理由：消元第 \(j\) 行（\(j&gt;n\)）减去的倍数是 \(a_{jn}/a_{nn}\) 等，整块的效果恰好等价于左乘上面那个分块下三角阵；而左乘它不改 \(A_{11}\) 与 \(A_{12}\)，只更新右下块为 \(S\)。<strong>注意 \(S\) 与"\(A_{11}\) 的逆"无关</strong>——实际计算里从不解 \(A_{11}^{-1}\)，只是概念上用。</p>
+
+<div class="note a">
+<span class="h">为什么反复考 Schur 补</span>
+它是三件事的统一语言：① 分块消元；② 分块求逆公式；③ 正定性判定（\(A\) 正定 \(\iff A_{11}\) 与 \(S\) 都正定）。考试常把它和 HW8-5/8-6 连起来问。
+</div>
+
+<h2><span class="no">03</span>选主元：PA=LU、行主元、行列式、增长因子</h2>
+
+<h3>3.1 部分主元与 \(PA=LU\)</h3>
+<p>第 \(k\) 步先在第 \(k\) 列的第 \(k\) 到 \(m\) 行里挑绝对值最大的元素，换到第 \(k\) 行，再消元。所有行交换合起来是置换阵 \(P\)，于是</p>
+<div class="eq">$$PA=LU,\qquad \det A=\det(P)^{-1}\prod_{j=1}^{m}u_{jj}=\pm\prod_{j=1}^{m}u_{jj}.$$</div>
+<p>符号由行交换次数的奇偶决定（\(\det P=(-1)^{s}\)）。这就是 HW8-2 的全部内容：<strong>给 \(L,U\) 求 \(\det A\)，只乘 \(U\) 的对角元，再补上 \(P\) 的符号</strong>。</p>
+
+<h3>3.2 行主元 \(AQ=LU\)（HW8-3）</h3>
+<p>把"挑行"换成"挑列"：每一步在剩余列里找合适的列换到前面。结论：</p>
+<ul>
+<li><strong>\(A\) 非奇异 ⇒ \(AQ=LU\) 总存在</strong>。理由：非奇异保证每步总能找到一列在当前位置有非零元（否则剩下那几列线性相关，与满秩矛盾）。</li>
+<li><strong>\(A\) 奇异 ⇒ 不一定存在</strong>。反例：\(A=\begin{bmatrix}0&1\\0&0\end{bmatrix}\)（秩 1），无论怎么换列，第一列都会出现全零的情形，第一步主元就是 0，分解无法进行。</li>
+</ul>
+
+<h3>3.3 严格对角占优 ⇒ 不用选主元（HW8-4）</h3>
+<p>称 \(A\) <strong>严格列对角占优</strong>：\(|a_{kk}|&gt;\sum_{j\ne k}|a_{jk}|\) 对每个 \(k\)。此时对 \(A\) 做<strong>列主元</strong>高斯消元不会出现行交换。</p>
+<p><strong>证明思路</strong>（两句话）：① 第 1 列的对角元绝对值大于该列其余元素绝对值之和，故它必是该列最大元 ⇒ 第 1 步不需要换行；② 消元后右下 \((m-1)\times(m-1)\) 子块<strong>仍严格列对角占优</strong>（直接估计 \(a_{ij}-a_{i1}a_{1j}/a_{11}\) 的模），归纳即得每一步都不换行。</p>
+<p class="hint">行对角占优同理（把"列"换成"行"、把"列主元"换成"行主元"）。考试若问"为什么对角占优重要"：它保证不选主元也稳，因此可以省掉查主元的开销并保持结构（对称、带状）。</p>
+
+<h3>3.4 增长因子：LU 为什么可能不稳</h3>
+<div class="eq">$$\rho=\frac{\max_{i,j,k}|a_{ij}^{(k)}|}{\max_{i,j}|a_{ij}|}$$</div>
+<p>部分主元下理论上 \(\rho\le2^{m-1}\)（最坏情形由 Wilkinson 矩阵达到），随机矩阵实测 \(\rho\) 通常只有 \(m^{1/2}\) 量级。后向稳定界形如</p>
+<div class="eq">$$\tilde L\tilde U=A+\delta A,\qquad \|\delta A\|=O(\rho\,m\,\epsilon)\|A\|.$$</div>
+<p>所以<strong>增长因子是 LU 与 QR 的唯一区别</strong>：QR 的 \(\rho\) 恒为 1（正交变换不放大），LU 的 \(\rho\) 可能指数量级。</p>
+
+<h2><span class="no">04</span>Cholesky：Hermite 正定的专用分解</h2>
+
+<h3>4.1 正定的判据（HW8-5）</h3>
+<div class="note b">
+<span class="h">定理</span>
+Hermite \(A\) 的特征值全大于 0 \(\iff\) \(A\) 正定（即 \(x^*Ax&gt;0\) 对一切 \(x\ne0\)）。
+</div>
+<p><strong>证明</strong>：谱分解 \(A=Q\Lambda Q^*\)（Hermite 可酉对角化），令 \(y=Q^*x\ne0\)，则</p>
+<div class="eq">$$x^*Ax=y^*\Lambda y=\sum_j\lambda_j|y_j|^2\ \begin{cases}&gt;0\ \ (\text{若所有 }\lambda_j&gt;0)\\ \le0\ \ (\text{若某个 }\lambda_j\le0,\ \text{取 }y=e_j)\end{cases}$$</div>
+<p>另一个常用等价：<strong>所有顺序主子式 &gt; 0</strong>（Sylvester 判据），它和高斯消元直接挂钩——消元不用选主元就能走完，且对角元全正。</p>
+
+<h3>4.2 分解与成本</h3>
+<div class="eq">$$A=R^*R\quad(R\ \text{上三角，对角元为正}),\qquad \text{成本 }m^3/3 .$$</div>
+<p>和 LU 的 \(2m^3/3\) 比正好一半：对称性使每步只需算一半的元素。Cholesky <strong>不需要选主元</strong>，且是后向稳定的——因为对角元正、没有相消放大。</p>
+
+<h3>4.3 与 QR 的关系（HW8-7）</h3>
+<p>题问「\(A=QR\) 与 \(A^*A=U^*U\) 中的 \(R\) 与 \(U\) 是否相等」。答：<strong>相等</strong>。因为</p>
+<div class="eq">$$A^*A=(QR)^*(QR)=R^*Q^*QR=R^*R,$$</div>
+<p>而 Cholesky 分解在对角元取正的约定下<strong>唯一</strong>，故 \(U=R\)（都要求 \(r_{jj},u_{jj}&gt;0\)）。这一问其实是"唯一性"的考察，答的时候必须写出"对角元为正 ⇒ 唯一"。</p>
+
+<h3>4.4 解 \(Ax=b\) 的后向稳定性（HW8-8）</h3>
+<p>三步，每步后向稳定，复合即整体后向稳定：</p>
+<table class="tb">
+<tr><th>步骤</th><th>后向稳定形式</th></tr>
+<tr><td>① \(A=R^*R\)（Cholesky）</td><td>\(\tilde R^*\tilde R=A+\delta A\)，\(\|\delta A\|/\|A\|=O(\epsilon)\)</td></tr>
+<tr><td>② 前代 \(\tilde R^*y=b\)</td><td>\((\tilde R^*+\delta R_1)y=b\)，\(\|\delta R_1\|/\|\tilde R\|=O(\epsilon)\)</td></tr>
+<tr><td>③ 回代 \(\tilde Rx=y\)</td><td>\((\tilde R+\delta R_2)x=y\)，\(\|\delta R_2\|/\|\tilde R\|=O(\epsilon)\)</td></tr>
+</table>
+<p>复合得 \((A+\Delta A)\tilde x=b\)，\(\|\Delta A\|/\|A\|=O(\epsilon)\)；再套精度定理（后向稳定 + 条件数）得 \(\|\tilde x-x\|/\|x\|=O(\kappa(A)\epsilon)\)。<strong>写法和 Householder 解 \(Ax=b\) 的三步复合完全同构</strong>——这就是题目说"参考 QR 的证明过程"的意思。</p>
+
+<h2><span class="no">05</span>HW7 三题：答案要点</h2>
+
+<div class="q">
+<div class="qh"><span class="qn">HW7-1</span><span class="qt">LU 存在 \(\iff\) 顺序主子式非零；唯一性</span></div>
+<div class="body"><p>见 §01.2。三条要写全：主元 \(=\det(A_{1:k})/\det(A_{1:k-1})\)、两个方向、唯一性用「左下三角 = 右上三角 ⇒ 都是 \(I\)」。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p>归纳：设 \(A_{1:k}\) 全非奇异。第 \(k\) 步前，前 \(k-1\) 列已消成上三角，\(u_{kk}=a_{kk}^{(k-1)}\)。由"行消元不改行列式"得 \(\det A_{1:k}=\det U_{1:k}=\prod_{j\le k}u_{jj}\)，故 \(u_{kk}=\det A_{1:k}/\det A_{1:k-1}\ne0\)。反之若 \(A=LU\)，\(A_{1:k}=L_{1:k}U_{1:k}\)，\(\det=\prod_{j\le k}u_{jj}\ne0\)。</p>
+</div></details>
+</div>
+
+<div class="q">
+<div class="qh"><span class="qn">HW7-2</span><span class="qt">Schur 补恒等式 + 消元后右下块仍是 \(S\)</span></div>
+<div class="body"><p>见 §02。恒等式直接乘开即可；（b）的关键一句是「\(n\) 步行消元 \(\equiv\) 左乘该分块下三角阵」。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p>（a）左乘后第一块行为 \(A_{11}\)、\(A_{12}\)（因为第一块行是 \([I,0]\)）；第二块行为 \(-A_{21}A_{11}^{-1}A_{11}+A_{21}=0\)、\(-A_{21}A_{11}^{-1}A_{12}+A_{22}=S\)。</p>
+<p>（b）第 \(j\) 行（\(j&gt;n\)）在第 \(i\le n\) 列的乘子为 \(a_{ji}/a_{ii}\) 的累积效果，等价于一次性左乘 \(E=\begin{bmatrix}I&0\\-A_{21}A_{11}^{-1}&I\end{bmatrix}\)；\(E\) 只作用在下方块，故右下角变成 \(S\)。</p>
+</div></details>
+</div>
+
+<div class="q">
+<div class="qh"><span class="qn">HW7-3</span><span class="qt">列消去 / 尺度变换 / 化成对角</span></div>
+<div class="body"><p>（a）从左到右消<strong>列</strong>（而不是从上到下消行），得到下三角；（b）用对角阵 \(D\) 左乘 \(A\) 后再消元，方程组变什么；（c）消成上三角后继续列变换成对角阵。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p>（a）列操作 = 右乘初等阵。把上三角部分逐列清零后得下三角 \(L\)，于是 \(A\cdot E_1\cdots E_k=L\)，即 \(A=L\,U\)（\(U\) 为单位上三角）——<strong>与 LU 对称，只是 \(L,U\) 的角色互换</strong>。</p>
+<p>（b）\(DAx=Db\)：被缩放的是<strong>方程</strong>（第 \(i\) 个方程整体乘 \(d_i\)），未知量不变。若改成右乘 \(AD\)，则缩放的是未知量（\(x\to D^{-1}x\)）。这一小问就考"左乘改行、右乘改列"。</p>
+<p>（c）继续列变换把上三角变对角，相当于 \(A=L\,D\,U\)（\(L\) 单位下三角、\(U\) 单位上三角、\(D\) 对角）。这就是"完全消元"，也叫 LDU 分解；成本约 \(2m^3/3\)（与 LU 同阶）。</p>
+</div></details>
+</div>
+
+<h2><span class="no">06</span>HW8 八题：答案要点</h2>
+
+<div class="q">
+<div class="qh"><span class="qn">HW8-1</span><span class="qt">行向量左乘 = 行的线性组合；置换阵</span></div>
+<div class="body"><p>证明 \(x^*A\) 的第 \(j\) 个分量等于 \(\sum_i x_i^*a_{ij}\)，即用系数 \(x^*\) 对 \(A\) 的<strong>行</strong>作线性组合；再证 \(PA\) 等于按 \(P\) 对行重排。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p>\((x^*A)_j=\sum_i x_i^*a_{ij}\)，正是"第 \(i\) 行乘 \(x_i^*\) 再相加"。</p>
+<p>\(P\) 是 \(I\) 的行重排，故 \(P\) 的第 \(i\) 行是 \(e_{\sigma(i)}^{\mathrm T}\)，于是 \((PA)_{ij}=\sum_k P_{ik}a_{kj}=a_{\sigma(i)j}\)——第 \(i\) 行取 \(A\) 的第 \(\sigma(i)\) 行，即重排。<strong>顺带记：\(P^{-1}=P^{\mathrm T}\)。</strong></p>
+</div></details>
+</div>
+
+<div class="q">
+<div class="qh"><span class="qn">HW8-2</span><span class="qt">由 LU / PA=LU 求 \(\det A\)</span></div>
+<div class="body"><p>（a）由 \(A=LU\) 求 \(\det A\)；（b）由 \(PA=LU\) 求 \(\det A\)；（c）描述带部分主元的高斯消元如何求一般方阵的行列式。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p>（a）\(\det A=\det L\det U=1\cdot\prod_j u_{jj}\)（\(L\) 单位下三角，行列式为 1）。</p>
+<p>（b）\(\det P\det A=\prod u_{jj}\) ⇒ \(\det A=\det(P)^{-1}\prod u_{jj}=(-1)^{s}\prod u_{jj}\)，\(s\) 为行交换次数。</p>
+<p>（c）流程：做部分主元消元，记录交换次数 \(s\)；读 \(U\) 的对角元相乘；乘上 \((-1)^s\)。<strong>成本 \(2m^3/3\)，优于按定义展开的 \(m!\) 项。</strong></p>
+<p class="hint">本题两式给的 \(L,U\) 数字不必逐项验算——考试只要写出「\(\prod u_{jj}\) + 符号」这条公式并说明 \(L\)、\(P\) 的贡献即可。</p>
+</div></details>
+</div>
+
+<div class="q">
+<div class="qh"><span class="qn">HW8-3</span><span class="qt">行主元 \(AQ=LU\)：存在与不存在</span></div>
+<div class="body"><p>（a）\(A\) 非奇异 ⇒ 分解总存在；（b）\(A\) 奇异 ⇒ 不一定存在。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p>（a）归纳：非奇异保证每一步剩下的子矩阵的第一列不可能全零（否则这些列线性相关，秩不足），故总能选出一列换到前面得到非零主元。</p>
+<p>（b）反例 \(A=\begin{bmatrix}0&1\\0&0\end{bmatrix}\)：两列里第一列恒全零（换列后仍是零列打头），第一步主元为 0，无法消元；而若强行 \(AQ=LU\)，则 \(U\) 的首个对角元为 0，与 \(AQ\) 秩 1 矛盾式地无法匹配。</p>
+</div></details>
+</div>
+
+<div class="q">
+<div class="qh"><span class="qn">HW8-4</span><span class="qt">严格列对角占优 ⇒ 列主元消元无行交换</span></div>
+<div class="body"><p>\(|a_{kk}|&gt;\sum_{j\ne k}|a_{jk}|\)。证明列主元高斯消元过程中不会出现行交换。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p>第 1 步：\(|a_{11}|&gt;\sum_{j&gt;1}|a_{j1}|\) ⇒ 第 1 列的最大元就在对角线上，无需换行。</p>
+<p>消元后 \(a_{ij}'=a_{ij}-a_{i1}a_{1j}/a_{11}\)（\(i,j&gt;1\)）。估计：\(|a_{jj}'|\ge|a_{jj}|-|a_{j1}||a_{1j}|/|a_{11}|\)，而 \(\sum_{i&gt;1,i\ne j}|a_{ij}'|\le\sum_{i\ne j}|a_{ij}|+\frac{|a_{1j}|}{|a_{11}|}\sum_{i&gt;1,i\ne j}|a_{i1}|\)，两式相减利用原占优条件即可得子块仍严格列对角占优。归纳到第 \(k\) 步。</p>
+<p class="hint">考场若时间紧，写"归纳 + 消元后仍严格对角占优"两句即可拿到主要分，估计式可略。</p>
+</div></details>
+</div>
+
+<div class="q">
+<div class="qh"><span class="qn">HW8-5</span><span class="qt">Hermite 特征值全正 ⇒ 正定</span></div>
+<div class="body"><p>见 §04.1。用谱分解 \(A=Q\Lambda Q^*\) 写 \(x^*Ax=\sum\lambda_j|y_j|^2\)。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p>Hermite ⇒ 可酉对角化 \(A=Q\Lambda Q^*\)，\(\lambda_j\) 实。取 \(y=Q^*x\)，则 \(x^*Ax=\sum_j\lambda_j|y_j|^2\)。若所有 \(\lambda_j&gt;0\) 且 \(x\ne0\)（故 \(y\ne0\)，至少一个 \(|y_j|^2&gt;0\)），和为正 ⇒ 正定。</p>
+<p>反向（常作为追问）：若某个 \(\lambda_j\le0\)，取 \(x=q_j\) 得 \(x^*Ax=\lambda_j\le0\)，不正定。</p>
+</div></details>
+</div>
+
+<div class="q">
+<div class="qh"><span class="qn">HW8-6</span><span class="qt">对称主元、\(|l_{ij}|\le1\)、分解形式与成本</span></div>
+<div class="body"><p>（a）描述保持 Hermite 结构的对称主元算法，且 \(L\) 单位下三角、\(|l_{ij}|\le1\)；（b）分解长什么样；（c）成本。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p>（a）每步在剩余对角元中挑绝对值最大者 \(a_{kk}\)，用<strong>对称置换</strong>（同时换第 1、k 行与第 1、k 列，即 \(PAP^{\mathrm T}\)）把它换到 \((1,1)\)，再消去第一列下方元素。因子 \(|l_{i1}|=|a_{i1}|/|a_{11}|\le1\) 由"选最大对角元"保证。</p>
+<p>（b）\(PAP^{\mathrm T}=L\,D\,L^*\)（\(L\) 单位下三角、\(D\) 对角，实对称时 \(D\) 为块对角 \(1\times1\) 或 \(2\times2\)）。即 <strong>LDL* 分解</strong>；正定时 \(D\) 对角元全正，就是 Cholesky 的中间步骤。</p>
+<p>（c）\(m^3/3\) 量级（比 LU 少一半），与 Cholesky 同阶。</p>
+</div></details>
+</div>
+
+<div class="q">
+<div class="qh"><span class="qn">HW8-7</span><span class="qt">QR 的 \(R\) 与 Cholesky 的 \(U\) 是否相同</span></div>
+<div class="body"><p>\(A=QR\)、\(A^*A=U^*U\)，且 \(r_{jj},u_{jj}&gt;0\)。问 \(R=U\) 是否正确。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p><strong>正确。</strong>\(A^*A=R^*Q^*QR=R^*R\)，故 \(R\) 是 \(A^*A\) 的一个 Cholesky 因子；由对角元为正时 Cholesky 分解唯一，得 \(U=R\)。</p>
+<p class="hint">若没有"对角元为正"这个约定，只能说 \(R=DU\)（\(D\) 为对角、元素模 1）。这一句是拿满分的关键。</p>
+</div></details>
+</div>
+
+<div class="q">
+<div class="qh"><span class="qn">HW8-8</span><span class="qt">Cholesky 解 \(Ax=b\) 的后向稳定性</span></div>
+<div class="body"><p>仿照 QR 证明的三步复合，用 Cholesky 的后向稳定定理 + 回代稳定性定理，证明整体后向稳定。</p></div>
+<details><summary>答案要点</summary><div class="ans">
+<p>三步各写一个等式（见 §04.4 表），然后顺着传：把 \(A=R^*R+\delta A\) 与两个三角系统的扰动合起来，得到 \((A+\Delta A)\tilde x=b\)，其中 \(\|\Delta A\|/\|A\|=O(\epsilon)\)（每传一步只多 \(O(\epsilon^2)\)）。</p>
+<p>再套精度定理：\(\|\tilde x-x\|/\|x\|=O(\kappa(A)\epsilon)\)。<strong>结论与 QR 相同，但成本只有一半</strong>——这就是正定系统优先用 Cholesky 的理由。</p>
+</div></details>
+</div>
+
+<h2><span class="no">07</span>HW5 / HW6 里那些「没被前面材料覆盖」的新题</h2>
+
+<p>这两次测试里有 6 个考点在 R3/R4 里没有直接对应，补在这里（编号 A7–A10 与 R5 的原子对应）：</p>
+
+<table class="tb">
+<tr><th>考点</th><th>结论</th><th>出处</th></tr>
+<tr><td><strong>对偶范数</strong></td><td>\(\|x\|'=\sup_{\|y\|=1}|y^*x|\) 是范数；且 \(\|x\|'=\max_{\|y\|'=1}|y^*x|\)（互相为对偶）。\(\|\cdot\|_1\) 的对偶是 \(\|\cdot\|_\infty\)，\(\|\cdot\|_2\) 自对偶</td><td>HW5-1</td></tr>
+<tr><td><strong>秩一算子达到范数</strong></td><td>对任意 \(x,y\) 满足 \(\|x\|=\|y\|=1\)，存在 \(B=yz^*\) 使 \(Bx=y\) 且 \(\|B\|=1\)（用引理：存在 \(z\) 使 \(|z^*x|=\|z\|'\|x\|\)）</td><td>HW5-2</td></tr>
+<tr><td><strong>条件数下界</strong></td><td>\(\|A\|_2=100\)、\(\|A\|_F=101\)、尺寸 202：\(\sum_{j\ge2}\sigma_j^2=101^2-100^2=201\) ⇒ \(\sigma_{\min}\le\sqrt{201/201}=1\) ⇒ \(\kappa_2\ge100\)</td><td>HW5-3</td></tr>
+<tr><td><strong>IEEE 间隙</strong></td><td>相邻单精度之间夹 \(2^{29}-1\) 个双精度浮点数（间距比 \(2^{-23}/2^{-52}=2^{29}\)）</td><td>HW5-4</td></tr>
+<tr><td><strong>不可表示的整数</strong></td><td>\(F(\beta,t)\) 能精确表示所有 \(|n|\le\beta^t\) 的整数，最小不可表示的是 \(n=\beta^t+1\)：单精度 \(2^{24}+1=16777217\)，双精度 \(2^{53}+1\approx9.007\times10^{15}+1\)</td><td>HW5-5</td></tr>
+<tr><td><strong>大 O 判断</strong></td><td>\(\sin x=O(1)\)（\(x\to\infty\)）✓；\(\sin x=O(1)\)（\(x\to0\)）✓；\(\log x=O(x^{1/100})\) ✓；\(n!=O((n/e)^n)\) ✗（Stirling 给出多一个 \(\sqrt{2\pi n}\)）</td><td>HW5-6</td></tr>
+<tr><td><strong>\(O(\epsilon)\) 的代数</strong></td><td>\((1+O(\epsilon))^2=1+O(\epsilon)\)；\((1+O(\epsilon))^{-1}=1+O(\epsilon)\)（展开后交叉项是 \(O(\epsilon^2)\)）</td><td>HW5-7</td></tr>
+<tr class="hi"><td><strong>内积后向稳定</strong></td><td>\(\tilde\alpha=\sum \mathrm{fl}(x_iy_i)\) 逐项累加：存在 \(\delta x\)，\(\|\delta x\|\le m\epsilon\|x\|\)，使 \(\tilde\alpha=(x+\delta x)^*y\) 精确成立</td><td>HW6-1</td></tr>
+<tr><td><strong>cos 不是后向稳定</strong></td><td>后向稳定要求"存在 \(\tilde x\) 使 \(\tilde f(x)=f(\tilde x)\) 精确"。\(f\) 在零点附近（\(\cos x\approx0\)，即 \(x\approx\pi/2\)）时，绝对误差 \(O(\epsilon)\) 对应的<strong>相对</strong>后向误差无界，故不存在这样的 \(\tilde x\)。题目提示的 \(\cos0\ne0\) 正是"只有函数值远离 0 才能谈相对后向误差"</td><td>HW6-2</td></tr>
+<tr><td><strong>算法三分类</strong></td><td>(a) \(x\mapsto\mathrm{fl}(x^2)\)：后向稳定（\(=(\tilde x)^2\)，\(\tilde x=x\sqrt{1+\epsilon}\)）；(b) 精确解 0、算法 \(x-x\)：结果恰为 0 ⇒ 精确（从而后向稳定）；(c) \(e\) 的级数：截断 + 舍入 ⇒ 稳定，但不是后向稳定（截断误差无法用输入扰动解释）</td><td>HW6-3</td></tr>
+<tr><td><strong>回代的范数估计</strong></td><td>由 \(|δr_{ij}|\le m\epsilon|r_{ij}|\) 得 \(\|\delta R\|_1\le m\epsilon\|R\|_1\)、\(\|\delta R\|_\infty\le m\epsilon\|R\|_\infty\)，即 \(\|\delta R\|/\|R\|=O(\epsilon)\)</td><td>HW6-4</td></tr>
+<tr><td><strong>酉阵乘积</strong></td><td>\(B=Q_k\cdots Q_1A\) 从右往左乘：每步误差 \(\|\Delta_j\|=O(\epsilon)\|M\|\)，酉阵不改范数 ⇒ 累积 \(O(k\epsilon)\|A\|\) ⇒ 后向稳定。换成一般 \(X_j\) 则误差按 \(\prod\|X_j\|\) 放大，稳定性失效</td><td>HW6-6</td></tr>
+</table>
+
+<div class="note a">
+<span class="h">HW6-2 与 HW6-3(c) 的判据要小心</span>
+这两题在课上可能有固定口径。判据记这一条最稳：<strong>后向稳定 = 输出的东西恰好是某个「扰动后输入」的精确结果</strong>。能用这个凑出 \(\tilde x\) 就是后向稳定；凑不出（截断、零点附近的相对误差）就不是。<strong>三分类里"稳定但不后向稳定"是真实存在的第三档</strong>，别只答两档。
+</div>
+
+<h2><span class="no">08</span>考前 7 天（11/18 → 11/25）</h2>
+
+<table class="tb small">
+<tr><th>日</th><th>主任务（90 分钟）</th><th>产出</th></tr>
+<tr><td class="c">11/18 三</td><td>本页 §01–§02（LU 存在性 + Schur 补）+ HW7-1/7-2 默写一遍</td><td>能不看书写出「主元 = 主子式之比」和唯一性论证</td></tr>
+<tr><td class="c">11/19 四</td><td>§03（主元、\(PA=LU\)、行列式、增长因子）+ HW8-2/8-3</td><td>\(\det A=\pm\prod u_{jj}\) 能解释符号来源</td></tr>
+<tr><td class="c">11/20 五</td><td>§04（Cholesky 全节）+ HW8-5/8-6/8-7</td><td>正定三个判据（特征值 / 主子式 / Cholesky）能互推</td></tr>
+<tr><td class="c">11/21 六</td><td>HW8-4（对角占优）+ HW8-8（Cholesky 稳定性三步）+ HW8-1</td><td>三步复合能默写</td></tr>
+<tr><td class="c">11/22 日</td><td>§07 的 12 条（HW5/HW6 新题）+ R5 缺口诊断 L1 全部</td><td>对偶范数、大 O、内积稳定三条能讲清</td></tr>
+<tr><td class="c">11/23 一</td><td><strong>HW7 + HW8 原卷遮答案重做</strong>（限时 100 分钟）</td><td>对照本页 §05/§06 批改，记卡壳题号</td></tr>
+<tr><td class="c">11/24 二</td><td>错题回炉 + R4 第一套只做 SVD / QR / 条件数部分（Part IV 不考的那套跳过）</td><td>只看错题表与 §07 的 12 条</td></tr>
+<tr><td class="c">11/25 三</td><td><strong>考试</strong></td><td>早睡</td></tr>
+</table>
+
+<p class="hint">配比建议：Part IV（本页）占 40%，浮点与稳定性（R3 §03–04 + 本页 §07）占 35%，前九讲（R3 §02 + R5）占 25%。<strong>Part IV 是从零开始的，但只有四讲内容、题型高度固定</strong>（存在性 / 分解 / 行列式 / 稳定性四类），性价比最高。</p>
+
+<div class="note g">
+<span class="h">这一块最可能出的三道大题</span>
+<ol style="margin:4px 0 0">
+<li><strong>LU 存在性 + 唯一性</strong>（HW7-1 原题或换成分块版）——纯证明，背下骨架就能答；</li>
+<li><strong>Schur 补 + 分块消元</strong>（HW7-2）——乘开验证 + 一句"等价于左乘分块下三角阵"；</li>
+<li><strong>Cholesky 的稳定性证明</strong>（HW8-8）——照 QR 的三步复合写，每题都能套。</li>
+</ol>
+</div>
+
+<footer>
+<p>NLA-R6 · Part IV 高斯消元 / 主元 / Cholesky · 依据 HW7（11/9）、HW8（11/16）与教材 L20–L23。11 月课件未入库，术语以课上为准；发现口径差异请以课件修正本页。</p>
+</footer>
+
+<div class="pager noprint">
+  <a href="./期末总装-知识原子与缺口诊断.html">← NLA-R5 缺口诊断</a>
+  <a href="./期末复习-指南.html">NLA-R3 复习指南 →</a>
+</div>
+
+</div>
+</body>
+</html>

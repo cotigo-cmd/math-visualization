@@ -123,7 +123,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <table class="tb">
 <tr><th>项目</th><th>判断</th><th>依据</th></tr>
 <tr><td>范围</td><td>第 1–13 讲全在范围内，<strong>期中之前的内容不会因为考过就不考</strong>（期末是累加的）</td><td>期中 8 题覆盖 1–8 讲仍是最基础的工具</td></tr>
-<tr><td>最后两周</td><td>大概率进特征值（幂法 / 反迭代 / QR 迭代），按「讲了就考 1 题」准备，见 §09</td><td>教材 Part V 紧接 Part III，且 §09 给了最小准备集</td></tr>
+<tr class="hi"><td>最后两周</td><td><strong>已确认讲 Part IV：高斯消元、选主元、Cholesky</strong>（HW7/HW8）。特征值不考，见 §09 与 <a href="./直接法-高斯消元主元与Cholesky.html">R6</a></td><td>HW7（11/9）是 LU 与 Schur 补，HW8（11/16）是 PA=LU 与 Cholesky</td></tr>
 <tr><td>题量</td><td>8–10 题，120 分钟，满分 100</td><td>四次测试各 4–11 题，期中 8 题</td></tr>
 <tr><td>题型比</td><td>纯证明 ≈ 60%，计算 + 证明混合 ≈ 30%，纯计算 ≈ 10%</td><td>27 道作业里纯证明 18 道</td></tr>
 <tr><td>最可能的大题</td><td>① SVD 综合（分解 + 范数 + 条件数 + 逆）② QR/最小二乘全流程 ③ 条件数与扰动分析</td><td>三次测试都出现了同类综合题</td></tr>
@@ -152,7 +152,10 @@ $$\text{条件数 · 稳定性 }30\%\quad\text{SVD }20\%\quad\text{范数 · 矩
 <tr class="hi"><td class="c">10</td><td><strong>适定性与条件数</strong></td><td>L12</td><td>新增，未考</td><td><a href="./条件数-几何与误差放大.html">NLA-10</a></td></tr>
 <tr class="hi"><td class="c">11</td><td><strong>浮点运算与稳定性定义</strong></td><td>L13–L14</td><td>新增，未考</td><td>待建（NLA-12）</td></tr>
 <tr class="hi"><td class="c">12</td><td><strong>算法的稳定性（回代）</strong></td><td>L15</td><td>新增，未考</td><td>待建（NLA-12）</td></tr>
-<tr class="hi"><td class="c">13</td><td><strong>Householder 后向稳定</strong></td><td>L16</td><td>新增，未考</td><td>待建（NLA-12）</td></tr>
+<tr class="hi"><td class="c">13</td><td><strong>Householder 后向稳定</strong></td><td>L16</td><td>5-6, 6-6</td><td>待建（NLA-12）</td></tr>
+<tr class="hi"><td class="c">14</td><td><strong>高斯消元、Schur 补</strong></td><td>L20</td><td>7-1, 7-2</td><td><a href="./直接法-高斯消元主元与Cholesky.html">R6</a></td></tr>
+<tr class="hi"><td class="c">15</td><td><strong>选主元、行列式、增长因子</strong></td><td>L21–L22</td><td>8-2, 8-3, 8-4</td><td><a href="./直接法-高斯消元主元与Cholesky.html">R6</a></td></tr>
+<tr class="hi"><td class="c">16–17</td><td><strong>Cholesky、LDL*、正定性</strong></td><td>L23</td><td>8-5 ~ 8-8</td><td><a href="./直接法-高斯消元主元与Cholesky.html">R6</a></td></tr>
 </table>
 
 <p class="hint">读表方法：右边两列是「考过几次 + 有没有图可看」。第 10–13 讲这一栏没有测试题，意味着<strong>期末它们必然第一次出现</strong>——第一次出现的考点，通常是最标准的那几条定理，不会是刁钻变形。</p>
@@ -418,39 +421,38 @@ $$(A+\Delta A)\tilde x=b,\qquad \frac{\|\Delta A\|}{\|A\|}=O(\epsilon)$$
 </ol>
 </div>
 
-<h2><span class="no">09</span>最后两周若讲特征值：最小准备集</h2>
-<p>教材 Part V 紧接在稳定性之后，课时也刚好排得下 2–3 讲。如果老师讲了，按下面这张最小表准备（没讲就整块跳过，不要提前花时间）：</p>
+<h2><span class="no">09</span>Part IV 已确认在考：考点收敛</h2>
+<p>11 月的课讲的是教材 <strong>Part IV（L20–L23）</strong>，不是 Part V。所以特征值算法（幂法、反迭代、QR 迭代）<strong>不在考纲</strong>——之前那份"最小准备集"作废，别再花时间。</p>
 
 <table class="tb">
-<tr><th>主题</th><th>要会的最小集</th></tr>
-<tr><td>特征值问题</td><td>\(Ax=\lambda x\)；特征多项式；\(\det A=\prod\lambda_i\)，\(\mathrm{tr}A=\sum\lambda_i\)；相似变换保谱</td></tr>
-<tr><td>Schur 分解</td><td>任意方阵 \(A=QTQ^*\)（\(T\) 上三角）；正规矩阵时 \(T\) 对角（= 可酉对角化）</td></tr>
-<tr><td>幂法</td><td>\(x_{k+1}=Ax_k/\|Ax_k\|\)，收敛到 \(\sigma_1\) 方向；收敛比 \(|\lambda_2/\lambda_1|\)；Rayleigh 商二阶收敛</td></tr>
-<tr><td>反迭代</td><td>\((A-\mu I)^{-1}\) 放大最靠近 \(\mu\) 的特征向量</td></tr>
-<tr><td>QR 迭代</td><td>\(A_k=Q_kR_k\)，\(A_{k+1}=R_kQ_k\)；无移位时收敛比 \(|\lambda_{k+1}/\lambda_k|\)；带 Wilkinson 移位</td></tr>
+<tr><th>考点</th><th>必须能写出的结论</th><th>作业</th></tr>
+<tr><td>LU 存在性与唯一性</td><td>顺序主子式全非零 \(\iff\) 有 LU；主元 \(=\det(A_{1:k})/\det(A_{1:k-1})\)</td><td>HW7-1</td></tr>
+<tr><td>Schur 补</td><td>分块消元后右下块 \(=A_{22}-A_{21}A_{11}^{-1}A_{12}\)</td><td>HW7-2</td></tr>
+<tr><td>主元与行列式</td><td>\(PA=LU\)，\(\det A=(-1)^{s}\prod u_{jj}\)</td><td>HW8-2 / 8-3</td></tr>
+<tr><td>对角占优</td><td>严格列对角占优 ⇒ 列主元消元不换行</td><td>HW8-4</td></tr>
+<tr><td>正定与 Cholesky</td><td>特征值全正 \(\iff\) 正定；\(A=R^*R\)，成本 \(m^3/3\)；\(R\) 等于 QR 的 \(R\)</td><td>HW8-5/6/7</td></tr>
+<tr class="hi"><td>Cholesky 稳定性</td><td>三步各自后向稳定 ⇒ 整体 ⇒ \(O(\kappa\epsilon)\)</td><td>HW8-8</td></tr>
 </table>
-<p class="hint">实测样例（可直接当手算练习）：\(A=\begin{bmatrix}2&1\\1&2\end{bmatrix}\)，\(x_0=(1,0)^{\mathrm T}\)，未归一化迭代 \((1,0)\to(2,1)\to(5,4)\to(14,13)\)，Rayleigh 商 \(2.8\to2.9756\to2.9973\to2.9997\)，比值恒约 \(1/3=|\lambda_2/\lambda_1|\)，\(\lambda=3,1\)。</p>
 
-<h2><span class="no">10</span>考前 14 天日程（按 11/16 开考排，日期不同整体平移）</h2>
+<p>推导、成本账与逐题答案要点全部在 <a href="./直接法-高斯消元主元与Cholesky.html"><strong>R6 直接法：高斯消元 / 主元 / Cholesky</strong></a>。本页只保留一句判断：<strong>Part IV 是四讲、十一题、四类题型（存在性 / 分解 / 行列式 / 稳定性），题型高度固定，是现在性价比最高的一块。</strong></p>
+
+<p class="hint">若课上顺带提了一句特征值，只记三条：Schur 分解 \(A=QTQ^*\)、幂法收敛比 \(|\lambda_2/\lambda_1|\)、反迭代求最小特征值。其余一概不看。</p>
+
+<h2><span class="no">10</span>考前 7 天（11/18 → 11/25）</h2>
 
 <table class="tb small">
-<tr><th>日</th><th>主任务（90 分钟）</th><th>产出 / 自检</th></tr>
-<tr><td class="c">D-14</td><td>读本页 §02–§04，合上电脑复述"误差三角"</td><td>能不看笔记写出 \(\kappa\to\) 稳定 \(\to\) 精度的三步推理</td></tr>
-<tr><td class="c">D-13</td><td>模拟卷第一套，闭卷计时 120 分钟</td><td>记录每题用时与卡壳点；不查书</td></tr>
-<tr><td class="c">D-12</td><td>第一套对答案，把错题归到 §06 的六个模板</td><td>错题表（题号 → 模板号 → 缺哪一步）</td></tr>
-<tr><td class="c">D-11</td><td>条件数专练：§02 三个定理自己证一遍 + 卡 4 算 3 个矩阵</td><td>\(\kappa_2\) 三个值全对；\(\kappa(A^*A)=\kappa^2\) 能证</td></tr>
-<tr><td class="c">D-10</td><td>浮点专练：默写两条公理，推 \(\mathrm{fl}(a+b)\)、\((1+\epsilon)-1\) 两个小结论</td><td>能算 \(\epsilon\) 的十进制值，能解释 \(0.1+0.2\ne0.3\)</td></tr>
-<tr><td class="c">D-9</td><td>后向稳定专题：回代分项界 + 算法三步复合，各写一遍</td><td>两项都能独立写出等式链</td></tr>
-<tr><td class="c">D-8</td><td>模拟卷第二套（闭卷）</td><td>同 D-13</td></tr>
-<tr><td class="c">D-7</td><td>第二套对答案 + A 组作业题（8 道）闭卷重做</td><td>A 组 8 道必须一次过</td></tr>
-<tr><td class="c">D-6</td><td>SVD + QR + 最小二乘各手算一题（卡 1–3）</td><td>\(Q^*Q=I\)、\(A^*r=0\) 自检通过</td></tr>
-<tr><td class="c">D-5</td><td>B 组作业题重做（6 道），只写关键步</td><td>能复现 2-5 的七小问</td></tr>
-<tr><td class="c">D-4</td><td>模拟卷第三套（闭卷）</td><td>同 D-13</td></tr>
-<tr><td class="c">D-3</td><td>第三套对答案 + §05 速查表逐条自问</td><td>26 条里能立刻答出 ≥22 条</td></tr>
-<tr><td class="c">D-2</td><td>只看错题表 + §06 模板 + §07 流程卡；不碰新题</td><td>错题表上每条都能口述正确做法</td></tr>
-<tr><td class="c">D-1</td><td>§11 自测 15 问；§05 速查一眼扫；早睡</td><td>15 问 ≥12 立刻答出</td></tr>
+<tr><th>日</th><th>主任务（90 分钟）</th><th>材料</th></tr>
+<tr class="hi"><td class="c">11/18 三</td><td>LU 存在性与唯一性 + Schur 补，各默写一遍</td><td>R6 §01–02</td></tr>
+<tr class="hi"><td class="c">11/19 四</td><td>主元：\(PA=LU\)、行主元 \(AQ=LU\)、行列式符号、增长因子</td><td>R6 §03</td></tr>
+<tr class="hi"><td class="c">11/20 五</td><td>Cholesky 全节：正定三判据、\(R\) 与 QR 的关系、成本</td><td>R6 §04</td></tr>
+<tr class="hi"><td class="c">11/21 六</td><td>对角占优 + Cholesky 稳定性三步复合 + 重排矩阵</td><td>R6 §04.4、§06</td></tr>
+<tr><td class="c">11/22 日</td><td>HW5/HW6 的 12 个新考点（对偶范数、大 O、内积稳定、算法三分类）</td><td>R6 §07 · R3 §03–04</td></tr>
+<tr><td class="c">11/23 一</td><td>HW7 + HW8 原卷遮答案重做（限时 100 分钟），对 R6 §05/§06 批改</td><td>R6</td></tr>
+<tr><td class="c">11/24 二</td><td>只做三件事：R5 缺口诊断勾选回炉、错题表、本页 §05 速查 26 条</td><td>R5 · R3 §05</td></tr>
+<tr><td class="c">11/25 三</td><td><strong>考试</strong></td><td>早睡</td></tr>
 </table>
-<p class="hint">两条纪律：① 每天只做一件主任务，不做"今天把整章看完"这种不可验收的任务；② 错题表是唯一允许在 D-2 之后翻的材料——它比笔记有效，因为上面全是自己漏过的点。</p>
+
+<p class="hint">配比：<strong>Part IV 40% · 浮点与稳定性 35% · 前九讲 25%</strong>。理由：Part IV 从零开始但只有四讲；浮点是第 10–13 讲的主线且有 12 道作业新题；前九讲已在期中过过一遍，边际收益最低。</p>
 
 <h2><span class="no">11</span>考前自测 15 问（能脱口而出就稳了）</h2>
 <ol>

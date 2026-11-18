@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>期末总装 · 25 个知识原子 + 缺口诊断（数值线性代数）</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 图号 NLA-R5。这一页不是"又一份复习指南"，而是把 R3（知识点）与 R4（题）缝在一起，
+     解决一个具体问题：**做不出来时，怎么知道缺哪个知识**。
+     机制：症状检索（21 条"我卡在这里"）→ 原子（25 条）→ 题（32 道）→ 勾选反查缺口。
+  2. 勾选状态存 localStorage（key: nla-exam-gaps-v1），刷新不丢；缺口面板按原子聚合排序。
+  3. 所有数字与 R3/R4 一致，来源 verify_exam_numbers.py（SVD、κ₂、LS、回代舍入、幂法）。
+     改题先跑脚本。
+  4. 原子编号 A1…F5 是稳定 id，R3/R4 里若引用也用这套编号（跨页锚点靠文件名 + #id）。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 22px 64px}
+.crumb{font-size:13px;margin:18px 0 14px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+h1{font-size:25px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+h2{font-size:17px;font-weight:680;margin:40px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+h3{font-size:15px;font-weight:680;margin:24px 0 6px}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:22px}
+li{margin:3px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+a{color:var(--steel)}
+.eq{font-size:16px;text-align:center;margin:12px 0;padding:10px 12px;background:var(--card);
+  border:1px solid var(--line);border-radius:9px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:9px 14px;margin:14px 0;
+  border-radius:0 8px 8px 0;font-size:13.5px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+.note.a{border-left-color:var(--amber);background:#FBF6E7}
+.note .h{font-weight:680;display:block;margin-bottom:2px}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden;padding:2px 0;font-size:.92em}
+table.tb{border-collapse:collapse;margin:12px 0;font-size:13.5px;width:100%}
+table.tb td,table.tb th{border:1px solid var(--line);padding:5px 10px;text-align:left;vertical-align:top}
+table.tb th{background:#F2F5F8;font-weight:650;white-space:nowrap}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink2)}
+
+/* 顶部工具条 */
+.bar{position:sticky;top:0;z-index:20;background:rgba(250,249,246,.94);
+  backdrop-filter:blur(6px);border-bottom:1px solid var(--line);margin:0 -22px 18px;
+  padding:9px 22px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bar input{flex:1 1 180px;min-width:120px;font:13px/1.4 inherit;padding:6px 10px;
+  border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--ink)}
+.bar input:focus{outline:2px solid #C9DCEA;border-color:var(--steel)}
+.bar .btn{font-size:12.5px;border:1px solid var(--line);background:var(--card);color:var(--steel);
+  border-radius:999px;padding:4px 12px;cursor:pointer;white-space:nowrap}
+.bar .btn:hover{background:#EFF4F9}
+.bar .cnt{font-size:12px;color:var(--ink2);font-family:ui-monospace,Consolas,monospace}
+
+/* 症状检索 */
+.sym{display:grid;grid-template-columns:1fr;gap:6px;margin:12px 0}
+.sym a{display:flex;gap:10px;align-items:baseline;text-decoration:none;color:var(--ink);
+  border:1px solid var(--line);border-radius:8px;padding:7px 12px;background:var(--card);font-size:13.5px}
+.sym a:hover{border-color:var(--steel);background:#F7FAFD}
+.sym .sq{flex:1 1 auto}
+.sym .id{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--cinn);
+  background:#FBF1ED;border-radius:5px;padding:1px 7px;white-space:nowrap}
+
+/* 原子卡 */
+.grp{margin:26px 0 4px;font-size:13px;letter-spacing:.06em;color:var(--ink2);
+  border-left:3px solid var(--cinn);padding-left:8px;font-weight:600}
+.atom{border:1px solid var(--line);border-radius:11px;background:var(--card);
+  padding:13px 16px 8px;margin:12px 0;scroll-margin-top:70px}
+.atom.hit{border-color:var(--cinn);box-shadow:0 0 0 2px #F3DDD5}
+.atom .ah{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap;
+  border-bottom:1px dashed var(--line);padding-bottom:6px;margin-bottom:6px}
+.atom .aid{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;font-weight:700;
+  color:#fff;background:var(--cinn);border-radius:5px;padding:1px 7px}
+.atom .at{font-weight:680;font-size:15px;flex:1 1 auto}
+.atom .aq{font-size:11.5px;color:var(--ink2);font-family:ui-monospace,Consolas,monospace}
+.atom .lab{font-size:11px;letter-spacing:.1em;color:var(--cinn);font-weight:650;
+  display:block;margin:7px 0 1px}
+.atom p{margin:2px 0;font-size:14px}
+.atom ul{margin:2px 0 8px;padding-left:20px;font-size:13.5px;color:#3C4C5C}
+.atom ul li{margin:2px 0}
+
+/* 题卡 */
+.q{border:1px solid var(--line);border-radius:10px;background:var(--card);
+  padding:11px 14px 10px;margin:11px 0;scroll-margin-top:70px}
+.q .qh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:4px}
+.q .qn{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--steel);
+  background:#EEF3F8;border-radius:5px;padding:1px 7px}
+.q .qt{font-weight:650;font-size:14.5px;flex:1 1 auto}
+.q .tags{display:flex;gap:5px;flex-wrap:wrap}
+.q .tags a{font-size:11px;font-family:ui-monospace,Consolas,monospace;text-decoration:none;
+  border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--cinn);background:#FDF7F5}
+.q .tags a:hover{background:#FBF1ED;border-color:var(--cinn)}
+.q .body{font-size:14px}
+.q .body p{margin:5px 0}
+details{margin-top:6px}
+details summary{cursor:pointer;font-size:12.5px;color:var(--steel);user-select:none}
+details summary:hover{text-decoration:underline}
+details[open] summary{margin-bottom:4px}
+details .ans{border-left:3px solid var(--green);background:#F7FBF8;padding:2px 12px 8px;
+  border-radius:0 7px 7px 0;font-size:13.5px}
+.q .mark{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12.5px;color:var(--ink2)}
+.q .mark input{accent-color:var(--cinn);width:14px;height:14px}
+.q.done{border-color:#E4C9C0;background:#FFFCFA}
+
+/* 缺口面板 */
+.gap{border:1.5px solid var(--ink);border-radius:11px;padding:14px 16px;background:var(--card);margin:14px 0}
+.gap h3{margin:0 0 6px;font-size:15px}
+.gap .row{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:13.5px}
+.gap .bar2{flex:1 1 auto;height:9px;background:var(--grid);border-radius:5px;overflow:hidden}
+.gap .bar2 i{display:block;height:100%;background:var(--cinn);border-radius:5px}
+.gap .v{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--ink2);min-width:38px;text-align:right}
+.gap .empty{color:var(--ink2);font-size:13px}
+@media print{
+  body{background:#fff;font-size:11.5px}
+  .wrap{max-width:none;padding:0 6mm}
+  .bar,.crumb,footer,.noprint{display:none}
+  .atom,.q{page-break-inside:avoid}
+  details{display:block}
+  details summary{display:none}
+  details .ans{display:block}
+  a{color:var(--ink);text-decoration:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb noprint"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
+
+<div class="bar noprint">
+  <input id="q" type="search" placeholder="搜症状 / 知识 / 题目关键词（例如：条件数、Householder、删行）">
+  <button class="btn" id="onlyGap">只看没做出来的</button>
+  <button class="btn" id="reset">清空进度</button>
+  <span class="cnt" id="cnt">0 / 32 已标未解</span>
+</div>
+
+<h1>期末总装：25 个知识原子，32 道题，一张缺口地图</h1>
+<p class="lead">这一页只解决一件事：<strong>做不出来的时候，知道缺的是哪一条</strong>。方法是三步——① 在「症状检索」里认出你的卡点；② 跳到对应原子，看那三条错法里有没有你；③ 做标了同一个原子的题，做不出来就勾一下，页面自动汇总你缺哪几个原子。</p>
+
+<div class="note b">
+<span class="h">为什么不做"更长的知识清单"</span>
+你已经有 <a href="./期末复习-指南.html">R3 复习指南</a>（知识点）和 <a href="./期末模拟卷-三套.html">R4 模拟卷</a>（题）。再写一份知识清单只会重复。真正缺的是<strong>两者之间的连线</strong>：每道题只考 1–3 个原子，每个原子只配 3 条"最常见的错法"——错法就是诊断特征。看到自己踩过的那条，就知道缺哪个原子，不需要靠"感觉这章没学好"。
+</div>
+
+<div class="note a">
+<span class="h">用法（建议一次 40 分钟）</span>
+<ol style="margin:4px 0 0">
+<li>先扫一遍症状检索，把"中枪"的 3–5 条记下来——这是你的第一优先；</li>
+<li>跳到对应原子读完（每个原子 1 屏内），立刻做标了它的题（每题 1–3 分钟）；</li>
+<li>做不出来就勾 <span class="mono">我还不会</span>，答案先不看；</li>
+<li>半小时后回到顶部看「缺口地图」——它按"被勾的题数"给你的原子排序，那就是明天的复习顺序。</li>
+</ol>
+</div>
+
+<h2><span class="no">00</span>症状检索：从「我卡在哪」倒推「缺哪条」</h2>
+<p class="hint" style="font-size:12.5px;color:var(--ink2);margin:6px 0">21 条卡点，逐条对应到原子。左边这句是你脑子里的原话，右边是缺的东西。</p>
+
+<div class="sym">
+<a href="#a1"><span class="id">A1</span><span class="sq">一串行/列操作，要我写成一个矩阵乘积，顺序总搞反</span></a>
+<a href="#a1"><span class="id">A1</span><span class="sq">删掉一行（或一列）该乘什么，阶数写不对</span></a>
+<a href="#a2"><span class="id">A2</span><span class="sq">题目给 \(uv^*\) 这种矩阵，不知道它"长什么样"</span></a>
+<a href="#a3"><span class="id">A3</span><span class="sq">怎么一眼判断一个算子是酉 / 投影 / 反射</span></a>
+<a href="#b1"><span class="id">B1</span><span class="sq">四个范数公式会背，但 \(\|\cdot\|_2\) 到底为什么是 \(\sigma_1\)</span></a>
+<a href="#b2"><span class="id">B2</span><span class="sq">证明 \(\|A\|_1\le\sqrt m\|A\|_2\) 会，但"常数不可改进"不知道怎么写</span></a>
+<a href="#b3"><span class="id">B3</span><span class="sq">\(\rho(A)\le\|A\|\) 顺手写成了等号，被扣分</span></a>
+<a href="#c1"><span class="id">C1</span><span class="sq">题目问"这个量是多少"，没想到用奇异值表示</span></a>
+<a href="#c2"><span class="id">C2</span><span class="sq">\(2\times2\) 的 SVD 手算，\(U,V\) 的符号和顺序总对不上</span></a>
+<a href="#c3"><span class="id">C3</span><span class="sq">最佳秩一近似算完，不知道误差该是 \(\sigma_1\) 还是 \(\sigma_2\)</span></a>
+<a href="#c4"><span class="id">C4</span><span class="sq">分块 \(\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\) 完全没思路</span></a>
+<a href="#d1"><span class="id">D1</span><span class="sq">\(A^*A\) 非奇异 \(\iff\) 列满秩，只会证一个方向</span></a>
+<a href="#d2"><span class="id">D2</span><span class="sq">投影题要求 \(\|P\|_2\ge1\) 和取等条件，推不下去</span></a>
+<a href="#d3"><span class="id">D3</span><span class="sq">MGS 会算，但 flop 计数和"为什么会丢正交性"说不清</span></a>
+<a href="#d4"><span class="id">D4</span><span class="sq">Householder 里 \(v=a+\mathrm{sign}(a_1)\|a\|e_1\) 的符号为什么这么取</span></a>
+<a href="#d5"><span class="id">D5</span><span class="sq">Givens 一步"6 flops 而非 4"数不出来</span></a>
+<a href="#e1"><span class="id">E1</span><span class="sq">最小二乘会用公式，但不会解释为什么 \(A^{\mathrm T}r=0\)</span></a>
+<a href="#e2"><span class="id">E2</span><span class="sq">\(\kappa\) 定义会背，换成标量函数就不会算</span></a>
+<a href="#e3"><span class="id">E3</span><span class="sq">\(\kappa(A^{\mathrm T}A)=\kappa(A)^2\) 知道，但说不清它有什么用</span></a>
+<a href="#e4"><span class="id">E4</span><span class="sq">扰动题分不清"扰 \(b\)"和"扰 \(A\)"的条件数不是同一个</span></a>
+<a href="#f1"><span class="id">F1</span><span class="sq">机器 eps 会背，但 \((1+2^{-53})-1\) 到底等于多少说不准</span></a>
+<a href="#f2"><span class="id">F2</span><span class="sq">"0.1+0.2≠0.3" 只会说"精度不够"，讲不深</span></a>
+<a href="#f3"><span class="id">F3</span><span class="sq">稳定 / 后向稳定，两个定义一写就写反</span></a>
+<a href="#f4"><span class="id">F4</span><span class="sq">"后向稳定能推精度"这一步的推导接不上</span></a>
+<a href="#f5"><span class="id">F5</span><span class="sq">回代 / Householder 的后向稳定证明，背不下来</span></a>
+</div>
+
+<h2><span class="no">01</span>25 个知识原子</h2>
+<p class="hint" style="font-size:12.5px;color:var(--ink2);margin:6px 0">每条三段：<b>一句话</b>（能背下来就够答题）、<b>最小可算例</b>（数字都实测过）、<b>三种错法</b>（诊断用，认出一个就说明缺这条）。</p>
+
+<div class="grp">A 组 · 矩阵与算子（3 条）</div>
+
+<div class="atom" id="a1">
+<div class="ah"><span class="aid">A1</span><span class="at">左乘改行、右乘改列</span><span class="aq">考它：作业 1-1 · 4-4 · R4-SET1-1</span></div>
+<span class="lab">一句话</span>
+<p>所有初等变换都是 \(I+\) 一个秩一项，或置换阵 / 对角阵 / 选择矩阵。<strong>行变换贴左边、列变换贴右边</strong>；先后顺序决定乘的顺序——<strong>先做的靠 \(A\)</strong>。</p>
+<span class="lab">最小可算例</span>
+<p>\(B\in\mathbb{R}^{4\times4}\)，先删第 1 行（左乘 \(3\times4\) 的选择阵 \(S_1\)），再交换第 1、2 列（右乘 \(4\times4\) 的 \(P_{12}\)）：</p>
+<div class="eq">$$B'=S_1\,B\,P_{12},\qquad S_1\in\mathbb{R}^{3\times4},\ P_{12}\in\mathbb{R}^{4\times4}.$$</div>
+<p>要点：<strong>删行后列数不变，所以右乘的置换阵还是 4 阶</strong>。</p>
+<span class="lab">三种错法（认出即缺本条）</span>
+<ul>
+<li>把删行写成右乘（删行是行操作 → 左乘；删列才右乘）；</li>
+<li>删行后把 \(P_{12}\) 写成 \(3\times3\)（错把阶数按"剩下的行列"取）；</li>
+<li>复合顺序从左往右读（\(T_1\) 先做 ⇒ 写成 \(T_k\cdots T_1A\)，先做的贴 \(A\)）。</li>
+</ul>
+</div>
+
+<div class="atom" id="a2">
+<div class="ah"><span class="aid">A2</span><span class="at">秩一矩阵 uv* 的完整画像</span><span class="aq">考它：作业 1-6 · 1-11 · R4-SET2-2</span></div>
+<span class="lab">一句话</span>
+<p>\(A=uv^*\)（\(u\in\mathbb{C}^m,v\in\mathbb{C}^n\) 非零）只有<strong>一个</strong>非零奇异值 \(\sigma_1=\|u\|_2\|v\|_2\)，于是 \(\|A\|_2=\|A\|_F=\sigma_1\)，条件数 \(=+\infty\)。</p>
+<span class="lab">最小可算例</span>
+<p>\(u=v=(1,2)^{\mathrm T}\)：</p>
+<div class="eq">$$A=\begin{bmatrix}1&2\\2&4\end{bmatrix},\quad \sigma_1=5,\quad A^+=\frac{1}{25}A,\quad AA^+=\frac15\begin{bmatrix}1&2\\2&4\end{bmatrix}.$$</div>
+<p>\(A^+b\) 给出最小范数最小二乘解；\(\mathcal{C}(A)=\mathrm{span}\{u\}\)，\(\mathcal{N}(A)=\{v\}^\perp\)。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>以为 \(\|A\|_F=\sqrt2\,\sigma_1\)（只要秩一，两者就<strong>相等</strong>，因为只有一个非零奇异值）；</li>
+<li>求 \(A^+\) 时写成 \(A^{\mathrm T}/\|A\|_F^2\)（对秩一恰好也对，但一般情形会错；正确是 \(v_1u_1^*/\sigma_1\)）；</li>
+<li>说 \(\kappa(A)=0\) 或某个大数（奇异 ⇒ \(\kappa=+\infty\)）。</li>
+</ul>
+</div>
+
+<div class="atom" id="a3">
+<div class="ah"><span class="aid">A3</span><span class="at">酉 / 投影 / 反射：三张身份证</span><span class="aq">考它：作业 1-3 · 1-8 · 3-1 · R4-SET3-1</span></div>
+<span class="lab">一句话</span>
+<p>酉：\(Q^*Q=I\)；投影：\(P^2=P\)；<strong>正交</strong>投影再加 \(P^*=P\)；反射：\(H=I-2P\)（\(P\) 正交投影），故 \(H^*=H\)、\(H^2=I\)、\(\det H=-1\)、谱 \(\{1,-1\}\)。</p>
+<span class="lab">最小可算例</span>
+<p>\(P=\frac12\begin{bmatrix}1&1\\1&1\end{bmatrix}\) ⇒ \(I-2P=\begin{bmatrix}0&-1\\-1&0\end{bmatrix}\)：正交、对称、行列式 \(-1\)，是关于直线 \(x_2=x_1\) 的镜射。</p>
+<p>「上三角 + 酉 ⇒ 对角」的三行证明：\(T^{-1}=T^*\)，而上三角的逆仍上三角、\(T^*\) 是下三角 ⇒ 两者都对角。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把 \(P^2=P\) 当成"正交投影的判据"（幂等只是投影，正交要 \(P^*=P\)）；</li>
+<li>证三角酉阵时只说"对角元模为 1"（没先证它是对角阵）；</li>
+<li>用 \(H=I-2P\) 时忘了 \(P\) 必须正交（否则 \(H\) 不酉）。</li>
+</ul>
+</div>
+
+<div class="grp">B 组 · 范数（4 条）</div>
+
+<div class="atom" id="b1">
+<div class="ah"><span class="aid">B1</span><span class="at">诱导范数的定义与四个显式公式</span><span class="aq">考它：作业 1-4 · 1-5 · 1-10 · R4-SET1-2</span></div>
+<span class="lab">一句话</span>
+<p>\(\|A\|=\sup_{x\ne0}\|Ax\|/\|x\|=\max_{\|x\|=1}\|Ax\|\)。于是 \(\|A\|_1\) 最大列和、\(\|A\|_\infty\) 最大行和、\(\|A\|_2=\sigma_1\)、\(\|A\|_F=\sqrt{\sum\sigma_j^2}\)（<strong>F 不是诱导范数</strong>）。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}1&1&0\\0&1&1\\1&0&1\end{bmatrix}\)（循环矩阵）：\(\|A\|_1=\|A\|_\infty=2\)，\(\|A\|_F=\sqrt6\approx2.4495\)，特征值 \(2,\,1+\omega,\,1+\omega^2\) 的模为 \((2,1,1)\) ⇒ \(\|A\|_2=2\)。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把 \(\|A\|_2\) 写成 \(\rho(A)\)（只有正规矩阵才等）；</li>
+<li>1-范数按行加、\(\infty\)-范数按列加（记法：1 竖着加、\(\infty\) 横着加）；</li>
+<li>把 \(\|I\|_F=\sqrt n\ne1\) 忽略，误以为 F 是诱导范数。</li>
+</ul>
+</div>
+
+<div class="atom" id="b2">
+<div class="ah"><span class="aid">B2</span><span class="at">范数等价与「常数最优」的证法</span><span class="aq">考它：作业 1-10 · R4-SET2-1</span></div>
+<span class="lab">一句话</span>
+<p>证明分三段：<strong>放缩</strong>（次乘性 / Cauchy–Schwarz）→ <strong>取上确界</strong> → <strong>构造取等例子</strong>。第三段才是拿分点。</p>
+<span class="lab">最小可算例</span>
+<p>证 \(\|A\|_2\le\sqrt{\|A\|_1\|A\|_\infty}\)：</p>
+<div class="eq">$$\|Ax\|_2^2=\sum_i\Big|\sum_j a_{ij}x_j\Big|^2\le\sum_i\Big(\sum_j|a_{ij}|\Big)\Big(\sum_j|a_{ij}||x_j|^2\Big)\le\|A\|_\infty\|A\|_1\|x\|_2^2 .$$</div>
+<p>取等：全 1 矩阵 \(J\)，\(\|J\|_1=n\)、\(\|J\|_\infty=m\)、\(\|J\|_2=\sqrt{mn}\)，正好相等。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>只证了 \(\le\)，没构造例子（扣一半分）；</li>
+<li>\(\sqrt m\) 与 \(\sqrt n\) 位置写反（口诀：<strong>列和配行数 \(m\)，2-范数配列数 \(n\)</strong>）；</li>
+<li>用 \(A=I\) 当取等例子（\(I\) 只对 \(\|A\|_F\) 那类不等式取等）。</li>
+</ul>
+</div>
+
+<div class="atom" id="b3">
+<div class="ah"><span class="aid">B3</span><span class="at">谱半径 ≤ 范数，以及什么时候取等</span><span class="aq">考它：作业 1-9 · R4-SET3-8</span></div>
+<span class="lab">一句话</span>
+<p>设 \(Ax=\lambda x\)，则 \(|\lambda|\|x\|=\|Ax\|\le\|A\|\|x\|\)，约掉得 \(|\lambda|\le\|A\|\)，取 max 即 \(\rho(A)\le\|A\|\)。<strong>取等 \(\iff\)（对 2-范数）正规</strong>。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}0&1\\0&0\end{bmatrix}\)：\(\rho(A)=0\) 而 \(\|A\|_2=1\)，非正规的典型反例。对称矩阵永远取等，因为 \(\|A\|_2=\sigma_1=|\lambda|_{\max}\)。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>直接写 \(\rho(A)=\|A\|_2\)（漏掉正规条件）；</li>
+<li>用 \(\|A\|_1\) 或 \(\|A\|_\infty\) 举反例却说"所以 \(\rho=0\) 不可能"（不同范数结论相同，反例要选对矩阵）；</li>
+<li>证的时候忘了说明"对一切特征值取最大"。</li>
+</ul>
+</div>
+
+<div class="atom" id="b4">
+<div class="ah"><span class="aid">B4</span><span class="at">特殊矩阵的范数闭式结果</span><span class="aq">考它：作业 1-4 · 1-5 · 3-3</span></div>
+<span class="lab">一句话</span>
+<p>对角阵：对任意 \(p\) 有 \(\|D\|_p=\max_i|d_i|\)；行向量 \(a^*\)：\(\|a^*\|_2=\|a\|_2\)；秩一：见 A2；<strong>正交投影：任意诱导范数都为 1</strong>（非零时）。</p>
+<span class="lab">最小可算例</span>
+<p>\(D=\mathrm{diag}(3,-5,1)\)：\(\|D\|_1=\|D\|_\infty=\|D\|_2=\|D\|_F\)? 前三者 \(=5\)，而 \(\|D\|_F=\sqrt{35}\approx5.916\)——<strong>F 不在其中</strong>。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把 \(\|D\|_F\) 也写成 \(\max|d_i|\)；</li>
+<li>对行向量用 \(\|A\|_1\)（单行的 \(\|A\|_1=\|a\|_1\)，不是 \(\|a\|_2\)，题目若问 2-范数要看清）；</li>
+<li>忘记 \(p=\infty\) 时 \(\|D\|_\infty\) 也是 \(\max|d_i|\)（"任意 p" 就这么来的）。</li>
+</ul>
+</div>
+
+<div class="grp">C 组 · SVD（4 条）</div>
+
+<div class="atom" id="c1">
+<div class="ah"><span class="aid">C1</span><span class="at">用奇异值「一句话说出」所有量</span><span class="aq">考它：作业 2-4 · 2-5 · R4-SET1-3</span></div>
+<span class="lab">一句话</span>
+<p>\(A=U\Sigma V^*\) 之后：\(\|A\|_2=\sigma_1\)、\(\|A\|_F^2=\sum\sigma_j^2\)、\(\kappa_2=\sigma_1/\sigma_m\)、\(|\det A|=\prod\sigma_j\)（方阵）、\(A^{-1}=V\Sigma^{-1}U^*\)、\(A^+=V\Sigma^+U^*\)、单位球像的面积 \(=\pi\prod\sigma_j\)（方阵）。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}2&2\\-1&1\end{bmatrix}\)：\(\sigma=(2\sqrt2,\sqrt2)\)，\(\kappa_2=2\)，\(|\det|=4=\sigma_1\sigma_2\)，面积 \(4\pi\approx12.566\)。它的特征值是 \(1.5\pm1.3229i\)，模 \(2\ne\sigma_1\)——因为 \(A\) 非正规。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把 \(\sigma_1\) 与 \(|\lambda|_{\max}\) 混用（非正规时不相等）；</li>
+<li>长方形也写 \(\det\)（无定义，要用 \(\prod\sigma\)）；</li>
+<li>求逆忘了顺序：\(A^{-1}=V\Sigma^{-1}U^*\)，不是 \(U\Sigma^{-1}V^*\)。</li>
+</ul>
+</div>
+
+<div class="atom" id="c2">
+<div class="ah"><span class="aid">C2</span><span class="at">\(2\times2\) 手算 SVD 的四步与三条自检</span><span class="aq">考它：作业 2-1 · 2-5 · R4-SET1-3 · SET3-2</span></div>
+<span class="lab">一句话</span>
+<p>① 算 \(A^*A\) 解二次方程得 \(\lambda_1\ge\lambda_2\)；② \(\sigma_j=\sqrt{\lambda_j}\)，解 \((A^*A-\lambda_jI)v_j=0\)；③ \(u_j=Av_j/\sigma_j\)；④ 拼成 \(U\Sigma V^*\)。<strong>自检三条</strong>：\(U,V\) 正交、\(A=U\Sigma V^*\)、\(\sigma_1\sigma_2=|\det A|\)。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}2&2\\-1&1\end{bmatrix}\)：\(A^{\mathrm T}A=\begin{bmatrix}5&3\\3&5\end{bmatrix}\)，\(\lambda=8,2\)，\(v_1=\frac{1}{\sqrt2}(1,1)\)、\(v_2=\frac{1}{\sqrt2}(-1,1)\)，\(u_1=(1,0)\)、\(u_2=(0,1)\)，故 \(U=I_2\)。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把 \(v_1\) 用成 \(A^{\mathrm T}A\) 的<em>行</em>归一化（必须解 \((A^{\mathrm T}A-\lambda I)v=0\)）；</li>
+<li>对 \(A^{\mathrm T}A\) 与 \(AA^{\mathrm T}\) 混用（两者非零谱相同，但特征向量不同）；</li>
+<li>\(\sigma\) 没降序排列，导致 \(\Sigma\) 与 \(U,V\) 的列对不上。</li>
+</ul>
+</div>
+
+<div class="atom" id="c3">
+<div class="ah"><span class="aid">C3</span><span class="at">Eckart–Young：最佳秩 k 近似的误差就是尾巴</span><span class="aq">考它：作业 2-5 · R4-SET3-2</span></div>
+<span class="lab">一句话</span>
+<p>\(A_k=\sum_{j\le k}\sigma_ju_jv_j^*\) 是秩 \(k\) 最佳近似，且 \(\|A-A_k\|_2=\sigma_{k+1}\)、\(\|A-A_k\|_F=\sqrt{\sum_{j>k}\sigma_j^2}\)。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}1&2\\2&1\end{bmatrix}\)，\(\sigma=(3,1)\)：\(A_1=\begin{bmatrix}1.5&1.5\\1.5&1.5\end{bmatrix}\)，\(A-A_1=\begin{bmatrix}-0.5&0.5\\0.5&-0.5\end{bmatrix}\)，\(\|A-A_1\|_2=1=\sigma_2\) ✓</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>误差写成 \(\sigma_k\)（错位一格，正确答案永远是<strong>下一个</strong>）；</li>
+<li>F-范数误差写成 \(\sigma_{k+1}\)（那是 2-范数；F 要开方求和）；</li>
+<li>以为 \(A_k\) 唯一（\(\sigma\) 重根时 \(u_j,v_j\) 只在子空间意义上唯一）。</li>
+</ul>
+</div>
+
+<div class="atom" id="c4">
+<div class="ah"><span class="aid">C4</span><span class="at">分块 Hermite 矩阵 [0 A*; A 0] 的谱</span><span class="aq">考它：作业 2-6 · R4-SET1-7</span></div>
+<span class="lab">一句话</span>
+<p>设 \(A=U\Sigma V^*\)（\(m\times m\) 方阵），则 \(M=\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\) 是 Hermite 的，非零特征值为 \(\pm\sigma_j\)，特征向量 \(\frac{1}{\sqrt2}\begin{bmatrix}v_j\\ \pm u_j\end{bmatrix}\)（或按块序翻转）。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}1&2\\2&1\end{bmatrix}\)，\(\sigma=(3,1)\) ⇒ \(M\) 的 4 个特征值是 \(3,-3,1,-1\)。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把块序搞错，特征向量写成 \(\begin{bmatrix}u\\v\end{bmatrix}\)（第一块对应 \(A^*\)，即 \(v\) 在前）；</li>
+<li>只给出 \(\sigma_j\) 忘了负号（\(M\) 对称不定，谱成对出现）；</li>
+<li>不说明"\(M\) 是 Hermite ⇒ 可酉对角化"这一句（题目的第一小问就在要这个）。</li>
+</ul>
+</div>
+
+<div class="grp">D 组 · 投影与 QR（5 条）</div>
+
+<div class="atom" id="d1">
+<div class="ah"><span class="aid">D1</span><span class="at">A*A 非奇异 ⟺ 列满秩（加四个子空间）</span><span class="aq">考它：作业 3-2 · R4-SET1-4</span></div>
+<span class="lab">一句话</span>
+<p>\(A^*Ax=0\Rightarrow x^*A^*Ax=\|Ax\|_2^2=0\Rightarrow Ax=0\)；列满秩时由 \(Ax=0\Rightarrow x=0\) 得 \(A^*A\) 非奇异。反向：列不满秩 ⇒ \(\exists x\ne0,Ax=0\) ⇒ \(A^*Ax=0\) ⇒ 奇异。<strong>两个方向都要写。</strong></p>
+<span class="lab">最小可算例</span>
+<p>配套两条等式：\(\mathcal{C}(A)^\perp=\mathcal{N}(A^*)\)、\(\mathcal{N}(A)^\perp=\mathcal{C}(A^*)\)，且 \(\operatorname{rank}(A^*A)=\operatorname{rank}(A)\)——这三条一写，绝大多数子空间题就完了。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>只证"列满秩 ⇒ 非奇异"（考试明确要求双向）；</li>
+<li>用 \(\det(A^*A)=\det A^*\det A\) 证（只对方阵成立，题目是长方形）；</li>
+<li>把 \(A^*A\) 与 \(AA^*\) 的可逆性混为一谈（后者在 \(m&gt;n\) 时必不可逆）。</li>
+</ul>
+</div>
+
+<div class="atom" id="d2">
+<div class="ah"><span class="aid">D2</span><span class="at">投影的范数：≥1，等号只在正交时</span><span class="aq">考它：作业 3-1 · 3-3 · R4-SET1-4 · SET2-3</span></div>
+<span class="lab">一句话</span>
+<p>非零投影 \(\|P\|_2\ge1\)：取 \(0\ne x\in\mathcal{C}(P)\) 则 \(Px=x\)，比值 \(=1\) 已是下界。等号 \(\iff P^*=P\)：正交时 \(x=Px+(I-P)x\) 成勾股，故 \(\|Px\|\le\|x\|\)；斜投影破坏勾股，可以 \(&gt;1\)。</p>
+<span class="lab">最小可算例</span>
+<p>\(P=\begin{bmatrix}1&1\\0&0\end{bmatrix}\)（沿 \((1,-1)\) 投到 \(x\) 轴）：\(P^{\mathrm T}P=\begin{bmatrix}1&1\\1&1\end{bmatrix}\)，特征值 \(2,0\) ⇒ \(\|P\|_2=\sqrt2\)，取 \(x=(1,1)^{\mathrm T}\) 达等。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>用 \(P^2=P\) 直接说"所以范数是 1"（幂等不蕴含不放大）；</li>
+<li>证等号时只说"正交投影范数为 1"，没证反向（斜投影 \(\|P\|&gt;1\)）；</li>
+<li>取 \(x\in\mathcal{C}(P)\) 却用 \(Px=x\) 之外的关系（这里就是 \(Px=x\)，别绕）。</li>
+</ul>
+</div>
+
+<div class="atom" id="d3">
+<div class="ah"><span class="aid">D3</span><span class="at">MGS / CGS：流程、flop 计数、正交性流失</span><span class="aq">考它：作业 3-6 · 4-4 · R4-SET1-5</span></div>
+<span class="lab">一句话</span>
+<p>MGS：对每个 \(j\)，先算完所有 \(r_{ij}=q_i^*a_j\) 并<strong>立即</strong>从 \(a_j\) 里减掉，再归一化；CGS 先算全部投影再一次减。<strong>CGS 的正交误差可达 \(\kappa^2\epsilon\)，MGS 只有 \(\kappa\epsilon\)</strong>。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}1&0\\1&1\\0&1\\1&1\end{bmatrix}\)：\(\hat R=\begin{bmatrix}\sqrt3&2/\sqrt3\\0&\sqrt{5/3}\end{bmatrix}\)，最小二乘解 \(x=(0.8,1.8)\)，残差 \((0.2,-0.6,0.2,0.4)\)，\(\|r\|=\sqrt{0.6}\approx0.7746\)。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>MGS 里用"未更新的 \(a_j\)"算 \(r_{ij}\)（顺序错了就退化成 CGS）；</li>
+<li>flop 计数只数乘除、忘加减（题目要"加减乘除的总数"）；</li>
+<li>用"最大正交误差"判断 CGS 与 MGS 是否等价（两者在小矩阵上常常一样；差异在 \(q_2^{\mathrm T}q_3\) 这种<strong>第三个</strong>向量上）。</li>
+</ul>
+</div>
+
+<div class="atom" id="d4">
+<div class="ah"><span class="aid">D4</span><span class="at">Householder：构造、谱、行列式、后向稳定</span><span class="aq">考它：作业 4-1 · 4-4 · R4-SET2-4 · SET3-3</span></div>
+<span class="lab">一句话</span>
+<p>\(H=I-2vv^*/v^*v\)：Hermite、酉、\(H^2=I\)、\(\det H=-1\)、特征值 \(+1\)（重数 \(m-1\)）与 \(-1\)。<strong>取 \(v=a+\mathrm{sign}(a_1)\|a\|_2e_1\)</strong> 使 \(Ha=-\mathrm{sign}(a_1)\|a\|_2e_1\)，且同号相加不产生相消。</p>
+<span class="lab">最小可算例</span>
+<p>\(a=(3,4)^{\mathrm T}\)，\(\|a\|=5\)，\(v=(8,4)^{\mathrm T}\)，\(v^{\mathrm T}v=80\)：</p>
+<div class="eq">$$H=\begin{bmatrix}-0.6&-0.8\\-0.8&0.6\end{bmatrix},\qquad Ha=(-5,0)^{\mathrm T},\qquad \det H=-1 .$$</div>
+<span class="lab">三种错法</span>
+<ul>
+<li>取 \(v=a-\|a\|e_1=(-2,4)^{\mathrm T}\)（\(a_1\approx\|a\|\) 时灾难性相消，\(H\) 方向不准）；</li>
+<li>把 \(\det H\) 算成 \(+1\)（\(H\) 是反射，必为 \(-1\)）；</li>
+<li>说"\(H\) 的特征值是 \(0,1\)"（那是投影 \(P\) 的谱；\(H=I-2P\) 的谱是 \(1,-1\)）。</li>
+</ul>
+</div>
+
+<div class="atom" id="d5">
+<div class="ah"><span class="aid">D5</span><span class="at">Givens 旋转：几何与 6 flops</span><span class="aq">考它：作业 4-2 · R4-SET2-4</span></div>
+<span class="lab">一句话</span>
+<p>\(J=\begin{bmatrix}c&s\\-s&c\end{bmatrix}\) 是旋转（\(\det=1\)），\(F=\begin{bmatrix}-c&s\\s&c\end{bmatrix}\) 是反射（\(\det=-1\)）。用 Givens 做 QR 时每个元素要 6 次运算（4 次乘法 + 2 次加法），比 MGS 的 4 次多 50%。</p>
+<span class="lab">最小可算例</span>
+<p>\(\theta=\pi/2\)（\(c=0,s=1\)）：\(J=\begin{bmatrix}0&1\\-1&0\end{bmatrix}\) 把 \((1,0)^{\mathrm T}\) 送到 \((0,-1)^{\mathrm T}\)，即<strong>顺时针</strong> \(90^\circ\)；\(F=\begin{bmatrix}0&1\\1&0\end{bmatrix}\) 交换两坐标，是镜射。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把 \(J\) 的旋转方向说反（按上面 \(\theta=\pi/2\) 代一次即可定死）；</li>
+<li>6 flops 数成"4 乘 + 4 加"（\(c,s\) 已在外面算好，每项只有一次乘一次加）；</li>
+<li>忘了 Givens 的好处：<strong>可只消一个元素</strong>，适合稀疏 / 并行；Householder 一次消一列。</li>
+</ul>
+</div>
+
+<div class="grp">E 组 · 最小二乘与条件数（4 条）</div>
+
+<div class="atom" id="e1">
+<div class="ah"><span class="aid">E1</span><span class="at">最小二乘：几何、三种解法、Aᵀr=0</span><span class="aq">考它：作业 3-5 · 4-3 · 4-4 · R4-SET1-5</span></div>
+<span class="lab">一句话</span>
+<p>\(\hat x\) 使 \(A\hat x=P_{\mathcal{C}(A)}b\)，残差 \(r=b-A\hat x\perp\mathcal{C}(A)\)，即 \(A^{\mathrm T}r=0\)（正规方程）。三种解法：正规方程（\(\kappa^2\)）、QR（\(\kappa\)）、SVD（\(\kappa\)，且能处理秩亏）。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}1&0\\1&1\\0&1\\1&1\end{bmatrix},b=(1,2,2,3)^{\mathrm T}\)：\(x=(0.8,1.8)\)，\(r=(0.2,-0.6,0.2,0.4)\)，\(\|r\|^2=0.6\)，复核 \(\|b\|^2-\|\hat Q^{\mathrm T}b\|^2=18-17.4=0.6\) ✓</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>解完不回代检验 \(A^{\mathrm T}r=0\)（这是最快的自检，10 秒）；</li>
+<li>用正规方程却不说明"条件数被平方"（题目常追一问）；</li>
+<li>秩亏时仍用 \(\hat R^{-1}\)（此时 \(\hat R\) 奇异，必须用 \(A^+\)）。</li>
+</ul>
+</div>
+
+<div class="atom" id="e2">
+<div class="ah"><span class="aid">E2</span><span class="at">条件数：从"问题是一个函数"开始</span><span class="aq">考它：第 10 讲例 1–4 · R4-SET2-7</span></div>
+<span class="lab">一句话</span>
+<p>绝对：\(\hat\kappa=\|J(x)\|\)；相对：\(\kappa=\|J\|/(\|f\|/\|x\|)\)。<strong>标量函数的条件数 = 相对变化之比</strong>，\(f=x^2\) 得 1、\(f=\sqrt x\) 得 \(1/2\)、\(f=x_1-x_2\) 得 \(\frac{2}{|x_1-x_2|/\max|x_i|}\)。</p>
+<span class="lab">最小可算例</span>
+<p>\(x_1=1.0000,x_2=0.9999\)（\(\|\cdot\|_\infty\)）：\(|x_1-x_2|=10^{-4}\)，\(\kappa=2/(10^{-4}/1.0000)=2\times10^{4}\)。双精度 16 位减掉 4.3 位，只剩约 11–12 位——这就是<strong>消去误差</strong>。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>只会用 \(\kappa(A)=\|A\|\|A^{-1}\|\)，遇到"给一个函数求条件数"就卡住；</li>
+<li>绝对与相对混用（浮点分析只用相对）；</li>
+<li>算完后不说"丢了几位"（题目问的往往是这个）。</li>
+</ul>
+</div>
+
+<div class="atom" id="e3">
+<div class="ah"><span class="aid">E3</span><span class="at">κ(A) 的六条性质与「平方陷阱」</span><span class="aq">考它：第 10 讲定理 5/6 · R4-SET1-6 · SET2-5</span></div>
+<span class="lab">一句话</span>
+<p>\(\kappa\ge1\)；\(\kappa(\alpha A)=\kappa(A)\)；\(\kappa_2(A)=\sigma_1/\sigma_m\)（长方形用 \(A^+\)）；\(\kappa_2(QA)=\kappa_2(A)\)；奇异时 \(=+\infty\)；<strong>\(\kappa_2(A^{\mathrm T}A)=\kappa_2(A)^2\)</strong>。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}1&2\\3&4\end{bmatrix}\)：\(\sigma=(5.4650,0.3660)\)，\(\kappa_2=14.933\)，\(\kappa_2(A^{\mathrm T}A)\approx223.0\)。所以同一个 \(10^{-6}\) 相对扰动，QR 放大到 \(1.5\times10^{-5}\)，正规方程放大到 \(2.2\times10^{-4}\)。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>说 \(\kappa(\alpha A)=\alpha\kappa(A)\)（尺度无关，\(\kappa\) 是比值）；</li>
+<li>左乘酉阵会改条件数（不改：\(\sigma\) 不变）；</li>
+<li>知道 \(\kappa^2\) 但说不出后果（后果是"正规方程丢两倍位数"）。</li>
+</ul>
+</div>
+
+<div class="atom" id="e4">
+<div class="ah"><span class="aid">E4</span><span class="at">扰 b 与扰 A：两个不同的条件数</span><span class="aq">考它：第 10 讲定理 5/6 · R4-SET1-6 · SET2-6</span></div>
+<span class="lab">一句话</span>
+<p>扰 \(b\)：\(\kappa=\|A^{-1}\|\|b\|/\|x\|\le\kappa(A)\)，2-范数下最坏值是 \(1/\sigma_{\min}\)（\(b\) 平行 \(\sigma_1\) 的右奇异向量）。扰 \(A\)：\(\delta x=-A^{-1}(\delta A)x\)，条件数恰为 \(\kappa(A)\)。</p>
+<span class="lab">最小可算例</span>
+<p>\(A=\begin{bmatrix}1&2\\3&4\end{bmatrix}\)，\(b=(1,1)^{\mathrm T}\)，\(x=(-1,1)^{\mathrm T}\)，\(\|x\|=\|b\|=\sqrt2\)：扰 \(b\) 用 \(1/\sigma_2=2.732\)，扰 \(A\) 用 \(\kappa=14.933\)。<strong>两个数差 5 倍多，这是常考的一问。</strong></p>
+<span class="lab">三种错法</span>
+<ul>
+<li>两个扰动都写 \(\kappa(A)\)（扰 \(b\) 的那个一般更小）；</li>
+<li>构造达界 \(\delta A\) 时随便取（正确做法：让它把最小奇异方向送到最大奇异方向）；</li>
+<li>丢掉一阶近似这一步（严格要写"扔掉 \((\delta A)(\delta x)\)"）。</li>
+</ul>
+</div>
+
+<div class="grp">F 组 · 浮点与稳定性（5 条）</div>
+
+<div class="atom" id="f1">
+<div class="ah"><span class="aid">F1</span><span class="at">机器 epsilon 与两条公理</span><span class="aq">考它：第 11 讲 · R4-SET1-7</span></div>
+<span class="lab">一句话</span>
+<p>\(\epsilon=\frac12\beta^{1-t}\)（双精度 \(2^{-53}\approx1.11\times10^{-16}\)，单精度 \(2^{-24}\approx5.96\times10^{-8}\)）。两条公理：\(\mathrm{fl}(x)=x(1+\epsilon)\)、\(x\odot y=(x\circ y)(1+\epsilon)\)，\(|\epsilon|\le\epsilon_{\text{machine}}\)。</p>
+<span class="lab">最小可算例</span>
+<p>相邻浮点间距是 \(2\epsilon=2^{-52}\)。故 \((1+2^{-52})-1=2^{-52}=2\epsilon\ne0\)，而 \((1+2^{-53})-1=0\)（\(2^{-53}\) 落在中点，舍向偶数）。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把 \(\epsilon\) 当成"最小可分辨增量"（增量是 \(2\epsilon\)）；</li>
+<li>以为公理要求 \(x+y\) 精确可表示（不需要，公理就是"就近舍入"）；</li>
+<li>写出 \(\epsilon=2^{-t}\)（差一个 2，定义里是"距离的一半"）。</li>
+</ul>
+</div>
+
+<div class="atom" id="f2">
+<div class="ah"><span class="aid">F2</span><span class="at">消去误差与吸收：两个必背的实测数</span><span class="aq">考它：第 11/13 讲 · R4-SET1-7 · SET3-5</span></div>
+<span class="lab">一句话</span>
+<p><strong>消去</strong>：\(x\approx y\) 时 \(x-y\) 的相对误差被放大 \(1/|x-y|\) 倍（见 E2）。<strong>吸收</strong>：\(10^{16}+1=10^{16}\)，小量被整个吃掉（因为 \(10^{16}&gt;2^{53}\)，间距已是 2）。</p>
+<span class="lab">最小可算例</span>
+<p>\(0.1+0.2-0.3=5.551\times10^{-17}=0.5\epsilon\)（不是 0，也不是"很大的误差"）。求和顺序的例子：\(a=1,b=10^{16},c=-10^{16}\)，\((a+b)+c=0\) 而 \(a+(b+c)=1\)——<strong>浮点加法不满足结合律</strong>，但这与"每次相对误差 ≤ ε"不矛盾。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>说"0.1+0.2≠0.3 是因为精度不够，误差很大"（误差只有 \(0.5\epsilon\)，问题是量级比较）；</li>
+<li>认为"相对误差 ≤ ε"能推出"结合律近似成立"（不能，结构性的丢失不靠界描述）；</li>
+<li>把吸收现象归因于下溢（是"精度不足以区分"，不是指数越界）。</li>
+</ul>
+</div>
+
+<div class="atom" id="f3">
+<div class="ah"><span class="aid">F3</span><span class="at">稳定 vs 后向稳定：一字之差</span><span class="aq">考它：第 11/13 讲 · R4-SET1-8 · SET3-6</span></div>
+<span class="lab">一句话</span>
+<p>稳定：\(\exists\tilde x\)，\(\|\tilde x-x\|/\|x\|=O(\epsilon)\) 且 \(\|\tilde f(x)-f(\tilde x)\|/\|f(\tilde x)\|=O(\epsilon)\)。后向稳定：同样的 \(\tilde x\)，但 \(\tilde f(x)=f(\tilde x)\) <strong>精确</strong>。一句话：<strong>稳定是"邻近问题给邻近答案"，后向稳定是"邻近问题给精确答案"</strong>。</p>
+<span class="lab">最小可算例</span>
+<p>Householder QR 是后向稳定的：\(\tilde Q\tilde R=A+\delta A\)，\(\|\delta A\|/\|A\|=O(\epsilon)\)。但 \(\tilde Q,\tilde R\) 的<strong>前向</strong>误差可以很大——因为"列空间作为矩阵元素的函数"本身病态，不是算法不稳。</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>把两个定义写反（后向稳定更强）；</li>
+<li>说"后向稳定 ⇒ 结果精确"（精度还取决于条件数）；</li>
+<li>看到前向误差大就判"算法不稳"（要看后向误差 \(\|\tilde Q\tilde R-A\|\)）。</li>
+</ul>
+</div>
+
+<div class="atom" id="f4">
+<div class="ah"><span class="aid">F4</span><span class="at">后向稳定 ⇒ 精度：误差三角的唯一推导</span><span class="aq">考它：第 13 讲定理 1 · R4-SET1-8 · SET3-6</span></div>
+<span class="lab">一句话</span>
+<p>\(\dfrac{\|\tilde f(x)-f(x)\|}{\|f(x)\|}=\dfrac{\|f(\tilde x)-f(x)\|}{\|f(x)\|}\approx\dfrac{\|J\|\|\tilde x-x\|}{\|f(x)\|}=\kappa(x)\cdot O(\epsilon)\)。<strong>关键一步是把 \(\tilde f(x)\) 换成 \(f(\tilde x)\)——这不是近似，是后向稳定的定义。</strong></p>
+<span class="lab">最小可算例</span>
+<p>\(\kappa(A)=10^{12}\)，双精度 16 位 ⇒ 剩 4 位。算法仍可后向稳定：它精确解了一个被扰动 \(10^{-16}\) 的邻近问题，只是那个问题本身极端敏感。<strong>精度 = 问题 × 算法，不能全怪算法。</strong></p>
+<span class="lab">三种错法</span>
+<ul>
+<li>用前向误差分析硬推（推不动；整门课的意义就在于换成后向）；</li>
+<li>忘了 \(O(\epsilon)\) 里的常数依赖 \(m,n\)（不依赖 \(A,b\)）；</li>
+<li>把结论写成"后向稳定 ⇒ 精确"（漏掉 \(\kappa\)）。</li>
+</ul>
+</div>
+
+<div class="atom" id="f5">
+<div class="ah"><span class="aid">F5</span><span class="at">回代分项界与「三步复合」</span><span class="aq">考它：第 12/13 讲 · R4-SET2-8</span></div>
+<span class="lab">一句话</span>
+<p>回代后向稳定：\((R+\delta R)\tilde x=b\)，且<strong>分项</strong> \(|\delta r_{ij}|/|r_{ij}|\le m\epsilon\)（\(r_{ij}=0\) 处不扰动）。解 \(Ax=b\) 的三步（QR、乘 \(b\)、回代）各自后向稳定 ⇒ 整体后向稳定 ⇒ 套 F4 得 \(O(\kappa\epsilon)\)。</p>
+<span class="lab">最小可算例</span>
+<p>\(R=\begin{bmatrix}2&1\\0&3\end{bmatrix}\)，\(b=(1,5)^{\mathrm T}\)，三位有效数字：\(\tilde x_2=1.67\)，\(\tilde x_1=-0.335\)，\(R\tilde x=(1.0,5.01)\)。只需 \(\delta r_{22}=-0.005988\)，\(|\delta r_{22}|/|r_{22}|=2.0\times10^{-3}\le m\epsilon=10^{-2}\) ✓</p>
+<span class="lab">三种错法</span>
+<ul>
+<li>说"\(\|\delta R\|/\|R\|=O(\epsilon)\) 就够了"（题目若问"分项更强在哪"，要答：零元不被扰动、对列缩放不敏感）；</li>
+<li>\(\tilde Q\) 写成"\(Q\) 的计算值"（应为"由浮点 \(\tilde v_k\) 定义的镜射之积"）；</li>
+<li>三步复合时忘了每传一步只多 \(O(\epsilon^2)\)，可以直接合并。</li>
+</ul>
+</div>
+
+<div class="note g">
+<span class="h">到这里应该做的第一件事</span>
+回到上面的症状表，把中枪的条目里的原子编号记下来（比如 A1、C2、E4、F5），然后往下做题——<strong>做不出来的勾一下，最后看缺口地图</strong>。
+</div>
+
+<h2><span class="no">02</span>缺口地图（实时）</h2>
+
+<div class="gap" id="gapPanel">
+<h3>你缺哪几条：按"被勾的题数"排序</h3>
+<p class="hint" style="font-size:12.5px;color:var(--ink2);margin:2px 0 8px">做不出来就勾一下题卡底部的「我还不会」。这里立刻更新；刷新不丢（存在本机）。<strong>排在前面的，就是明天先补的那几条。</strong></p>
+<div id="gapBody"><p class="empty">还没有勾任何题。做几道再看这里。</p></div>
+</div>
+
+<h2><span class="no">03</span>题：32 道，按"考哪几条原子"分层</h2>
+<p class="hint" style="font-size:12.5px;color:var(--ink2);margin:6px 0">L1 = 原子级判断（1–2 分钟，测"这条到底会不会"）；L2 = 作业原题（考点最可能重现）；L3 = 变式（综合，考试的同款问法）。每题右上角的标签就是它考的原子，点进去能回看。</p>
+
+<div class="grp">L1 · 原子级 12 道（先做这层，最省时间）</div>
+
+<div class="q" data-atoms="a1">
+<div class="qh"><span class="qn">L1-1</span><span class="qt">删行 + 替换列，写成乘积</span><span class="tags"><a href="#a1">A1</a></span></div>
+<div class="body"><p>\(B\in\mathbb{R}^{4\times4}\)：先<strong>删除第 2 行</strong>，再把<strong>第 3 列替换为第 1 列的 2 倍</strong>。写成 \(XYZ\) 形式，并写出每个因子的阶数。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>删行是左乘选择阵 \(S_2\in\mathbb{R}^{3\times4}\)（\(I_4\) 去掉第 2 行）。替换列是右乘 \(M=I_4-e_3e_3^{\mathrm T}+2e_1e_3^{\mathrm T}\)（把单位阵的第 3 列换成 \(2e_1\)），仍是 \(4\times4\)。</p>
+<div class="eq">$$B'=S_2\,B\,M .$$</div>
+<p>注意 \(M\) 不可逆（它把第 3 列的信息彻底覆盖），秩最多 3。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-1">我还不会</label>
+</div>
+
+<div class="q" data-atoms="a2 b4">
+<div class="qh"><span class="qn">L1-2</span><span class="qt">秩一矩阵的四个数</span><span class="tags"><a href="#a2">A2</a><a href="#b4">B4</a></span></div>
+<div class="body"><p>\(u=(1,1,0)^{\mathrm T}\)、\(v=(2,0,1)^{\mathrm T}\)，\(A=uv^{\mathrm T}\)。求 \(\|A\|_2\)、\(\|A\|_F\)、\(\operatorname{rank}A\)、\(\kappa_2(A)\)。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>\(\|u\|_2=\sqrt2\)、\(\|v\|_2=\sqrt5\) ⇒ \(\sigma_1=\sqrt{10}\approx3.1623\)，且只有一个非零奇异值，故</p>
+<div class="eq">$$\|A\|_2=\|A\|_F=\sqrt{10},\qquad \operatorname{rank}A=1,\qquad \kappa_2(A)=+\infty .$$</div>
+<p>\(\kappa=\infty\) 不是"很大"，而是"矩阵奇异"（\(\sigma_2=0\)）。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-2">我还不会</label>
+</div>
+
+<div class="q" data-atoms="a3">
+<div class="qh"><span class="qn">L1-3</span><span class="qt">由 \(P^*P=P\) 推出 \(P^*=P\)</span><span class="tags"><a href="#a3">A3</a></span></div>
+<div class="body"><p>设 \(P^2=P\) 且 \(P^*P=P\)。证明 \(P\) 是正交投影。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>对 \(P^*P=P\) 两边取共轭转置：\((P^*P)^*=P^*\) 左边 \(=P^*P\)（因 \((P^*P)^*=P^*P^{**}=P^*P\)）。故 \(P^*P=P^*\)。又已知 \(P^*P=P\)，于是 \(P^*=P\)。叠加幂等性即得正交投影。</p>
+<p class="hint" style="font-size:12.5px;color:var(--ink2)">这题的关键：<strong>共轭转置不改变 \(P^*P\)</strong>（自伴），于是 \(P^*P\) 同时等于 \(P\) 与 \(P^*\)。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-3">我还不会</label>
+</div>
+
+<div class="q" data-atoms="b1">
+<div class="qh"><span class="qn">L1-4</span><span class="qt">三个范数直接报数</span><span class="tags"><a href="#b1">B1</a></span></div>
+<div class="body"><p>\(A=\begin{bmatrix}1&-2\\3&0\\0&4\end{bmatrix}\)。求 \(\|A\|_1,\|A\|_\infty,\|A\|_F\)。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>列和：\(1+3+0=4\)、\(2+0+4=6\) ⇒ \(\|A\|_1=6\)。行和：\(3,3,4\) ⇒ \(\|A\|_\infty=4\)。\(\|A\|_F=\sqrt{1+4+9+0+0+16}=\sqrt{30}\approx5.477\)。</p>
+<p>顺带：\(\|A\|_2=\sigma_1\) 需要算 \(A^{\mathrm T}A\) 的特征值，本题没问，别顺手写 \(\|A\|_\infty\)。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-4">我还不会</label>
+</div>
+
+<div class="q" data-atoms="b2">
+<div class="qh"><span class="qn">L1-5</span><span class="qt">向量范数等价的紧性</span><span class="tags"><a href="#b2">B2</a></span></div>
+<div class="body"><p>证明 \(\|x\|_\infty\le\|x\|_2\le\sqrt m\|x\|_\infty\)（\(x\in\mathbb{C}^m\)），并各举一个取等的 \(x\)。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>左边：\(\|x\|_2^2=\sum|x_i|^2\ge\max_i|x_i|^2=\|x\|_\infty^2\)。右边：\(\|x\|_2^2\le m\max_i|x_i|^2=m\|x\|_\infty^2\)。</p>
+<p>取等：左边用 \(x=e_1\)（只有一个分量非零）；右边用 \(x=(1,\dots,1)^{\mathrm T}\)（所有分量同模）。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-5">我还不会</label>
+</div>
+
+<div class="q" data-atoms="b3">
+<div class="qh"><span class="qn">L1-6</span><span class="qt">举一个 \(\rho&lt;\|A\|_2\) 的例子</span><span class="tags"><a href="#b3">B3</a></span></div>
+<div class="body"><p>举 \(2\times2\) 矩阵使 \(\rho(A)&lt;\|A\|_2\)，并算出两个数。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>\(A=\begin{bmatrix}0&1\\0&0\end{bmatrix}\)：特征值全 0 ⇒ \(\rho(A)=0\)；而 \(A^{\mathrm T}A=\begin{bmatrix}0&0\\0&1\end{bmatrix}\) ⇒ \(\|A\|_2=1\)。原因：\(A\) 非正规（\(A^{\mathrm T}A\ne AA^{\mathrm T}\)）。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-6">我还不会</label>
+</div>
+
+<div class="q" data-atoms="c1">
+<div class="qh"><span class="qn">L1-7</span><span class="qt">只知道奇异值，能报出哪些量</span><span class="tags"><a href="#c1">C1</a></span></div>
+<div class="body"><p>\(A\in\mathbb{R}^{3\times2}\)，奇异值为 \(4,1\)。求 \(\|A\|_2\)、\(\|A\|_F\)、\(\kappa_2(A)\)、\(\|A^+\|_2\)。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<div class="eq">$$\|A\|_2=4,\qquad \|A\|_F=\sqrt{16+1}=\sqrt{17},\qquad \kappa_2=4,\qquad \|A^+\|_2=\frac{1}{\sigma_{\min}}=1 .$$</div>
+<p>自检：\(\kappa_2=\|A\|_2\|A^+\|_2=4\times1=4\) ✓</p>
+<p class="hint" style="font-size:12.5px;color:var(--ink2)">典型错答 \(0.25\)：那是 \(\sigma_{\min}/\sigma_{\max}=1/4\)，把 \(A^+\) 的奇异值方向弄反了。\(A^+\) 的奇异值是 \(1/\sigma_j\)，最大的是 \(1/\sigma_{\min}\)。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-7">我还不会</label>
+</div>
+
+<div class="q" data-atoms="c2">
+<div class="qh"><span class="qn">L1-8</span><span class="qt">退化情形：秩一 \(2\times2\) 的 SVD</span><span class="tags"><a href="#c2">C2</a></span></div>
+<div class="body"><p>求 \(A=\begin{bmatrix}0&2\\0&0\end{bmatrix}\) 的 SVD。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>\(A^{\mathrm T}A=\begin{bmatrix}0&0\\0&4\end{bmatrix}\)，特征值 \(4,0\) ⇒ \(\sigma=(2,0)\)。\(v_1=(0,1)^{\mathrm T}\)，\(v_2=(1,0)^{\mathrm T}\)；\(u_1=Av_1/2=(1,0)^{\mathrm T}\)，\(u_2\) 取与 \(u_1\) 正交的单位向量 \((0,1)^{\mathrm T}\)。</p>
+<div class="eq">$$A=\begin{bmatrix}1&0\\0&1\end{bmatrix}\begin{bmatrix}2&0\\0&0\end{bmatrix}\begin{bmatrix}0&1\\1&0\end{bmatrix}.$$</div>
+<p>\(\sigma_2=0\) 时 \(u_2\) 只需与 \(u_1\) 正交，不唯一。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-8">我还不会</label>
+</div>
+
+<div class="q" data-atoms="d2">
+<div class="qh"><span class="qn">L1-9</span><span class="qt">斜投影能不能有 \(\|P\|_2=1\)</span><span class="tags"><a href="#d2">D2</a></span></div>
+<div class="body"><p>设 \(P\ne0\) 是投影（\(P^2=P\)）且 \(\|P\|_2=1\)。证明 \(P\) 必为正交投影（给出论证主线即可）。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>取 \(x\) 使 \(Px\ne0\)。由 \(\|P\|_2=1\) 与 \(P(Px)=Px\) 知 \(\|Px\|\le\|x\|\) 对一切 \(x\) 成立。取 \(x\) 使 \(x\perp\mathcal{C}(P)\) 且 \(x\notin\mathcal{N}(P)\)（斜投影才有这样的 \(x\)），则 \(Px\ne0\) 但 \(Px\in\mathcal{C}(P)\)；此时 \(Px\) 与 \(x\) 不正交，勾股不成立，可推出 \(\|Px\|&gt;\|x\|\)，矛盾。故不存在这样的 \(x\)，即 \(\mathcal{N}(P)=\mathcal{C}(P)^\perp\)，\(P\) 正交。</p>
+<p class="hint" style="font-size:12.5px;color:var(--ink2)">考试若只要求"说明"，写"等号成立时勾股必须成立 ⇒ 两个子空间互补正交"即可。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-9">我还不会</label>
+</div>
+
+<div class="q" data-atoms="e3">
+<div class="qh"><span class="qn">L1-10</span><span class="qt">对角阵的三种条件数</span><span class="tags"><a href="#e3">E3</a></span></div>
+<div class="body"><p>\(D=\mathrm{diag}(1,1000)\)。求 \(\kappa_1,\kappa_2,\kappa_\infty\)。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>\(D^{-1}=\mathrm{diag}(1,10^{-3})\)。三个都等于 \(1000\)：\(\|D\|_1=\|D\|_\infty=\|D\|_2=1000\)，\(\|D^{-1}\|=1\) ⇒ 乘积 \(1000\)。</p>
+<p>结论：<strong>对角阵的三种条件数相同</strong>，因为 \(\|D\|_p=\max|d_i|\) 对任意 \(p\)。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-10">我还不会</label>
+</div>
+
+<div class="q" data-atoms="f1">
+<div class="qh"><span class="qn">L1-11</span><span class="qt">三个必然被问的浮点小算式</span><span class="tags"><a href="#f1">F1</a></span></div>
+<div class="body"><p>双精度下求：\((1+2^{-52})-1\)、\((1+2^{-53})-1\)、\(2^{-52}/2^{-53}\)。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<div class="eq">$$(1+2^{-52})-1=2^{-52}=2\epsilon\ne0,\qquad (1+2^{-53})-1=0,\qquad \frac{2^{-52}}{2^{-53}}=2.$$</div>
+<p>理由：相邻浮点间距 \(=2\epsilon=2^{-52}\)，\(2^{-53}\) 正好是半个间距（中点），舍向偶数回 \(1\)。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-11">我还不会</label>
+</div>
+
+<div class="q" data-atoms="f3">
+<div class="qh"><span class="qn">L1-12</span><span class="qt">四句判断，对错各半</span><span class="tags"><a href="#f3">F3</a></span></div>
+<div class="body"><p>判断：① 后向稳定 ⇒ 结果精确；② 稳定 ⇒ 后向稳定；③ 后向稳定 ⇒ 稳定；④ 前向误差大 ⇒ 算法不稳。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<table class="tb" style="margin:4px 0">
+<tr><th>句</th><th>判</th><th>理由</th></tr>
+<tr><td>①</td><td>✗</td><td>精度还取决于条件数：\(O(\kappa\epsilon)\)</td></tr>
+<tr><td>②</td><td>✗</td><td>后向稳定更强（精确等式 vs \(O(\epsilon)\) 残差）</td></tr>
+<tr><td>③</td><td>✓</td><td>把 \(\tilde f(x)=f(\tilde x)\) 放松成 \(O(\epsilon)\) 即得稳定</td></tr>
+<tr><td>④</td><td>✗</td><td>前向误差可以完全由病态解释；要看后向误差 \(\|\tilde Q\tilde R-A\|\)</td></tr>
+</table>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L1-12">我还不会</label>
+</div>
+
+<div class="grp">L2 · 作业原题 12 道（考点最可能重现）</div>
+
+<div class="q" data-atoms="a1">
+<div class="qh"><span class="qn">L2-1</span><span class="qt">作业 1-1：八个矩阵乘积 → \(ABC\)</span><span class="tags"><a href="#a1">A1</a></span></div>
+<div class="body"><p>对 \(4\times4\) 的 \(B\) 依次：① 第 1 列加倍；② 第 3 行减半；③ 第 3 行加到第 1 行；④ 交换第 1、4 列；⑤ 从其他行减去第 2 行；⑥ 第 4 列替换为第 3 列；⑦ 删去第 1 列。（a）写成八个矩阵的乘积；（b）合并成 \(ABC\)。</p></div>
+<details><summary>看答案（要点）</summary><div class="ans">
+<p>逐条：①\(BD_1(2)\)；②\(D_3(\tfrac12)B\)；③\(E_{13}B\)；④\(BP_{14}\)；⑤\(E_{i2}(-1)B\)（\(i\ne2\)，三个因子）；⑥\(BM\)（\(M\) 把第 4 列换成第 3 列，不可逆）；⑦\(BS_1\)（\(4\times3\) 删列）。</p>
+<p>合并：左侧所有行操作按"后做在外"叠成 \(A\)，右侧叠成 \(C\)：</p>
+<div class="eq">$$B'=A\,B\,C,\qquad A=D_3(\tfrac12)E_{13}\prod_{i\ne2}E_{i2}(-1),\quad C=D_1(2)P_{14}MS_1 .$$</div>
+<p>要点：删列后 \(B\) 的列秩降 1；⑥ 已经降秩，⑦ 再降——所以 \(C\) 必奇异。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-1">我还不会</label>
+</div>
+
+<div class="q" data-atoms="a2 b4">
+<div class="qh"><span class="qn">L2-2</span><span class="qt">作业 1-6 / 1-11：\(uv^*\) 的 2-范数与 F-范数</span><span class="tags"><a href="#a2">A2</a><a href="#b4">B4</a></span></div>
+<div class="body"><p>设 \(A=uv^*\)（\(u\in\mathbb{C}^m,v\in\mathbb{C}^n\)）。（a）证明 \(\|A\|_2=\|u\|_2\|v\|_2\)。（b）把 2-范数换成 F-范数，结论还成立吗？</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）\(\|Ax\|_2=\|u(v^*x)\|_2=\|u\|_2|v^*x|\le\|u\|_2\|v\|_2\|x\|_2\)，取 \(x=v/\|v\|_2\) 达等。</p>
+<p>（b）<strong>成立，而且相等</strong>：秩一矩阵只有一个非零奇异值，故 \(\|A\|_F=\sqrt{\sigma_1^2}=\sigma_1=\|u\|\|v\|\)。这一问的陷阱是"以为 F 更大"。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-2">我还不会</label>
+</div>
+
+<div class="q" data-atoms="a3">
+<div class="qh"><span class="qn">L2-3</span><span class="qt">作业 1-8：Hermitian 的两条性质</span><span class="tags"><a href="#a3">A3</a></span></div>
+<div class="body"><p>设 \(A=A^*\)。（a）证明所有特征值都是实数；（b）不同特征值的特征向量正交。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）\(x^*Ax=\lambda x^*x\)，而 \((x^*Ax)^*=x^*A^*x=x^*Ax\) ⇒ \(x^*Ax\) 实 ⇒ \(\lambda\) 实（\(x^*x&gt;0\)）。</p>
+<p>（b）比较 \(\langle Ax,y\rangle=\lambda\langle x,y\rangle\) 与 \(\langle x,Ay\rangle=\mu\langle x,y\rangle\)，由 \(A=A^*\) 两者相等 ⇒ \((\lambda-\mu)\langle x,y\rangle=0\) ⇒ 正交。</p>
+<p class="hint" style="font-size:12.5px;color:var(--ink2)">同一个手法可推：斜 Hermite 特征值纯虚、酉阵特征值模为 1——这两个是常见变形。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-3">我还不会</label>
+</div>
+
+<div class="q" data-atoms="b2">
+<div class="qh"><span class="qn">L2-4</span><span class="qt">作业 1-10：四条范数不等式的紧性</span><span class="tags"><a href="#b2">B2</a></span></div>
+<div class="body"><p>证明并举例（\(x\) 为 \(m\) 维、\(A\) 为 \(m\times n\)）：（a）\(\|x\|_\infty\le\|x\|_2\)；（b）\(\|x\|_2\le\sqrt m\|x\|_\infty\)；（c）\(\|A\|_\infty\le\sqrt n\|A\|_2\)；（d）\(\|A\|_2\le\sqrt m\|A\|_\infty\)。</p></div>
+<details><summary>看答案（要点）</summary><div class="ans">
+<p>四条都是"放缩 + 取等"。(c)：\(\|A\|_\infty=\max_i\|a_i^*\|_1\le\max_i\sqrt n\|a_i^*\|_2\le\sqrt n\|A\|_2\)，取 \(A=\) 全 1 矩阵得 \(\|A\|_\infty=m\)、\(\|A\|_2=\sqrt{mn}\)，比值 \(\sqrt n\) ✓</p>
+<p>(d)：\(\|A\|_2\le\sqrt{\|A\|_1\|A\|_\infty}\)（B2 的主不等式），再用 \(\|A\|_1\le\sqrt m\|A\|_2\le m\|A\|_\infty\) 收尾；取单列矩阵即达界。</p>
+<p class="step">口诀：<strong>列和配行数 \(m\)，2-范数配列数 \(n\)</strong>。写反是最高频扣分。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-4">我还不会</label>
+</div>
+
+<div class="q" data-atoms="c2">
+<div class="qh"><span class="qn">L2-5</span><span class="qt">作业 2-1：三类小矩阵的 SVD</span><span class="tags"><a href="#c2">C2</a></span></div>
+<div class="body"><p>求 SVD：（a）\(\begin{bmatrix}3&0\\0&-2\end{bmatrix}\)；（b）\(\begin{bmatrix}0&2\\0&0\\0&0\end{bmatrix}\)；（c）\(\begin{bmatrix}1&1\\1&1\end{bmatrix}\)。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）对角 ⇒ \(\sigma=(3,2)\)，\(U=\mathrm{diag}(1,-1)\)、\(V=I\)（把负号收进 \(U\)）。</p>
+<p>（b）秩一：\(\sigma=(2,0,0)\)，\(U\) 首列 \((1,0,0)^{\mathrm T}\)、\(V\) 首列 \((0,1)^{\mathrm T}\)。</p>
+<p>（c）\(A^{\mathrm T}A=2\begin{bmatrix}1&1\\1&1\end{bmatrix}\)，\(\lambda=4,0\) ⇒ \(\sigma=(2,0)\)，\(v_1=\frac{1}{\sqrt2}(1,1)\)、\(u_1=\frac{1}{\sqrt2}(1,1)\)。</p>
+<p class="step">三个小题考的是同一件事：<strong>\(\sigma\) 降序 + 负号往 \(U\) 或 \(V\) 里收</strong>。改答案时"最少负号"是常加的一问。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-5">我还不会</label>
+</div>
+
+<div class="q" data-atoms="c1 c2">
+<div class="qh"><span class="qn">L2-6</span><span class="qt">作业 2-5：SVD 综合七小问</span><span class="tags"><a href="#c1">C1</a><a href="#c2">C2</a></span></div>
+<div class="body"><p>\(A=\begin{bmatrix}-2&11\\-10&5\end{bmatrix}\)。（a）手算实 SVD，负号最少；（b）奇异值 / 左右奇异向量 / 画超椭圆并标顶点；（c）1、2、\(\infty\)、F 四个范数；（d）用 SVD 求 \(A^{-1}\)；（e）求特征值；（f）验 \(|\det A|=\sigma_1\sigma_2\)；（g）超椭圆面积。</p></div>
+<details><summary>看答案（结构）</summary><div class="ans">
+<p>本题的答案数字见 R4/SET1-3 的同型题与 <a href="./SVD手算-超椭圆与最少负号.html">NLA-07</a>（同一题型，逐项对账）。做题时按这个顺序写，不会漏：</p>
+<ol>
+<li>\(A^{\mathrm T}A\) → \(\lambda_1,\lambda_2\) → \(\sigma_1,\sigma_2\)（这一步决定后面全部）；</li>
+<li>\(v_j\) 解方程，\(u_j=Av_j/\sigma_j\)；</li>
+<li>顶点 \(=\pm\sigma_ju_j\)（<strong>四个顶点是 \(\pm\sigma_1u_1,\pm\sigma_2u_2\)</strong>）；</li>
+<li>四个范数：\(\|A\|_1\) 最大列和、\(\|A\|_\infty\) 最大行和、\(\|A\|_2=\sigma_1\)、\(\|A\|_F=\sqrt{\sigma_1^2+\sigma_2^2}\)；</li>
+<li>\(A^{-1}=V\Sigma^{-1}U^{\mathrm T}\)（顺序别错）；</li>
+<li>特征值解二次方程，\(\det=\lambda_1\lambda_2\)；</li>
+<li>面积 \(=\pi\sigma_1\sigma_2=\pi|\det A|\)。</li>
+</ol>
+<p class="step">自检闭环：\(|\det A|=\sigma_1\sigma_2=\lambda_1\lambda_2\) 三者必须一致；不一致就回头查 \(v_j\) 的符号或 \(\sigma\) 的顺序。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-6">我还不会</label>
+</div>
+
+<div class="q" data-atoms="d1">
+<div class="qh"><span class="qn">L2-7</span><span class="qt">作业 3-2：\(A^*A\) 非奇异 ⟺ 列满秩</span><span class="tags"><a href="#d1">D1</a></span></div>
+<div class="body"><p>\(A\in\mathbb{C}^{m\times n}\)，\(m\ge n\)。证明 \(A^*A\) 非奇异 \(\iff A\) 列满秩。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>「\(\Leftarrow\)」：\(A^*Ax=0\) ⇒ \(0=x^*A^*Ax=\|Ax\|_2^2\) ⇒ \(Ax=0\) ⇒ \(x=0\)（列满秩）。故核为 \(\{0\}\)，非奇异。</p>
+<p>「\(\Rightarrow\)」：反证。若列不满秩，\(\exists x\ne0\) 使 \(Ax=0\)，则 \(A^*Ax=0\)，与"非奇异 + \(x\ne0\)"矛盾。</p>
+<p class="hint" style="font-size:12.5px;color:var(--ink2)">顺带：\(\operatorname{rank}(A^*A)=\operatorname{rank}(A)\)，证法同上（核相同）。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-7">我还不会</label>
+</div>
+
+<div class="q" data-atoms="d2">
+<div class="qh"><span class="qn">L2-8</span><span class="qt">作业 3-3：非零投影的范数下界</span><span class="tags"><a href="#d2">D2</a></span></div>
+<div class="body"><p>\(P\ne0\)，\(P^2=P\)。证明 \(\|P\|_2\ge1\)，且等号 \(\iff P\) 是正交投影。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>下界：取 \(0\ne x\in\mathcal{C}(P)\)，则 \(Px=x\)，\(\|Px\|/\|x\|=1\)，故 \(\sup\ge1\)。</p>
+<p>等号：若 \(P\) 正交，\(x=Px+(I-P)x\) 且两项正交 ⇒ \(\|Px\|^2\le\|x\|^2\) ⇒ \(\|P\|_2\le1\)，结合下界得 \(=1\)。若 \(P\) 非正交，取 \(x\in\mathcal{N}(P)^\perp\) 但 \(x\notin\mathcal{C}(P)\)，则 \(Px\in\mathcal{C}(P)\) 与 \(x\) 不垂直，勾股失效，\(\|Px\|&gt;\|x\|\)。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-8">我还不会</label>
+</div>
+
+<div class="q" data-atoms="d3">
+<div class="qh"><span class="qn">L2-9</span><span class="qt">作业 3-4：奇偶列正交 ⇒ \(\hat R\) 的棋盘结构</span><span class="tags"><a href="#d3">D3</a></span></div>
+<div class="body"><p>\(A\) 满秩，且第 1,3,5,… 列与第 2,4,6,… 列两两正交。问约化 QR 的 \(\hat R\) 有什么特殊结构？</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>\(\hat R\) 在"奇偶距离为奇数"的位置恒为 0：\(r_{ij}=0\) 当 \(|i-j|\) 为奇数。直观理由：\(q_i\) 是前 \(i\) 列张成空间里的向量，当 \(i,j\) 异奇偶时 \(q_i\perp a_j\)（\(a_j\) 与 \(q_i\) 所属的那一族列正交），故该内积为 0。</p>
+<p class="step">这题要顺手画一张 \(5\times3\) 的 \(\hat R\) 热力图——考试时画图往往给分。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-9">我还不会</label>
+</div>
+
+<div class="q" data-atoms="d4">
+<div class="qh"><span class="qn">L2-10</span><span class="qt">作业 4-1：Householder 的特征值 / 行列式 / 奇异值</span><span class="tags"><a href="#d4">D4</a></span></div>
+<div class="body"><p>\(H=I-2vv^*/v^*v\)。求（a）特征值与特征向量（代数 + 几何各一证）；（b）\(\det H\)；（c）奇异值。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）沿 \(v\) 方向 \(Hv=-v\)（\(\lambda=-1\)，重数 1）；沿 \(v^\perp\) 方向 \(Hw=w\)（\(\lambda=1\)，重数 \(m-1\)）。几何：关于超平面 \(v^\perp\) 作镜射。</p>
+<p>（b）行列式 = 特征值之积 \(=(-1)\cdot1^{m-1}=-1\)。</p>
+<p>（c）\(H\) 酉（\(H^*H=I\)）⇒ 奇异值全为 1。</p>
+<p class="step">陷阱：\(\sigma\) 全 1 所以 \(\kappa(H)=1\)——这正是 Householder 做 QR 数值稳定的根源，常被追问一句。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-10">我还不会</label>
+</div>
+
+<div class="q" data-atoms="d5">
+<div class="qh"><span class="qn">L2-11</span><span class="qt">作业 4-2：\(F\) 与 \(J\) 的几何、6 flops</span><span class="tags"><a href="#d5">D5</a></span></div>
+<div class="body"><p>\(F=\begin{bmatrix}-c&s\\s&c\end{bmatrix}\)、\(J=\begin{bmatrix}c&s\\-s&c\end{bmatrix}\)。（a）说明左乘两者的几何效果与旋转方向；（b）给出基于 Givens 的 QR 算法；（c）证明每项 6 次运算，比 MGS 多 50%。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）\(F\) 是反射（\(\det=-1\)，镜射轴取 \(\theta/2\) 方向）；\(J\) 是旋转（\(\det=1\)），把 \((1,0)^{\mathrm T}\) 送到 \((c,-s)^{\mathrm T}\)。<strong>代 \(\theta=\pi/2\) 得 \((0,-1)^{\mathrm T}\) ⇒ 顺时针</strong>。</p>
+<p>（b）对每一列 \(j\)，用 \(J(i,j,\theta)\) 逐个消去 \(a_{ij}\)（\(i&gt;j\)）：令 \(c=a_{jj}/r\)、\(s=a_{ij}/r\)、\(r=\sqrt{a_{jj}^2+a_{ij}^2}\)，左乘 \(J\) 后该位置归零。</p>
+<p>（c）新元素 \(c\,a_{jj}+s\,a_{ij}\) 与 \(-s\,a_{jj}+c\,a_{ij}\)：每个 2 乘 1 加 = 3 次，两个元素共 6 次；MGS 每项只需 4 次（一次乘、一次减、一次累加、一次缩放），故 \(6/4=1.5\)，多 50%。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-11">我还不会</label>
+</div>
+
+<div class="q" data-atoms="c4">
+<div class="qh"><span class="qn">L2-12</span><span class="qt">作业 2-6：分块 \(\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\) 的谱</span><span class="tags"><a href="#c4">C4</a></span></div>
+<div class="body"><p>\(A=U\Sigma V^*\in\mathbb{C}^{m\times m}\)。求 \(M=\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\)（\(2m\times2m\)）的特征分解。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>\(M\) 是 Hermite ⇒ 可酉对角化。取 \(w_\pm=\frac{1}{\sqrt2}\begin{bmatrix}v_j\\ \pm u_j\end{bmatrix}\)：</p>
+<div class="eq">$$Mw_\pm=\frac{1}{\sqrt2}\begin{bmatrix}A^*(\pm u_j)\\ Av_j\end{bmatrix}=\frac{1}{\sqrt2}\begin{bmatrix}\pm\sigma_jv_j\\ \sigma_ju_j\end{bmatrix}=\pm\sigma_j\,w_\pm .$$</div>
+<p>故谱为 \(\{\pm\sigma_j\}_{j=1}^m\)，特征向量如上。<strong>注意第一块是 \(v_j\)，因为左上块是 \(A^*\)。</strong></p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L2-12">我还不会</label>
+</div>
+
+<div class="grp">L3 · 变式 8 道（考试同款问法）</div>
+
+<div class="q" data-atoms="e2 e3">
+<div class="qh"><span class="qn">L3-1</span><span class="qt">给定条件数，问剩几位</span><span class="tags"><a href="#e2">E2</a><a href="#e3">E3</a></span></div>
+<div class="body"><p>双精度（16 位十进制）。（a）\(\kappa_2(A)=10^{8}\) 时解还有几位？（b）\(\kappa=10^{18}\) 呢？（c）为什么还会有人用双精度解这种系统？</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）\(16-8=8\) 位。（b）\(16-18&lt;0\)：一位都不剩，解可以完全无意义。</p>
+<p>（c）因为<strong>后向稳定算法给出的解是某个邻近系统的精确解</strong>——如果你只关心"这个 \(b\) 解出来够不够用"（而不是"与真解的差"），残差仍很小；而且 \(\kappa\) 大通常来自"问题本身敏感"，换算法救不了。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L3-1">我还不会</label>
+</div>
+
+<div class="q" data-atoms="e4">
+<div class="qh"><span class="qn">L3-2</span><span class="qt">扰 \(b\) 与扰 \(A\)，各给一个上界</span><span class="tags"><a href="#e4">E4</a></span></div>
+<div class="body"><p>\(A=\begin{bmatrix}1&2\\3&4\end{bmatrix}\)，\(b=(1,1)^{\mathrm T}\)。（a）求 \(x\)；（b）\(b\) 有 \(10^{-6}\) 相对扰动时，\(x\) 的相对误差上界；（c）\(A\) 有 \(10^{-6}\) 相对扰动时呢？</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）\(A^{-1}=\frac{1}{-2}\begin{bmatrix}4&-2\\-3&1\end{bmatrix}\)，\(x=(-1,1)^{\mathrm T}\)，\(\|x\|=\|b\|=\sqrt2\)。</p>
+<p>（b）条件数 \(=\|A^{-1}\|_2\|b\|/\|x\|=\|A^{-1}\|_2=1/\sigma_2=1/0.3660=2.732\) ⇒ 上界 \(2.73\times10^{-6}\)。</p>
+<p>（c）\(\kappa_2=14.933\) ⇒ 上界 \(1.49\times10^{-5}\)。<strong>差 5 倍多</strong>——扰 \(A\) 要过 \(A^{-1}\) 两遍（\(\delta A\) 把 \(x\) 送到敏感方向，再被放大）。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L3-2">我还不会</label>
+</div>
+
+<div class="q" data-atoms="e3">
+<div class="qh"><span class="qn">L3-3</span><span class="qt">正规方程 vs QR：差几位</span><span class="tags"><a href="#e3">E3</a></span></div>
+<div class="body"><p>\(A=\begin{bmatrix}1&1\\1&1+10^{-4}\end{bmatrix}\)。（a）\(\kappa_2(A)\) 的量级；（b）\(\kappa_2(A^{\mathrm T}A)\)；（c）用正规方程解，双精度下大致损失几位？QR 呢？</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）\(\sigma_1\approx2\)、\(\sigma_2\approx\delta/2=5\times10^{-5}\) ⇒ \(\kappa\approx4/\delta=4\times10^{4}\)（实测 \(40002\)）。</p>
+<p>（b）\(\kappa_2(A^{\mathrm T}A)=\kappa^2\approx1.6\times10^{9}\)（实测 \(1.6016\times10^{9}\)）。</p>
+<p>（c）正规方程损失 \(\log_{10}(1.6\times10^{9})\approx9.2\) 位；QR 损失 \(\approx4.6\) 位。<strong>差 4–5 位</strong>——这就是"最小二乘别用正规方程"的全部内容。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L3-3">我还不会</label>
+</div>
+
+<div class="q" data-atoms="e4">
+<div class="qh"><span class="qn">L3-4</span><span class="qt">构造使界取等的 \(\delta A\)</span><span class="tags"><a href="#e4">E4</a></span></div>
+<div class="body"><p>\(A=\mathrm{diag}(1,2)\)，\(x=(0,1)^{\mathrm T}\)。取 \(\delta A=\varepsilon\begin{bmatrix}0&1\\0&0\end{bmatrix}\)，验证 \(\dfrac{\|\delta x\|/\|x\|}{\|\delta A\|/\|A\|}=\kappa_2(A)\)。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>\(\delta Ax=(1,0)^{\mathrm T}\cdot\varepsilon\)，\(A^{-1}\delta Ax=(1,0)^{\mathrm T}\varepsilon\) ⇒ \(\delta x=(-\varepsilon,0)^{\mathrm T}\)，\(\|\delta x\|/\|x\|=\varepsilon\)。而 \(\|\delta A\|_2=\varepsilon\)、\(\|A\|_2=2\)，故比值 \(=\varepsilon/(\varepsilon/2)=2=\kappa_2(A)\) ✓</p>
+<p class="step">一般构造：让 \(\delta A\) 把"最小奇异方向"送到"最大奇异方向"，即取 \(\delta A\) 只在 \((u_1,v_2)\) 位置非零。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L3-4">我还不会</label>
+</div>
+
+<div class="q" data-atoms="f5">
+<div class="qh"><span class="qn">L3-5</span><span class="qt">三位舍入回代，反推 \(\delta R\)</span><span class="tags"><a href="#f5">F5</a></span></div>
+<div class="body"><p>\(R=\begin{bmatrix}2&1\\0&3\end{bmatrix}\)，\(b=(1,5)^{\mathrm T}\)，三位有效数字。（a）写出 \(\tilde x\)；（b）求 \(\delta R\) 使 \((R+\delta R)\tilde x=b\)；（c）与 \(|m\epsilon|\) 比较。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>（a）\(\tilde x_2=5/3\to1.67\)，\(\tilde x_1=(1-1.67)/2=-0.335\)。</p>
+<p>（b）\(R\tilde x=(2(-0.335)+1.67,\ 3\times1.67)=(1.0,\ 5.01)\)。第一式已成立 ⇒ 只有 \(\delta r_{22}\ne0\)：\(\delta r_{22}=(5-5.01)/1.67=-0.005988\)。</p>
+<p>（c）\(|\delta r_{22}|/|r_{22}|=0.005988/3=2.0\times10^{-3}\le m\epsilon=2\times5\times10^{-3}=10^{-2}\) ✓</p>
+<p class="step">这题的意义：<strong>误差只落在被用过的那个元素上</strong>——这就是"分项"后向误差界与粗糙范数界的区别。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L3-5">我还不会</label>
+</div>
+
+<div class="q" data-atoms="f3 f4">
+<div class="qh"><span class="qn">L3-6</span><span class="qt">解算错了：病态还是不稳？</span><span class="tags"><a href="#f3">F3</a><a href="#f4">F4</a></span></div>
+<div class="body"><p>用一个"经过检验"的算法解 \(Ax=b\)，得到的 \(\tilde x\) 与真解差 \(10^{-4}\)。怎么判断是问题病态还是算法不稳？给出可操作的判据。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p><strong>算后向误差</strong>：\(\rho=\dfrac{\|b-A\tilde x\|}{\|A\|\|\tilde x\|}\)。</p>
+<ul>
+<li>\(\rho\sim\epsilon\)（\(10^{-16}\)）⇒ 算法后向稳定，误差来自 \(\kappa\)：\(\|\tilde x-x\|/\|x\|\sim\kappa\epsilon\) 能解释 \(10^{-4}\)（对应 \(\kappa\sim10^{12}\)）；</li>
+<li>\(\rho\gg\epsilon\)（如 \(10^{-8}\)）⇒ 算法（或实现）有问题，先查算法。</li>
+</ul>
+<p>一句话：<strong>先看后向误差，再谈前向误差</strong>——这是唯一能分开两个原因的顺序。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L3-6">我还不会</label>
+</div>
+
+<div class="q" data-atoms="c1 e3">
+<div class="qh"><span class="qn">L3-7</span><span class="qt">证明 \(\sigma_{\min}=1/\|A^{-1}\|_2\) 并推 \(\kappa\)</span><span class="tags"><a href="#c1">C1</a><a href="#e3">E3</a></span></div>
+<div class="body"><p>设 \(A\) 非奇异。证明 \(\sigma_{\min}(A)=1/\|A^{-1}\|_2\)，并由此推出 \(\kappa_2(A)=\|A\|_2\|A^{-1}\|_2\)。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>\(A^{-1}\) 的奇异值是 \(1/\sigma_j\) 的降序排列，故最大的是 \(1/\sigma_{\min}\)：\(\|A^{-1}\|_2=1/\sigma_{\min}\)。于是</p>
+<div class="eq">$$\kappa_2(A)=\frac{\sigma_1}{\sigma_m}=\sigma_1\cdot\frac{1}{\sigma_m}=\|A\|_2\|A^{-1}\|_2 .$$</div>
+<p class="step">这条把"奇异值定义"和"范数定义"两个 κ 的定义接起来，是最常见的一问。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L3-7">我还不会</label>
+</div>
+
+<div class="q" data-atoms="c2">
+<div class="qh"><span class="qn">L3-8</span><span class="qt">选做：幂法两步 + Rayleigh 商</span><span class="tags"><a href="#c2">C2</a></span></div>
+<div class="body"><p>若课程讲了特征值算法：\(A=\begin{bmatrix}2&1\\1&2\end{bmatrix}\)，\(x_0=(1,0)^{\mathrm T}\)。做两步未归一化幂法，算 Rayleigh 商，说明收敛比。</p></div>
+<details><summary>看答案</summary><div class="ans">
+<p>\(x_1=(2,1)^{\mathrm T}\)，\(x_2=(5,4)^{\mathrm T}\)，继续 \((14,13)^{\mathrm T}\)。Rayleigh 商：\(2.8\to2.9756\to2.9973\)，收敛到 \(\lambda_1=3\)。</p>
+<p>误差比 \((3-r_{k+1})/(3-r_k)\approx1/3=|\lambda_2/\lambda_1|\)（特征值 \(3,1\)）——幂法一阶收敛，比值就是次主特征值之比。</p>
+</div></details>
+<label class="mark"><input type="checkbox" data-q="L3-8">我还不会</label>
+</div>
+
+<div class="note">
+<span class="h">做完之后</span>
+勾了 5 道以上的人，缺口地图会告诉你 2–3 个原子——<strong>只补那几个</strong>，然后把 R4 的三套卷按"限时 120 分钟"做一遍。反过来，如果 32 道里几乎全勾，别补原子了：直接做 R4 第一套，按整套节奏走，比补知识点有效。
+</div>
+
+<footer>
+<p>NLA-R5 · 期末总装 · 25 个知识原子 + 32 道题 + 缺口诊断。知识编号 A1–F5 与 <a href="./期末复习-指南.html">R3 复习指南</a>、<a href="./期末模拟卷-三套.html">R4 三套卷</a>一致。所有最小可算例的数字由 <span class="mono">verify_exam_numbers.py</span> 实测。</p>
+</footer>
+
+<script>
+(function(){
+  var KEY = 'nla-exam-gaps-v1';
+  var boxes = [].slice.call(document.querySelectorAll('input[data-q]'));
+  var total = boxes.length;
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { state = {}; }
+
+  var TITLE = {};
+  [].slice.call(document.querySelectorAll('.atom')).forEach(function(a){
+    var t = a.querySelector('.at');
+    if (t) TITLE[a.id] = t.textContent;
+  });
+
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+
+  function render(){
+    var n = 0, cnt = {}, tot = {};
+    boxes.forEach(function(b){
+      var q = b.getAttribute('data-q');
+      var card = b.closest('.q');
+      var on = !!state[q];
+      b.checked = on;
+      if (card) card.classList.toggle('done', on);
+      if (on) n++;
+      var atoms = (card ? (card.getAttribute('data-atoms') || '') : '').split(/\s+/).filter(Boolean);
+      atoms.forEach(function(a){
+        tot[a] = (tot[a] || 0) + 1;
+        if (on) cnt[a] = (cnt[a] || 0) + 1;
+      });
+    });
+    var c = document.getElementById('cnt');
+    if (c) c.textContent = n + ' / ' + total + ' 已标未解';
+
+    var body = document.getElementById('gapBody');
+    if (!body) return;
+    var rows = Object.keys(cnt).map(function(a){
+      return { a: a, c: cnt[a], t: tot[a], r: cnt[a] / tot[a] };
+    }).sort(function(x, y){ return (y.c - x.c) || (y.r - x.r); });
+
+    if (!rows.length){
+      body.innerHTML = '<p class="empty">还没有勾任何题。做几道再看这里。</p>';
+      return;
+    }
+    body.innerHTML = rows.map(function(x){
+      var pct = Math.round(100 * x.r);
+      var name = TITLE[x.a] || x.a.toUpperCase();
+      return '<div class="row"><a href="#' + x.a + '" style="text-decoration:none;flex:0 0 auto;min-width:min(58%,320px)">'
+        + '<span class="mono" style="color:#B04A2F">' + x.a.toUpperCase() + '</span> ' + name + '</a>'
+        + '<div class="bar2"><i style="width:' + pct + '%"></i></div>'
+        + '<span class="v">' + x.c + '/' + x.t + '</span></div>';
+    }).join('');
+  }
+
+  boxes.forEach(function(b){
+    b.addEventListener('change', function(){
+      state[b.getAttribute('data-q')] = b.checked ? 1 : 0;
+      save(); render();
+    });
+  });
+  render();
+
+  var qi = document.getElementById('q');
+  if (qi) qi.addEventListener('input', function(){
+    var s = qi.value.trim();
+    [].slice.call(document.querySelectorAll('.atom,.q')).forEach(function(el){
+      el.style.display = (!s || el.textContent.indexOf(s) >= 0) ? '' : 'none';
+    });
+    [].slice.call(document.querySelectorAll('.grp')).forEach(function(g){
+      g.style.display = s ? 'none' : '';
+    });
+  });
+
+  var og = document.getElementById('onlyGap'), on = false;
+  if (og) og.addEventListener('click', function(){
+    on = !on;
+    og.textContent = on ? '显示全部' : '只看没做出来的';
+    [].slice.call(document.querySelectorAll('.q')).forEach(function(c){
+      var b = c.querySelector('input[data-q]');
+      c.style.display = (!on || (b && b.checked)) ? '' : 'none';
+    });
+  });
+
+  var rs = document.getElementById('reset');
+  if (rs) rs.addEventListener('click', function(){
+    if (!confirm('清空所有勾选？')) return;
+    state = {}; save(); render();
+  });
+})();
+</script>
+
+</div>
+</body>
+</html>

@@ -460,8 +460,8 @@ $$(A+\Delta A)\tilde x=b,\qquad \frac{\|\Delta A\|}{\|A\|}=O(\epsilon)$$
 <tr class="hi"><td class="c">4</td><td><strong>HW3-1</strong> \(I-2P\) 是酉阵 + 几何</td><td>投影与 QR</td><td>10</td><td>该块 3-2、3-3 都被考掉；3-1 是同块唯一"代数 + 几何双证"的短题</td></tr>
 <tr class="hi"><td class="c">5</td><td><strong>HW4-1</strong> Householder 谱 / det / 奇异值</td><td>Householder / LS</td><td>12</td><td>期中自编了一道 HH 算法题 ⇒ 老师重视 HH；4-1 是同一对象的另一面</td></tr>
 <tr class="hi"><td class="c">6</td><td><strong>HW6-3</strong> 算法三分类</td><td>浮点与稳定性</td><td>10</td><td>新块必出；三小问正好一题，且"三档分类"是天然的评分阶梯</td></tr>
-<tr><td class="c">7</td><td>HW2-5 SVD 七小问</td><td>SVD</td><td>20</td><td><strong>保险项</strong>：期中考过，但你已写过一遍，回忆骨架成本≈0</td></tr>
-<tr><td class="c">8</td><td>HW4-4 MGS / HH / 最小二乘</td><td>Householder / LS</td><td>20</td><td><strong>保险项</strong>：同上，期中写过，且是 20 分计算题</td></tr>
+<tr class="hi"><td class="c">7</td><td><strong>HW6-1</strong> 内积算法是后向稳定的</td><td>浮点与稳定性</td><td>10</td><td>浮点块要出 2 道（HW5/HW6 有 12 题且全没考过）；这道是纯证明，风格与期中一致</td></tr>
+<tr class="hi"><td class="c">8</td><td><strong>HW2-6</strong> 分块谱 \(\pm\sigma_j\)</td><td>SVD</td><td>10</td><td>该块 2-5 已被考掉；2-6 是同块唯一的"半证明"题，且能给 10 分</td></tr>
 </table>
 
 <p class="hint">备选（换掉时优先看这四道）：<strong>HW8-2</strong>（det，新块里唯一计算）、<strong>HW5-3</strong>（\(\kappa\) 下界 = 100，纯计算送分）、<strong>HW2-6</strong>（分块谱，SVD 块里未考过）、<strong>HW3-5</strong>（三平面 QR 求交，若老师偏好方法题而非纯证明）。</p>
@@ -521,22 +521,23 @@ $$(A+\Delta A)\tilde x=b,\qquad \frac{\|\Delta A\|}{\|A\|}=O(\epsilon)$$
 </div>
 
 <div class="note">
-<span class="h">⑦ 保险 · HW2-5 SVD 七小问</span>
-<b>起手</b>：\(A^{\mathrm T}A\to\lambda_1\ge\lambda_2\to\sigma_j=\sqrt{\lambda_j}\)。<br>
-<b>给分点</b>：\(v_j\) 解方程、\(u_j=Av_j/\sigma_j\)；顶点 \(=\pm\sigma_ju_j\)。<br>
-<b>收尾</b>：四个范数、\(A^{-1}=V\Sigma^{-1}U^{\mathrm T}\)、特征值、面积 \(\pi\sigma_1\sigma_2\) 全用 \(\sigma\) 说；自检 \(|\det|=\sigma_1\sigma_2\)。
+<span class="h">⑦ HW6-1 · 内积是后向稳定的</span>
+<b>起手</b>：逐项累加 \(s_k=\mathrm{fl}(s_{k-1}+\mathrm{fl}(x_ky_k))\)。<br>
+<b>给分点</b>：把每次舍入折进乘数，\(s_k=\sum_j x_j(1+\delta_j)y_j+O(\epsilon^2)\)，\(|\delta_j|\le m\epsilon\) ⇒ 存在 \(\delta x\)，\(\|\delta x\|\le m\epsilon\|x\|\)。<br>
+<b>收尾</b>：\(\tilde\alpha=(x+\delta x)^*y\) <strong>精确成立</strong> ⇒ 后向稳定；顺带一句"误差不随累加项数爆炸，因为界只依赖 \(m\)"。
 </div>
 
 <div class="note">
-<span class="h">⑧ 保险 · HW4-4 MGS / Householder / 最小二乘</span>
-<b>起手</b>：\(q_1=a_1/\|a_1\|\)，逐个 \(r_{ij}=q_i^{\mathrm T}a_j\)、<b>减完再归一化</b>。<br>
-<b>给分点</b>：\(\hat R\) 每个元素保留根号；两种方法 \(|\hat R|\) 相同（对角符号约定不同）。<br>
-<b>收尾</b>：\(x=\hat R^{-1}\hat Q^{\mathrm T}b\)，验 \(A^{\mathrm T}r=0\) 与 \(\|r\|^2=\|b\|^2-\|\hat Q^{\mathrm T}b\|^2\)。
+<span class="h">⑧ HW2-6 · 分块 \(\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\) 的谱</span>
+<b>起手</b>：\(M\) 是 Hermite ⇒ 可酉对角化（这一句先给分）。<br>
+<b>给分点</b>：取 \(w_\pm=\frac{1}{\sqrt2}\begin{bmatrix}v_j\\ \pm u_j\end{bmatrix}\)，验证 \(Mw_\pm=\pm\sigma_jw_\pm\)。<br>
+<b>收尾</b>：谱 \(=\{\pm\sigma_j\}_{j=1}^m\)；强调<strong>第一块是 \(v_j\)</strong>（左上块是 \(A^*\)），这是最常见的错。
 </div>
 
 <div class="note b">
 <span class="h">只背 4 道怎么办</span>
-①②（Part IV 两道，几乎必出）＋ ③④（旧块里"未考过＋短证明"的两道）。这四道覆盖约 50 分；⑦⑧ 因为期中写过，花 10 分钟回忆即可，不要当第四、第五道去啃。<strong>把省下的时间给"自编题"的两个方向</strong>（见上面的三句话答法）——自编题占 25%，且不需要背。
+①②（Part IV 两道，几乎必出）＋ ③④（旧块里"未考过 + 短证明"的两道）。这四道覆盖约 50 分。剩下的分数靠两处补：<strong>⑦⑧ 各 10 分钟过骨架</strong>，以及<strong>"自编题"两个方向的三句话答法</strong>（自编占 25%，且不用背）。
+<p style="margin:6px 0 0"><strong>另有两道零成本保险</strong>：HW2-5 与 HW4-4 期中考过、你已写过一遍，花 5 分钟回忆骨架即可，<strong>不占这 8 个名额</strong>——老师若重复出，等于白捡 30 分；若不重复，也不亏时间。</p>
 </div>
 
 <p class="hint">时间预算：<b>不需要额外时间</b>——这六道已经嵌在四晚排期里：①→第 1 晚 40′ 闭卷写、②→第 2 晚 50′ 闭卷写、③→第 1 晚 20′ 抽查（B 组）、④⑤→第 2 晚 20′ 抽查（D 组）、⑥→第 3 晚的 R6 §07 段里。真正要额外花的只有 <b>20 分钟</b>：背"自编题"两个方向的三句话答法。⑦⑧ 在第 4 晚的 80′ 模考里顺手过一遍即可。</p>

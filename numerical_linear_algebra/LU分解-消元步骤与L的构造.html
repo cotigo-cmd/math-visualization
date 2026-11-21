@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LU 分解 · 每一步在算什么，L 为什么不用求逆</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 图号 L14（教材向）。对应课件 L14 的 p03–p15（消元 = 左乘 L_k → 两个幸运 → 算法），
+     以及 R6 §01。核心要解决的是两个具体困惑：
+       ① 每一步到底算了什么（读主元 / 除出乘数 / 更新行）
+       ② "L 不用真求逆"到底省掉了什么（L_k^{-1} 只是反号 + 交叉项为零 ⇒ 乘数按列堆叠）
+  2. 数值：A=[[2,1,1,0],[4,3,3,1],[8,7,9,5],[6,7,9,8]]，无主元交换，乘数全为整数 2/4/3、3/4、1，
+     L·U=A 已实测（verify_readout_lu.js）。改矩阵先跑那个脚本。
+  3. 交互状态机：5 个状态（0 = 初始，1–3 = 消完第 k 列，4 = 完成）。所有矩阵由 build() 现算，
+     不写死快照——这样闸门可以用独立实现重算比对。
+  4. 四个面板：A 消元现场 / B 这一步的三件事 / C L 的填法 / D 为什么不用求逆（静态推导）
+     + E 行的加权和（点 L 的某行看它如何组合 U）/ F 选主元的影响（一句话）。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+  --hl:#FBF1ED; --hl2:#EFF4F9; --hl3:#FBF6E7;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:48px 22px 64px}
+.crumb{font-size:13px;margin:0 0 16px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+h1{font-size:25px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 10px;max-width:74ch}
+h2{font-size:17px;font-weight:680;margin:40px 0 12px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+h3{font-size:15px;font-weight:680;margin:22px 0 6px}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:22px}
+li{margin:3px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.eq{font-size:16px;text-align:center;margin:12px 0;padding:10px 12px;background:var(--card);
+  border:1px solid var(--line);border-radius:9px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:9px 14px;margin:14px 0;
+  border-radius:0 8px 8px 0;font-size:13.5px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+.note.a{border-left-color:var(--amber);background:#FBF6E7}
+.note .h{font-weight:680;display:block;margin-bottom:2px}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden;padding:2px 0;font-size:.92em}
+
+/* 实验台 */
+.lab{border:1.5px solid var(--ink);border-radius:12px;background:var(--card);
+  padding:14px 16px 16px;margin:16px 0}
+.lab .ctrls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.lab button{font:13px/1 inherit;padding:7px 13px;border:1px solid var(--line);border-radius:8px;
+  background:var(--card);color:var(--ink);cursor:pointer}
+.lab button:hover{border-color:var(--steel);background:var(--hl2)}
+.lab button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.lab button.primary:hover{background:#33506B}
+.lab button:disabled{opacity:.4;cursor:not-allowed}
+.lab .step{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--ink2)}
+.steps{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap}
+.steps i{width:26px;height:6px;border-radius:3px;background:var(--grid);display:block;cursor:pointer}
+.steps i.on{background:var(--cinn)}
+.steps i.past{background:#E4C9C0}
+
+/* 矩阵 */
+.mrow{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.mbox{flex:0 0 auto}
+.mbox .cap{font-size:11.5px;letter-spacing:.08em;color:var(--ink2);margin:0 0 4px;
+  font-family:ui-monospace,Consolas,monospace;display:flex;justify-content:space-between;gap:8px}
+.mbox .cap b{font-weight:600;letter-spacing:0}
+.mat{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:2px;
+  border-left:2px solid var(--ink);border-right:2px solid var(--ink);
+  padding:4px 5px;border-radius:2px}
+.cell{width:44px;height:36px;display:flex;align-items:center;justify-content:center;
+  font-family:ui-monospace,Consolas,monospace;font-size:14.5px;border-radius:5px;
+  transition:background .25s,color .25s,box-shadow .25s}
+.cell.zero{color:#9AA9B6}
+.cell.pivot{background:var(--hl2);box-shadow:inset 0 0 0 2px var(--steel);font-weight:700;color:var(--steel)}
+.cell.target{color:var(--cinn);font-weight:600}
+.cell.updated{background:var(--hl3);animation:flash .9s ease}
+.cell.filled{background:var(--hl);color:var(--cinn);font-weight:700}
+.cell.ghost{color:#C9D3DC}
+@keyframes flash{0%{background:#F6E3C8}100%{background:var(--hl3)}}
+.mat .cell:nth-child(-n+4){}
+
+/* 说明卡 */
+.acts{flex:1 1 300px;min-width:280px}
+.act{border:1px solid var(--line);border-radius:9px;padding:8px 12px;margin:0 0 8px;background:var(--paper)}
+.act .k{font-size:11px;letter-spacing:.1em;color:var(--cinn);font-weight:650;
+  font-family:ui-monospace,Consolas,monospace}
+.act .v{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;margin:2px 0 0;line-height:1.9}
+.act .v em{font-style:normal;color:var(--cinn);font-weight:700}
+.act .v s{text-decoration:none;color:#9AA9B6}
+
+.rows{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+.rows .r{font-family:ui-monospace,Consolas,monospace;font-size:13px;margin:4px 0;
+  padding:4px 8px;border-radius:6px;background:var(--hl3)}
+.rows .r b{color:var(--cinn)}
+
+table.tb{border-collapse:collapse;margin:12px 0;font-size:13.5px;width:100%}
+table.tb td,table.tb th{border:1px solid var(--line);padding:5px 10px;text-align:left;vertical-align:top}
+table.tb th{background:#F2F5F8;font-weight:650;white-space:nowrap}
+table.tb td.c{text-align:center}
+table.tb.small{font-size:12.8px}
+
+.verify{border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin:12px 0;background:var(--paper)}
+.verify .vr{font-family:ui-monospace,Consolas,monospace;font-size:13px;margin:3px 0}
+.verify .vr b{color:var(--green)}
+.pick{display:flex;gap:6px;margin:6px 0 8px}
+.pick button{font:12.5px/1 inherit;padding:5px 10px;border:1px solid var(--line);border-radius:999px;
+  background:var(--card);cursor:pointer}
+.pick button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink2)}
+@media print{
+  body{background:#fff;font-size:11.5px}
+  .wrap{max-width:none;padding:0 6mm}
+  .crumb,footer,.lab .ctrls,.steps,.pick{display:none}
+  .lab,.note,table.tb{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
+
+<h1>LU 分解：每一步在算什么，L 为什么不用求逆</h1>
+<p class="lead">两个卡点分开解决。<strong>第一个</strong>：消元的每一步只做三件事——读主元、除出乘数、更新下面各行。下面的实验台可以逐步点开，每一步都把它算的那三个数摊在右边。<strong>第二个</strong>："\(L\) 不用求逆"不是技巧，而是两个恰好成立的代数事实（\(L_k^{-1}\) 只是反号；不同步的 \(\tau_k\) 之间乘积为零），推完你就知道为什么乘数能直接抄进 \(L\)。</p>
+
+<div class="note a">
+<span class="h">先记住这句话，后面的都是它的展开</span>
+<strong>\(L\) 里的每个数，都是你做除法时得到的那一个商，没有一个数是求逆算出来的。</strong>第 \(k\) 步你要算 \(m\) 个商 \(\ell_{ik}=a_{ik}/a_{kk}\)（\(i&gt;k\)），算完就把它们放到 \(L\) 的第 \(k\) 列、第 \(i\) 行——位置和你在矩阵里"消掉"的那个元素完全对应。
+</div>
+
+<h2><span class="no">01</span>实验台：逐步看消元，看乘数落位</h2>
+
+<div class="lab">
+  <div class="ctrls">
+    <button class="primary" id="next">下一步 →</button>
+    <button id="prev">← 上一步</button>
+    <button id="reset">重置</button>
+    <button id="auto">自动播放</button>
+    <span class="step" id="stepTxt">状态 0 / 4 · 初始矩阵</span>
+  </div>
+  <div class="steps" id="bar"></div>
+
+  <div class="mrow">
+    <div class="mbox">
+      <p class="cap"><span>当前矩阵 <b id="mLabel">A</b></span><span id="mNote">未消元</span></p>
+      <div class="mat" id="matA" style="--n:4"></div>
+    </div>
+    <div class="mbox">
+      <p class="cap"><span>L（乘数存放处）</span><span id="lNote">· 表示还没填</span></p>
+      <div class="mat" id="matL" style="--n:4"></div>
+    </div>
+    <div class="acts">
+      <div class="act">
+        <div class="k">① 读主元</div>
+        <div class="v" id="a1">—</div>
+      </div>
+      <div class="act">
+        <div class="k">② 除出乘数（这一步唯一的除法）</div>
+        <div class="v" id="a2">—</div>
+      </div>
+      <div class="act">
+        <div class="k">③ 更新下面各行</div>
+        <div class="v" id="a3">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rows" id="rowDetail"></div>
+</div>
+
+<p class="hint" style="font-size:12.5px;color:var(--ink2)">看的时候盯住三个位置：矩阵里<strong style="color:var(--steel)">蓝框</strong>是主元，<strong style="color:var(--cinn)">红字</strong>是这一步要被消成 0 的元素，\(L\) 里<strong style="color:var(--cinn)">粉底</strong>是刚填进去的乘数。红字除以蓝框，就是 \(L\) 里那个粉底的数——<strong>一步只做一次除法，做几次取决于下面还有几行</strong>。</p>
+
+<h2><span class="no">02</span>L 到底在说什么：它是"U 的各行怎么拼出 A"的配料表</h2>
+
+<p>把 \(A=LU\) 按行拆开看，第 \(i\) 行是 \(U\) 前 \(i\) 行的加权和，权重就是 \(L\) 的第 \(i\) 行。点一行看看：</p>
+
+<div class="verify">
+  <div class="pick" id="pickRow"></div>
+  <div id="verifyOut"></div>
+</div>
+
+<p>所以 \(L\) 的第 \(i\) 行不是"某个矩阵求逆的结果"，而是<strong>你消元时欠下的账</strong>：第 \(i\) 行被第 1 行减去了 \(\ell_{i1}\) 倍、被第 2 行减去了 \(\ell_{i2}\) 倍……最后剩下 \(U\) 的第 \(i\) 行。把账还回去，就是 \(A\) 的第 \(i\) 行。</p>
+
+<h2><span class="no">03</span>为什么不用求逆：两个"恰好"</h2>
+
+<h3>恰好一：\(L_k\) 的逆只需把非零元反号</h3>
+<p>第 \(k\) 步的变换是"第 \(i\) 行减去 \(\ell_{ik}\) 倍的第 \(k\) 行"（\(i&gt;k\)），写成矩阵：</p>
+<div class="eq">$$L_k=I+\tau_ke_k^{\mathrm T},\qquad \tau_k=(0,\dots,0,-\ell_{k+1,k},\dots,-\ell_{m,k})^{\mathrm T}$$</div>
+<p>它是个"单位下三角 + 只有第 \(k\) 列对角线以下非零"的矩阵。求它的逆，<strong>只需把 \(\tau_k\) 反号</strong>：\(L_k^{-1}=I-\tau_ke_k^{\mathrm T}\)。验证只要一步乘法：</p>
+<div class="eq">$$(I+\tau_ke_k^{\mathrm T})(I-\tau_ke_k^{\mathrm T})=I-\tau_ke_k^{\mathrm T}\tau_ke_k^{\mathrm T}=I-\tau_k\,(e_k^{\mathrm T}\tau_k)\,e_k^{\mathrm T}=I$$</div>
+<p>最后一步用了 \(e_k^{\mathrm T}\tau_k=0\)——\(\tau_k\) 的第 \(k\) 个分量正是 0（它的非零项从第 \(k+1\) 个位置才开始）。所以<strong>恰好一</strong>成立：求逆不需要任何运算，只是把符号翻过来。而 \(L\) 里存的是"减去的倍数"（正数），这个翻号在写 \(L\) 时根本不出现。</p>
+
+<h3>恰好二：不同步的两个 \(L_k^{-1}\) 相乘，交叉项是零</h3>
+<p>我们要的是 \(L=L_1^{-1}L_2^{-1}\cdots L_{m-1}^{-1}\)（注意顺序：先做的在最右，而逆要反过来乘）。看两个相邻的：</p>
+<div class="eq">$$(I-\tau_ke_k^{\mathrm T})(I-\tau_je_j^{\mathrm T})=I-\tau_ke_k^{\mathrm T}-\tau_je_j^{\mathrm T}+\tau_k\underbrace{(e_k^{\mathrm T}\tau_j)}_{=0}e_j^{\mathrm T}\qquad(k&lt;j)$$</div>
+<p>关键在 \(e_k^{\mathrm T}\tau_j=0\)：\(\tau_j\) 的前 \(j-1\) 个分量全为 0，而 \(k&lt;j\)，所以第 \(k\) 个分量就是 0。于是<strong>乘积里没有任何交叉项</strong>，所有 \(\tau_k\) 直接并列：</p>
+<div class="eq">$$L=I-\sum_{k=1}^{m-1}\tau_ke_k^{\mathrm T}$$</div>
+<p>这个矩阵长什么样？第 \(k\) 列的对角线以下正好是 \(-\tau_k\)，也就是 \(\ell_{k+1,k},\dots,\ell_{m,k}\)——<strong>就是你把乘数一列一列抄下去得到的那个矩阵</strong>。所以：</p>
+
+<div class="note g">
+<span class="h">结论（一句话）</span>
+\(L\) 不是"\(L_1^{-1}\cdots L_{m-1}^{-1}\) 算出来的"，而是<strong>这串乘积在结构上就等于"把乘数按列堆起来"</strong>。求逆那一步（反号）和乘法那一步（交叉项为零）都被这两个恰好吃掉了，所以你只需要<strong>存</strong>乘数，不需要<strong>算</strong>它们。
+</div>
+
+<div class="note b">
+<span class="h">常见误解：以为 \(L\) 的对角线也要算</span>
+\(L\) 的对角元<strong>全是 1</strong>，因为 \(L_k\) 的对角元是 1，乘积的对角元也是 1。所以 \(L\) 的 16 个位置里，你只需要填 6 个（下三角），对角 4 个永远写 1，上三角 6 个永远写 0。
+</div>
+
+<h2><span class="no">04</span>如果顺序错了会怎样（对照）</h2>
+
+<p>上面 \(e_k^{\mathrm T}\tau_j=0\) 成立的前提是<strong>按列从左到右消</strong>（先消第 1 列，再第 2 列……）。如果反过来，比如先消第 2 列再消第 1 列，\(\tau\) 的支撑就不满足"前 \(j-1\) 个分量为零"，交叉项不再消失，\(L\) 就不能简单堆叠——你必须真的算矩阵乘法。</p>
+
+<table class="tb small">
+<tr><th>做法</th><th>\(L\) 怎么得到</th><th>代价</th></tr>
+<tr class="hi"><td>按列从左到右（标准）</td><td>乘数按列抄下来</td><td>\(O(1)\) 额外操作</td></tr>
+<tr><td>任意顺序 / 中途换行</td><td>要做矩阵乘法，乘数还要跟着置换走（\(PA=LU\)）</td><td>\(O(m^3)\)</td></tr>
+</table>
+
+<p>这就是为什么<strong>选主元会破坏"直接抄"这个便利</strong>：一旦交换了行，乘数的归属跟着变，最终得到的是 \(PA=LU\) 而不是 \(A=LU\)，\(L\) 里元素的顺序和 \(A\) 的行序不再一一对应（课件把这件事叫"第三个幸运"：即便如此，部分主元下仍有 \(|l_{ij}|\le1\)）。</p>
+
+<h2><span class="no">05</span>把整件事压缩成一张卡片</h2>
+
+<table class="tb small">
+<tr><th>你可能想问</th><th>答案</th></tr>
+<tr><td>每一步到底算什么？</td><td>三件事：读主元 \(a_{kk}\)；算乘数 \(\ell_{ik}=a_{ik}/a_{kk}\)（\(i&gt;k\)）；把第 \(i\) 行更新为"原第 \(i\) 行 − \(\ell_{ik}\)×第 \(k\) 行"（从第 \(k\) 列往后都要更新）。</td></tr>
+<tr><td>"\(L\) 不用求逆"省掉了什么？</td><td>省掉了 \(\prod L_k^{-1}\) 这个矩阵乘积。因为 \(L_k^{-1}\) 只是反号（恰好一），而不同步的 \(\tau_k\) 交叉项为零（恰好二），乘积在结构上等于"按列堆叠乘数"。</td></tr>
+<tr><td>那 \(U\) 呢？</td><td>\(U\) 就是消元结束时<strong>矩阵本身</strong>，不需要额外计算。你消完它就在那里了。</td></tr>
+<tr><td>为什么乘数是"减去的倍数"而不是"加上的"？</td><td>因为 \(A=LU\) 要还原：\(A\) 的第 \(i\) 行 = \(U\) 的第 \(i\) 行 + \(\ell_{i1}\)×\(U\) 的第 1 行 + …，所以消元时是"减"。\(L\) 存正数，还原时用加。</td></tr>
+<tr><td>为什么 \(L\) 的对角线是 1？</td><td>每步变换 \(L_k\) 的对角元都是 1，乘积也是 1。这也保证 \(\det L=1\)，所以 \(\det A=\prod u_{jj}\)。</td></tr>
+<tr><td>什么时候会失败？</td><td>某步主元为 0 ⇒ 该列无法继续消 ⇒ 需要换行（\(PA=LU\)）；或顺序主子式为 0 ⇒ 根本没有 \(LU\)（见 R6 §01.2）。</td></tr>
+</table>
+
+<div class="note">
+<span class="h">下一步看什么</span>
+本页只讲"怎么算、为什么不用求逆"。若要连到考试：<a href="./期末总复习清单.html#k6-2">M6-2（LU 存在性与唯一性）</a> 与 <a href="./期末总复习清单.html#k6-5">M6-5（部分主元与 \(PA=LU\)）</a>；作业对应的完整答案在 <a href="./期末总复习清单.html#k6-3">M6-3（Schur 补）</a>。课件对应 L14 的 p03–p15。
+</div>
+
+<footer>
+<p>L14 · LU 分解的可视化解读 · 交互数值：\(A=\begin{bmatrix}2&1&1&0\\4&3&3&1\\8&7&9&5\\6&7&9&8\end{bmatrix}\)，乘数 \(2,4,3;\ 3,4;\ 1\) 全为整数，\(LU=A\) 已由 <span class="mono">verify_readout_lu.js</span> 实测。</p>
+</footer>
+
+</div>
+
+<script>
+"use strict";
+/* ---------- 数据与状态机 ---------- */
+var A0 = [[2,1,1,0],[4,3,3,1],[8,7,9,5],[6,7,9,8]];
+var N = A0.length;
+
+function build(A0){
+  var A = A0.map(function(r){ return r.slice(); });
+  var L = [], filled = [];
+  for (var i=0;i<N;i++){
+    L.push([]); filled.push([]);
+    for (var j=0;j<N;j++){ L[i].push(i===j?1:0); filled[i].push(false); }
+  }
+  var states = [{
+    A: A.map(function(r){return r.slice();}),
+    L: L.map(function(r){return r.slice();}),
+    filled: filled.map(function(r){return r.slice();}),
+    k: -1, pivot: null, mults: [], rows: [], done: false
+  }];
+  for (var k=0;k<N-1;k++){
+    var pivot = A[k][k], mults = [], rows = [];
+    for (var i2=k+1;i2<N;i2++){
+      var m = A[i2][k]/pivot;
+      var before = A[i2].slice();
+      for (var j2=k;j2<N;j2++) A[i2][j2] -= m*A[k][j2];
+      L[i2][k] = m; filled[i2][k] = true;
+      mults.push({i:i2,k:k,m:m});
+      rows.push({i:i2, before:before, after:A[i2].slice(), m:m, src:A[k].slice()});
+    }
+    states.push({
+      A: A.map(function(r){return r.slice();}),
+      L: L.map(function(r){return r.slice();}),
+      filled: filled.map(function(r){return r.slice();}),
+      k: k, pivot: pivot, mults: mults, rows: rows, done: (k===N-2)
+    });
+  }
+  return states;
+}
+var STATES = build(A0);
+var cur = 0, timer = null;
+
+/* ---------- 数字格式（整数不带小数点） ---------- */
+function fmt(x){
+  if (Math.abs(x) < 1e-10) return "0";
+  if (Math.abs(x - Math.round(x)) < 1e-10) return String(Math.round(x));
+  return (Math.round(x*1000)/1000).toString();
+}
+function fmtRow(r){ return "(" + r.map(fmt).join(", ") + ")"; }
+
+/* ---------- 渲染矩阵 ---------- */
+function renderMat(el, M, opt){
+  var html = "";
+  for (var i=0;i<N;i++){
+    for (var j=0;j<N;j++){
+      var cls = "cell", txt;
+      if (opt.kind === "L"){
+        if (i===j){ txt = "1"; }
+        else if (opt.filled[i][j]){
+          txt = fmt(M[i][j]);
+          cls += " filled";
+          if (opt.newCol === j && i > j) cls += " target";
+        } else { txt = "·"; cls += " ghost"; }
+      } else {
+        txt = fmt(M[i][j]);
+        if (Math.abs(M[i][j]) < 1e-10) cls += " zero";
+        if (opt.k >= 0 && i === opt.k && j === opt.k) cls += " pivot";
+        if (opt.k >= 0 && j === opt.k && i > opt.k) cls += " target";
+        if (opt.k >= 0 && i > opt.k && j >= opt.k) cls += " updated";
+      }
+      html += '<div class="' + cls + '">' + txt + "</div>";
+    }
+  }
+  el.innerHTML = html;
+}
+
+/* ---------- 渲染整页 ---------- */
+function render(){
+  var s = STATES[cur];
+  var isInit = (s.k < 0);
+  var isEnd = (cur === STATES.length-1);
+
+  document.getElementById("stepTxt").textContent =
+    "第 " + cur + " 步 / 共 " + (STATES.length-1) + " 步 · " +
+    (isInit ? "初始矩阵" : (isEnd ? "消元完成：当前矩阵就是 U" : "已消完第 " + (s.k+1) + " 列"));
+
+  renderMat(document.getElementById("matA"), s.A, {kind:"A", k:s.k});
+  document.getElementById("mLabel").textContent = isInit ? "A" : (isEnd ? "U" : "A（第 " + (s.k+1) + " 列已消）");
+
+  renderMat(document.getElementById("matL"), s.L, {kind:"L", filled:s.filled, newCol:s.k});
+  var cnt = 0;
+  for (var i=0;i<N;i++) for (var j=0;j<N;j++) if (s.filled[i][j]) cnt++;
+  document.getElementById("lNote").textContent = cnt + " / 6 个乘数已填";
+
+  /* 三件事 */
+  var a1 = document.getElementById("a1");
+  var a2 = document.getElementById("a2");
+  var a3 = document.getElementById("a3");
+  var detail = document.getElementById("rowDetail");
+
+  if (isInit){
+    a1.innerHTML = '主元 <em>a<sub>11</sub> = ' + fmt(A0[0][0]) + '</em>';
+    a2.innerHTML = '<s>还没有乘法</s> · 先看清矩阵';
+    a3.innerHTML = '下面 3 行的第 1 列要消成 0';
+    detail.innerHTML = '<p style="font-size:13px;color:#5A6B7C;margin:2px 0">点「下一步」，它会同时告诉你三件事：主元是哪个数、乘数怎么除、哪几行被更新。</p>';
+  } else {
+    a1.innerHTML = '主元 <em>a<sub>' + (s.k+1) + (s.k+1) + '</sub> = ' + fmt(s.pivot) + '</em>';
+    var parts = s.mults.map(function(t){
+      return 'ℓ<sub>' + (t.i+1) + (t.k+1) + '</sub> = ' +
+             fmt(STATES[cur-1].A[t.i][t.k]) + ' / ' + fmt(s.pivot) +
+             ' = <em>' + fmt(t.m) + '</em>';
+    });
+    a2.innerHTML = parts.join("　　");
+    a3.innerHTML = '第 ' + s.rows.map(function(r){return (r.i+1);}).join("、") + ' 行：减去 ' +
+                   s.mults.map(function(t){return "ℓ<sub>"+(t.i+1)+(t.k+1)+"</sub>";}).join("、") +
+                   ' 倍的第 ' + (s.k+1) + ' 行（从第 ' + (s.k+1) + ' 列往右更新）';
+
+    detail.innerHTML = s.rows.map(function(r){
+      return '<div class="r">第 ' + (r.i+1) + ' 行 ← ' + fmtRow(r.before) +
+             ' − <b>' + fmt(r.m) + '</b> × ' + fmtRow(r.src) +
+             ' = ' + fmtRow(r.after) + '</div>';
+    }).join("");
+  }
+
+  /* 步骤条 */
+  var bar = document.getElementById("bar"), bh = "";
+  for (var t2=0;t2<STATES.length;t2++){
+    var c = "on";
+    if (t2 < cur) c = "past";
+    if (t2 !== cur) c = (t2 < cur ? "past" : "");
+    bh += '<i class="' + c + '" data-s="' + t2 + '"></i>';
+  }
+  bar.innerHTML = bh;
+  [].forEach.call(bar.querySelectorAll("i"), function(el){
+    el.addEventListener("click", function(){ stopAuto(); cur = +el.getAttribute("data-s"); render(); });
+  });
+
+  document.getElementById("next").disabled = (cur >= STATES.length-1);
+  document.getElementById("prev").disabled = (cur <= 0);
+  renderVerify();
+}
+
+/* ---------- 行的加权和（验证 L 的含义） ---------- */
+var pickI = 3;
+function renderVerify(){
+  var s = STATES[STATES.length-1];
+  var U = s.A, L = s.L;
+  var pick = document.getElementById("pickRow");
+  pick.innerHTML = L.map(function(_,i){
+    return '<button data-i="' + i + '" class="' + (i===pickI?"on":"") + '">A 的第 ' + (i+1) + ' 行</button>';
+  }).join("");
+  [].forEach.call(pick.querySelectorAll("button"), function(b){
+    b.addEventListener("click", function(){ pickI = +b.getAttribute("data-i"); renderVerify(); });
+  });
+
+  var terms = [], sum = [0,0,0,0];
+  for (var j=0;j<N;j++){
+    var w = L[pickI][j];
+    if (Math.abs(w) < 1e-12) continue;
+    terms.push(fmt(w) + "×" + fmtRow(U[j]));
+    for (var c=0;c<N;c++) sum[c] += w*U[j][c];
+  }
+  var out = '<div class="vr">A 的第 ' + (pickI+1) + ' 行 = ' + terms.join(" + ") + '</div>';
+  out += '<div class="vr">= ' + fmtRow(sum) + '　<b>' + (fmtRow(sum) === fmtRow(A0[pickI]) ? "✓ 等于 A 的第 " + (pickI+1) + " 行" : "✗") + '</b></div>';
+  out += '<div class="vr" style="color:#5A6B7C;font-size:12.5px">权重就是 L 的第 ' + (pickI+1) + ' 行；L 的对角是 1，所以 U 的第 ' + (pickI+1) + ' 行原样保留，前面几行按乘数补回去。</div>';
+  document.getElementById("verifyOut").innerHTML = out;
+}
+
+/* ---------- 控制 ---------- */
+function stopAuto(){
+  if (timer){ clearInterval(timer); timer = null; document.getElementById("auto").textContent = "自动播放"; }
+}
+document.getElementById("next").addEventListener("click", function(){ stopAuto(); if (cur < STATES.length-1){ cur++; render(); } });
+document.getElementById("prev").addEventListener("click", function(){ stopAuto(); if (cur > 0){ cur--; render(); } });
+document.getElementById("reset").addEventListener("click", function(){ stopAuto(); cur = 0; render(); });
+document.getElementById("auto").addEventListener("click", function(){
+  if (timer){ stopAuto(); return; }
+  this.textContent = "暂停";
+  timer = setInterval(function(){
+    if (cur >= STATES.length-1){ stopAuto(); return; }
+    cur++; render();
+  }, 1600);
+});
+
+render();
+</script>
+</body>
+</html>

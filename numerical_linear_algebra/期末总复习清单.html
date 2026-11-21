@@ -839,6 +839,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-si
 <span class="lab">一句话</span>
 <p>第 \(k\) 步 \(L_k=I+\tau_ke_k^{\mathrm T}\)（\(\tau_k\) 只有第 \(k\) 列对角线以下非零）。<strong>幸运一</strong>：\(L_k^{-1}\) 只需把 \(\tau_k\) 反号；<strong>幸运二</strong>：\(L=L_1^{-1}\cdots L_{m-1}^{-1}=I-\sum_k\tau_ke_k^{\mathrm T}\)，交叉项为零，所以乘数原样填进 \(L\)。</p>
 <div class="eq">$$L_{m-1}\cdots L_1A=U,\qquad A=LU,\qquad L=I-\sum_{k=1}^{m-1}\tau_ke_k^{\mathrm T}$$</div>
+<p class="hint" style="font-size:12.5px;color:var(--ink2);margin:4px 0">看不懂"乘数怎么落位、L 为什么不用求逆"，先看 <a href="./LU分解-消元步骤与L的构造.html">L14 逐步动画</a>（可点每一步）。</p>
 <span class="lab">对应作业</span>
 <details><summary>7-1 前段 · 写出分解并解释为什么 \(L\) 不用真求逆</summary><div class="ans">
 <p>因为 \(\tau_k\) 的支撑在前 \(k\) 列、\(e_k^{\mathrm T}\tau_j=0\)（\(j&gt;k\)），故 \(L_k^{-1}L_{j}^{-1}=(I-\tau_ke_k^{\mathrm T})(I-\tau_je_j^{\mathrm T})=I-\tau_ke_k^{\mathrm T}-\tau_je_j^{\mathrm T}\)，高次项全消。于是"乘数矩阵"就是 \(L\) 本身。</p>

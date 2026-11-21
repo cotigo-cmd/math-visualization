@@ -52,7 +52,7 @@ footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
 <div class="wrap">
 <p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a></p>
 <h1>数值线性代数 · 可视化系列</h1>
-<p class="lead">Trefethen &amp; Bau《Numerical Linear Algebra》（SIAM，1997）40 讲的配套交互教学页。每个页面零依赖、可离线打开（公式渲染需联网）；教材向已覆盖 Lecture 1–12（矩阵—向量乘积、正交性、范数、SVD、投影算子、QR、最小二乘、条件数）与 Lecture 32–40（迭代法与共轭梯度、预条件），另加三页「作业向」专题与一份期中复习指南，对应当前课程的课后测试。版式身份「制图台」：图签 + 等宽读数 + 全部数值结论本地实测。 没有前置课也能进：每页先用几何给出直觉，再落到公式与算法。</p>
+<p class="lead">Trefethen &amp; Bau《Numerical Linear Algebra》（SIAM，1997）的配套交互教学页，覆盖本学期课程 <strong>16 讲的全部内容</strong>（L1–L16：矩阵与范数、SVD、投影与 QR、最小二乘、条件数、浮点与稳定性、高斯消元与 Cholesky）。每个页面零依赖、可离线打开（公式渲染需联网）。<strong>复习从最上面的「总复习清单」进</strong>：16 讲压成 6 个模块、41 个知识点，每个知识点就地收录对应作业题与答案。版式身份「制图台」：图签 + 等宽读数 + 全部数值结论本地实测。没有前置课也能进：每页先用几何给出直觉，再落到公式与算法。</p>
 
 <h2>第一部分 · 基础（Lectures 1–5）</h2>
 <a class="card" href="./线性映射-矩阵向量乘积与正交性.html">
@@ -68,7 +68,7 @@ footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
 <p class="d">三步透镜（Vᵀ→Σ→U 播放，图 4.1 式样，含秩 1 退化与旋转 90° 特例）· 秩-k 近似实验室（36×36 图矩阵，单边 Jacobi 实时 SVD；Eckart–Young 两等式实测，QR 截断对照；四张图有效秩 36/10/2/1）· SVD vs 特征分解三差异</p>
 </a>
 
-<h2>第二部分 · QR 与最小二乘（Lectures 6–11）</h2>
+<h2>第二部分 · QR、最小二乘与条件数（Lectures 6–12）</h2>
 <a class="card" href="./投影算子-正交与斜投影.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">L6</span>投影算子 · 正交与斜投影</p>
 <p class="d">影子实验室（斜投影 P=u₁wᵀ/(wᵀu₁)，幂等/对称/正交三账本，⊥ 锁定后 ‖P‖₂=1）· ℝ³ 平面投影面板（(6.13) 逐元素对账 + 勾股 + tr P=2）· 反射器 I−2P（保距/酉性/det，Householder 伏笔）· 习题 6.5 ‖P‖₂≥1 证明要点</p>
@@ -81,76 +81,68 @@ footer code{font-family:ui-monospace,Consolas,monospace;background:var(--card);
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">L11</span>最小二乘 · 几何与三种解法</p>
 <p class="d">拟合实验台（11 个可拖点，残差⊥列空间逐项可测：Aᵀr=0；方波插值 vs LS 对比教材图 11.1/11.2）· 图 11.3 几何示意（勾股账本）· 构造解标度实验室（确切解已知，四解法实时运算：正规方程 ~ε·κ²、QR/SVD ~ε·κ 实测）· 习题 11.3 复刻（四方法红笔标错表）</p>
 </a>
+<a class="card" href="./条件数-几何与误差放大.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">L12</span>条件数 · 几何与误差放大</p>
+<p class="d">绝对/相对条件数定义 (12.1–12.6) 与三个标量例子 · 抵消实验台（Example 12.3：拖动 x 看 κ=2·max|xᵢ|/|x₁−x₂| 在对角线爆炸，实测相对变化 = κ̂·ρ 恒等）· 椭圆实验台（四滑杆拖矩阵 + 拖 x：κ̂(x)=‖A‖₂‖x‖₂/‖Ax‖₂ ≤ κ₂(A)=σ₁/σₙ，x ∥ vₙ 精确取等、x ∥ v₁ 最稳；κ≈1 与 κ≈100 预设）· 误差放大对账台（扰 b (12.14) 与扰 A (12.18) 双模式，实测相对误差 = κ·ε 精确取等；丢失 log₁₀κ 位数字、剩余可靠数字读数）· 回收 NLA-02/03/06 各页 κ₂ 伏笔</p>
+</a>
 
 <h2>第三部分 · 作业向专题与复习（当前课程）</h2>
 <p class="lead" style="font-size:14px;margin-bottom:14px">教材页讲的是「这个定理为什么对」，这部分讲的是「考场上这道题怎么写」。期末范围到第 16 讲（Cholesky）为止。<strong>主入口是下面第一张卡（总复习清单）</strong>：16 讲按 6 模块重排，每个知识点就地收录对应作业题与答案，页内锚点跳转，一次点进来就能走完全部复习步骤。其余 R3–R6 是它的专题延伸。</p>
 
-<a class="card" href="./期中复习-指南.html">
-<p class="t"><span class="tag live">已上线</span><span class="tag ch">R1</span>期中复习 · 知识点与考点地图</p>
-<p class="d">按「只考到最小二乘」重排的四模块指南（矩阵代数与范数 / SVD / 投影与 QR / Householder 与最小二乘）：考点地图与配比重估 · 六大题型模板 · 必背速查表 · 10 条易错点 · 重点分级 · 五天冲刺 + 14 问自测。可打印（已做分页）。</p>
-</a>
-<a class="card" href="./期中模拟卷-两套.html">
-<p class="t"><span class="tag live">已上线</span><span class="tag ch">R2</span>期中模拟卷 · 两套 + 详解</p>
-<p class="d">各 7 题、100 分、100 分钟，题型对位四次测试但数字全换：第一套偏常规（初等变换乘积链、范数与紧性、SVD 综合、投影 ‖P‖₂、MGS、最小二乘、分块谱），第二套偏综合（斜 Hermitian、秩一画像、3×2 SVD 与伪逆、I−2P、Householder、最小二乘、棋盘结构证明）。每题附评分要点、易错提示与建议用时；打印时题目与详解自动分页。</p>
-</a>
 <a class="card" href="./期末总复习清单.html">
 <p class="t"><span class="tag live">主入口</span><span class="tag ch">M</span>期末总复习清单 · 16 讲 → 6 模块 → 51 题</p>
 <p class="d">单一长页，页内锚点：复习导引（模块优先级表 + 自编题两个方向）· M1 范数 / M2 SVD / M3 投影与 QR / M4 最小二乘与条件数 / M5 浮点与稳定性 / M6 直接法（LU·主元·Cholesky）。<strong>41 个知识点卡片</strong>，每张 = 一句话 + 公式 + 对应作业题（56 个折叠答案）+ 三种易错；末尾 51 题索引表（题号 → 知识点，★ 标期中已考）+ 四晚排期。可勾选「已掌握」，进度存本机。</p>
 </a>
-<a class="card" href="./直接法-高斯消元主元与Cholesky.html">
-<p class="t"><span class="tag live">已上线</span><span class="tag ch">R6</span>直接法 · 高斯消元 / 主元 / Cholesky</p>
-<p class="d">11 月新课，对应 HW7（LU 与 Schur 补）与 HW8（PA=LU、行主元、对角占优、正定、Cholesky）：存在性定理与「主元 = 主子式之比」· Schur 补恒等式 · det A = ±∏uⱼⱼ · 增长因子（LU 与 QR 的根本区别）· Cholesky 三重等价与 m³/3 · Cholesky 因子等于 QR 的 R · 三步复合稳定性 · 十一题逐题要点 · HW5/HW6 的 12 个边角考点 · 考前 7 天日程。</p>
-</a>
-<a class="card" href="./期末总装-知识原子与缺口诊断.html">
-<p class="t"><span class="tag live">已上线</span><span class="tag ch">R5</span>期末总装 · 25 个知识原子 + 缺口诊断</p>
-<p class="d">做题卡住时用的诊断页：21 条「我卡在这里」症状 → 25 个知识原子（每条一句话 + 最小可算例 + 三种典型错法）→ 32 道题（原子级 / 作业原题 / 变式）。做不出来就勾一下，页面按原子聚合出「缺口地图」，告诉你明天该补哪两条；勾选存本机，刷新不丢。</p>
-</a>
+
 <a class="card" href="./期末复习-指南.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">R3</span>期末复习 · 条件数 × 稳定性 = 精度</p>
 <p class="d">把第 10–13 讲接回前九讲的总装页：条件数三条定理与六个性质（κ≥1、κ(αA)=κ(A)、κ₂(QA)=κ₂(A)、κ(AᵀA)=κ²）· 浮点两条公理与 eps 实测 · 稳定/后向稳定对照表 · 回代分项界、Householder Q̃R̃=A+δA、算法三步复合与精度定理 · 26 条速查 · 六个证明模板 · 四张计算流程卡 · 27 道作业按可复现性分三组 · 考前 14 天日程 · 15 问自测 · 可视化计划调整。</p>
 </a>
+
+<a class="card" href="./直接法-高斯消元主元与Cholesky.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">R6</span>直接法 · 高斯消元 / 主元 / Cholesky</p>
+<p class="d">11 月新课，对应 HW7（LU 与 Schur 补）与 HW8（PA=LU、行主元、对角占优、正定、Cholesky）：存在性定理与「主元 = 主子式之比」· Schur 补恒等式 · det A = ±∏uⱼⱼ · 增长因子（LU 与 QR 的根本区别）· Cholesky 三重等价与 m³/3 · Cholesky 因子等于 QR 的 R · 三步复合稳定性 · 十一题逐题要点 · HW5/HW6 的 12 个边角考点 · 考前 7 天日程。</p>
+</a>
+
 <a class="card" href="./期末模拟卷-三套.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">R4</span>期末模拟卷 · 三套 + 详解</p>
 <p class="d">各 8 题、100 分、120 分钟，递进三档：一套对标作业难度（全覆盖）、二套偏证明（范数紧性、秩一全套、斜投影、Householder 手算、正规方程平方、条件数达界构造、回代舍入算例）、三套真题强度（反射与酉性、对称 SVD、QR 解系统、病态 vs 不稳辨析、浮点吸收、精度定理、特征值选做）。所有数值经脚本实测，附评分要点与易错提示。</p>
 </a>
+
+<a class="card" href="./期末总装-知识原子与缺口诊断.html">
+<p class="t"><span class="tag live">已上线</span><span class="tag ch">R5</span>期末总装 · 33 个知识原子 + 缺口诊断</p>
+<p class="d">做题卡住时用的诊断页：21 条「我卡在这里」症状 → 33 个知识原子（每条一句话 + 最小可算例 + 三种典型错法）→ 38 道题（原子级 / 作业原题 / 变式）。做不出来就勾一下，页面按原子聚合出「缺口地图」，告诉你明天该补哪两条；勾选存本机，刷新不丢。</p>
+</a>
+
 <a class="card" href="./SVD手算-超椭圆与最少负号.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">NLA-07</span>SVD 手算 · 超椭圆与最少负号</p>
 <p class="d">第二次第 5 题原题（A=[−2 11; −10 5]）：单位圆 → 超椭圆双视图，四个顶点标出 σⱼuⱼ 坐标 · 符号翻转开关实时看 U/V 变而 A 不变（四种组合的负号账本，(+,+) 最少）· 手算四步逐步点亮 · 一题多问把四种范数、A⁻¹、det、特征值、面积一次算完。</p>
 </a>
+
 <a class="card" href="./Givens与Householder-旋转反射与flop账本.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">NLA-08</span>Givens 旋转与 Householder 反射 · flop 账本</p>
 <p class="d">第四次第 2 题原题：拖动 θ 看 F（反射）与 J（旋转）的几何效果，用有向面积判手性——反射翻转、旋转不变 · 关键结论「本题的 J 是顺时针」（代入 θ=π/2 即可验）· 4×3 矩阵真实执行 Givens QR，逐次消零 · 6 flops vs 4 flops 的账本拆解。</p>
 </a>
+
 <a class="card" href="./完全QR-两平面交线与棋盘结构.html">
 <p class="t"><span class="tag live">已上线</span><span class="tag ch">NLA-09</span>完全 QR · 两平面交线与 R 的棋盘结构</p>
 <p class="d">第三次第 4、5 题合一：3D 场景可拖动旋转，两个平面、各自法向量（完全 QR 第 3 列）与交线 · R̂ 热力图对照——奇偶列正交时奇距位置恒为 0（实测 2.9e−16），普通矩阵则满 · 归纳证明 + 构造这类矩阵时踩的坑（奇列之间并不正交，必须先正交化）。</p>
 </a>
 
-<h2>后续章节</h2>
-<a class="card" href="./条件数-几何与误差放大.html">
-<p class="t"><span class="tag live">已上线</span><span class="tag ch">L12</span>条件数 · 几何与误差放大</p>
-<p class="d">绝对/相对条件数定义 (12.1–12.6) 与三个标量例子 · 抵消实验台（Example 12.3：拖动 x 看 κ=2·max|xᵢ|/|x₁−x₂| 在对角线爆炸，实测相对变化 = κ̂·ρ 恒等）· 椭圆实验台（四滑杆拖矩阵 + 拖 x：κ̂(x)=‖A‖₂‖x‖₂/‖Ax‖₂ ≤ κ₂(A)=σ₁/σₙ，x ∥ vₙ 精确取等、x ∥ v₁ 最稳；κ≈1 与 κ≈100 预设）· 误差放大对账台（扰 b (12.14) 与扰 A (12.18) 双模式，实测相对误差 = κ·ε 精确取等；丢失 log₁₀κ 位数字、剩余可靠数字读数）· 回收 NLA-02/03/06 各页 κ₂ 伏笔</p>
+<a class="card" href="./期中复习-指南.html">
+<p class="t"><span class="tag ch">期中已用</span><span class="tag ch">R1</span>期中复习 · 知识点与考点地图</p>
+<p class="d">按「只考到最小二乘」重排的四模块指南（矩阵代数与范数 / SVD / 投影与 QR / Householder 与最小二乘）：考点地图与配比重估 · 六大题型模板 · 必背速查表 · 10 条易错点 · 重点分级 · 五天冲刺 + 14 问自测。可打印（已做分页）。</p>
 </a>
-<a class="card" href="./共轭梯度-Krylov几何与预条件.html">
-<p class="t"><span class="tag live">已上线</span><span class="tag ch">L32–40</span>共轭梯度 · Krylov 几何与预条件</p>
-<p class="d">为什么 O(m³) 是一道墙（迭代法把 A 当黑箱）· Krylov 子空间与四格表 · 2×2 实验台：等高椭圆半轴比实测 = √κ、p₀ 与 p₁ 的 A-共轭、残差正交、κ=1 退化成圆 · Algorithm 38.1 与三定理 · 收敛速率（m=400 真跑 CG vs 最速下降 vs 2ρⁿ 上界；κ=10⁴ 时 142 步对 &gt;400 步）· Chebyshev 多项式等幅振荡与 1/Tₙ(γ) 对账 · 预条件四档实测（一维变系数扩散 m=127：无 276 步 / Jacobi 127 / 块 Jacobi 7 / 两层 V-cycle 6）· 粗网格修正 = 空间预条件，直通「神经网络修正粗网格解」</p>
+
+<a class="card" href="./期中模拟卷-两套.html">
+<p class="t"><span class="tag ch">期中已用</span><span class="tag ch">R2</span>期中模拟卷 · 两套 + 详解</p>
+<p class="d">各 7 题、100 分、100 分钟，题型对位四次测试但数字全换：第一套偏常规（初等变换乘积链、范数与紧性、SVD 综合、投影 ‖P‖₂、MGS、最小二乘、分块谱），第二套偏综合（斜 Hermitian、秩一画像、3×2 SVD 与伪逆、I−2P、Householder、最小二乘、棋盘结构证明）。每题附评分要点、易错提示与建议用时；打印时题目与详解自动分页。</p>
 </a>
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中 · P0</span><span class="tag ch">NLA-12</span>浮点 · 稳定 · 后向稳定（误差三角一页装下）</p>
-<p class="d">考前唯一值得新建的页：β、t 两滑杆实时算 ε 并在数轴上显示浮点间隙；同一问题的前向/后向/相对误差三色对照；后向稳定演示——喂 10⁻¹⁶ 扰动看 ‖Q̃R̃−A‖ 不动而 Q̃ 乱转。三讲是同一条推理链的三环，拆页反而看不见链条。</p>
-</div>
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L20–23</span>直接法：高斯消元到 Cholesky</p>
-<p class="d">消元的矩阵语言（初等矩阵乘积）、选主元、三角求解的稳定性。</p>
-</div>
-<div class="card planned">
-<p class="t"><span class="tag plan">筹备中</span><span class="tag ch">L24–31</span>特征值算法与 SVD 计算</p>
-<p class="d">Hessenberg 化 → 移位 QR → 收敛动态过程；单边 Jacobi 与分治 SVD（NLA-03 实验台的内核升级）。</p>
-</div>
+
 
 <footer>
 <p>添加新页面：把 .html 放入本目录，在 index.html 对应章节加一张卡片，随全站重新发布即可（本页 HTML 注释里有详细维护说明）。</p>
-<p>目录：math_visualization/site/numerical_linear_algebra/ · 发布根：math_visualization/site/ · 验证脚本在工作区根（相对路径 ../..） · 2026-10-19 建站，Lecture 1–11 六页上线 · 2026-10-21 补作业向三页（NLA-07…09）与期中复习指南（NLA-R1） · 2026-10-25 转教材向，补 NLA-10（Lecture 12 条件数，作业向 27 题已完结） · 2026-10-26 补 NLA-11（Lecture 32–40 共轭梯度与预条件，四个真跑实验台） · 2026-10-27 补期中模拟卷两套（NLA-R2）</p>
+<p>目录：math_visualization/site/numerical_linear_algebra/ · 发布根：math_visualization/site/ · 验证脚本在工作区根（相对路径 ../..） · 2026-10-19 建站，Lecture 1–11 六页上线 · 2026-10-21 补作业向三页（NLA-07…09）与期中复习指南（NLA-R1） · 2026-10-25 转教材向，补 NLA-10（Lecture 12 条件数，作业向 27 题已完结） · 2026-10-26 补 NLA-11（Lecture 32–40 共轭梯度与预条件，四个真跑实验台） · 2026-10-27 补期中模拟卷两套（NLA-R2） · 2026-11-21 补期末四件（R3 指南 / R4 三套卷 / R5 缺口诊断 / R6 直接法）与总复习清单（NLA-M，主入口）；按 16 讲收口，移除未完成的占位卡与课外 CG 页入口（文件保留，需要时再加回卡片）</p>
 </footer>
 
 </div>

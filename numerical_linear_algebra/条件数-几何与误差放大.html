@@ -239,12 +239,12 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
   <li><strong>丢失数字</strong>：\(\kappa=10^8\) 的双精度计算只剩约 8 位可信；判据是先算 κ 再谈算法。</li>
 </ul>
 <div class="note g"><strong>伏笔回收 · NLA-06</strong>：最小二乘页实验 03 的「构造解标度实验室」实测正规方程误差 \(\sim\varepsilon\kappa^2\)、QR/SVD \(\sim\varepsilon\kappa\)——那页的 \(\kappa\) 标度正是本页 \(\kappa\cdot\varepsilon\) 界的直接下游（正规方程把条件数平方，\(\kappa(A^{\mathrm{T}}A)=\kappa(A)^2\)）。「构造确切解已知的问题、用 \(\|x-x_{\mathrm{true}}\|\) 量纯舍入误差」的对账法与本页实验 03 同源。</div>
-<div class="note"><strong>科研连接</strong>：粗网格修正里「细网格误差经近似逆传播」的放大分析，线性原型就是本页的 \(\kappa\cdot\varepsilon\)——把「解一次 \(Ax=b\)」换成「解一次修正方程」，矩阵条件数就是误差放大倍率。Lecture 32–40 的共轭梯度与预条件子页（筹备中）会从这个角度再讲一遍：预条件子干的正是把椭圆的轴比压回 1。</div>
-<div class="note b"><strong>范围说明</strong>：本学期考试只到最小二乘，条件数不考；数值分析学科第 5.3 讲「矩阵的性态与条件数」按课件完整覆盖（含条件数估计与规避），与本站 NLA 页互为参照。本页服务科研与后续 Lecture（13–19 浮点与稳定性、32–40 CG）的误差语言。</div>
+<div class="note"><strong>科研连接</strong>：粗网格修正里「细网格误差经近似逆传播」的放大分析，线性原型就是本页的 \(\kappa\cdot\varepsilon\)——把「解一次 \(Ax=b\)」换成「解一次修正方程」，矩阵条件数就是误差放大倍率。共轭梯度与预条件（见「共轭梯度 · Krylov 几何」页）从这个角度再讲一遍：预条件子干的正是把椭圆的轴比压回 1。</div>
+<div class="note b"><strong>范围说明</strong>：条件数在期末范围内（第 10 讲），与浮点、稳定性一并考；数值分析学科第 5.3 讲「矩阵的性态与条件数」按课件完整覆盖（含条件数估计与规避），与本站 NLA 页互为参照。本页服务科研，也是第 13–16 讲（浮点、稳定性、直接法）误差语言的入口。</div>
 
 <div class="pager">
   <a href="最小二乘-几何与三种解法.html">← 上一页 · 最小二乘（L11）</a>
-  <span style="font-size:13px;color:var(--ink2)">下一页 · 浮点灾难与抵消（L13，筹备中）</span>
+  <a href="期末总复习清单.html#m5">下一页 · 浮点与稳定性（M5，总复习清单）→</a>
 </div>
 
 <footer>

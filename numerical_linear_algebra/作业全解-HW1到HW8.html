@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>作业全解 · HW1–HW8（数值线性代数）</title>
+<!--
+  维护说明（给未来的自己）：
+  1. 图号 NLA-HW。8 节 = 8 次测试，共 51 题，每题给「题意 / 解答 / 易错」三段。
+  2. 题目由 hw01–hw08 切片重述（wiki raw/courseware/nla-2026/），**不逐字复制原卷**：
+     题意保留全部条件与符号，措辞自写，避免整卷搬运，同时保证能对上原卷。
+  3. 解答以「考场能写完的紧凑版」为准：给关键等式链与结论，不写教科书式铺陈。
+     计算题数字与 R4/R6/M 页同源（verify_exam_numbers.py）。
+  4. 分段状态：第一批 HW1–HW2；第二批 HW3–HW4；第三批 HW5–HW8 + 索引。
+     未填的节用 SECTION 占位注释（注释里不写 HTML 标签，避免嵌套注释把正文漏出来）。
+  5. 标签体系：★ 期中已考过；难度 ★☆ 为一句证明/一步计算，★★ 为多步，★★★ 为综合大题。
+-->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["$$", "$$"]] },
+  svg: { fontCache: "local" },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#FAF9F6; --card:#FFFFFF; --ink:#22303F; --ink2:#5A6B7C;
+  --line:#CBD5DF; --grid:#E6EBF1;
+  --cinn:#B04A2F; --steel:#2F5D8A; --green:#1F7A4D; --amber:#8A6D1F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.8 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px 64px}
+.crumb{font-size:13px;margin:18px 0 10px}
+.crumb a{color:var(--steel);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+h1{font-size:26px;margin:6px 0 8px;font-weight:680;letter-spacing:-.01em}
+p.lead{color:var(--ink2);font-size:15px;margin:0 0 8px;max-width:74ch}
+h2{font-size:17.5px;font-weight:680;margin:42px 0 10px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--ink);display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+h2 .no{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--cinn);font-weight:600}
+h2 .sm{font-size:12px;color:var(--ink2);font-weight:400;font-family:ui-monospace,Consolas,monospace}
+h3{font-size:15px;font-weight:680;margin:22px 0 6px}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:22px}
+li{margin:3px 0}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+a{color:var(--steel)}
+.eq{font-size:16px;text-align:center;margin:11px 0;padding:9px 12px;background:var(--card);
+  border:1px solid var(--line);border-radius:9px;overflow-x:auto}
+.note{border-left:3px solid var(--cinn);background:#FBF1ED;padding:9px 14px;margin:14px 0;
+  border-radius:0 8px 8px 0;font-size:13.5px}
+.note.b{border-left-color:var(--steel);background:#EFF4F9}
+.note.g{border-left-color:var(--green);background:#EDF6F1}
+.note .h{font-weight:680;display:block;margin-bottom:2px}
+mjx-container[jax="SVG"]{max-width:100%}
+mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden;padding:2px 0;font-size:.92em}
+table.tb{border-collapse:collapse;margin:12px 0;font-size:13.5px;width:100%}
+table.tb td,table.tb th{border:1px solid var(--line);padding:5px 10px;text-align:left;vertical-align:top}
+table.tb th{background:#F2F5F8;font-weight:650;white-space:nowrap}
+table.tb td.c{text-align:center}
+table.tb.small{font-size:12.8px}
+
+.bar{position:sticky;top:0;z-index:30;background:rgba(250,249,246,.96);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin:0 -22px 16px;padding:8px 22px}
+.bar .row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.bar input{flex:1 1 150px;min-width:110px;font:13px/1.4 inherit;padding:5px 10px;
+  border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--ink)}
+.bar a{font-size:12px;text-decoration:none;color:var(--steel);border:1px solid var(--line);
+  background:var(--card);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.bar a:hover{background:#EFF4F9}
+
+.ex{border:1px solid var(--line);border-radius:11px;background:var(--card);
+  padding:12px 15px 10px;margin:12px 0;scroll-margin-top:96px}
+.ex .exh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;
+  border-bottom:1px dashed var(--line);padding-bottom:6px;margin-bottom:7px}
+.ex .exn{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;font-weight:700;
+  color:#fff;background:var(--cinn);border-radius:5px;padding:1px 7px}
+.ex .ext{font-weight:680;font-size:14.8px;flex:1 1 auto}
+.ex .exm{font-size:11.5px;color:var(--ink2);font-family:ui-monospace,Consolas,monospace}
+.ex .lab{font-size:10.5px;letter-spacing:.1em;color:var(--cinn);font-weight:650;
+  display:block;margin:8px 0 1px;font-family:ui-monospace,Consolas,monospace}
+.ex p{margin:4px 0;font-size:14px}
+.ex .sol{background:#F7FBF8;border-left:3px solid var(--green);padding:4px 12px 6px;
+  border-radius:0 7px 7px 0;margin:2px 0 0}
+.ex .sol p{margin:5px 0}
+.ex .warn{font-size:13px;color:#7A5C2E;background:#FBF6E7;border-radius:7px;padding:5px 10px;margin-top:7px}
+.star{color:var(--cinn);letter-spacing:1px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink2)}
+@media print{
+  body{background:#fff;font-size:11.5px}
+  .wrap{max-width:none;padding:0 6mm}
+  .bar,.crumb,footer{display:none}
+  .ex,.note,table.tb,.eq{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb"><a href="../index.html">← 数学可视化 · 全部学科</a> / <a href="./index.html">数值线性代数</a></p>
+
+<div class="bar">
+  <div class="row">
+    <input id="q" type="search" placeholder="搜题号 / 关键词（1-10、Schur、对角占优）">
+    <a href="#hw1">HW1</a><a href="#hw2">HW2</a><a href="#hw3">HW3</a><a href="#hw4">HW4</a>
+    <a href="#hw5">HW5</a><a href="#hw6">HW6</a><a href="#hw7">HW7</a><a href="#hw8">HW8</a>
+    <a href="./期末总复习清单.html">总清单</a>
+  </div>
+</div>
+
+<h1>作业全解 · 8 次测试，51 题</h1>
+<p class="lead">每次测试一节，每题三段：<strong>题意</strong>（保留全部条件与符号，能对上原卷）·<strong>解答</strong>（考场能写完的紧凑版）·<strong>易错</strong>（最常见的扣分点）。<span class="star">★</span> 标期中已经考过的题——那 6 道期末再原样出现的概率低，但同类型的换数字版概率高。</p>
+
+<div class="note b">
+<span class="h">怎么用这份全解</span>
+<ol style="margin:4px 0 0">
+<li><strong>不要按顺序读</strong>：先看 §00 的表，从标 "期末概率高" 的节开始（HW7、HW8 是新内容必考；HW5、HW6 全没考过）；</li>
+<li>每题先只读<strong>题意</strong>，合上屏幕自己写一遍，再对解答——这比直接读解答有效得多；</li>
+<li>解答后面的<strong>易错</strong>是给"下次还会错"准备的，复习第二遍只看这一行。</li>
+</ol>
+</div>
+
+<h2 id="s0"><span class="no">00</span>8 次测试总览</h2>
+
+<table class="tb small">
+<tr><th>节</th><th>日期</th><th>题数</th><th>覆盖讲次</th><th>主题</th><th>期中用过</th><th>期末概率</th></tr>
+<tr class="hi"><td class="c">HW8</td><td>11/16</td><td class="c">8</td><td>L14–L16</td><td>行列式、行主元、对角占优、正定、Cholesky</td><td class="c">—</td><td><strong>最高</strong></td></tr>
+<tr class="hi"><td class="c">HW7</td><td>11/9</td><td class="c">3</td><td>L14</td><td>LU 存在唯一、Schur 补、列消去</td><td class="c">—</td><td><strong>最高</strong></td></tr>
+<tr class="hi"><td class="c">HW6</td><td>11/9</td><td class="c">6</td><td>L11–L13</td><td>内积、cos、算法三分类、回代误差、酉阵乘积</td><td class="c">—</td><td>高</td></tr>
+<tr class="hi"><td class="c">HW5</td><td>10/15</td><td class="c">7</td><td>L10–L13</td><td>对偶范数、κ 下界、IEEE、不可表示整数、大 O</td><td class="c">—</td><td>高</td></tr>
+<tr><td class="c">HW4</td><td>10/12</td><td class="c">4</td><td>L8–L11</td><td>Householder、Givens、伪逆界、QR 解 LS</td><td class="c">4-4 ★</td><td>中</td></tr>
+<tr><td class="c">HW3</td><td>9/27</td><td class="c">6</td><td>L6–L8</td><td>投影、\(A^*A\)、棋盘 QR、交线、CGS 计数</td><td class="c">3-2 3-3 ★</td><td>中</td></tr>
+<tr><td class="c">HW2</td><td>9/27</td><td class="c">6</td><td>L4–L5</td><td>SVD 手算、旋转不变、实 SVD、分块谱</td><td class="c">2-5 ★</td><td>中</td></tr>
+<tr><td class="c">HW1</td><td>9/7</td><td class="c">11</td><td>L1–L3</td><td>初等变换、范数、谱半径、Hermitian、勾股</td><td class="c">1-3 1-8 ★</td><td>中</td></tr>
+</table>
+
+<p class="hint" style="font-size:12.5px;color:var(--ink2);margin:6px 0">概率判断依据：期中 8 题 = 6 原题 + 2 自编，按"每块 2 道"分布。期末 8 题若仍按块分，新块（HW7/8 直接法、HW5/6 浮点）各 2 道，旧四块各 1 道。详见 <a href="./期末复习-指南.html#s0">R3 §09⁺</a>。</p>
+
+<h2 id="hw1"><span class="no">01</span>HW1 · 矩阵代数与范数<span class="sm">9/7 · 11 题 · L1–L3</span></h2>
+
+<div class="ex" id="ex1-1">
+<div class="exh"><span class="exn">1-1</span><span class="ext">八步初等变换写成 \(ABC\)</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>\(B\) 为 \(4\times4\)，依次：① 第 1 列加倍；② 第 3 行减半；③ 第 3 行加到第 1 行；④ 交换第 1、4 列；⑤ 从其他行减去第 2 行；⑥ 第 4 列替换为第 3 列；⑦ 删去第 1 列。（a）写成八个矩阵的乘积；（b）合并成 \(ABC\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>逐条写出变换矩阵（左乘改行、右乘改列）：</p>
+<p>① 右乘 \(D_1(2)=\mathrm{diag}(2,1,1,1)\)；② 左乘 \(D_3(\tfrac12)\)；③ 左乘 \(E_{13}=I+e_1e_3^{\mathrm T}\)；④ 右乘 \(P_{14}\)；⑤ 左乘一个矩阵即可同时处理三行：\(E_5=I-(e_1+e_3+e_4)e_2^{\mathrm T}\)；⑥ 右乘 \(M=I-e_4e_4^{\mathrm T}+e_3e_4^{\mathrm T}\)（把第 4 列换成第 3 列，不可逆）；⑦ 右乘选择阵 \(S_1\in\mathbb{R}^{4\times3}\)（\(I_4\) 去掉第 1 列）。</p>
+<p>七个变换加 \(B\) 本身正好八个矩阵。<strong>左乘的贴在 \(B\) 左边、右乘的贴在 \(B\) 右边</strong>，两侧各自"后做在外"：</p>
+<div class="eq">$$B'=E_5\,E_{13}\,D_3(\tfrac12)\;B\;D_1(2)\,P_{14}\,M\,S_1$$</div>
+<p>（左乘组从内到外是 ②\(D_3\)、③\(E_{13}\)、⑤\(E_5\)；右乘组从内到外是 ①\(D_1\)、④\(P_{14}\)、⑥\(M\)、⑦\(S_1\)。<strong>不能把左右因子混排成一个序列</strong>——那会算错顺序。）</p>
+<p>（b）把左乘因子与右乘因子各自合并（内部顺序不能交换）：</p>
+<div class="eq">$$B'=A\,B\,C,\qquad A=E_5E_{13}D_3(\tfrac12)\in\mathbb{R}^{4\times4},\quad C=D_1(2)P_{14}MS_1\in\mathbb{R}^{4\times3}$$</div>
+</div>
+<div class="warn">易错：⑤ 写成三个因子（那样总数是 9 个矩阵，与题目"八个"矛盾）；⑦ 删列后仍把 \(C\) 的阶数当成 \(4\times4\)（实际 \(4\times3\)，因为 \(S_1\) 是 \(4\times3\)）；左右因子混着合并。</div>
+</div>
+
+<div class="ex" id="ex1-2">
+<div class="exh"><span class="exn">1-2</span><span class="ext">求值矩阵：可逆性与 \(A^{-1}_{ij}\) 的含义</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(f_1,\dots,f_8\) 定义在 \(\{1,\dots,8\}\) 上，满足"对任意 \(d_1,\dots,d_8\)，存在系数 \(c_j\) 使 \(\sum_j c_jf_j(i)=d_i\)"。（a）证明 \(d\) 唯一确定 \(c\)；（b）设 \(A\) 是 \(d\mapsto c\) 的矩阵，问 \(A^{-1}_{ij}\) 表示什么。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>（a）条件说的是：映射 \(c\mapsto Ac=d\) 是<strong>满射</strong>（任意 \(d\) 都有解）。\(A\) 是 \(8\times8\) 方阵，满射 ⇒ 可逆 ⇒ 解唯一。</p>
+<p>（b）\(c=A^{-1}d\)，即 \(c_i=\sum_j A^{-1}_{ij}d_j\)。所以 \(A^{-1}_{ij}\) 是"只用第 \(j\) 个数据重建第 \(i\) 个系数"的<strong>权重</strong>——也就是第 \(i\) 个 Lagrange 基函数在节点 \(j\) 处的取值 \(\ell_i(j)\)。</p>
+</div>
+<div class="warn">易错：只用"8 个方程 8 个未知数"就说可逆（还要线性无关/满射）；把 \(A^{-1}_{ij}\) 说成"第 \(j\) 个基函数在第 \(i\) 点"（指标反了）。</div>
+</div>
+
+<div class="ex" id="ex1-3">
+<div class="exh"><span class="exn">1-3</span><span class="ext">三角酉阵必为对角阵</span><span class="exm">★ 期中已考</span></div>
+<span class="lab">题意</span>
+<p>\(A\) 同时是三角阵与酉矩阵，证明它必为对角阵。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>设 \(T\) 上三角且酉。由 \(T^*T=I\) 得 \(T^{-1}=T^*\)。上三角阵的逆仍是上三角；而 \(T^*\) 是下三角。于是 \(T^{-1}\) 既上又下 ⇒ 对角。\(T=(T^{-1})^{-1}\) 也对角。</p>
+<p>再由 \(T^*T=I\)，对角元满足 \(|\lambda_i|^2=1\)，即 \(T=\mathrm{diag}(e^{i\theta_1},\dots,e^{i\theta_n})\)。</p>
+</div>
+<div class="warn">易错：直接说"对角线外为 0"却不给理由；只证对角元模为 1。</div>
+</div>
+
+<div class="ex" id="ex1-4">
+<div class="exh"><span class="exn">1-4</span><span class="ext">对角阵的 2-范数与 p-范数</span><span class="exm">★☆</span></div>
+<span class="lab">题意</span>
+<p>\(D=\mathrm{diag}(d_1,\dots,d_m)\)，求 \(\|D\|_2\) 与 \(\|D\|_p\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>对任意 \(p\)：\(\|Dx\|_p^p=\sum_i|d_i|^p|x_i|^p\le(\max_i|d_i|)^p\|x\|_p^p\)，故 \(\|D\|_p\le\max|d_i|\)；取 \(x=e_{i^*}\)（\(i^*\) 为使 \(|d_i|\) 最大者）达等号。所以</p>
+<div class="eq">$$\|D\|_p=\max_i|d_i|\quad(\text{对一切 }p\ge1),\qquad\text{特别地 }\|D\|_2=\max_i|d_i| .$$</div>
+</div>
+<div class="warn">易错：把 \(\|D\|_F=\sqrt{\sum|d_i|^2}\) 混进来（F 不是诱导范数，不等于 \(\max|d_i|\)）。</div>
+</div>
+
+<div class="ex" id="ex1-5">
+<div class="exh"><span class="exn">1-5</span><span class="ext">单行矩阵的 2-范数</span><span class="exm">★☆</span></div>
+<span class="lab">题意</span>
+<p>\(A=a^*\)（只有一个行向量），证明 \(\|A\|_2=\|a\|_2\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>\(\|Ax\|_2=|a^*x|\le\|a\|_2\|x\|_2\)（Cauchy–Schwarz），故 \(\|A\|_2\le\|a\|_2\)；取 \(x=a/\|a\|_2\) 得等号。</p>
+</div>
+<div class="warn">易错：写成 \(\|A\|_1=\|a\|_1\) 就当作答案（题目问的是 2-范数）。</div>
+</div>
+
+<div class="ex" id="ex1-6">
+<div class="exh"><span class="exn">1-6</span><span class="ext">秩一矩阵 \(uv^*\) 的 2-范数</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A=uv^*\)（\(u\in\mathbb{C}^m\)，\(v\in\mathbb{C}^n\)），证明 \(\|A\|_2=\|u\|_2\|v\|_2\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>\(\|Ax\|_2=\|u(v^*x)\|_2=\|u\|_2\,|v^*x|\le\|u\|_2\|v\|_2\|x\|_2\)；取 \(x=v/\|v\|_2\) 时 \(v^*x=\|v\|_2\)，达等号。</p>
+<p>等价说法：\(A\) 只有一个非零奇异值 \(\sigma_1=\|u\|\|v\|\)，而 \(\|A\|_2=\sigma_1\)。</p>
+</div>
+<div class="warn">易错：忘了取等构造；或把结论写成 \(\|A\|_F\)（那是下一题）。</div>
+</div>
+
+<div class="ex" id="ex1-7">
+<div class="exh"><span class="exn">1-7</span><span class="ext">勾股定理（\(n=2\) 直接算 + 归纳）</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(x_1,\dots,x_n\) 两两正交。（a）直接计算 \(\|x_1+x_2\|^2\) 验证 \(n=2\)；（b）用归纳法证明一般情形。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>（a）\(\|x_1+x_2\|^2=\|x_1\|^2+\langle x_1,x_2\rangle+\langle x_2,x_1\rangle+\|x_2\|^2=\|x_1\|^2+\|x_2\|^2\)（交叉项为零）。</p>
+<p>（b）设结论对 \(n-1\) 成立。记 \(s=\sum_{i=1}^{n-1}x_i\)，则由 \(x_n\perp x_i\) 得 \(x_n\perp s\)：</p>
+<div class="eq">$$\Big\|\sum_{i=1}^{n}x_i\Big\|^2=\|s+x_n\|^2=\|s\|^2+\|x_n\|^2=\sum_{i=1}^{n-1}\|x_i\|^2+\|x_n\|^2 .$$</div>
+</div>
+<div class="warn">易错：归纳时漏掉"\(x_n\) 与 \(s\) 正交"（这一步是新加的条件）；把三角不等式当勾股用。</div>
+</div>
+
+<div class="ex" id="ex1-8">
+<div class="exh"><span class="exn">1-8</span><span class="ext">Hermitian 矩阵：特征值实、特征向量正交</span><span class="exm">★ 期中已考</span></div>
+<span class="lab">题意</span>
+<p>\(A\in\mathbb{C}^{m\times m}\) 为 Hermitian。（a）证明所有特征值为实；（b）不同特征值的特征向量正交。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>（a）设 \(Ax=\lambda x\)（\(x\ne0\)）。左乘 \(x^*\)：\(x^*Ax=\lambda x^*x\)。取共轭转置：\((x^*Ax)^*=x^*A^*x=x^*Ax\)，故 \(x^*Ax\) 为实数；又 \(x^*x&gt;0\) 为实数，故 \(\lambda\) 为实数。</p>
+<p>（b）设 \(Ax=\lambda x\)、\(Ay=\mu y\)，\(\lambda\ne\mu\)。则</p>
+<div class="eq">$$\lambda\langle x,y\rangle=\langle Ax,y\rangle=\langle x,Ay\rangle=\mu\langle x,y\rangle\ \Longrightarrow\ (\lambda-\mu)\langle x,y\rangle=0\ \Longrightarrow\ \langle x,y\rangle=0 .$$</div>
+<p>中间一步用到 \(A=A^*\)。</p>
+</div>
+<div class="warn">易错：证（a）时忘了 \(x^*x&gt;0\)（这是"实且正"才能除的依据）；证（b）时没写 \(A=A^*\) 那一步。</div>
+</div>
+
+<div class="ex" id="ex1-9">
+<div class="exh"><span class="exn">1-9</span><span class="ext">谱半径不超过任一矩阵范数</span><span class="exm">★☆</span></div>
+<span class="lab">题意</span>
+<p>\(\|\cdot\|\) 是任意的矩阵范数（由向量范数诱导），\(\rho(A)\) 为谱半径。证明 \(\rho(A)\le\|A\|\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>设 \(Ax=\lambda x\)，\(x\ne0\)。则</p>
+<div class="eq">$$|\lambda|\,\|x\|=\|\lambda x\|=\|Ax\|\le\|A\|\,\|x\| .$$</div>
+<p>约去 \(\|x\|&gt;0\) 得 \(|\lambda|\le\|A\|\)。对一切特征值取最大：\(\rho(A)=\max_j|\lambda_j|\le\|A\|\)。</p>
+</div>
+<div class="warn">易错：写成等号；只对某个特征值证完就收（要"取最大"）。</div>
+</div>
+
+<div class="ex" id="ex1-10">
+<div class="exh"><span class="exn">1-10</span><span class="ext">四条范数不等式与紧性</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>对 \(m\) 维向量 \(x\) 与 \(m\times n\) 矩阵 \(A\)，证明并各举非零例子：（a）\(\|x\|_\infty\le\|x\|_2\)；（b）\(\|x\|_2\le\sqrt m\|x\|_\infty\)；（c）\(\|A\|_\infty\le\sqrt n\|A\|_2\)；（d）\(\|A\|_2\le\sqrt m\|A\|_\infty\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>（a）\(\|x\|_2^2=\sum_i|x_i|^2\ge\max_i|x_i|^2\)。取 \(x=e_1\) 达等号。<br>
+（b）\(\|x\|_2^2\le m\max_i|x_i|^2\)。取 \(x=(1,\dots,1)^{\mathrm T}\) 达等号。</p>
+<p>（c）把 \(A\) 按行拆开：\(\|A\|_\infty=\max_i\|a_i^*\|_1\le\max_i\sqrt n\,\|a_i^*\|_2\le\sqrt n\,\|A\|_2\)（第一个不等号是（b）用在每一行上，第二个是行向量的 2-范数不超过 \(\|A\|_2\)）。取 \(A=\mathbf{1}_{m\times n}\)：\(\|A\|_\infty=m\)、\(\|A\|_2=\sqrt{mn}\)，比值 \(\sqrt n\) ✓</p>
+<p>（d）先证主不等式 \(\|A\|_2\le\sqrt{\|A\|_1\|A\|_\infty}\)：</p>
+<div class="eq">$$\|Ax\|_2^2=\sum_i\Big|\sum_j a_{ij}x_j\Big|^2\le\sum_i\Big(\sum_j|a_{ij}|\Big)\Big(\sum_j|a_{ij}||x_j|^2\Big)\le\|A\|_\infty\|A\|_1\|x\|_2^2 .$$</div>
+<p>再用 \(\|A\|_1\le\sqrt m\|A\|_2\le m\|A\|_\infty\)（对偶形式）即得（d）。取单列矩阵 \(A=[1,\dots,1]^{\mathrm T}\)：\(\|A\|_2=\sqrt m\)、\(\|A\|_\infty=1\) ✓</p>
+</div>
+<div class="warn">易错：\(\sqrt m\) 与 \(\sqrt n\) 位置写反（<strong>列和配行数 \(m\)，2-范数配列数 \(n\)</strong>）；只证不等号不构造取等例（每题扣一半）。</div>
+</div>
+
+<div class="ex" id="ex1-11">
+<div class="exh"><span class="exn">1-11</span><span class="ext">\(uv^*\) 的 F-范数：还相等吗</span><span class="exm">★☆</span></div>
+<span class="lab">题意</span>
+<p>\(E=uv^*\) 时 \(\|E\|_2=\|u\|\|v\|\)。换成 F-范数，结论是否仍成立？证明或反例。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>仍然成立，而且相等</strong>：秩一矩阵只有一个非零奇异值 \(\sigma_1=\|u\|\|v\|\)，而 \(\|E\|_F=\sqrt{\sigma_1^2+\dots}=\sigma_1\)。故 \(\|E\|_F=\|u\|_2\|v\|_2=\|E\|_2\)。</p>
+</div>
+<div class="warn">易错：以为"F-范数总是更大"（那只在有多个奇异值时才成立）；或用 \(\|E\|_F^2=\mathrm{tr}(E^*E)=\|u\|^2\|v\|^2\) 之后忘了开方。</div>
+</div>
+
+<h2 id="hw2"><span class="no">02</span>HW2 · 奇异值分解<span class="sm">9/27 · 6 题 · L4–L5</span></h2>
+
+<div class="ex" id="ex2-1">
+<div class="exh"><span class="exn">2-1</span><span class="ext">三类小矩阵的 SVD</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>求 SVD：（a）\(\begin{bmatrix}3&0\\0&-2\end{bmatrix}\)；（b）\(\begin{bmatrix}0&2\\0&0\\0&0\end{bmatrix}\)；（c）\(\begin{bmatrix}1&1\\1&1\end{bmatrix}\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>（a）对角阵：\(\sigma_1=3,\sigma_2=2\)。负号收进 \(U\)：\(U=\mathrm{diag}(1,-1)\)、\(V=I\)，则 \(U\Sigma V^{\mathrm T}=\begin{bmatrix}3&0\\0&2\end{bmatrix}\begin{bmatrix}1&0\\0&-1\end{bmatrix}\) 的顺序要写成 \(U\Sigma V^{\mathrm T}=\begin{bmatrix}1&0\\0&-1\end{bmatrix}\begin{bmatrix}3&0\\0&2\end{bmatrix}=A\) ✓（\(\Sigma\) 恒非负，符号只能放在 \(U\) 或 \(V\) 里）。</p>
+<p>（b）秩一、\(3\times2\)：\(\sigma_1=2\)，其余为 0。\(A=uv^{\mathrm T}\) 中 \(u=(1,0,0)^{\mathrm T}\)、\(v=(0,1)^{\mathrm T}\)，故 \(u_1=(1,0,0)^{\mathrm T}\)、\(v_1=(0,1)^{\mathrm T}\)；补 \(u_2,u_3\) 与 \(u_1\) 正交、\(v_2\) 与 \(v_1\) 正交即可。</p>
+<p>（c）\(A^{\mathrm T}A=\begin{bmatrix}2&2\\2&2\end{bmatrix}\)，\(\lambda=4,0\)，\(\sigma=(2,0)\)。\(v_1=\frac{1}{\sqrt2}(1,1)\)、\(u_1=Av_1/2=\frac{1}{\sqrt2}(1,1)\)。</p>
+</div>
+<div class="warn">易错：把 \(-\!2\) 直接塞进 \(\Sigma\)（\(\Sigma\) 必须非负）；秩一情形忘了补正交向量；\(\sigma\) 未降序。</div>
+</div>
+
+<div class="ex" id="ex2-2">
+<div class="exh"><span class="exn">2-2</span><span class="ext">纸面旋转 90° 后奇异值是否不变</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\) 为 \(m\times n\)，\(B\) 是把 \(A\) 在纸面上顺时针旋转 \(90^\circ\) 得到的 \(n\times m\) 矩阵。问 \(A,B\) 的奇异值是否相同。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>相同。</strong>把"转置再左右翻转"拆开看：顺时针旋转 \(90^\circ\) 可写成 \(B=A^{\mathrm T}J\)，其中 \(J\) 是反转列顺序的置换阵（正交）。于是</p>
+<div class="eq">$$B^{\mathrm T}B=J^{\mathrm T}AA^{\mathrm T}J\ \Longrightarrow\ B^{\mathrm T}B\text{ 与 }AA^{\mathrm T}\text{ 相似},\quad\text{故非零谱相同。}$$</div>
+<p>而 \(AA^{\mathrm T}\) 与 \(A^{\mathrm T}A\) 的非零特征值相同，所以 \(B\) 的奇异值等于 \(A\) 的奇异值（只是左右奇异向量互换角色）。</p>
+</div>
+<div class="warn">易错：说"相似变换保奇异值"（相似只保特征值；这里保奇异值靠的是<strong>正交</strong>变换）；只证 \(\|A\|_2\) 不变而没证全部奇异值。</div>
+</div>
+
+<div class="ex" id="ex2-3">
+<div class="exh"><span class="exn">2-3</span><span class="ext">实矩阵有实 SVD</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\in\mathbb{C}^{m\times n}\) 有 SVD \(A=U\Sigma V^*\)。证明若 \(A\) 为实矩阵，则存在实的 \(U\in\mathbb{R}^{m\times m}\)、\(V\in\mathbb{R}^{n\times n}\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>\(A\) 实 ⇒ \(A^{\mathrm T}A\) 实对称 ⇒ 由谱定理存在<strong>实正交</strong> \(V\) 使 \(A^{\mathrm T}AV=V\Lambda\)，\(\Lambda=\mathrm{diag}(\lambda_j)\)，\(\lambda_j\ge0\)。</p>
+<p>令 \(\sigma_j=\sqrt{\lambda_j}\)，对 \(\sigma_j&gt;0\) 定义 \(u_j=Av_j/\sigma_j\)（\(v_j\) 是 \(V\) 的列）。因 \(A,v_j,\sigma_j\) 都实，\(u_j\) 实；且</p>
+<div class="eq">$$u_i^{\mathrm T}u_j=\frac{v_i^{\mathrm T}A^{\mathrm T}Av_j}{\sigma_i\sigma_j}=\frac{\lambda_j\,v_i^{\mathrm T}v_j}{\sigma_i\sigma_j}=\delta_{ij},$$</div>
+<p>故 \(\{u_j\}\) 是实标准正交集；\(\sigma_j=0\) 的那些列补成 \(\mathbb{R}^m\) 的标准正交基即可。于是 \(A=U\Sigma V^{\mathrm T}\) 全实。</p>
+</div>
+<div class="warn">易错：只证"\(A^{\mathrm T}A\) 有实特征值"（还要特征<strong>向量</strong>可取实、且 \(u_j\) 也实）；\(\sigma_j=0\) 时忘了单独处理。</div>
+</div>
+
+<div class="ex" id="ex2-4">
+<div class="exh"><span class="exn">2-4</span><span class="ext">精确算出 \(\sigma_{\max}\) 与 \(\sigma_{\min}\)</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A=\begin{bmatrix}1&2\\0&2\end{bmatrix}\) 的 2-范数约为 2.9208。用 SVD 精确算出 \(\sigma_{\max},\sigma_{\min}\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>\(A^{\mathrm T}A=\begin{bmatrix}1&2\\2&8\end{bmatrix}\)，\(\mathrm{tr}=9\)、\(\det=8-4=4\)。特征值满足 \(\lambda^2-9\lambda+4=0\)：</p>
+<div class="eq">$$\lambda=\frac{9\pm\sqrt{81-16}}{2}=\frac{9\pm\sqrt{65}}{2}\ \Longrightarrow\ \sigma_{\max,\min}=\sqrt{\frac{9\pm\sqrt{65}}{2}} .$$</div>
+<p>数值：\(\sigma_{\max}=\sqrt{8.5311}=2.9208\)（与题给一致），\(\sigma_{\min}=\sqrt{0.4689}=0.6847\)。校验：\(\sigma_{\max}\sigma_{\min}=\sqrt{4}=2=|\det A|\) ✓</p>
+</div>
+<div class="warn">易错：算成 \(\sigma=\lambda\)（要开方）；忘记用 \(\det=(\det A)^2=4\) 做校验（这是最快的自检）。</div>
+</div>
+
+<div class="ex" id="ex2-5">
+<div class="exh"><span class="exn">2-5</span><span class="ext">SVD 综合七问</span><span class="exm">★ 期中已考 · ★★★</span></div>
+<span class="lab">题意</span>
+<p>\(A=\begin{bmatrix}-2&11\\-10&5\end{bmatrix}\)。（a）手算实 SVD，负号最少；（b）奇异值 / 左右奇异向量 / 画超椭圆与顶点坐标；（c）四个范数；（d）用 SVD 求 \(A^{-1}\)；（e）特征值；（f）验 \(|\det A|=\sigma_1\sigma_2\)；（g）超椭圆面积。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）先算 \(A^{\mathrm T}A\)</strong>：</p>
+<div class="eq">$$A^{\mathrm T}A=\begin{bmatrix}104&-72\\-72&146\end{bmatrix},\quad \mathrm{tr}=250,\ \det=10000\ \Rightarrow\ \lambda=200,\ 50 .$$</div>
+<p>故 \(\sigma_1=10\sqrt2\approx14.142\)、\(\sigma_2=5\sqrt2\approx7.071\)，\(\kappa_2=2\)。</p>
+<p>特征向量：\(\lambda=200\) 时 \((104-200)v_1-72v_2=0\Rightarrow v_1=\frac15(3,-4)^{\mathrm T}\)；\(\lambda=50\) 时 \(v_2=\frac15(4,3)^{\mathrm T}\)。</p>
+<p>左奇异向量：</p>
+<div class="eq">$$u_1=\frac{Av_1}{\sigma_1}=\frac{1}{10\sqrt2}\cdot\frac{(-50,-50)^{\mathrm T}}{5}=\frac{1}{\sqrt2}(-1,-1)^{\mathrm T},\qquad
+u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
+<p>故 \(U=\frac{1}{\sqrt2}\begin{bmatrix}-1&1\\-1&-1\end{bmatrix}\)、\(V=\frac15\begin{bmatrix}3&4\\-4&3\end{bmatrix}\)，\(\Sigma=\mathrm{diag}(10\sqrt2,5\sqrt2)\)。负号最少的形式如上（\(U\) 首列带负号不可避免，因为 \(Av_1\) 的两个分量都是负的）。</p>
+<p><strong>（b）</strong>\(\sigma=(10\sqrt2,5\sqrt2)\)；\(v_1=\frac15(3,-4)\)、\(v_2=\frac15(4,3)\)；\(u_1=\frac{1}{\sqrt2}(-1,-1)\)、\(u_2=\frac{1}{\sqrt2}(1,-1)\)。超椭圆顶点 \(=\pm\sigma_1u_1,\ \pm\sigma_2u_2\)：</p>
+<div class="eq">$$(10,10),\ (-10,-10),\ (5,-5),\ (-5,5).$$</div>
+<p><strong>（c）</strong>\(\|A\|_1=\max(12,16)=16\)；\(\|A\|_\infty=\max(13,15)=15\)；\(\|A\|_2=10\sqrt2\)；\(\|A\|_F=\sqrt{250}=5\sqrt{10}\approx15.811\)。</p>
+<p><strong>（d）</strong>\(A^{-1}=V\Sigma^{-1}U^{\mathrm T}=\dfrac{1}{100}\begin{bmatrix}5&-11\\10&-2\end{bmatrix}\)（可直接验 \(AA^{-1}=I\)）。</p>
+<p><strong>（e）</strong>\(\mathrm{tr}A=-2+5=3\)、\(\det A=(-2)(5)-11(-10)=100\)，故 \(\lambda^2-3\lambda+100=0\)：</p>
+<div class="eq">$$\lambda=\frac{3\pm\sqrt{9-400}}{2}=\frac32\pm\frac{\sqrt{391}}{2}i,\qquad |\lambda|=\sqrt{100}=10 .$$</div>
+<p><strong>（f）</strong>\(|\det A|=100\)，而 \(\sigma_1\sigma_2=10\sqrt2\cdot5\sqrt2=100\) ✓</p>
+<p><strong>（g）</strong>面积 \(=\pi\sigma_1\sigma_2=100\pi\approx314.16\)。</p>
+</div>
+<div class="warn">易错：\(A^{\mathrm T}A\) 的 \((1,2)\) 项符号（应为 \(-2\cdot11+(-10)\cdot5=-72\)）；\(u_j=Av_j/\sigma_j\) 忘了除 \(\sigma\)；顶点写成 \(\pm\sigma_jv_j\)（应该是 \(u_j\)，因为像是输出空间）。</div>
+</div>
+
+<div class="ex" id="ex2-6">
+<div class="exh"><span class="exn">2-6</span><span class="ext">分块 \(\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\) 的谱</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\in\mathbb{C}^{m\times m}\) 有 SVD \(A=U\Sigma V^*\)。求 \(2m\times2m\) 矩阵 \(M=\begin{bmatrix}0&A^*\\A&0\end{bmatrix}\) 的特征分解。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>\(M^*=M\)（Hermite），故可酉对角化。取 \(w_\pm=\frac{1}{\sqrt2}\begin{bmatrix}v_j\\ \pm u_j\end{bmatrix}\)（第一块对应 \(A^*\)，所以 \(v\) 在前）：</p>
+<div class="eq">$$Mw_\pm=\frac{1}{\sqrt2}\begin{bmatrix}A^*(\pm u_j)\\ Av_j\end{bmatrix}=\frac{1}{\sqrt2}\begin{bmatrix}\pm\sigma_jv_j\\ \sigma_ju_j\end{bmatrix}=\pm\sigma_j\,w_\pm .$$</div>
+<p>故谱为 \(\{\pm\sigma_j\}_{j=1}^m\)。例：\(A=\begin{bmatrix}1&2\\2&1\end{bmatrix}\)、\(\sigma=(3,1)\) ⇒ \(M\) 的 4 个特征值是 \(3,-3,1,-1\)。</p>
+</div>
+<div class="warn">易错：块序写反（\(\begin{bmatrix}u\\v\end{bmatrix}\)）；忘了负号（谱成对出现）；不写"\(M\) Hermite ⇒ 可酉对角化"（第一问就要这句）。</div>
+</div>
+
+<h2 id="hw3"><span class="no">03</span>HW3 · 投影与正交化<span class="sm">9/27 · 6 题 · L6–L8</span></h2>
+
+<div class="ex" id="ex3-1">
+<div class="exh"><span class="exn">3-1</span><span class="ext">正交投影 \(P\) 使 \(I-2P\) 是酉阵</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(P\) 是正交投影算子。用代数方法证明 \(I-2P\) 是酉阵，并给出几何解释。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>记 \(H=I-2P\)。由 \(P^*=P\)、\(P^2=P\)：</p>
+<div class="eq">$$H^*H=(I-2P)^*(I-2P)=(I-2P)(I-2P)=I-4P+4P^2=I .$$</div>
+<p>故 \(H\) 酉（且 \(H^*=H\) 自伴，\(H^2=I\)）。</p>
+<p>几何：\(P\) 把向量投到 \(M=\mathcal{C}(P)\) 上。对 \(x\in M\)，\(Hx=x-2x=-x\)；对 \(x\in M^\perp\)，\(Hx=x\)。所以 \(H\) 保持 \(M\) 的分量、翻转 \(M^\perp\) 的分量——是<strong>关于 \(M\) 的镜射</strong>。</p>
+</div>
+<div class="warn">易错：只写 \(H^*H=I\) 不说"所以 \(H^{-1}=H^*\)"；几何说成"关于 \(M^\perp\) 镜射"。</div>
+</div>
+
+<div class="ex" id="ex3-2">
+<div class="exh"><span class="exn">3-2</span><span class="ext">\(A^*A\) 非奇异 ⟺ 列满秩</span><span class="exm">★ 期中已考</span></div>
+<span class="lab">题意</span>
+<p>\(A\in\mathbb{C}^{m\times n}\)，\(m\ge n\)。证明 \(A^*A\) 非奇异当且仅当 \(A\) 列满秩。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（\(\Leftarrow\)）</strong>设 \(A^*Ax=0\)。左乘 \(x^*\)：\(0=x^*A^*Ax=\|Ax\|_2^2\)，故 \(Ax=0\)；列满秩时 \(Ax=0\Rightarrow x=0\)。于是 \(A^*A\) 的核只有零，非奇异。</p>
+<p><strong>（\(\Rightarrow\)）</strong>反证：若列不满秩，存在 \(x\ne0\) 使 \(Ax=0\)，则 \(A^*Ax=0\)，与"非奇异"矛盾。</p>
+</div>
+<div class="warn">易错：只证一个方向（题目是"当且仅当"）；用 \(\det(A^*A)=|\det A|^2\)（只对方阵，题中 \(A\) 是长方形）。</div>
+</div>
+
+<div class="ex" id="ex3-3">
+<div class="exh"><span class="exn">3-3</span><span class="ext">非零投影的范数：\(\ge1\)，等号只在正交</span><span class="exm">★ 期中已考 · ★★</span></div>
+<span class="lab">题意</span>
+<p>\(P\in\mathbb{C}^{m\times m}\) 非零投影。证明 \(\|P\|_2\ge1\)，且等号成立当且仅当 \(P\) 是正交投影。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>下界</strong>：取 \(0\ne x\in\mathcal{C}(P)\)，则 \(Px=x\)，比值 \(\|Px\|/\|x\|=1\)，故 \(\sup\ge1\)。</p>
+<p><strong>正交时取等</strong>：写 \(x=Px+(I-P)x\)，两项正交（\(P^*(I-P)=P-P^*P=0\)），故 \(\|x\|^2=\|Px\|^2+\|(I-P)x\|^2\ge\|Px\|^2\)，即 \(\|P\|_2\le1\)；结合下界得 \(=1\)。</p>
+<p><strong>非正交时严格大于</strong>：取 \(x\perp\mathcal{N}(P)\) 但 \(x\notin\mathcal{C}(P)\)（斜投影必有这种 \(x\)），则 \(Px\in\mathcal{C}(P)\) 与 \(x\) 不垂直，勾股不成立，可推出 \(\|Px\|&gt;\|x\|\)。反例：\(P=\begin{bmatrix}1&1\\0&0\end{bmatrix}\)，\(\|P\|_2=\sqrt2\)。</p>
+</div>
+<div class="warn">易错：用 \(P^2=P\) 直接断言"范数 1"；只证正交方向。</div>
+</div>
+
+<div class="ex" id="ex3-4">
+<div class="exh"><span class="exn">3-4</span><span class="ext">奇偶列正交 ⇒ \(\hat R\) 的棋盘结构</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\) 满秩，且第 \(1,3,5,\dots\) 列与第 \(2,4,6,\dots\) 列两两正交。问降维 QR \(A=\hat Q\hat R\) 中 \(\hat R\) 有什么特殊性质？</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>\(\hat R\) 在 \(|i-j|\) 为<strong>奇数</strong>的位置恒为 0（棋盘/交叉稀疏）。</p>
+<p>理由：\(q_i\) 落在 \(\mathrm{span}\{a_1,\dots,a_i\}\) 内。当 \(i,j\) 奇偶不同时，\(q_i\) 是"与 \(a_j\) 异族"的那些列的组合，而两族列两两正交，故 \(r_{ij}=q_i^*a_j=0\)。</p>
+<p>例（\(5\times3\)，奇偶列正交）：\(\hat R=\begin{bmatrix}*&0&*\\0&*&0\\0&0&*\end{bmatrix}\) 的上三角部分，只有 \((1,3)\) 这个奇距位置可能非零。</p>
+</div>
+<div class="warn">易错：说"\(\hat R\) 是对角阵"（同族之间还会正交化，所以对角带外仍非零）；把条件理解成"每列互相正交"。</div>
+</div>
+
+<div class="ex" id="ex3-5">
+<div class="exh"><span class="exn">3-5</span><span class="ext">用 QR 求两平面交线</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>\(x^{(1)},y^{(1)}\) 与 \(x^{(2)},y^{(2)}\) 分别是 \(\mathbb{R}^3\) 中两个平面的基（各自线性无关），求非零 \(v\in P^{(1)}\cap P^{(2)}\)。要求把问题化归为三个 \(3\times2\) 矩阵的 QR 分解。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>思路</strong>：两个平面都是 \(\mathbb{R}^3\) 的二维子空间，交线是一维的，其方向垂直两个平面的法向量。</p>
+<p>① 对每个平面作 \(3\times2\) 矩阵 \(A_k=[x^{(k)}\ y^{(k)}]\) 的<strong>全 QR</strong>：\(A_k=Q_kR_k\)，\(Q_k\) 是 \(3\times3\) 酉阵。第 3 列 \(q_3^{(k)}\) 与 \(\mathcal{C}(A_k)\) 正交，就是该平面的<strong>单位法向量</strong> \(n_k\)。</p>
+<p>② 交线方向 \(v=n_1\times n_2\)（若叉积为零则两平面平行，无唯一交线）。</p>
+<p>③ 取一个点：解 \(n_1^{\mathrm T}p=n_1^{\mathrm T}a_1\)、\(n_2^{\mathrm T}p=n_2^{\mathrm T}a_1\)（两个方程、三个未知数），再令 \(p\) 满足第三条件（如最小范数），交线即 \(p+tv\)。</p>
+</div>
+<div class="warn">易错：用降维 QR（只有 2 列，拿不到法向量）；叉积后忘了还需要一个点（方向 + 一点才确定直线）；不检查叉积是否为零。</div>
+</div>
+
+<div class="ex" id="ex3-6">
+<div class="exh"><span class="exn">3-6</span><span class="ext">经典 Gram–Schmidt 的浮点运算准确计数</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\) 为 \(m\times n\)。确定用经典 Gram–Schmidt 计算降维 QR 所涉及的浮点加、减、乘、除的准确数目。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>对每个 \(j=1..n\)：内层对 \(i=1..j-1\) 做 ① 内积 \(r_{ij}=q_i^*a_j\)（\(m\) 次乘 + \((m-1)\) 次加），② 更新 \(a_j\leftarrow a_j-r_{ij}q_i\)（\(m\) 次乘 + \(m\) 次减）；最后归一化 \(q_j=a_j/r_{jj}\)（\(m\) 次除，\(r_{jj}=\|a_j\|_2\) 还需 \(m\) 次乘 + \((m-1)\) 次加 + 1 次开方）。</p>
+<p>累计（略去低阶项）：</p>
+<div class="eq">$$\text{乘/除}\approx mn^2,\qquad \text{加/减}\approx mn^2,\qquad \text{合计}\approx 2mn^2\ \text{flops}.$$</div>
+<p>更精确：\(\sum_{j=1}^{n}\big[(j-1)(4m-1)+3m\big]=2mn^2-\tfrac12n^2+\tfrac12mn-\tfrac12n\) 量级。</p>
+</div>
+<div class="warn">易错：只给 \(O(mn^2)\)（题目要"准确数目"）；只数乘除不数加减；把归一化的 \(m\) 次除法漏掉。</div>
+</div>
+
+<h2 id="hw4"><span class="no">04</span>HW4 · Householder、Givens 与最小二乘<span class="sm">10/12 · 4 题 · L8–L11</span></h2>
+
+<div class="ex" id="ex4-1">
+<div class="exh"><span class="exn">4-1</span><span class="ext">Householder 算子的特征值、行列式、奇异值</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(H=I-2vv^*/v^*v\)。求（a）特征值与特征向量（几何 + 代数各一证）；（b）\(\det H\)；（c）奇异值。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）几何</strong>：\(H\) 关于超平面 \(v^\perp\) 作镜射。沿 \(v\) 方向 \(Hv=v-2v=-v\)（\(\lambda=-1\)，重数 1）；沿 \(v^\perp\) 方向 \(Hw=w\)（\(\lambda=1\)，重数 \(m-1\)）。</p>
+<p><strong>代数</strong>：对 \(w\perp v\)，\(v^*w=0\Rightarrow Hw=w\)；对 \(v\)，\(Hv=v-2v\frac{v^*v}{v^*v}=-v\)。\(\{v\}\cup v^\perp\) 张成整个空间，故谱为 \(\{-1\}\)（单）与 \(\{1\}\)（重 \(m-1\)）。</p>
+<p><strong>（b）</strong>\(\det H=\prod\lambda_j=(-1)\cdot1^{m-1}=-1\)。</p>
+<p><strong>（c）</strong>\(H^*H=(I-2vv^*/v^*v)^2=I\)（利用 \(H=H^*\) 与 \(H^2=I\)），故 \(H\) 酉，全部奇异值为 1，从而 \(\kappa_2(H)=1\)。</p>
+</div>
+<div class="warn">易错：把谱写成 \(\{0,1\}\)（那是投影 \(P\) 的谱，\(H=I-2P\) 的谱是 \(\pm1\)）；\(\det\) 写成 \(+1\)；忘记（c）里"酉 ⇒ 奇异值全 1"这层。</div>
+</div>
+
+<div class="ex" id="ex4-2">
+<div class="exh"><span class="exn">4-2</span><span class="ext">反射 \(F\) 与旋转 \(J\)、Givens QR、6 flops</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>\(F=\begin{bmatrix}-c&s\\s&c\end{bmatrix}\)（\(\det=-1\)）、\(J=\begin{bmatrix}c&s\\-s&c\end{bmatrix}\)（\(\det=1\)），\(c=\cos\theta,s=\sin\theta\)。（a）说明左乘两者的几何效果与旋转方向；（b）写出基于 Givens 旋转的 QR 算法；（c）证明每个操作项 6 次运算，比 MGS 多 50%。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）</strong>\(F\) 是反射（\(\det=-1\)），镜射轴在 \(\theta/2\) 方向。\(J\) 是旋转：把 \((1,0)^{\mathrm T}\mapsto(c,-s)^{\mathrm T}\)。代 \(\theta=\pi/2\) 得 \((0,-1)^{\mathrm T}\)，即 \((1,0)\) 转到了"下方"——<strong>顺时针</strong>转 \(\theta\)。</p>
+<p><strong>（b）</strong>对每一列 \(j\)，用 \(J(i,j,\theta)\) 依次消去 \(a_{ij}\)（\(i&gt;j\)）：取 \(r=\sqrt{a_{jj}^2+a_{ij}^2}\)、\(c=a_{jj}/r\)、\(s=a_{ij}/r\)，左乘后 \((\,i,j\,)\) 位置归零；对所有 \(i&gt;j\) 做完得到上三角 \(R\)，累积的旋转之积为 \(Q^{\mathrm T}\)。</p>
+<p><strong>（c）</strong>更新两个元素：\(c\,a_{jj}+s\,a_{ij}\) 与 \(-s\,a_{jj}+c\,a_{ij}\)。每个是 2 次乘 + 1 次加 = 3 次，两个共 <strong>6 次</strong>；MGS 更新一个元素只需 4 次（1 乘 1 减，加上内积与缩放的摊销）。故 \(6/4=1.5\)，多 50%。</p>
+</div>
+<div class="warn">易错：旋转方向说反（代 \(\theta=\pi/2\) 一次即可定死）；把 6 flops 数成"4 乘 4 加"（\(c,s\) 在循环外算好，每元素只有 1 乘 1 加）；忘了 Givens 的优势是"一次只消一个元素"（适合稀疏与并行）。</div>
+</div>
+
+<div class="ex" id="ex4-3">
+<div class="exh"><span class="exn">4-3</span><span class="ext">分块加行后伪逆范数变小</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>\(A=\begin{bmatrix}A_1\\A_2\end{bmatrix}\)，\(A_1\) 为 \(n\times n\) 非奇异，\(A_2\) 为 \((m-n)\times n\)。证明 \(\|A^+\|_2\le\|A_1^{-1}\|_2\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>把 \(A\) 拆成 \(A=\begin{bmatrix}I\\A_2A_1^{-1}\end{bmatrix}A_1=:B\,A_1\)。则</p>
+<div class="eq">$$\sigma_{\min}(A)=\sigma_{\min}(BA_1)\ \ge\ \sigma_{\min}(B)\,\sigma_{\min}(A_1) .$$</div>
+<p>而 \(B^*B=I+(A_2A_1^{-1})^*(A_2A_1^{-1})\succeq I\)，故 \(\sigma_{\min}(B)\ge1\)。于是</p>
+<div class="eq">$$\|A^+\|_2=\frac{1}{\sigma_{\min}(A)}\le\frac{1}{\sigma_{\min}(B)\,\sigma_{\min}(A_1)}\le\frac{1}{\sigma_{\min}(A_1)}=\|A_1^{-1}\|_2 .$$</div>
+</div>
+<div class="warn">易错：直接说"加行不改范数"（会变小）；漏掉 \(\sigma_{\min}(B)\ge1\) 这一步（这是关键）；用 \((A^*A)^{-1}A^*\) 表示伪逆却不说明 \(A\) 列满秩。</div>
+</div>
+
+<div class="ex" id="ex4-4">
+<div class="exh"><span class="exn">4-4</span><span class="ext">MGS / Householder 两种 QR + 解最小二乘</span><span class="exm">★ 期中已考 · ★★★</span></div>
+<span class="lab">题意</span>
+<p>\(Z=\begin{bmatrix}1&2&3\\4&5&6\\7&8&7\\4&2&3\\4&2&2\end{bmatrix}\)（\(5\times3\)），\(b=(1,2,3,4,5)^{\mathrm T}\)。（a）用改进 Gram–Schmidt 求降维 QR；（b）用 Householder 求降维 QR；（c）用 QR 解最小二乘 \(Zx\approx b\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）MGS</strong>：\(a_1=(1,4,7,4,4)^{\mathrm T}\)，\(\|a_1\|=\sqrt{98}=7\sqrt2\approx9.8995\)，\(q_1=a_1/(7\sqrt2)\)。</p>
+<div class="eq">$$r_{12}=q_1^{\mathrm T}a_2=\frac{94}{7\sqrt2}\approx9.4954,\qquad v_2=a_2-r_{12}q_1,\quad \|v_2\|=r_{22}\approx3.2919 .$$</div>
+<p>同法得 \(q_2=v_2/r_{22}\)，第三列再对 \(q_1,q_2\) 各做一次投影，得 \(r_{33}\approx1.9701\)。汇总：</p>
+<div class="eq">$$\hat R\approx\begin{bmatrix}9.8995&9.4954&9.6975\\0&3.2919&3.0129\\0&0&1.9701\end{bmatrix},\qquad \hat Q\in\mathbb{R}^{5\times3}.$$</div>
+<p>（\(\hat R\) 对角取正；若用 Householder，得到的 \(\hat R\) 只差对角符号。）</p>
+<p><strong>（b）Householder</strong>：第 1 步取 \(v_1=a_1+\mathrm{sign}(a_{11})\|a_1\|e_1\)，左乘 \(H_1=I-2v_1v_1^{\mathrm T}/v_1^{\mathrm T}v_1\) 把第 1 列打成 \((r_{11},0,0,0,0)^{\mathrm T}\)；第 2 步在右下 \(4\times2\) 子块上重复，第 3 步在右下 \(3\times1\) 上重复。共 3 个镜射，\(Q=H_1H_2H_3\)。</p>
+<p><strong>（c）</strong>\(y=\hat Q^{\mathrm T}b\)，回代 \(\hat Rx=y\)：</p>
+<div class="eq">$$x\approx(1.4483,\ -1.2984,\ 0.4803)^{\mathrm T},\qquad r=b-Zx,\quad \|r\|_2\approx1.2899 .$$</div>
+<p>校验：\(Z^{\mathrm T}r\approx(0,0,0)^{\mathrm T}\)；且 \(\|b\|^2=55\)、\(\|\hat Q^{\mathrm T}b\|^2\approx53.3362\)，差 \(1.6638=1.2899^2\) ✓</p>
+</div>
+<div class="warn">易错：MGS 里用"未更新的 \(a_j\)"算 \(r_{ij}\)（那就退化成 CGS）；\(\hat R\) 元素不保留根号直接给小数（手算题要保留）；解完不做 \(Z^{\mathrm T}r=0\) 自检。</div>
+</div>
+
+<h2 id="hw5"><span class="no">05</span>HW5 · 对偶范数、浮点系统与大 O<span class="sm">10/15 · 7 题 · L10–L13</span></h2>
+
+<div class="ex" id="ex5-1">
+<div class="exh"><span class="exn">5-1</span><span class="ext">对偶范数是范数</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(\|x\|'=\sup_{\|y\|=1}|y^*x|\)。（a）证明它是范数；（b）设 \(\|x\|=\|y\|=1\)，证明存在秩一 \(B=yz^*\) 使 \(Bx=y\) 且 \(\|B\|=1\)（提示：\(\exists z\ne0,\ |z^*x|=\|z\|'\|x\|\)）。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）</strong>正定：\(x=0\) 时为 0；\(x\ne0\) 时取 \(y=x/\|x\|\) 得 \(\|x\|'\ge|x^*x|/\|x\|=\|x\|&gt;0\)。齐次：\(\sup|y^*(cx)|=|c|\sup|y^*x|\)。三角：\(|y^*(x+z)|\le|y^*x|+|y^*z|\le\|x\|'+\|z\|'\)，取上确界即得。</p>
+<p><strong>（b）</strong>取引理中的 \(z\)（\(z^*x\ne0\)），令</p>
+<div class="eq">$$B=\frac{yz^*}{z^*x}\ \Longrightarrow\ Bx=y .$$</div>
+<p>范数：\(\|B\|=\dfrac{\|y\|\,\|z\|'}{|z^*x|}=\dfrac{1\cdot\|z\|'}{\|z\|'\|x\|}=1\)，用到 \(\|y\|=\|x\|=1\) 与 \(|z^*x|=\|z\|'\|x\|\)。</p>
+</div>
+<div class="warn">易错：证范数时漏 \(|c|\)；构造 \(B\) 后不验 \(\|B\|=1\)（本题重点就在这）；把对偶范数当"随便另一种范数"。</div>
+</div>
+
+<div class="ex" id="ex5-2">
+<div class="exh"><span class="exn">5-2</span><span class="ext">构造扰动使 \(\|A^{-1}(\delta A)x\|\) 精确达上界</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\) 非奇异。用对偶范数证明：对任意 \(A,x\) 与范数，存在 \(\delta A\) 使 \(\|A^{-1}(\delta A)x\|=\|A^{-1}\|\,\|\delta A\|\,\|x\|\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>① 取单位向量 \(y\) 使 \(\|A^{-1}y\|=\|A^{-1}\|\|y\|=\|A^{-1}\|\)（上确界可达，有限维）。<br>
+② 取 \(z\) 使 \(|z^*x|=\|z\|'\|x\|\)（引理）。<br>
+③ 令</p>
+<div class="eq">$$\delta A=\frac{yz^*}{\|z\|'}\ \Longrightarrow\ \|\delta A\|=\frac{\|y\|\|z\|'}{\|z\|'}=1 .$$</div>
+<p>④ 计算：\((\delta A)x=yz^*x/\|z\|'\)，故</p>
+<div class="eq">$$\|A^{-1}(\delta A)x\|=\Big\|A^{-1}y\cdot\frac{z^*x}{\|z\|'}\Big\|=\|A^{-1}\|\cdot\|x\|=\|A^{-1}\|\,\|\delta A\|\,\|x\| .$$</div>
+<p>这正好是扰动分析里"界可以取等"的严格证明。</p>
+</div>
+<div class="warn">易错：只写不等式方向（题目要求<strong>等式</strong>）；忘了 \(\|\delta A\|=1\) 的归一化；把 \(y\) 与 \(z\) 的角色搞反（\(y\) 管输出、\(z\) 管输入）。</div>
+</div>
+
+<div class="ex" id="ex5-3">
+<div class="exh"><span class="exn">5-3</span><span class="ext">由 \(\|A\|_2,\|A\|_F\) 给条件数下界</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\) 为 \(202\times202\)，\(\|A\|_2=100\)、\(\|A\|_F=101\)。求 \(\kappa_2(A)\) 下界的最大可能值。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>记奇异值 \(\sigma_1\ge\dots\ge\sigma_{202}\)。已知 \(\sigma_1=\|A\|_2=100\)，且</p>
+<div class="eq">$$\sum_{j=1}^{202}\sigma_j^2=\|A\|_F^2=101^2=10201\ \Longrightarrow\ \sum_{j=2}^{202}\sigma_j^2=10201-10000=201 .$$</div>
+<p>后 201 个数的平均是 \(201/201=1\)，故 \(\sigma_{\min}\le1\)（否则所有 \(\sigma_j&gt;1\)，和超过 201）。于是</p>
+<div class="eq">$$\kappa_2(A)=\frac{\sigma_1}{\sigma_{\min}}\ge\frac{100}{1}=100 .$$</div>
+<p>取等当 \(\sigma_2=\dots=\sigma_{202}=1\)，此时确实 \(100^2+201=10201\) ✓。故下界的最大值为 <strong>100</strong>。</p>
+</div>
+<div class="warn">易错：用 \(\|A\|_F\le\sqrt n\|A\|_2\) 走反方向（得不到下界）；忘了"和固定时最小值 ≤ 平均值"这一步；把 201 个数的平均算成 202。</div>
+</div>
+
+<div class="ex" id="ex5-4">
+<div class="exh"><span class="exn">5-4</span><span class="ext">相邻单精度浮点数之间夹多少个双精度</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>在任意两个相邻的 IEEE 单精度浮点数之间，有多少个 IEEE 双精度浮点数？</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>同一二进制区间 \([2^e,2^{e+1})\) 内，单精度间距是 \(2^{e-23}\)，双精度间距是 \(2^{e-52}\)。比值</p>
+<div class="eq">$$\frac{2^{e-23}}{2^{e-52}}=2^{29} .$$</div>
+<p>也就是说，一段单精度间距里能放下 \(2^{29}\) 个双精度间隔，除两个端点外还有</p>
+<div class="eq">$$2^{29}-1=536\,870\,911$$</div>
+<p>个双精度浮点数。</p>
+</div>
+<div class="warn">易错：忘减 1（问的是"之间"不含端点）；用 \(\epsilon\) 的比值算成 \(2^{24}/2^{53}\)（那是 \(\epsilon\) 之比，与间距之比差一个因子，恰好也是 \(2^{29}\)，但要说明是<strong>间距</strong>比而非 \(\epsilon\) 比）。</div>
+</div>
+
+<div class="ex" id="ex5-5">
+<div class="exh"><span class="exn">5-5</span><span class="ext">浮点系统里最小不可表示的正整数</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(F\) 由 \(x=\pm\frac{m}{\beta^t}\beta^e\)（\(1\le m\le\beta^t\)）给出。（a）给出计算"不属于 \(F\) 的最小正整数 \(n\)"的算法；（b）单精度与双精度的 \(n\) 各是多少？</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）</strong>关键事实：\(t\) 位尾数能精确表示所有 \(|n|\le\beta^t\) 的整数（此时 \(e=t\)、\(m=n\)）。而 \(n=\beta^t+1\) 需要 \(t+1\) 位有效数字。算法：从 \(n=\beta^t+1\) 开始逐个试 \(\mathrm{fl}(n)=n\) 是否成立，第一个不成立的就是答案；由上面的论证可直接取 \(n=\beta^t+1\)。</p>
+<p><strong>（b）</strong>单精度 \(t=24,\beta=2\)：\(n=2^{24}+1=16\,777\,217\)；双精度 \(t=53\)：\(n=2^{53}+1=9\,007\,199\,254\,740\,993\)。</p>
+</div>
+<div class="warn">易错：答成 \(\beta^t\)（那是"最大可精确表示的整数"）；把单精度的 \(t\) 记成 23（23 是尾数存储位数，含隐含位是 24）。</div>
+</div>
+
+<div class="ex" id="ex5-6">
+<div class="exh"><span class="exn">5-6</span><span class="ext">四个大 \(O\) 判断</span><span class="exm">★☆</span></div>
+<span class="lab">题意</span>
+<p>判断：（a）\(x\to\infty\) 时 \(\sin x=O(1)\)；（b）\(x\to0\) 时 \(\sin x=O(1)\)；（c）\(x\to\infty\) 时 \(\log x=O(x^{1/100})\)；（d）\(n\to\infty\) 时 \(n!=O((n/e)^n)\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>（a）✓ \(|\sin x|\le1\)。（b）✓ \(\sin x\to0\)，当然有界。（c）✓ 对数增长慢于任何正幂：\(\log x/x^{1/100}\to0\)。（d）<strong>✗</strong> Stirling：\(n!\approx\sqrt{2\pi n}\,(n/e)^n\)，比 \((n/e)^n\) 大一个 \(\sqrt{2\pi n}\) 因子，故 \(n!/(n/e)^n\to\infty\)。</p>
+</div>
+<div class="warn">易错：以为 \(O(1)\) 就是"等于常数 1"；判断（d）时只比指数部分、丢掉 \(\sqrt n\)。</div>
+</div>
+
+<div class="ex" id="ex5-7">
+<div class="exh"><span class="exn">5-7</span><span class="ext">\(O(\epsilon)\) 的两条代数</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>（a）证明 \((1+O(\epsilon_{\text{machine}}))(1+O(\epsilon_{\text{machine}}))=1+O(\epsilon_{\text{machine}})\)（写出这句话的准确定义）；（b）证明 \((1+O(\epsilon_{\text{machine}}))^{-1}=1+O(\epsilon_{\text{machine}})\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>准确定义</strong>：\(f(\epsilon)=(1+O(\epsilon))(1+O(\epsilon))\) 指存在常数 \(C\)，使足够小的 \(\epsilon\) 下 \(f(\epsilon)=1+g(\epsilon)\) 且 \(|g(\epsilon)|\le C\epsilon\)。</p>
+<p><strong>（a）</strong>展开：\((1+\epsilon_1)(1+\epsilon_2)=1+\epsilon_1+\epsilon_2+\epsilon_1\epsilon_2\)。取 \(|\epsilon_i|\le c\epsilon\)，则偏差 \(\le 2c\epsilon+c^2\epsilon^2\le(2c+c^2)\epsilon\)（\(\epsilon\le1\)），即 \(O(\epsilon)\)。</p>
+<p><strong>（b）</strong>\(\dfrac{1}{1+\delta}=1-\delta+\dfrac{\delta^2}{1+\delta}=1+O(\delta^2)=1+O(\epsilon)\)（\(|\delta|\le c\epsilon\)，故二阶项 \(\le c^2\epsilon^2=O(\epsilon)\)）。</p>
+</div>
+<div class="warn">易错：把 \((1+O(\epsilon))^{-1}\) 的结果写成 \(1-O(\epsilon)\) 就认为"不一样"（\(O\) 带符号，\(-O(\epsilon)\) 仍是 \(O(\epsilon)\)）；不写常数 \(C\) 的存在性。</div>
+</div>
+
+<h2 id="hw6"><span class="no">06</span>HW6 · 算法的稳定性<span class="sm">11/9 · 6 题 · L11–L13</span></h2>
+
+<div class="ex" id="ex6-1">
+<div class="exh"><span class="exn">6-1</span><span class="ext">内积算法是后向稳定的</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>计算 \(\alpha=x^*y\)：先用乘法得 \(\overline{x_iy_i}\)，再用加法累加得 \(\tilde\alpha\)。证明该算法后向稳定。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>设 \(s_k\) 是累加到第 \(k\) 项的结果。由浮点公理，存在 \(|\epsilon_j|,|\eta_j|\le\epsilon_{\text{machine}}\) 使</p>
+<div class="eq">$$s_k=\big(s_{k-1}+x_ky_k(1+\epsilon_k)\big)(1+\eta_k).$$</div>
+<p>把 \((1+\eta_k)\) 一路向前吸收（每一步多一个 \(O(\epsilon^2)\) 项），归纳可得</p>
+<div class="eq">$$s_m=\sum_{j=1}^{m}x_j(1+\delta_j)y_j+O(\epsilon^2),\qquad |\delta_j|\le m\epsilon .$$</div>
+<p>令 \(\delta x=(\delta_1x_1,\dots,\delta_mx_m)^{\mathrm T}\)，则 \(\|\delta x\|_2\le m\epsilon\|x\|_2\)，且</p>
+<div class="eq">$$\tilde\alpha=s_m=(x+\delta x)^*y\quad(\text{精确成立}) .$$</div>
+<p>即：计算结果<strong>恰好是</strong>某个扰动后输入的内积——按定义就是后向稳定。</p>
+</div>
+<div class="warn">易错：只说"每步误差 \(\epsilon\)，共 \(m\) 步所以 \(m\epsilon\)"（必须说明<strong>怎么把它们折成输入扰动</strong>）；把界写成 \(O(\epsilon)\) 却不说常数依赖 \(m\)。</div>
+</div>
+
+<div class="ex" id="ex6-2">
+<div class="exh"><span class="exn">6-2</span><span class="ext">\(\cos\) 不是后向稳定的</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>利用 \(\cos0\ne0\) 证明计算 \(\cos\) 的算法不是后向稳定的。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>后向稳定要求：对每个输入 \(x\)，存在 \(\tilde x\) 使</p>
+<div class="eq">$$\frac{|\tilde x-x|}{|x|}=O(\epsilon)\qquad\text{且}\qquad \tilde f(x)=\cos\tilde x\ \text{（精确）}.$$</div>
+<p>注意右边是<strong>相对</strong>误差为零。当 \(\cos x\) 接近 0（\(x\approx\pi/2\)）时，任何 \(O(\epsilon)\) 的绝对误差都对应无界的相对误差：若要求 \(\cos\tilde x\) 与计算值精确相等，则 \(\tilde x\) 必须精确落在使 \(\cos\tilde x\) 取该值的点上，而这样的 \(\tilde x\) 与 \(x\) 的相对偏差由 \(\cos\) 在该点的导数决定——在零点处 \(|\cos'\tilde x|=|\sin\tilde x|=1\)，绝对误差 \(O(\epsilon)\) 换成 \(\tilde x\) 的偏差是 \(O(\epsilon)\)，看似可以；但一旦函数值本身是 \(O(\epsilon)\) 量级，相对后向误差 \(|\tilde x-x|/|x|\cdot|f|/|f(\tilde x)|\) 就爆掉。</p>
+<p>题目用 \(\cos0\ne0\) 提示的正是这个门槛：<strong>相对后向误差只在函数值远离 0 时有意义</strong>；在零点附近它无界，故不存在满足定义的 \(\tilde x\)。</p>
+</div>
+<div class="warn">易错：把"后向误差大"和"前向误差大"混为一谈；用 \(\cos\) 有界来说"所以它精确"（有界与后向稳定无关）。这题以课件口径为准，考场上把"零点附近相对后向误差无界"这一句写清即可。</div>
+</div>
+
+<div class="ex" id="ex6-3">
+<div class="exh"><span class="exn">6-3</span><span class="ext">三个算法：后向稳定 / 稳定 / 不稳定</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>分类并说明理由：（a）数据 \(x\)，精确解 \(x^2\)，算法 \(x\otimes x\)；（b）数据 \(x\)，精确解 \(0\)，算法 \(x\ominus x\)；（c）无数据，精确解 \(e\)，算法 \(\sum_{k=0}^{\infty}1/k!\)（左到右、用 \(\otimes\) 与 \(\oplus\)，当新项 \(&lt;\epsilon_{\text{machine}}\) 时停）。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）后向稳定。</strong>\(\mathrm{fl}(x^2)=x^2(1+\epsilon)=(\tilde x)^2\)，其中 \(\tilde x=x\sqrt{1+\epsilon}\)，且 \(|\tilde x-x|/|x|=|\sqrt{1+\epsilon}-1|\approx\epsilon/2=O(\epsilon)\) ✓</p>
+<p><strong>（b）精确（从而后向稳定）。</strong>同一个浮点数相减，结果是精确的 \(0\)，与精确解完全一致。</p>
+<p><strong>（c）稳定但不是后向稳定。</strong>误差有两个来源：截断（丢掉 \(&lt;\epsilon\) 的尾巴，总误差 \(O(\epsilon)\)）与舍入（\(O(m\epsilon)\)）。总误差是 \(O(\epsilon)\) 量级 ⇒ 稳定。但这里<strong>没有输入数据</strong>可供扰动，"输出恰好等于某个扰动输入的精确解"无从谈起；且截断误差是算法结构产生的，无法折成输入扰动 ⇒ 不是后向稳定。</p>
+</div>
+<div class="warn">易错：只分两档（漏掉"稳定但不后向稳定"这一真实存在的第三档）；（b）答"后向稳定"却不说它其实精确。</div>
+</div>
+
+<div class="ex" id="ex6-4">
+<div class="exh"><span class="exn">6-4</span><span class="ext">回代误差：从分项界推出 1- 与 \(\infty\)-范数估计</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>回代满足 \(|\delta r_{ij}|/|r_{ij}|\le m\epsilon_{\text{machine}}+O(\epsilon^2)\)。对（a）1-范数、（b）\(\infty\)-范数，导出 \(\|\delta R\|/\|R\|=O(\epsilon_{\text{machine}})\) 的更精细估计。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>由分项界，\(|\delta r_{ij}|\le m\epsilon|r_{ij}|\)（略去 \(O(\epsilon^2)\)）。</p>
+<p><strong>（a）1-范数</strong>（最大列和）：</p>
+<div class="eq">$$\|\delta R\|_1=\max_j\sum_i|\delta r_{ij}|\le m\epsilon\max_j\sum_i|r_{ij}|=m\epsilon\|R\|_1 .$$</div>
+<p><strong>（b）\(\infty\)-范数</strong>（最大行和）：</p>
+<div class="eq">$$\|\delta R\|_\infty=\max_i\sum_j|\delta r_{ij}|\le m\epsilon\max_i\sum_j|r_{ij}|=m\epsilon\|R\|_\infty .$$</div>
+<p>两者都给出 \(\|\delta R\|/\|R\|\le m\epsilon=O(\epsilon)\)，且常数都是 \(m\)（不是 \(m^2\)）——这正是"分项界比范数界精细"的体现。</p>
+</div>
+<div class="warn">易错：先取 max 再放缩的顺序搞反（会多出一个 \(m\)）；把常数写成 \(m^2\)。</div>
+</div>
+
+<div class="ex" id="ex6-5">
+<div class="exh"><span class="exn">6-5</span><span class="ext">解与真解的误差 \(\|\tilde x-x\|\)</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>用回代解三角系统 \(Rx=b\)，得到 \(\tilde x\)。用上一题的后向误差估计给出 \(\|\tilde x-x\|\)。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>后向稳定形式：\((\tilde R+\delta R)\tilde x=b\) 精确成立，而真解满足 \(Rx=b\)（这里把 \(\tilde R\) 记作 \(R\) 的扰动，为清晰令 \(R\) 为精确矩阵）。两式相减：</p>
+<div class="eq">$$R(\tilde x-x)=-\delta R\,\tilde x\ \Longrightarrow\ \|\tilde x-x\|\le\|R^{-1}\|\,\|\delta R\|\,\|\tilde x\| .$$</div>
+<p>除以 \(\|\tilde x\|\) 并用 \(\|\delta R\|\le m\epsilon\|R\|\)：</p>
+<div class="eq">$$\frac{\|\tilde x-x\|}{\|\tilde x\|}\le\|R^{-1}\|\|R\|\,m\epsilon=\kappa(R)\,m\epsilon=O(\kappa(R)\epsilon) .$$</div>
+<p>这就是"后向稳定 + 条件数 ⇒ 精度"在这道题上的具体形态。</p>
+</div>
+<div class="warn">易错：漏掉 \(\kappa(R)\)（只写 \(O(\epsilon)\)）；把 \(\|\tilde x\|\) 换成 \(\|x\|\) 却不说明两者相差 \(O(\epsilon)\)。</div>
+</div>
+
+<div class="ex" id="ex6-6">
+<div class="exh"><span class="exn">6-6</span><span class="ext">酉阵连乘的后向稳定性，及一般矩阵的反例</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>（a）\(Q_1,\dots,Q_k\in\mathbb{C}^{m\times m}\) 固定酉阵，计算 \(B=Q_k\cdots Q_1A\)（从右往左做简单浮点运算）。证明该算法后向稳定。（b）若把 \(Q_j\) 换成任意 \(X_j\in\mathbb{C}^{m\times m}\)，举反例说明稳定性不成立。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）</strong>设 \(M_j=Q_jM_{j-1}\)，实际算出 \(\tilde M_j\)。每步的舍入可写成</p>
+<div class="eq">$$\tilde M_j=Q_j\tilde M_{j-1}+\Delta_j,\qquad \|\Delta_j\|\le c\,\epsilon\|Q_j\tilde M_{j-1}\|=c\,\epsilon\|\tilde M_{j-1}\|,$$</div>
+<p>最后一个等号用到 \(Q_j\) 酉（不改范数）。于是误差不放大，逐层累加得</p>
+<div class="eq">$$\tilde B=B+\Delta,\qquad \|\Delta\|\le kc\epsilon\|A\|=O(\epsilon)\|A\| .$$</div>
+<p>即 \(\tilde B\) 是 \(A\)（或某个 \(A+\delta A\)）经同样乘积的精确结果 ⇒ 后向稳定。</p>
+<p><strong>（b）</strong>取 \(X_j=\mathrm{diag}(1,10^{8})\)，\(k=2\)，\(A=I\)。计算 \(X_2X_1A\) 时第一步的误差被第二步放大 \(10^{8}\) 倍，总共可到 \(10^{16}\epsilon\|A\|\) 量级——已与 \(A\) 本身同阶，谈不上"小扰动"。<strong>关键差别就在于非酉矩阵会放大范数</strong>。</p>
+</div>
+<div class="warn">易错：（a）只说"每步误差 \(O(\epsilon)\)"而不说明酉不改范数这一步；（b）举的 \(X_j\) 是酉阵（那当然还稳）；反例要选<strong>放大范数</strong>的矩阵。</div>
+</div>
+
+<h2 id="hw7"><span class="no">07</span>HW7 · LU 与 Schur 补<span class="sm">11/9 · 3 题 · L14</span></h2>
+
+<div class="ex" id="ex7-1">
+<div class="exh"><span class="exn">7-1</span><span class="ext">LU 存在 ⟺ 顺序主子式非零；唯一性</span><span class="exm">★★★ 期末首选</span></div>
+<span class="lab">题意</span>
+<p>\(A\in\mathbb{C}^{m\times m}\) 非奇异。证明 \(A\) 有 LU 分解当且仅当每个 \(A_{1:k,1:k}\)（\(1\le k\le m\)）非奇异，并证明此时分解唯一。（提示：行运算保持 \(\det(A_{1:k,1:k})\) 不变。）</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>关键中间量</strong>：行消元不改行列式，故 \(\det A_{1:k}=\det U_{1:k}=\prod_{j\le k}u_{jj}\)，于是</p>
+<div class="eq">$$u_{kk}=\frac{\det A_{1:k}}{\det A_{1:k-1}}\quad(\det A_{1:0}:=1) .$$</div>
+<p><strong>（\(\Leftarrow\)）</strong>主子式全非零 ⇒ 每个 \(u_{kk}\ne0\) ⇒ 消元每步主元非零，过程走得通 ⇒ \(A=LU\) 存在。</p>
+<p><strong>（\(\Rightarrow\)）</strong>若 \(A=LU\)，分块得 \(A_{1:k}=L_{1:k}U_{1:k}\)（\(L\) 的左上块仍是单位下三角），故 \(\det A_{1:k}=1\cdot\prod_{j\le k}u_{jj}\ne0\)。</p>
+<p><strong>唯一性</strong>：设 \(L_1U_1=L_2U_2\)，则 \(L_2^{-1}L_1=U_2U_1^{-1}\)。左边是单位下三角、右边是上三角，两者相等 ⇒ 只能都是 \(I\) ⇒ \(L_1=L_2\)、\(U_1=U_2\)。</p>
+</div>
+<div class="warn">易错：只证一个方向；把条件写成 \(\det A\ne0\)（反例 \(\begin{bmatrix}0&1\\1&0\end{bmatrix}\)：\(\det=-1\ne0\) 但 \(A_{1:1}=0\)，无 LU）；唯一性不写"左下=右上 ⇒ 都是 \(I\)"。</div>
+</div>
+
+<div class="ex" id="ex7-2">
+<div class="exh"><span class="exn">7-2</span><span class="ext">Schur 补恒等式与分块消元</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A=\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}\)，\(A_{11}\) 为 \(n\times n\) 非奇异。（a）证明 \(\begin{bmatrix}I&0\\-A_{21}A_{11}^{-1}&I\end{bmatrix}\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}=\begin{bmatrix}A_{11}&A_{12}\\0&A_{22}-A_{21}A_{11}^{-1}A_{12}\end{bmatrix}\)；（b）\(A_{21}\) 经 \(n\) 步行消元消去后，右下块仍是这个 Schur 补。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）</strong>分块相乘：第一块行 \(=[I,0]\cdot A=[A_{11},A_{12}]\)；第二块行 \(=[-A_{21}A_{11}^{-1},I]\cdot A=[-A_{21}A_{11}^{-1}A_{11}+A_{21},\ -A_{21}A_{11}^{-1}A_{12}+A_{22}]=[0,S]\)。</p>
+<p><strong>（b）</strong>第 \(j\) 行（\(j&gt;n\)）在第 \(i\) 列（\(i\le n\)）的乘子是 \(\ell_{ji}=a_{ji}^{(i-1)}/a_{ii}^{(i-1)}\)。这些行运算合起来的效果，等价于一次性左乘 \(E=\begin{bmatrix}I&0\\-A_{21}A_{11}^{-1}&I\end{bmatrix}\)（因为对 \(A_{11}\) 做消元得到的乘子矩阵正是 \(A_{21}A_{11}^{-1}\)）。\(E\) 不动上面的块行，只把右下块换成 \(S\)，故结论成立。</p>
+<p class="hint" style="font-size:12.5px;color:var(--ink2)">注意：实际计算中从不去求 \(A_{11}^{-1}\)，这里只是"概念上的等价"。</p>
+</div>
+<div class="warn">易错：写成 \(A_{22}-A_{12}A_{11}^{-1}A_{21}\)（阶数都不对）；以为要真算逆；说"消元会改变 \(A_{11}\)"。</div>
+</div>
+
+<div class="ex" id="ex7-3">
+<div class="exh"><span class="exn">7-3</span><span class="ext">列消去、尺度变换与完全消元</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>（a）改成从左到右消<strong>列</strong>而不是从上到下消行，得到什么分解？（b）用对角阵 \(D\) 左乘 \(A\) 后再消元，方程组里被缩放的是方程还是未知量？（c）把上三角继续用列变换化为对角阵，结果是什么？</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）</strong>列操作是右乘初等阵。把上三角部分逐列清零后得下三角 \(L\)，即 \(A\,E_1\cdots E_k=L\)，于是</p>
+<div class="eq">$$A=L\,U\quad(L\ \text{下三角},\ U\ \text{单位上三角}) .$$</div>
+<p>与标准 LU 对称，只是 \(L,U\) 的角色互换（对角 1 挪到了 \(U\) 上）。</p>
+<p><strong>（b）</strong>\(DAx=Db\)：第 \(i\) 个方程整体乘 \(d_i\)，<strong>被缩放的是方程</strong>，未知量不变。（若右乘 \(AD\)，则 \(x\to D^{-1}x\)，缩放的是未知量。）</p>
+<p><strong>（c）</strong>行列都消干净后得到 \(A=L\,D\,U\)（\(L\) 单位下三角、\(U\) 单位上三角、\(D\) 对角），即 LDU 分解；成本仍 \(2m^3/3\) 量级。</p>
+</div>
+<div class="warn">易错：（a）写成 \(A=UL\)（顺序反）；(b) 答"未知量被缩放"；以为 LDU 需要额外一遍完整消元、成本翻倍。</div>
+</div>
+
+<h2 id="hw8"><span class="no">08</span>HW8 · 主元、行列式与 Cholesky<span class="sm">11/16 · 8 题 · L14–L16</span></h2>
+
+<div class="ex" id="ex8-1">
+<div class="exh"><span class="exn">8-1</span><span class="ext">行向量左乘与置换矩阵</span><span class="exm">★☆</span></div>
+<span class="lab">题意</span>
+<p>（a）证明 \(x^*A\) 等于用 \(x^*\) 的系数对 \(A\) 的各行作线性组合；（b）\(P\) 是 \(I\) 的行重排，证明 \(PA\) 等于对 \(A\) 的行作对应重排。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>（a）\((x^*A)_j=\sum_i x_i^*a_{ij}\)，即"第 \(i\) 行乘 \(x_i^*\) 再相加"。</p>
+<p>（b）\(P\) 的第 \(i\) 行是 \(e_{\sigma(i)}^{\mathrm T}\)，故 \((PA)_{ij}=\sum_kP_{ik}a_{kj}=a_{\sigma(i)j}\)——第 \(i\) 行取 \(A\) 的第 \(\sigma(i)\) 行。顺带 \(P^{-1}=P^{\mathrm T}\)。</p>
+</div>
+<div class="warn">易错：把 \(x^*A\) 说成"列的线性组合"（那是 \(Ax\)）。</div>
+</div>
+
+<div class="ex" id="ex8-2">
+<div class="exh"><span class="exn">8-2</span><span class="ext">由 LU / \(PA=LU\) 求行列式</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>（a）由 \(A=LU\) 求 \(\det A\)；（b）由 \(PA=LU\) 求 \(\det A\)；（c）描述部分主元消元如何求一般方阵的行列式。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>（a）\(\det A=\det L\det U\)，而 \(L\) 是单位下三角 ⇒ \(\det L=1\)，故</p>
+<div class="eq">$$\det A=\prod_{j=1}^{m}u_{jj} .$$</div>
+<p>（b）\(\det P\det A=\prod u_{jj}\)，且 \(\det P=(-1)^s\)（\(s\) 为行交换次数），故 \(\det A=(-1)^s\prod u_{jj}\)。</p>
+<p>（c）流程：做部分主元消元并记录交换次数 \(s\)；把 \(U\) 的对角元相乘；乘上 \((-1)^s\)。成本 \(2m^3/3\)，远优于按定义展开的 \(m!\) 项。</p>
+</div>
+<div class="warn">易错：把 \(\det L\) 算成 \(\prod l_{jj}\)（对角全 1，所以是 1）；漏掉 \((-1)^s\)。</div>
+</div>
+
+<div class="ex" id="ex8-3">
+<div class="exh"><span class="exn">8-3</span><span class="ext">行主元 \(AQ=LU\)：非奇异必有，奇异未必</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>考虑用<strong>行</strong>主元代替列主元，得到 \(AQ=LU\)（\(Q\) 为重排阵）。（a）\(A\) 非奇异 ⇒ 分解总存在；（b）\(A\) 奇异 ⇒ 不一定存在。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）</strong>归纳：非奇异保证每一步剩下的子矩阵中，必存在某个位置非零（否则剩余 \(m-k+1\) 列中有两列成比例、秩不足），于是总能选一列换到前面得到非零主元，消元可以继续。</p>
+<p><strong>（b）</strong>反例 \(A=\begin{bmatrix}0&0\\1&1\end{bmatrix}\)：两列都是 \((0,1)^{\mathrm T}\)，任何列置换后仍是 \(\begin{bmatrix}0&0\\1&1\end{bmatrix}\)，主元恒为 0，且它不是上三角。若硬要 \(AQ=LU\)，由第 1 列比较得 \(u_{11}=0\)，但第 2 行第 1 列要求 \(l_{21}u_{11}=1\)，矛盾。<strong>故分解不存在。</strong></p>
+</div>
+<div class="warn">易错：举反例时用了非奇异矩阵（\(A\) 非奇异时结论是"必有"）；反例要满足"任何列置换后主元仍为 0 且矩阵非上三角"。</div>
+</div>
+
+<div class="ex" id="ex8-4">
+<div class="exh"><span class="exn">8-4</span><span class="ext">严格列对角占优 ⇒ 列主元消元不换行</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\) 满足 \(|a_{kk}|&gt;\sum_{j\ne k}|a_{jk}|\)（对每个 \(k\)）。证明对它做列主元高斯消元时不会出现行交换。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>第 1 步</strong>：\(|a_{11}|&gt;\sum_{j&gt;1}|a_{j1}|\)，故第 1 列中 \(|a_{11}|\) 最大，主元就在对角线上，不需要换行。</p>
+<p><strong>归纳</strong>：设第 \(k-1\) 步后子块 \(A^{(k-1)}\) 仍严格列对角占优。消元后</p>
+<div class="eq">$$a_{ij}^{(k)}=a_{ij}^{(k-1)}-\frac{a_{ik}^{(k-1)}}{a_{kk}^{(k-1)}}a_{kj}^{(k-1)}\qquad(i,j&gt;k) .$$</div>
+<p>对第 \(j\) 列（\(j&gt;k\)）估计：\(|a_{jj}^{(k)}|\ge|a_{jj}^{(k-1)}|-\big|a_{jk}^{(k-1)}/a_{kk}^{(k-1)}\big|\cdot|a_{kj}^{(k-1)}|\)，而 \(\sum_{i&gt;k,i\ne j}|a_{ij}^{(k)}|\le\sum_{i\ne j}|a_{ij}^{(k-1)}|+\big|a_{kj}^{(k-1)}/a_{kk}^{(k-1)}\big|\sum_{i&gt;k,i\ne j}|a_{ik}^{(k-1)}|\)。两式相减，利用 \(|a_{jj}^{(k-1)}|&gt;\sum_{i\ne j}|a_{ij}^{(k-1)}|\) 与 \(|a_{kk}^{(k-1)}|&gt;\sum_{i&gt;k,i\ne j}|a_{ik}^{(k-1)}|+\) 余项，可得对角仍严格占优。故每一步都不换行。</p>
+</div>
+<div class="warn">易错：只证第 1 步；把"列占优"与"行占优"的估计式混用（结论对偶，但估计要换方向）；说"不换行所以稳定"（不换行只说明无增长）。</div>
+</div>
+
+<div class="ex" id="ex8-5">
+<div class="exh"><span class="exn">8-5</span><span class="ext">Hermite 矩阵特征值全正 ⇒ 正定</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\) 为 Hermite 且所有特征值大于 0。证明 \(A\) 正定（即 \(x^*Ax&gt;0\) 对一切 \(x\ne0\)）。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>Hermite ⇒ 可酉对角化：\(A=Q\Lambda Q^*\)，\(\lambda_j\) 实。对 \(x\ne0\) 令 \(y=Q^*x\ne0\)：</p>
+<div class="eq">$$x^*Ax=y^*\Lambda y=\sum_{j=1}^{m}\lambda_j|y_j|^2 .$$</div>
+<p>因 \(\lambda_j&gt;0\) 且至少一个 \(|y_j|^2&gt;0\)，和为正 ⇒ 正定。</p>
+<p>反向（常作为追问）：若某个 \(\lambda_j\le0\)，取 \(x=q_j\) 得 \(x^*Ax=\lambda_j\le0\)，不正定。</p>
+</div>
+<div class="warn">易错：只用 \(\det A&gt;0\) 或对角元全正（都只是必要条件）；忘了 \(y=Q^*x\ne0\) 这一步。</div>
+</div>
+
+<div class="ex" id="ex8-6">
+<div class="exh"><span class="exn">8-6</span><span class="ext">对称主元、\(|l_{ij}|\le1\)、LDL* 与成本</span><span class="exm">★★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\) 为 Hermite（或实对称，不一定正定）。（a）描述一种保持 Hermite 结构、且使单位下三角因子满足 \(|l_{ij}|\le1\) 的对称主元算法；（b）它的分解形式是什么；（c）近似计算成本。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>（a）</strong>每步在<strong>剩余对角元</strong>中挑绝对值最大者 \(a_{kk}\)，用对称置换 \(PAP^{\mathrm T}\)（同时换第 1、\(k\) 行与第 1、\(k\) 列）把它换到 \((1,1)\)，再消去第 1 列下方元素。因 \(|a_{11}|\) 是该列对角元中最大，乘子</p>
+<div class="eq">$$|l_{i1}|=\frac{|a_{i1}|}{|a_{11}|}\le1$$</div>
+<p>由"选最大对角元"保证（这一步是本题的关键，普通部分主元只能保证 \(|l|\le1\) 对列最大元成立，未必保对称）。</p>
+<p><strong>（b）</strong>\(PAP^{\mathrm T}=L\,D\,L^*\)，其中 \(L\) 单位下三角、\(D\) 对角（实对称时为 \(1\times1\) 与 \(2\times2\) 块的对角）。正定时 \(D\) 的对角元全正，进一步即 Cholesky。</p>
+<p><strong>（c）</strong>约 \(m^3/3\) flops，与 Cholesky 同阶（是普通 LU 的一半）。</p>
+</div>
+<div class="warn">易错：用普通部分主元（只换行）就不保对称；只写 \(LDL^{\mathrm T}\) 却不说明 \(|l|\le1\) 的来源；成本写成 \(2m^3/3\)。</div>
+</div>
+
+<div class="ex" id="ex8-7">
+<div class="exh"><span class="exn">8-7</span><span class="ext">QR 的 \(R\) 与 Cholesky 的 \(U\) 是否相同</span><span class="exm">★★</span></div>
+<span class="lab">题意</span>
+<p>\(A\) 非奇异方阵，\(A=QR\) 且 \(A^*A=U^*U\)，满足 \(r_{jj},u_{jj}&gt;0\)。问 \(R=U\) 是否正确。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p><strong>正确。</strong></p>
+<div class="eq">$$A^*A=(QR)^*(QR)=R^*Q^*QR=R^*R .$$</div>
+<p>所以 \(R\) 是 \(A^*A\) 的一个 Cholesky 因子。Cholesky 分解在"上三角 + 对角元为正"的约定下<strong>唯一</strong>，故 \(U=R\)。</p>
+<p>若去掉"对角元为正"，只能说 \(R=DU\)，其中 \(D\) 是对角、元素模为 1 的矩阵。</p>
+</div>
+<div class="warn">易错：只说"差一个符号"（去掉正对角约定后差的是任意模 1 对角阵）；不写唯一性那一句（这是得分点）。</div>
+</div>
+
+<div class="ex" id="ex8-8">
+<div class="exh"><span class="exn">8-8</span><span class="ext">Cholesky 解 \(Ax=b\) 的后向稳定性</span><span class="exm">★★★ 期末首选</span></div>
+<span class="lab">题意</span>
+<p>仿照 QR 解线性系统的证明，用 Cholesky 分解的后向稳定性定理与三角回代的稳定性定理，证明该算法后向稳定。</p>
+<span class="lab">解答</span>
+<div class="sol">
+<p>算法三步：① \(A=R^*R\)；② 前代 \(R^*y=b\)；③ 回代 \(Rx=y\)。每步各有一个后向稳定估计（都存在小扰动使等式<strong>精确</strong>成立）：</p>
+<div class="eq">$$\tilde R^*\tilde R=A+\delta A,\quad \|\delta A\|/\|A\|=O(\epsilon);\qquad
+(\tilde R^*+\delta R_1)y=b;\qquad (\tilde R+\delta R_2)\tilde x=y .$$</div>
+<p>顺次代入（把 \(y\) 用上一步表示），每传一步只多一个 \(O(\epsilon^2)\) 项，合并得</p>
+<div class="eq">$$(A+\Delta A)\tilde x=b,\qquad \|\Delta A\|=O(\epsilon)\|A\| .$$</div>
+<p>即整体后向稳定。再套"后向稳定 ⇒ 精度"定理：</p>
+<div class="eq">$$\frac{\|\tilde x-x\|}{\|x\|}=O\big(\kappa(A)\,\epsilon\big) .$$</div>
+<p>收尾补一句：成本 \(m^3/3\)，是 LU（\(2m^3/3\)）的一半，且不需要选主元。</p>
+</div>
+<div class="warn">易错：只证分解那一步（题目要整体）；忘套精度定理（少 \(\kappa\)）；前代与回代顺序写反；把 \(\tilde Q\) 那套符号直接照抄成 \(R\)。</div>
+</div>
+
+<div class="note b">
+<span class="h">看完这 8 节之后</span>
+把标 ★ 的 6 道（1-3、1-8、2-5、3-2、3-3、4-4）遮住答案重写一遍——它们期中已经考过，是最低成本的"手感校准"。然后按 <a href="./期末复习-指南.html#s0">R3 §09⁺</a> 的必背清单，重点背 <span class="mono">7-1 · 8-8 · 1-10 · 3-1 · 4-1 · 6-3 · 6-1 · 2-6</span>。
+</div>
+
+<footer>
+<p>NLA-HW · 作业全解 · 8 次测试 51 题。题目由课程测试切片重述（保留全部条件与符号），解答为"考场能写完的紧凑版"；计算题数字与 M/R4/R6 同源，由 <span class="mono">verify_exam_numbers.py</span> 与 numpy 实测核对（2-5 的 \(\sigma=(10\sqrt2,5\sqrt2)\)、2-4 的 \(\sigma_{\min}=0.6847\)、4-4 的 \(x=(1.4483,-1.2984,0.4803)\)）。</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var q = document.getElementById("q");
+  if (!q) return;
+  var exs = [].slice.call(document.querySelectorAll(".ex"));
+  var secs = [].slice.call(document.querySelectorAll("h2"));
+  q.addEventListener("input", function(){
+    var t = q.value.trim();
+    exs.forEach(function(e){
+      e.style.display = (!t || e.textContent.indexOf(t) >= 0) ? "" : "none";
+    });
+    // 搜索时把没有可见题目的节标题也淡出
+    secs.forEach(function(h){
+      if (h.id === "s0") return;
+      var box = h.nextElementSibling, any = false;
+      while (box && box.tagName !== "H2"){
+        if (box.classList && box.classList.contains("ex") && box.style.display !== "none") any = true;
+        box = box.nextElementSibling;
+      }
+      h.style.opacity = (!t || any) ? "" : ".35";
+    });
+  });
+})();
+</script>
+</body>
+</html>
+
+
+

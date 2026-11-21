@@ -438,6 +438,100 @@ $$(A+\Delta A)\tilde x=b,\qquad \frac{\|\Delta A\|}{\|A\|}=O(\epsilon)$$
 
 <p class="hint">若课上顺带提了一句特征值，只记三条：Schur 分解 \(A=QTQ^*\)、幂法收敛比 \(|\lambda_2/\lambda_1|\)、反迭代求最小特征值。其余一概不看。</p>
 
+<h2><span class="no">09⁺</span>必背 8 道原题（命中清单）</h2>
+
+<p>期中 8 题全是作业原题，说明<strong>题库就是作业</strong>。现在作业共 51 题（HW1–HW4 有 27 题、HW5–HW8 有 24 题），期末若同样 8 题、其中 4 题是原题，那么"哪几道"不是随机的——按下面四条规则筛，命中率会明显高于平均。</p>
+
+<div class="note b">
+<span class="h">筛选规则（为什么是这 8 道）</span>
+<ol style="margin:4px 0 0">
+<li><strong>新内容优先</strong>：HW7/HW8 只占题量的 21%，但 11 月才讲、还没考过，必出 2–3 题；</li>
+<li><strong>一题多问优先</strong>：能拆成 3–4 小问的题才配 15–20 分的大题；</li>
+<li><strong>纯证明优先</strong>：期末证明占六成，能背骨架的题收益最高；</li>
+<li><strong>期中已原样考过的，重复概率低</strong>——但同类型的"换数字版"概率反而高，所以骨架照背。</li>
+</ol>
+</div>
+
+<table class="tb small">
+<tr><th>#</th><th>题</th><th>题型</th><th>预测分值</th><th>为什么是它</th></tr>
+<tr class="hi"><td class="c">1</td><td>HW7-1 LU 存在 ⟺ 主子式</td><td>纯证明（双向）</td><td>15</td><td>新内容＋定理主干，双向结构天然适合大题</td></tr>
+<tr class="hi"><td class="c">2</td><td>HW8-8 Cholesky 稳定性</td><td>纯证明（套模板）</td><td>15</td><td>新内容，且能复用 QR 三步；评分点清晰</td></tr>
+<tr class="hi"><td class="c">3</td><td>HW8-2 由 LU/PA=LU 求 det</td><td>计算＋说明</td><td>10</td><td>新内容里唯一"算"的题，送分性质</td></tr>
+<tr><td class="c">4</td><td>HW4-4 MGS / Householder / 最小二乘</td><td>三合一计算</td><td>20</td><td>旧内容最综合，20 分大题的模板</td></tr>
+<tr><td class="c">5</td><td>HW2-5 SVD 七小问</td><td>综合计算</td><td>20</td><td>一次覆盖 SVD 的全部结论</td></tr>
+<tr><td class="c">6</td><td>HW6-3 算法三分类</td><td>概念＋论证</td><td>10</td><td>新内容，三小问正好一题，评分容易</td></tr>
+<tr><td class="c">7</td><td>HW3-3 \(\|P\|_2\ge1\) 与等号</td><td>纯证明</td><td>10</td><td>模板固定，改数字也照答</td></tr>
+<tr><td class="c">8</td><td>HW1-10 范数等价与紧性</td><td>纯证明（四小问）</td><td>10</td><td>覆盖 1-10 全部，四小问撑得起一题</td></tr>
+</table>
+
+<p class="hint">备选（若上面被换掉，优先看这三道）：HW5-3（\(\kappa\) 下界 = 100，纯计算）、HW7-2（Schur 补恒等式）、HW8-4（严格对角占优）。HW5 若出一题，大概率在这三者中。</p>
+
+<h3>背诵方式：只背三行骨架，不背答案</h3>
+<p>老师换数字、加一问时，中间步骤会变，但<strong>起手式、给分点、收尾</strong>三处不变。每道题记这三行，考场上按骨架填数。</p>
+
+<div class="note">
+<span class="h">① HW7-1 · LU 存在性与唯一性</span>
+<b>起手</b>：对 \(k\) 归纳，用「行消元不改行列式」得 \(\det A_{1:k}=\prod_{j\le k}u_{jj}\)。<br>
+<b>给分点</b>：\(u_{kk}=\det A_{1:k}/\det A_{1:k-1}\ne0\) ⇒ 消元走得通（反过来用分块 \(A_{1:k}=L_{1:k}U_{1:k}\)）。<br>
+<b>收尾</b>：唯一性——\(L_2^{-1}L_1=U_2U_1^{-1}\)，左边单位下三角、右边上三角，只能都是 \(I\)。
+</div>
+
+<div class="note">
+<span class="h">② HW8-8 · Cholesky 解 \(Ax=b\) 的后向稳定</span>
+<b>起手</b>：三步各写一个后向稳定等式（\(A=R^*R\)、前代、回代）。<br>
+<b>给分点</b>：顺着传成 \((A+\Delta A)\tilde x=b\)，每传一步只多 \(O(\epsilon^2)\)，故 \(\|\Delta A\|/\|A\|=O(\epsilon)\)。<br>
+<b>收尾</b>：套精度定理得 \(O(\kappa(A)\epsilon)\)；补一句"成本 \(m^3/3\)，是 LU 的一半"。
+</div>
+
+<div class="note">
+<span class="h">③ HW8-2 · 由分解求行列式</span>
+<b>起手</b>：\(A=LU\) 或 \(PA=LU\)。<br>
+<b>给分点</b>：\(\det L=1\)、\(\det P=(-1)^s\) ⇒ \(\det A=(-1)^s\prod u_{jj}\)。<br>
+<b>收尾</b>：算 \(2m^3/3\) flops，对比按定义展开的 \(m!\)。
+</div>
+
+<div class="note">
+<span class="h">④ HW4-4 · MGS + Householder + 最小二乘</span>
+<b>起手</b>：\(q_1=a_1/\|a_1\|\)，逐个 \(r_{ij}=q_i^{\mathrm T}a_j\)、<b>减完再归一化</b>。<br>
+<b>给分点</b>：\(\hat R\) 的每个元素保留根号；两种方法给出的 \(|\hat R|\) 相同（对角符号约定不同）。<br>
+<b>收尾</b>：\(x=\hat R^{-1}\hat Q^{\mathrm T}b\)，验 \(A^{\mathrm T}r=0\) 与 \(\|r\|^2=\|b\|^2-\|\hat Q^{\mathrm T}b\|^2\)。
+</div>
+
+<div class="note">
+<span class="h">⑤ HW2-5 · SVD 七小问</span>
+<b>起手</b>：\(A^{\mathrm T}A\to\lambda_1\ge\lambda_2\to\sigma_j=\sqrt{\lambda_j}\)。<br>
+<b>给分点</b>：\(v_j\) 解方程、\(u_j=Av_j/\sigma_j\)；顶点 \(=\pm\sigma_ju_j\)。<br>
+<b>收尾</b>：四个范数、\(A^{-1}=V\Sigma^{-1}U^{\mathrm T}\)、特征值、面积 \(\pi\sigma_1\sigma_2\) 全部用 \(\sigma\) 说；自检 \(|\det|=\sigma_1\sigma_2\)。
+</div>
+
+<div class="note">
+<span class="h">⑥ HW6-3 · 算法三分类</span>
+<b>起手</b>：复述判据——后向稳定 = 存在 \(\tilde x\) 使输出<b>精确等于</b> \(f(\tilde x)\)。<br>
+<b>给分点</b>：\(x^2\) 取 \(\tilde x=x\sqrt{1+\epsilon}\)；\(x-x\) 结果恰为 0（精确）；\(e\) 的级数截断项 \(&lt;\epsilon\)。<br>
+<b>收尾</b>：级数那条是"稳定但不后向稳定"——截断误差折不成输入扰动，第三档必须写出来。
+</div>
+
+<div class="note">
+<span class="h">⑦ HW3-3 · 投影范数下界与等号</span>
+<b>起手</b>：取 \(0\ne x\in\mathcal{C}(P)\)，\(Px=x\) ⇒ 比值 \(=1\)，故 \(\ge1\)。<br>
+<b>给分点</b>：正交时 \(x=Px+(I-P)x\) 成勾股 ⇒ \(\le1\)，结合得 \(=1\)。<br>
+<b>收尾</b>：非正交时取 \(x\perp\mathcal{N}(P)\) 但 \(x\notin\mathcal{C}(P)\)，勾股失效 ⇒ \(&gt;1\)。
+</div>
+
+<div class="note">
+<span class="h">⑧ HW1-10 · 范数等价与紧性</span>
+<b>起手</b>：每条都走「放缩 → 取上确界 → 构造取等」。<br>
+<b>给分点</b>：\(\sqrt m\) 配行数、\(\sqrt n\) 配列数（写反是最常见扣分）。<br>
+<b>收尾</b>：\(e_1\)、全 1 向量、全 1 矩阵、单列矩阵四个取等例，按小问对应。
+</div>
+
+<div class="note a">
+<span class="h">只背 4 道怎么办</span>
+优先 ①②（新内容＋纯证明，几乎必出）＋ ④⑤（旧内容里最综合的两道大题）。这四道能覆盖约 70 分；剩下 30 分靠 R5 的原子兜住，不要试图再背第五道。
+</div>
+
+<p class="hint">时间预算：8 道骨架全过一遍约 <b>90 分钟</b>（每道 10 分钟：读骨架 → 合上默写三行 → 对一遍）；第 4 晚的 80 分钟模考里，这 8 道要能独立写完整。背诵不等于会做——<b>骨架默写两遍 + 完整写一遍</b>才算过。</p>
+
 <h2><span class="no">10</span>考前 4 晚 · 16 小时怎么用</h2>
 
 <p>剩 4 晚（11/21–11/24），每晚 4 小时，11/25 上午考试。16 小时盖不住全部内容，所以第一原则是<strong>按「1 小时能换多少分」排序</strong>；第二原则是<strong>每晚开头 20 分钟摸前九讲</strong>——间隔重复比集中轰炸有效，而且前九讲占卷面约四分之一。</p>

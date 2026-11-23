@@ -53,10 +53,13 @@ window.MathJax = {
   .pill:hover{border-color:var(--steel);color:var(--steel)}
   .pill.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 
-  .meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--line);background:#FBFAF5}
-  .meta div{padding:9px 14px 10px;font-size:13px;line-height:1.55;color:#3A4756}
-  .meta div+div{border-left:1px solid var(--line)}
+  .meta{border-bottom:1px solid var(--line);background:#FBFAF5}
+  .mcore{padding:9px 14px 10px;border-bottom:1px dashed var(--line);background:#F8F4E9;font-size:13.5px;line-height:1.6;color:#3A4756}
+  .mrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .mrow>div{padding:9px 14px 10px;font-size:13px;line-height:1.55;color:#3A4756}
+  .mrow>div+div{border-left:1px solid var(--line)}
   .meta b{display:block;font:10.5px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.1em;color:var(--steel);margin-bottom:2px}
+  .mcore b{color:var(--cinn)}
   .dbody{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr) minmax(0,1fr);gap:0}
   .col{padding:14px 14px 16px;min-width:0}
   .col+.col{border-left:1px solid var(--line)}
@@ -64,8 +67,13 @@ window.MathJax = {
 
   ol.code{list-style:none;margin:0;padding:0;font:12.4px/1.62 ui-monospace,SFMono-Regular,Consolas,monospace;
     background:#FCFBF7;border:1px solid var(--line);border-radius:3px;padding:7px 4px;overflow-x:auto}
-  ol.code li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:7px;padding:1px 6px 1px 2px;
-    border-left:3px solid transparent;white-space:pre}
+  ol.code li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:7px;padding:2px 6px 3px 2px;
+    border-left:3px solid transparent}
+  ol.code .ls{display:block;min-width:0}
+  ol.code code{display:block;white-space:pre-wrap;overflow-wrap:anywhere}
+  ol.code em{display:block;font-style:normal;font-size:11px;line-height:1.5;color:#8C8579;
+    margin:2px 0 1px;white-space:normal}
+  ol.code li.on em{color:#9A6444}
   ol.code .ln{color:#B3ACA2;text-align:right;user-select:none}
   ol.code code{color:#3A4756}
   ol.code li.on{background:#FBEFD6;border-left-color:var(--cinn)}
@@ -128,8 +136,8 @@ window.MathJax = {
   mjx-container[display="true"]{min-width:0!important}
 
   @media (max-width:820px){
-    .meta{grid-template-columns:minmax(0,1fr)}
-    .meta div+div{border-left:0;border-top:1px solid var(--line)}
+    .mrow{grid-template-columns:minmax(0,1fr)}
+    .mrow>div+div{border-left:0;border-top:1px solid var(--line)}
   }
   @media (max-width:1000px){
     .dbody{grid-template-columns:minmax(0,1fr)}
@@ -180,9 +188,12 @@ window.MathJax = {
       <div class="pick" id="pick"></div>
     </div>
     <div class="meta">
-      <div><b>对象（输入）</b><span id="mIn">—</span></div>
-      <div><b>结果（输出）</b><span id="mOut">—</span></div>
-      <div><b>用处（为什么学它）</b><span id="mUse">—</span></div>
+      <div class="mcore"><b>核心思路</b><span id="mCore">—</span></div>
+      <div class="mrow">
+        <div><b>对象（输入）</b><span id="mIn">—</span></div>
+        <div><b>结果（输出）</b><span id="mOut">—</span></div>
+        <div><b>用处（为什么学它）</b><span id="mUse">—</span></div>
+      </div>
     </div>
     <div class="dbody">
       <div class="col c1">
@@ -1291,6 +1302,220 @@ const ALGO_META = {
   };
 });
 
+/* ===== 核心思路写进 ALGO_CORE，逐行「为什么」写进 ALGO_WHY ===== */
+const ALGO_CORE = {
+  mv_row: '把 Ax 拆成 m 个互不相关的点积，行与行之间没有任何依赖',
+  mv_col: '把 Ax 读成「用 x 当权重、把 A 的列拼起来」',
+  tri: '三角结构让每个方程只含一个新未知数，于是能逐个击破',
+  proj: '把 b 拆成「平面内分量 + 垂直残差」，残差正交是最优性的来源',
+  cgs: '每个新列减掉在所有旧方向上的投影，剩下的自然正交',
+  mgs: '同上，但每扣一次就用最新的剩余量，误差不累积到下一步',
+  house: '一个反射把整列下半部分一次清零，而且不放大长度',
+  givens: '一次旋转只清一个格子，代价小、绝不牵连别处',
+  lsne: '把「最小化残差」的高维问题变成解一个 n×n 方阵',
+  lsqr: '先在正交变换下把 A 变上三角再回代 —— 条件数不被平方',
+  lu: '消元的同时把乘子存下来，下次换个右端可以复用',
+  plu: '先换行挑最大的主元再消元，避开零主元与元素增长',
+  chol: '对称 + 正定 ⇒ 只需一半工作，而且能「开平方」',
+  sypivot: '选主元只能在剩余对角元里选，代价是换行必须同时换列',
+  cost_mv: '数清楚内层做了多少次乘加',
+  cost_gs: '数清楚内层做了多少次乘加',
+  cost_house: '数清楚内层做了多少次乘加',
+  cost_givens: '数清楚内层做了多少次乘加',
+  cost_lu: '数清楚内层做了多少次乘加',
+  cost_chol: '数清楚内层做了多少次乘加'
+};
+const ALGO_WHY = {
+  mv_row: [
+      'b 是 m 维向量，先清零，避免累加到旧值上',
+      '外层逐行：第 i 个分量只用到 A 的第 i 行',
+      '行内累加器清零 —— 每行都从这里重新开始',
+      '内层扫过这一行的 n 个元素，做一次点积',
+      '一次乘 + 一次加 = 2 flop；同一行内顺序可任意换',
+      '行算完才写回：所以整个循环可以按行并行',
+      '输出的第 i 个分量 = A 第 i 行与 x 的点积'
+  ],
+  mv_col: [
+      '同样先清零，但这次 b 是「一列一列拼出来」的',
+      '外层逐列：每次只处理 A 的一整列',
+      '内层把这列按权重 x(j) 加到 b 上（一次 axpy）',
+      '只有第 i 行的元素会进到 b(i)',
+      '循环结束时 b = x₁a₁ + … + x_n a_n',
+      '',
+      '同一个结果两种读法：行看「点积」，列看「线性组合」'
+  ],
+  tri: [
+      'L 是单位下三角：第 1 个方程只含一个未知数',
+      '前代从 i=1 往后推，每个新方程只多一个未知量',
+      '先用右端项初始化',
+      '把已经解出来的 y(j)（j < i）全部扣掉',
+      '扣完只剩 y(i)，不用除（对角是 1）',
+      '回代必须反着来：最后一个方程只含一个未知数',
+      '从 i=m 倒着往前走',
+      '先用 y 初始化',
+      'i 之后的分量都已经解出来了',
+      '扣掉这些已知分量的贡献',
+      '最后才除以对角元 —— 漏掉这步，解会放大 u(ii) 倍',
+      'x 就是解；总成本只有 m²'
+  ],
+  proj: [
+      'Q 的列正交归一，所以 P = QQ* 不需要求逆',
+      '投影向量从零累加',
+      '对每一个基方向单独算分量',
+      '内层是一个点积：b 在这个方向上有多少分量',
+      '把分量乘回方向向量：一次秩一累加',
+      '残差 = 原向量 − 投影，它与 span(Q) 正交',
+      '返回投影与残差；P² = P 的几何含义就在这里'
+  ],
+  cgs: [
+      '逐列处理：第 j 列要和前面所有 q 正交',
+      '当前列整列复制一份，准备被扣',
+      '前面已经有 j−1 个正交方向',
+      '关键：经典 GS 始终用原始 a_j 取投影（不随扣减更新）',
+      '扣掉在 q_i 上的分量，剩下的更接近正交',
+      '扣完后剩下的长度就是 R 的对角元',
+      '归一化得到单位向量 q_j',
+      'Q 正交、R 上三角、A = QR；但误差会逐步累积'
+  ],
+  mgs: [
+      '与 CGS 完全相同的骨架',
+      '同样先复制当前列',
+      '逐个已有方向做投影',
+      '唯一差别：用已经被扣过的 v，而不是原始 a_j',
+      '所以每次扣的都是「当前剩余」的投影，误差不进下一步',
+      '剩余长度 → R 的对角元',
+      '归一化',
+      '浮点下 MGS 的正交误差比 CGS 小一个量级'
+  ],
+  house: [
+      'm ≥ n；目标是用一个反射把整列下半部分清零',
+      '外循环 k：处理第 k 列，也就是第 k 个反射',
+      '取出这一列从第 k 行往下的部分',
+      'v 取 x + ‖x‖e₁：这样反射后 x 落到 −e₁ 方向，不会相消',
+      '归一化：反射只认方向，不认长度',
+      '内层 j：右边每一列都要做同样的反射',
+      '先算 v 在这一列上的分量 w（一个点积）',
+      '再减去 2wv，就是 I−2vv* 作用在这一列上',
+      'R 已上三角；Q 不必显式形成，按反射顺序累乘'
+  ],
+  givens: [
+      '逐列推进，把每列对角线以下逐个转掉',
+      '内层：第 k 列里从第 k+1 行往下处理',
+      '已经是 0 就跳过，省一次旋转',
+      'c 是「保留的那一份」：a(k,k)/半径',
+      's 是「要转走的那一份」：a(i,k)/半径',
+      '第 k 行：按 c、s 混合新旧两行',
+      '第 i 行：用旧的 r_k 算；转完 a(i,k) 正好为 0',
+      'R 上三角；每次只碰两行，适合稀疏与并行'
+  ],
+  lsne: [
+      '把「最小化 ‖Ax−b‖」化成解方阵：A*Ax = A*b',
+      '逐列、逐元素地组装 A*A',
+      'G 的 (i,j) 元 = A 第 i 列与第 j 列的内积',
+      '最内层沿 m 个方程累加',
+      '两列对应元素相乘再相加',
+      '右端项也同样用 A* 乘过去',
+      '解 n×n 方阵 —— 这就是「法方程」的名字来源',
+      '检查残差与列空间正交；代价是 κ 被平方'
+  ],
+  lsqr: [
+      '不对 A 做 A*A，而是直接对 A 做反射',
+      'n 个反射就把 A 变成上三角',
+      '对第 k 列构造反射向量',
+      '反射作用到 A 的剩余列上',
+      '同一个反射必须同时作用于 b，否则方程被改掉',
+      '回代解上三角，只用 R 的 n×n 块',
+      '残差用原始 A、b 算，不受中间变换影响'
+  ],
+  lu: [
+      '外循环 k：以第 k 列为「要清的列」',
+      '内层 i：逐行把第 k 列下方清成 0',
+      '乘子 = 要消掉的元素 ÷ 主元，就是要减去的倍数',
+      '整行减去 l 倍的主元行，a(i,k) 自然变成 0',
+      '被清零的位置改存乘子：同一块内存同时放 L 与 U',
+      'U 在上三角，L 在对角线以下（对角全 1）'
+  ],
+  plu: [
+      '骨架同无主元版，只多一步「选主元」',
+      '在该列对角线以下找绝对值最大的元素',
+      '换行要同步换 P，以及 L 里已经算好的列',
+      '内层逐行消元',
+      '乘子 = 当前元素 ÷ 新主元',
+      '行更新：减去 l 倍主元行',
+      '乘子落位到 L',
+      'PA = LU；换行避开零主元与元素增长'
+  ],
+  chol: [
+      'A 对称正定 ⇒ 只算一半，写成 A = R*R',
+      '逐列构造 R（按列，而不是按行）',
+      '第 j 列只需算第 i ≤ j 行',
+      '先取原元素，准备扣掉「已算部分」',
+      '内层沿 k 累加前面各行已经算好的贡献',
+      'r(k,i) 与 r(k,j) 都在更早的列里算过了',
+      '非对角元：剩余量除以同列的对角元',
+      '对角元：剩余量开方；s ≤ 0 说明矩阵不正定',
+      'R 上三角、对角正；成本 m³/3，正好是 LU 的一半'
+  ],
+  sypivot: [
+      '逐列消元，但每一步先挑一个「好」的对角元',
+      '只在对角元里挑最大 —— 这是保持对称的选法',
+      '换行必须同时换列，否则 A 不再是 Hermite',
+      '内层逐行消元',
+      '乘子 = 当前元素 ÷ 主元',
+      '行更新（对称性由「同换行列」保证）',
+      '乘子落位，腾出空间存 L',
+      'PAP* = LDL*；正定时 D 全正，开方即 Cholesky'
+  ],
+  cost_mv: [
+      '计数从 0 开始',
+      '外层：m 行',
+      '内层：每行 n 个元素',
+      '每个元素一次乘一次加，记 2 flop',
+      '求和后与闭式对账 —— 这就是「成本」的定义',
+      '2mn 是主项，低阶项忽略'
+  ],
+  cost_gs: [
+      '计数从 0 开始',
+      '外层：n 列',
+      '内层：前面已经有 j−1 个方向',
+      '一次点积 2m，加一次 axpy 2m',
+      'Σ 得 2mn(n−1)，主项 2mn²',
+      '与 MGS 同阶，常数也一样'
+  ],
+  cost_house: [
+      '计数从 0 开始',
+      '外层：n 个反射',
+      '内层：反射要作用在剩下的 n−k+1 列上',
+      '每列算 w 再更新，各 2(m−k+1)',
+      'Σ 得 2mn²−2n³/3：块在缩小，所以比 GS 省',
+      '方阵时约 4/3·n³'
+  ],
+  cost_givens: [
+      '计数从 0 开始',
+      '外层：n 列',
+      '内层：本列下方每个元素一次旋转',
+      '一次旋转碰两行，约 6n flop',
+      'Σ 约 3n³：正好是 MGS 的 1.5 倍',
+      '作业那句「比 MGS 多 50%」就是这个比值'
+  ],
+  cost_lu: [
+      '计数从 0 开始',
+      '外层：m−1 列',
+      '内层：本列下方每一行',
+      '每行更新 n−k 个元素，每个 2 flop',
+      'Σ 得 2m³/3',
+      '比 QR 便宜，因为没有正交化的额外工作'
+  ],
+  cost_chol: [
+      '计数从 0 开始',
+      '外层：m 列',
+      '内层：只算这一列的上三角部分',
+      '点积 2(i−1)，再加一次除法或开方',
+      'Σ 得 m³/3',
+      '正好是 LU 的一半 —— 对称性换来的折扣'
+  ]
+};
+
 const ALGOS = [
   algoMVrow(), algoMVcol(), algoTri(), algoProj(),
   algoGS('cgs'), algoGS('mgs'), algoHouse(), algoGivens(),
@@ -1655,8 +1880,12 @@ function paint(){
   $('#mIn').textContent = mt.i;
   $('#mOut').textContent = mt.o;
   $('#mUse').textContent = mt.u;
+  $('#mCore').textContent = ALGO_CORE[cur.id] || '—';
+  const why = ALGO_WHY[cur.id] || [];
   $('#code').innerHTML = cur.pseudo.map((line, k) =>
-    '<li class="' + (k === f.pc ? 'on' : '') + '"><span class="ln">' + (k + 1) + '</span><code>' + ESC(line) + '</code></li>'
+    '<li class="' + (k === f.pc ? 'on' : '') + '"><span class="ln">' + (k + 1) + '</span>' +
+    '<span class="ls"><code>' + ESC(line) + '</code>' +
+    (why[k] ? '<em>' + ESC(why[k]) + '</em>' : '') + '</span></li>'
   ).join('');
   $('#vars').innerHTML = (f.vars && f.vars.length)
     ? f.vars.map(t => '<div class="vrow"><span class="vk">' + ESC(t[0]) + '</span><span class="vv">' + ESC(t[1]) + '</span></div>').join('')

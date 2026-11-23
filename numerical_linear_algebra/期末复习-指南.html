@@ -175,13 +175,13 @@ $$\hat\kappa(x)=\lim_{\delta\to0}\sup_{\|\delta x\|\le\delta}\frac{\|\delta f\|}
 <h3>2.2 四个例子（每个都可能被改成考题）</h3>
 <table class="tb">
 <tr><th>问题</th><th>条件数</th><th>结论与用途</th></tr>
-<tr><td>\(f(x)=x^2\)</td><td>\(1\)</td><td>\(\kappa=1\)，绝对适定；乘法的模型</td></tr>
+<tr><td>\(f(x)=x^2\)</td><td>\(2\)</td><td>\(\kappa=\dfrac{|x\,f'(x)|}{|f(x)|}=\dfrac{2x^2}{x^2}=2\)，与 \(x\) 无关；平方把相对误差放大 2 倍（一般 \(f=x^{p}\) 时 \(\kappa=|p|\)）</td></tr>
 <tr><td>\(f(x)=\sqrt{x}\)</td><td>\(1/2\)</td><td>同样适定；开方不放大相对误差</td></tr>
 <tr><td>\(f(x)=x_1-x_2\)</td><td>\(\dfrac{2}{|x_1-x_2|/\max_i|x_i|}\)</td><td>用 \(\|\cdot\|_\infty\) 时 \(\|J\|_\infty=2\)；\(x_1\approx x_2\) 时爆炸 ⇒ <strong>消去误差</strong></td></tr>
 <tr><td>\(A\) 的特征值（非对称）</td><td>可任意大</td><td>\(\begin{bmatrix}1&1000\\0&1\end{bmatrix}\to\{1,1\}\)，把 \(a_{21}\) 改成 \(0.001\) 后变 \(\{0,2\}\)：扰动 \(10^{-3}\) 换来特征值变动 \(1\)</td></tr>
 <tr><td>\(A\) 的特征值（对称）</td><td>\(\hat\kappa=1\)，\(\kappa=\|A\|_2/|\lambda|\)</td><td>\(|\delta\lambda|\le\|\delta A\|_2\)，等号当 \(\delta A\) 是单位阵倍数 ⇒ 对称特征值问题绝对适定</td></tr>
 </table>
-<p class="hint">第二行和第五行是同一个"谱"问题的两面，考试常拿来对照出题：<strong>对称适定、非对称可能极病态</strong>。</p>
+<p class="hint">最后两行（两个「特征值」）是同一个"谱"问题的两面，考试常拿来对照出题：<strong>对称适定、非对称可能极病态</strong>。</p>
 
 <h3>2.3 三个必须会证的定理</h3>
 <p><strong>（i）矩阵—向量乘的两个条件数。</strong>设 \(A\) 非奇异，\(Ax=b\)。</p>

@@ -805,12 +805,30 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 <p>\(A\) 满足 \(|a_{kk}|&gt;\sum_{j\ne k}|a_{jk}|\)（对每个 \(k\)）。证明对它做列主元高斯消元时不会出现行交换。</p>
 <span class="lab">解答</span>
 <div class="sol">
-<p><strong>第 1 步</strong>：\(|a_{11}|&gt;\sum_{j&gt;1}|a_{j1}|\)，故第 1 列中 \(|a_{11}|\) 最大，主元就在对角线上，不需要换行。</p>
-<p><strong>归纳</strong>：设第 \(k-1\) 步后子块 \(A^{(k-1)}\) 仍严格列对角占优。消元后</p>
-<div class="eq">$$a_{ij}^{(k)}=a_{ij}^{(k-1)}-\frac{a_{ik}^{(k-1)}}{a_{kk}^{(k-1)}}a_{kj}^{(k-1)}\qquad(i,j&gt;k) .$$</div>
-<p>对第 \(j\) 列（\(j&gt;k\)）估计：\(|a_{jj}^{(k)}|\ge|a_{jj}^{(k-1)}|-\big|a_{jk}^{(k-1)}/a_{kk}^{(k-1)}\big|\cdot|a_{kj}^{(k-1)}|\)，而 \(\sum_{i&gt;k,i\ne j}|a_{ij}^{(k)}|\le\sum_{i\ne j}|a_{ij}^{(k-1)}|+\big|a_{kj}^{(k-1)}/a_{kk}^{(k-1)}\big|\sum_{i&gt;k,i\ne j}|a_{ik}^{(k-1)}|\)。两式相减，利用 \(|a_{jj}^{(k-1)}|&gt;\sum_{i\ne j}|a_{ij}^{(k-1)}|\) 与 \(|a_{kk}^{(k-1)}|&gt;\sum_{i&gt;k,i\ne j}|a_{ik}^{(k-1)}|+\) 余项，可得对角仍严格占优。故每一步都不换行。</p>
+<p><strong>记号</strong>：第 \(k\) 步消元后的尾块记作 \(A^{(k)}\)，乘子 \(l_{ik}=a_{ik}^{(k-1)}/a_{kk}^{(k-1)}\)（\(i&gt;k\)）。要证的是每一步的主元都落在对角线上，因此先把"尾块仍然严格列占优"证下来。</p>
+
+<p><strong>第 1 步</strong>：由 \(|a_{11}|&gt;\sum_{j&gt;1}|a_{j1}|\)，对每个 \(i&gt;1\) 都有 \(|a_{11}|&gt;|a_{i1}|\)，所以第 1 列绝对值最大的元素就在 \((1,1)\)，列主元不必换行。</p>
+
+<p><strong>关键引理</strong>：消元一次后，尾块仍严格列对角占优。命门是一个数</p>
+<div class="eq">$$\theta:=\sum_{i&gt;k}|l_{ik}|=\frac{1}{|a_{kk}|}\sum_{i&gt;k}|a_{ik}|&lt;1 .$$</div>
+<p>\(\theta&lt;1\) 恰好由第 \(k\) 列的严格占优给出，也是整个证明里唯一用到"严格"两个字的地方。记 \(S_j\) 为第 \(j\) 列去掉 \(a_{kj}\) 之后的非对角绝对值之和，对 \(j&gt;k\) 有</p>
+<div class="eq">$$\begin{aligned}|\hat a_{jj}|&amp;\ge |a_{jj}|-|l_{jk}|\,|a_{kj}|,\\ \sum_{i&gt;k,\,i\ne j}|\hat a_{ij}|&amp;\le S_j+|a_{kj}|\bigl(\theta-|l_{jk}|\bigr).\end{aligned}$$</div>
+<p>两式相减时，\(|a_{kj}|\) 的两个系数正好合成 \(\theta\)（<b>不是 \(2\)</b>）：</p>
+<div class="eq">$$|\hat a_{jj}|-\sum_{i&gt;k,i\ne j}|\hat a_{ij}|\ge\bigl(|a_{jj}|-S_j\bigr)-\theta\,|a_{kj}|&gt;(1-\theta)\,|a_{kj}|&gt;0 .$$</div>
+<p>中间那个"\(&gt;\)"用的是第 \(j\) 列的占优：\(|a_{jj}|&gt;|a_{kj}|+S_j\)，把 \(S_j\) 挪到左边就得到 \(|a_{jj}|-S_j&gt;|a_{kj}|\)。于是尾块仍严格列占优。</p>
+
+<p><strong>归纳</strong>：尾块严格列占优 \(\Rightarrow\) 它的每个对角元都是所在列绝对值最大元 \(\Rightarrow\) 列主元必取在对角线上 \(\Rightarrow\) 不换行。第 1 步成立，且每步之后条件仍成立，故全程不换行。顺带得到一个定量结论：占优余量每步最多按 \((1-\theta)\) 的比例收缩，不会归零。</p>
 </div>
-<div class="warn">易错：只证第 1 步；把"列占优"与"行占优"的估计式混用（结论对偶，但估计要换方向）；说"不换行所以稳定"（不换行只说明无增长）。</div>
+
+<div class="box" style="margin:12px 0">
+<b>为什么不能"把两个估计直接相减"</b>
+<p style="margin:8px 0 0">取下面这个矩阵（三列占优余量分别是 \(0.5,\,8.5,\,0.5\)）：</p>
+<div class="eq">$$A=\begin{bmatrix}10&amp;1&amp;9\\9&amp;10&amp;0.5\\0.5&amp;0.5&amp;10\end{bmatrix}$$</div>
+<p style="margin:0">此时 \(\theta=(9+0.5)/10=0.95\)。看第 3 列：去掉本列的 \(a_{13}\) 后余量是 \(10-0.5=9.5\)，而 \(|a_{13}|=9\)。
+若把两项各按整份 \(9\) 扣掉，得 \(9.5-18&lt;0\)，什么也证不出；把系数合并成 \(\theta&lt;1\) 才有 \(9.5-0.95\times9=0.95&gt;0\)。
+实测消元后 \(\hat a_{33}=9.55\)、\(\hat a_{23}=-7.6\)，真实余量 \(1.95&gt;0\)，尾块列占优得以保持。</p>
+</div>
+<div class="warn">易错：把两个估计直接相减却不控制 \(|a_{kj}|\) 的系数（结果可能是负数，方向立不住）· 只证第 1 步，不去证尾块保持占优 · 把"列占优"当"对角元最大"的同义反复（需要整列的绝对值和）· 把"列占优"与"行占优"的估计式混用（结论对偶，方向相反）· 说"不换行所以稳定"（不换行只说明没有增长）。</div>
 </div>
 
 <div class="ex" id="ex8-5">

@@ -307,7 +307,7 @@ Hermite \(A\) 的特征值全大于 0 \(\iff\) \(A\) 正定（即 \(x^*Ax&gt;0\)
 <div class="qh"><span class="qn">HW8-6</span><span class="qt">对称主元、\(|l_{ij}|\le1\)、分解形式与成本</span></div>
 <div class="body"><p>（a）描述保持 Hermite 结构的对称主元算法，且 \(L\) 单位下三角、\(|l_{ij}|\le1\)；（b）分解长什么样；（c）成本。</p></div>
 <details><summary>答案要点</summary><div class="ans">
-<p>（a）每步在剩余对角元中挑绝对值最大者 \(a_{kk}\)，用<strong>对称置换</strong>（同时换第 1、k 行与第 1、k 列，即 \(PAP^{\mathrm T}\)）把它换到 \((1,1)\)，再消去第一列下方元素。因子 \(|l_{i1}|=|a_{i1}|/|a_{11}|\le1\) 由"选最大对角元"保证。</p>
+<p>（a）第 \(j\) 步只动右下角的尾子阵 \(A_{j:m,\,j:m}\)（整个矩阵的 \((1,1)\) 早已消完、不再有用）。在尾子阵的对角元 \(a_{jj},\dots,a_{mm}\) 中挑绝对值最大者 \(a_{kk}\)，作<strong>对称置换</strong>（同时换第 \(j\)、\(k\) 行与第 \(j\)、\(k\) 列，即 \(\Pi_jA\Pi_j^{\mathrm T}\)）把它送到尾子阵左上角，即原矩阵的 \((j,j)\)，再消去第 \(j\) 列下方元素。正定时乘子 \(|l_{ij}|=|a_{ij}|/|a_{jj}|\le1\) 由"选最大对角元"保证（不定时要 \(1\times1/2\times2\) 混合主元）。</p>
 <p>（b）\(PAP^{\mathrm T}=L\,D\,L^*\)（\(L\) 单位下三角、\(D\) 对角，实对称时 \(D\) 为块对角 \(1\times1\) 或 \(2\times2\)）。即 <strong>LDL* 分解</strong>；正定时 \(D\) 对角元全正，就是 Cholesky 的中间步骤。</p>
 <p>（c）\(m^3/3\) 量级（比 LU 少一半），与 Cholesky 同阶。</p>
 </div></details>

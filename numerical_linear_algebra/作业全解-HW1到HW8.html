@@ -851,9 +851,9 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 <p>\(A\) 为 Hermite（或实对称，不一定正定）。（a）描述一种保持 Hermite 结构、且使单位下三角因子满足 \(|l_{ij}|\le1\) 的对称主元算法；（b）它的分解形式是什么；（c）近似计算成本。</p>
 <span class="lab">解答</span>
 <div class="sol">
-<p><strong>（a）</strong>每步在<strong>剩余对角元</strong>中挑绝对值最大者 \(a_{kk}\)，用对称置换 \(PAP^{\mathrm T}\)（同时换第 1、\(k\) 行与第 1、\(k\) 列）把它换到 \((1,1)\)，再消去第 1 列下方元素。因 \(|a_{11}|\) 是该列对角元中最大，乘子</p>
-<div class="eq">$$|l_{i1}|=\frac{|a_{i1}|}{|a_{11}|}\le1$$</div>
-<p>由"选最大对角元"保证（这一步是本题的关键，普通部分主元只能保证 \(|l|\le1\) 对列最大元成立，未必保对称）。</p>
+<p><strong>（a）</strong>记第 \(j\) 步要消的是右下角<strong>尾子阵</strong> \(A_{j:m,\,j:m}\)：前 \(j-1\) 列已消成上三角，整个矩阵的 \((1,1)\) 到 \((j-1,j-1)\) 此时不再参与运算。所以在尾子阵的<strong>对角元</strong> \(a_{jj},\dots,a_{mm}\) 中挑绝对值最大者 \(a_{kk}\)（\(k\ge j\)），用对称置换 \(\Pi_jA\Pi_j^{\mathrm T}\)（同时交换第 \(j\)、\(k\) 行与第 \(j\)、\(k\) 列）把它送到尾子阵的左上角，即<strong>原矩阵的 \((j,j)\)</strong>；再消去第 \(j\) 列下方元素。此时 \(a_{jj}\) 已是尾子阵里绝对值最大的对角元，正定时由 \(|a_{ij}|^2\le a_{ii}a_{jj}\le a_{jj}^2\) 得乘子</p>
+<div class="eq">$$|l_{ij}|=\frac{|a_{ij}|}{|a_{jj}|}\le1,\qquad i&gt;j .$$</div>
+<p>（这一步是本题的关键：普通部分主元只换行，不保 Hermite 结构；\(|l|\le1\) 的推导用到了正定性，不定时须改用 \(1\times1/2\times2\) 混合主元，见 §4.4。）</p>
 <p><strong>（b）</strong>\(PAP^{\mathrm T}=L\,D\,L^*\)，其中 \(L\) 单位下三角、\(D\) 对角（实对称时为 \(1\times1\) 与 \(2\times2\) 块的对角）。正定时 \(D\) 的对角元全正，进一步即 Cholesky。</p>
 <p><strong>（c）</strong>约 \(m^3/3\) flops，与 Cholesky 同阶（是普通 LU 的一半）。</p>
 </div>

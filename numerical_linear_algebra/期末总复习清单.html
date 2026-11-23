@@ -954,7 +954,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-si
 <p>谱分解 \(A=Q\Lambda Q^*\)（Hermite 可酉对角化）。令 \(y=Q^*x\ne0\)：\(x^*Ax=\sum\lambda_j|y_j|^2&gt;0\)。反向：某 \(\lambda_j\le0\) 时取 \(x=q_j\) 得 \(\le0\)。</p>
 </div></details>
 <details><summary>8-6 · 对称主元、\(|l_{ij}|\le1\)、LDL*、成本</summary><div class="ans">
-<p>第 \(j\) 步只看尾子阵 \(A_{j:m,\,j:m}\)，在其对角元中挑绝对值最大者 \(a_{kk}\)，用<strong>对称置换</strong>（同换第 \(j,k\) 行列，\(\Pi_jA\Pi_j^{\mathrm T}\)）送到 \((j,j)\) 再消去第 \(j\) 列下方。正定时 \(|l_{ij}|=|a_{ij}|/|a_{jj}|\le1\)（不定时须 \(1\times1/2\times2\) 混合主元）。分解为 \(\Pi A\Pi^{\mathrm T}=LDL^*\)（正定时 \(D\) 对角正，即 Cholesky 的中间步骤）。成本 \(m^3/3\)。</p>
+<p>第 \(j\) 步只看尾子阵 \(A_{j:m,\,j:m}\)，在其对角元中挑绝对值最大者 \(a_{kk}\)，用<strong>对称置换</strong>（同换第 \(j,k\) 行列，\(\Pi_jA\Pi_j^{\mathrm T}\)）送到 \((j,j)\) 再消去第 \(j\) 列下方。正定时 \(|l_{ij}|=|a_{ij}|/|a_{jj}|\le1\)（不定时须 \(1\times1/2\times2\) 混合主元）。分解为 \(\Pi A\Pi^{\mathrm T}=LDL^*\)（正定时 \(D\) 对角正，即 Cholesky 的中间步骤）。成本 \(m^3/3\)（\(\sum_{s}(s-1)s\) 只算尾子阵下三角；LU 是 \(2m^3/3\)）。</p>
 </div></details>
 <details><summary>8-7 · QR 的 \(R\) 与 Cholesky 的 \(U\) 是否相同</summary><div class="ans">
 <p><strong>相同。</strong>\(A^*A=R^*Q^*QR=R^*R\) ⇒ \(R\) 是 \(A^*A\) 的 Cholesky 因子；对角元为正时唯一 ⇒ \(U=R\)。<strong>没有对角正的条件只能说 \(R=DU\)。</strong></p>

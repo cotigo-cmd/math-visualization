@@ -133,10 +133,24 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 <div class="eq">$$A^{\mathrm{T}}A=\begin{bmatrix}-2&-10\\11&5\end{bmatrix}\begin{bmatrix}-2&11\\-10&5\end{bmatrix}=\begin{bmatrix}104&-72\\-72&146\end{bmatrix}.$$</div>
 <p>特征多项式 \(\lambda^2-250\lambda+10000=0\)，得 \(\lambda_1=200,\ \lambda_2=50\)，于是</p>
 <div class="eq">$$\sigma_1=10\sqrt2\approx14.1421,\qquad \sigma_2=5\sqrt2\approx7.0711.$$</div>
-<p>\(v_1\) 对应 \(\lambda_1\)：由 \((104-200)x-72y=0\) 得 \(y=-\tfrac43x\)，取 \(v_1=\tfrac15(3,-4)^{\mathrm{T}}\)。于是</p>
+<p><strong>第一步 · 求 \(v_1\)：解 \((A^{\mathrm T}A-\lambda_1I)v=0\)。</strong>把矩阵写出来：</p>
+<div class="eq">$$A^{\mathrm T}A-200I=\begin{bmatrix}104-200&-72\\-72&146-200\end{bmatrix}=\begin{bmatrix}-96&-72\\-72&-54\end{bmatrix}
+\quad\Longrightarrow\quad -96x-72y=0\ \Longrightarrow\ y=-\tfrac43x .$$</div>
+<p>两行其实是<strong>同一个方程</strong>（都约化成 \(4x+3y=0\)）—— \(\lambda_1\) 是特征值，这个矩阵必奇异，所以只有一行独立，取哪一行都行。取 \(x=3\) 把分母消掉得 \((3,-4)\)，单位化 \(v_1=\tfrac15(3,-4)^{\mathrm T}\)。</p>
+<p><strong>第二步 · 求 \(v_2\)：同法，换 \(\lambda_2=50\)。</strong></p>
+<div class="eq">$$A^{\mathrm T}A-50I=\begin{bmatrix}104-50&-72\\-72&146-50\end{bmatrix}=\begin{bmatrix}54&-72\\-72&96\end{bmatrix}
+\quad\Longrightarrow\quad 54x-72y=0\ \Longrightarrow\ y=\tfrac34x .$$</div>
+<p>取 \((4,3)\)，\(v_2=\tfrac15(4,3)^{\mathrm T}\)。因为 \(\lambda_1\ne\lambda_2\)，\(A^{\mathrm T}A\) 对称，所以 \(v_1\perp v_2\) <strong>自动成立</strong>，不必再做 Gram–Schmidt。</p>
+<p><strong>第三步 · 用 \(u_j=Av_j/\sigma_j\) 反过来求左奇异向量。</strong></p>
 <div class="eq">$$u_1=\frac{Av_1}{\sigma_1}=\frac{1}{5\cdot10\sqrt2}\begin{bmatrix}-2&11\\-10&5\end{bmatrix}\begin{bmatrix}3\\-4\end{bmatrix}=\frac{1}{50\sqrt2}\begin{bmatrix}-50\\-50\end{bmatrix}=\frac{1}{\sqrt2}\begin{bmatrix}-1\\-1\end{bmatrix}.$$</div>
-<p>同法得 \(v_2=\tfrac15(4,3)^{\mathrm{T}}\)，\(u_2=\tfrac{1}{\sqrt2}(1,-1)^{\mathrm{T}}\)。再让 \(u_1,v_1\) 同时变号，得到<strong>负号最少</strong>的形式：</p>
+<p>同法 \(u_2=\dfrac{Av_2}{\sigma_2}=\dfrac{1}{5\cdot5\sqrt2}\begin{bmatrix}-2&11\\-10&5\end{bmatrix}\begin{bmatrix}4\\3\end{bmatrix}=\dfrac{1}{\sqrt2}(1,-1)^{\mathrm{T}}\)。再让 \(u_1,v_1\) 同时变号，得到<strong>负号最少</strong>的形式：</p>
 <div class="eq">$$U=\frac{1}{\sqrt2}\begin{bmatrix}1&1\\1&-1\end{bmatrix},\qquad \Sigma=\begin{bmatrix}10\sqrt2&0\\0&5\sqrt2\end{bmatrix},\qquad V=\frac15\begin{bmatrix}-3&4\\4&3\end{bmatrix}.$$</div>
+<div class="note" style="border-left:3px solid #B04A2F;background:#FDF6F3;padding:10px 14px;margin:12px 0;font-size:14px">
+<strong>求 \(v\) 的三条铁律</strong>（考场上最容易错的地方）：<br>
+① \(v\) 是 <strong>\(A^{\mathrm T}A\)</strong> 的特征向量，<strong>不是 \(A\) 的</strong>。本题 \(A\) 非对称，它自己的特征向量与 \(v\) 完全无关（本题 \(A\) 的特征值是 \(4\pm\sqrt{21}i\)，连实数都不是）。<br>
+② 只解 \((A^{\mathrm T}A-\lambda I)v=0\) 的<strong>一行</strong>就够，因为矩阵奇异；解出来的是一个<strong>方向</strong>，还要单位化。<br>
+③ \(\lambda\) 互异时 \(v\) 自动正交；若有重根，才需要用 Gram–Schmidt 在特征子空间里挑一组正交基。
+</div>
 <p>注意 \(V\) 的行列式是 \(\tfrac{-9-16}{25}=-1\)——<strong>\(V\) 是反射不是旋转</strong>。这一点在「三步透镜」的说法里常被含糊成「旋转」，严格说 \(V^{\mathrm{T}}\) 是反射。</p>
 
 <h2><span class="no">02</span>沙盘：单位圆 → 超椭圆</h2>

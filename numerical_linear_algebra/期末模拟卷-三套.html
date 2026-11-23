@@ -247,7 +247,10 @@ C=D_2(-2)P_{12}=\begin{bmatrix}0&1&0&0\\ -2&0&0&0\\ 0&0&1&0\\ 0&0&0&1\end{bmatri
 <div class="ans">
 <div class="ah">第 3 题 · 答案（20 分）</div>
 <p>（a）\(A^{\mathrm T}A=\begin{bmatrix}5&3\\3&5\end{bmatrix}\)，特征值 \(\lambda=8,2\)（解 \(\lambda^2-10\lambda+16=0\)），故 \(\sigma_1=2\sqrt2\approx2.8284\)、\(\sigma_2=\sqrt2\approx1.4142\)。</p>
-<p>（b）\(\lambda_1=8\) 的单位特征向量 \(v_1=\frac{1}{\sqrt2}(1,1)^{\mathrm T}\)，\(\lambda_2=2\) 的 \(v_2=\frac{1}{\sqrt2}(-1,1)^{\mathrm T}\)。于是</p>
+<p>（b）<strong>先求右奇异向量：解 \((A^{\mathrm T}A-\lambda I)v=0\)。</strong>把两个矩阵写出来，各解一行即可（它们奇异，两行本是同一个方程）：</p>
+<div class="eq">$$A^{\mathrm T}A-8I=\begin{bmatrix}5-8&3\\3&5-8\end{bmatrix}=\begin{bmatrix}-3&3\\3&-3\end{bmatrix}\ \Rightarrow\ x=y,\qquad
+A^{\mathrm T}A-2I=\begin{bmatrix}3&3\\3&3\end{bmatrix}\ \Rightarrow\ x=-y .$$</div>
+<p>单位化得 \(v_1=\frac{1}{\sqrt2}(1,1)^{\mathrm T}\)（配 \(\sigma_1=2\sqrt2\)）、\(v_2=\frac{1}{\sqrt2}(-1,1)^{\mathrm T}\)（配 \(\sigma_2=\sqrt2\)）。于是</p>
 <div class="eq">$$u_1=\frac{Av_1}{\sigma_1}=\frac{1}{\sqrt2}\cdot\frac{(4,0)^{\mathrm T}}{2\sqrt2}=(1,0)^{\mathrm T},\qquad
 u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}\cdot\frac{(0,2)^{\mathrm T}}{\sqrt2}=(0,1)^{\mathrm T},$$</div>
 <div class="eq">$$A=U\Sigma V^{\mathrm T}=\begin{bmatrix}1&0\\0&1\end{bmatrix}

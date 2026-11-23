@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>埃尔米特矩阵 · 性质、证明与数值后果｜数值线性代数</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.min.js"></script>
+<style>
+  :root{
+    --paper:#FAF9F6; --ink:#22303F; --cinn:#B04A2F; --steel:#2F5D8A;
+    --mut:#6B6A63; --line:#E2DCD0; --wash:#F1EEE7; --amber:#C8A15A; --green:#3F6B4F;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:16px/1.72 -apple-system,"Segoe UI","Noto Sans SC",system-ui,sans-serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:26px 18px 72px}
+  a{color:var(--steel);text-decoration:none;border-bottom:1px solid rgba(47,93,138,.28)}
+  a:hover{border-bottom-color:var(--steel)}
+  .nav{display:flex;gap:16px;font-size:13px;color:var(--mut);margin-bottom:22px;flex-wrap:wrap}
+  .mast{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:20px}
+  .tag{display:inline-block;font:11px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;
+    color:var(--paper);background:var(--ink);padding:4px 7px;border-radius:2px;vertical-align:middle}
+  h1{font-size:27px;line-height:1.32;margin:12px 0 8px;letter-spacing:-.01em}
+  .sub{color:var(--mut);font-size:14.5px;max-width:780px;margin:0}
+  h2{font-size:20px;margin:40px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--ink)}
+  h4{font-size:14px;margin:16px 0 6px;color:var(--steel);letter-spacing:.02em}
+  p{margin:10px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92em}
+
+  .toc{background:#FFFDF9;border:1px solid var(--line);border-radius:4px;padding:12px 16px;font-size:14px;columns:2;column-gap:28px}
+  .toc a{display:block;padding:2px 0;border:0;color:var(--ink)}
+  .toc a:hover{color:var(--cinn)}
+  .toc b{display:block;grid-column:1/-1;font-size:12px;color:var(--mut);letter-spacing:.08em;margin-bottom:4px}
+
+  .src{display:inline-block;font:10.5px/1 ui-monospace,Consolas,monospace;padding:3px 6px;border-radius:2px;
+    letter-spacing:.04em;vertical-align:1px;white-space:nowrap}
+  .s-lec{background:#E7EEF6;color:#2F5D8A;border:1px solid #D3DFEA}
+  .s-hw{background:#FBEFD6;color:#8A6A24;border:1px solid #EEDDB4}
+  .s-add{background:#F0EFEA;color:#6B6A63;border:1px solid #DFDCD2}
+
+  .tw{overflow-x:auto;margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.6px;margin:0}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;color:var(--mut);font-weight:600;letter-spacing:.05em;background:#F6F3EA}
+  tbody tr:nth-child(even){background:#FCFAF4}
+  td.n{color:var(--mut);font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:nowrap}
+
+  .pf{border:1px solid var(--line);border-left:3px solid var(--steel);background:#FFFDF9;
+    padding:10px 14px 12px;margin:12px 0;border-radius:3px}
+  .pf .h{font:12px/1 ui-monospace,Consolas,monospace;color:var(--steel);letter-spacing:.08em;margin-bottom:6px}
+  .pf p:first-of-type{margin-top:4px}
+  .pf .step{color:var(--mut);font-size:13.5px}
+
+  .box{background:#FFFDF9;border:1px solid var(--line);border-left:3px solid var(--amber);
+    padding:11px 14px;margin:14px 0;font-size:14.4px}
+  .box b{color:#8A6A24}
+  .warn{background:#FDF6F3;border:1px solid #F0DCD3;border-left:3px solid var(--cinn);
+    padding:11px 14px;margin:14px 0;font-size:14.2px}
+  .warn b{color:var(--cinn)}
+
+  .eq{background:#FCFBF7;border:1px solid var(--line);border-radius:3px;padding:4px 10px;margin:12px 0;overflow-x:auto}
+  .chain{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14.2px;margin:12px 0}
+  .chain span{background:#FFFDF9;border:1px solid var(--line);border-radius:3px;padding:5px 9px}
+  .chain i{color:var(--cinn);font-style:normal}
+
+  ol.steps{counter-reset:s;list-style:none;padding-left:0}
+  ol.steps>li{counter-increment:s;position:relative;padding-left:30px;margin:9px 0}
+  ol.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:20px;height:20px;
+    border-radius:50%;background:var(--ink);color:var(--paper);font:11px/20px ui-monospace,monospace;text-align:center}
+
+  footer{margin-top:46px;padding-top:14px;border-top:1px solid var(--line);
+    font:11.5px/1.6 ui-monospace,Consolas,monospace;color:var(--mut);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  mjx-container[jax="SVG"]{max-width:100%}
+  mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden}
+  mjx-container[display="true"]{min-width:0!important}
+  @media (max-width:640px){
+    .toc{columns:1}
+    h1{font-size:22px}
+    .wrap{padding:18px 12px 56px}
+    th,td{padding:6px 6px;font-size:12.6px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a href="../index.html">← 数学可视化</a>
+    <a href="./index.html">数值线代目录</a>
+    <a href="./算法示波器-伪代码与逐步可视化.html">算法示波器</a>
+    <a href="./作业全解-HW1到HW8.html">作业全解</a>
+    <a href="./直接法-高斯消元主元与Cholesky.html">直接法</a>
+  </nav>
+
+  <header class="mast">
+    <span class="tag">HERM · 性质全表</span>
+    <h1>埃尔米特矩阵：它凭什么"什么都是实的"</h1>
+    <p class="sub">
+      一条 \(A=A^*\) 把矩阵压成了实谱、正交特征基、可配方、可开方 —— 后面所有"实对称"的结论都是它的特例。
+      本页把第 2、3、8、9、10、16 讲与 HW1-8、HW2-6、HW8-5、HW8-6 里出现的每条性质集中起来，
+      给出<b>完整证明</b>（不是只写"可以证明"），并标清哪条是课堂口径、哪条是补充。
+    </p>
+  </header>
+
+  <div class="toc">
+    <b>目录</b>
+    <a href="#tab">§00 一张表：18 条性质与证明抓手</a>
+    <a href="#def">§01 定义与一阶代数</a>
+    <a href="#spec">§02 谱性质（实谱、正交、可酉对角化）</a>
+    <a href="#pd">§03 正定：五条必要性质与三条等价</a>
+    <a href="#elim">§04 对称消元、LDL*、Cholesky</a>
+    <a href="#norm">§05 范数、条件数、奇异值</a>
+    <a href="#ex">§06 两个算例（数字全部实测）</a>
+    <a href="#trap">§07 十条易错</a>
+    <a href="#self">§08 自测与证明模板</a>
+  </div>
+
+  <h2 id="tab">§00 一张表：18 条性质与证明抓手</h2>
+  <p>
+    <span class="src s-lec">课件</span> = 第 16 讲正文；<span class="src s-hw">作业</span> = 作业原题；
+    <span class="src s-add">补充</span> = 课件没写、但证明时绕不开或考试常用的标准结论。
+  </p>
+  <div class="tw"><table>
+    <thead><tr><th class="n">#</th><th>条件</th><th>结论</th><th>证明抓手</th><th>出处</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>\(A=A^*\)</td><td>对角元必为实数</td><td>\(a_{ii}=\overline{a_{ii}}\)</td><td><span class="src s-lec">L16</span></td></tr>
+      <tr><td class="n">2</td><td>\(A=A^*\)</td><td>\(x^*Ay=\overline{y^*Ax}\)，故 \(x^*Ax\in\mathbb R\)</td><td>对整式取共轭转置</td><td><span class="src s-lec">L16</span></td></tr>
+      <tr><td class="n">3</td><td>\(A=A^*\)</td><td>所有特征值为实数</td><td>\(x^*Ax=\lambda\|x\|^2\)，左边实</td><td><span class="src s-hw">HW1-8(a)</span></td></tr>
+      <tr><td class="n">4</td><td>\(\lambda\ne\mu\)</td><td>对应特征向量正交</td><td>\(\lambda\langle x,y\rangle=\langle Ax,y\rangle=\langle x,Ay\rangle=\mu\langle x,y\rangle\)</td><td><span class="src s-hw">HW1-8(b)</span></td></tr>
+      <tr><td class="n">5</td><td>\(A=A^*\)</td><td>存在酉 \(Q\)、实对角 \(\Lambda\)：\(A=Q\Lambda Q^*\)</td><td>归纳 + \(q^\perp\) 是 \(A\)-不变子空间</td><td><span class="src s-lec">L16 Thm1</span></td></tr>
+      <tr><td class="n">6</td><td>\(A=A^*\)</td><td>\(\operatorname{rank}A=\) 非零特征值个数</td><td>可对角化，秩 = 非零对角元个数</td><td><span class="src s-add">推论</span></td></tr>
+      <tr><td class="n">7</td><td>\(A=A^*,\ A^2=A\)</td><td>\(A\) 是正交投影，特征值只有 0/1</td><td>谱分解后逐项看</td><td><span class="src s-lec">L06</span></td></tr>
+      <tr><td class="n">8</td><td>\(A\) 正定</td><td>对角元 \(a_{ii}>0\)</td><td>取 \(x=e_i\)</td><td><span class="src s-lec">L16 Thm2(1)</span></td></tr>
+      <tr><td class="n">9</td><td>\(A\) 正定</td><td>任意主子矩阵正定</td><td>把 \(x\) 支撑在指标集 \(I\) 上</td><td><span class="src s-lec">L16 Thm2(3)</span></td></tr>
+      <tr><td class="n">10</td><td>\(A\) 正定</td><td>\(|a_{ij}|^2&lt;a_{ii}a_{jj}\ (i\ne j)\)</td><td>\(2\times2\) 主子矩阵的 \(2\times2\) 行列式 \(>0\)</td><td><span class="src s-lec">L16 Thm2(4)</span></td></tr>
+      <tr><td class="n">11</td><td>\(A\) 正定</td><td>绝对值最大的元在对角线上</td><td>\(|a_{ij}|\le\sqrt{a_{ii}a_{jj}}\le\max_k a_{kk}\)</td><td><span class="src s-lec">L16 Thm2(5)</span></td></tr>
+      <tr><td class="n">12</td><td>\(A\) 正定</td><td>所有特征值为正实数</td><td>特征向量代入定义</td><td><span class="src s-lec">L16 Thm2(2)</span></td></tr>
+      <tr><td class="n">13</td><td>所有特征值 \(>0\)</td><td>\(A\) 正定</td><td>\(x^*Ax=\sum_j\lambda_j|q_j^*x|^2\)</td><td><span class="src s-lec">L16 Thm3</span><span class="src s-hw">HW8-5</span></td></tr>
+      <tr><td class="n">14</td><td>\(A\) 正定</td><td>存在唯一上三角 \(R\)（对角正）使 \(A=R^*R\)</td><td>对 Schur 补归纳；上三角酉必为对角</td><td><span class="src s-lec">L16</span></td></tr>
+      <tr><td class="n">15</td><td>\(A\) 正定</td><td>Schur 补 \(S=A_{22}-A_{21}A_{11}^{-1}A_{12}\) 仍正定</td><td>配方：取 \(x_1=-A_{11}^{-1}A_{12}y\)</td><td><span class="src s-lec">L16</span></td></tr>
+      <tr><td class="n">16</td><td>\(A=A^*\)</td><td>\(A=Q\Lambda Q^*\) 给出 \(\|A\|_2=\max|\lambda|\)、\(\sigma_i=|\lambda_i|\)、\(\kappa_2=|\lambda_{\max}|/|\lambda_{\min}|\)</td><td>\(A^*A=Q|\Lambda|^2Q^*\)</td><td><span class="src s-lec">L03/L10</span></td></tr>
+      <tr><td class="n">17</td><td>\(A,B\) 均 Hermite</td><td>\(AB\) Hermite \(\iff AB=BA\)</td><td>\((AB)^*=B^*A^*=BA\)</td><td><span class="src s-add">补充</span></td></tr>
+      <tr><td class="n">18</td><td>\(A\) 既 Hermite 又酉</td><td>特征值只能是 \(\pm1\)，且 \(A^2=I\)（反射）</td><td>两种结构同时约束</td><td><span class="src s-lec">L08</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="def">§01 定义与一阶代数</h2>
+
+  <h3>1.1 定义与第一印象</h3>
+  <p>
+    对 \(A\in\mathbb C^{m\times m}\)，记 \(A^*=\overline{A^{\mathrm T}}\)（共轭转置）。若 \(A^*=A\)，称 \(A\) 为<b>埃尔米特矩阵</b>：
+    对角线以下是对角线以上的复共轭，即 \(a_{ij}=\overline{a_{ji}}\)。实矩阵的情形就是对称矩阵 \(A=A^{\mathrm T}\)。
+  </p>
+  <p>
+    定义立刻给出两条最容易被忽略的事实：<b>对角元必须是实数</b>（\(a_{ii}=\overline{a_{ii}}\)），但<b>非对角元一般不是实数</b>；
+    以及 \(A^{\mathrm T}\) 与 \(A^*\) 是两个东西，实矩阵时二者才一致。
+  </p>
+
+  <div class="pf">
+    <div class="h">性质 1 · \(x^*Ay=\overline{y^*Ax}\)，从而 \(x^*Ax\) 是实数</div>
+    <p>对任意 \(x,y\in\mathbb C^m\)，\(x^*Ay\) 是 \(1\times1\) 矩阵，故等于自己的转置：\(x^*Ay=(x^*Ay)^{\mathrm T}=y^{\mathrm T}A^{\mathrm T}\bar x=\overline{y^*A^*x}=\overline{y^*Ax}\)。</p>
+    <p>取 \(y=x\) 得 \(x^*Ax=\overline{x^*Ax}\)，即为实数。<span class="src s-lec">L16</span></p>
+  </div>
+
+  <h3>1.2 封闭性：哪些运算把 Hermite 矩阵留在 Hermite 族里</h3>
+  <ul>
+    <li><b>实线性组合</b>：\(\alpha A+\beta B\) 仍 Hermite（\(\alpha,\beta\in\mathbb R\)）。复系数不行 —— 乘 \(i\) 得到的是反 Hermite（\(C^*=-C\)）。</li>
+    <li><b>逆</b>：\(A\) 可逆时 \((A^{-1})^*=(A^*)^{-1}=A^{-1}\)，故 \(A^{-1}\) 仍 Hermite。</li>
+    <li><b>\(A^*A\) 与 \(AA^*\)</b>：恒 Hermite，且半正定 —— \(x^*A^*Ax=\|Ax\|^2\ge0\)；正定当且仅当 \(A\) 列满秩。这正是正规方程 \(A^*Ax=A^*b\) 的系数矩阵。<span class="src s-lec">L09</span></li>
+    <li><b>乘积</b>：\((AB)^*=B^*A^*=BA\)，所以 \(AB\) 是 Hermite 当且仅当 \(AB=BA\)。<span class="src s-add">补充</span></li>
+    <li><b>分解</b>：任何方阵都能拆成 \(A=H+iK\)，其中 \(H=\frac{A+A^*}{2}\)、\(K=\frac{A-A^*}{2i}\) 都 Hermite。所以 Hermite 是"复数世界的对称"。</li>
+  </ul>
+
+  <h2 id="spec">§02 谱性质：实谱、正交特征基</h2>
+
+  <div class="pf">
+    <div class="h">定理 1（L16 Thm1）· Hermite 矩阵的特征值全实，不同特征值的特征向量正交，且存在由特征向量组成的标准正交基</div>
+    <p class="step">前两条正是 HW1-8 的两问，分开证。</p>
+  </div>
+
+  <h3>2.1 特征值实 <span class="src s-hw">HW1-8(a)</span></h3>
+  <div class="pf">
+    <div class="h">证明</div>
+    <ol class="steps">
+      <li>设 \(Ax=\lambda x\)，\(x\ne0\)。左乘 \(x^*\)：\(x^*Ax=\lambda\,x^*x=\lambda\|x\|^2\)。</li>
+      <li>由性质 1，\(x^*Ax\in\mathbb R\)；又 \(\|x\|^2>0\) 是正实数。</li>
+      <li>故 \(\lambda=\dfrac{x^*Ax}{\|x\|^2}\in\mathbb R\)。\(\square\)</li>
+    </ol>
+    <p class="step">这条同时给出一个有用的副产品：\(\lambda\) 就是沿特征向量方向的 Rayleigh 商。</p>
+  </div>
+
+  <h3>2.2 不同特征值的特征向量正交 <span class="src s-hw">HW1-8(b)</span></h3>
+  <div class="pf">
+    <div class="h">证明</div>
+    <ol class="steps">
+      <li>设 \(Ax=\lambda x,\ Ay=\mu y\)，\(\lambda\ne\mu\)，且 \(x,y\ne0\)。</li>
+      <li>算 \(\lambda\langle x,y\rangle=\langle \lambda x,y\rangle=\langle Ax,y\rangle=x^*Ay\)。</li>
+      <li>把 \(A=A^*\) 代进去：
+        <div class="eq">$$x^*Ay=(A^*x)^*y=(Ax)^*y=\langle x,Ay\rangle=\mu\langle x,y\rangle .$$</div></li>
+      <li>于是 \((\lambda-\mu)\langle x,y\rangle=0\)。由 \(\lambda\ne\mu\) 得 \(\langle x,y\rangle=0\)。\(\square\)</li>
+    </ol>
+    <p class="step">关键只有一步：<b>内积可以把 \(A\) 从左边搬到右边</b>，而搬运不改变它 —— 这就是 \(A=A^*\) 的全部内容。</p>
+  </div>
+
+  <h3>2.3 存在标准正交特征基（谱定理）</h3>
+  <p>
+    上面两条只说了"已有的特征向量之间"的关系，还差一句：特征向量够不够凑满 \(\mathbb C^m\)。这一步靠
+    <b>不变子空间 + 归纳</b>，是本节唯一需要想一下的地方。
+  </p>
+  <div class="pf">
+    <div class="h">证明（归纳法）</div>
+    <ol class="steps">
+      <li>特征多项式在 \(\mathbb C\) 上必有根，故存在特征对 \((\lambda_1,q_1)\)，取 \(\|q_1\|=1\)。</li>
+      <li>令 \(U=\operatorname{span}\{q_1\}^{\perp}\)。对任意 \(z\in U\)：
+        <div class="eq">$$\langle Az,q_1\rangle=\langle z,Aq_1\rangle=\lambda_1\langle z,q_1\rangle=0,$$</div>
+        即 \(Az\in U\)。
+        所以 \(U\) 是 \(A\)-不变子空间，\(\dim U=m-1\)。</li>
+      <li>把 \(A\) 限制在 \(U\) 上仍是 Hermite 算子（内积不变），对维数归纳：\(U\) 有标准正交特征基 \(q_2,\dots,q_m\)。</li>
+      <li>合并 \(q_1,\dots,q_m\)：两两正交、都是单位向量、共 \(m\) 个，构成 \(\mathbb C^m\) 的标准正交基。\(\square\)</li>
+    </ol>
+    <p>把基排成矩阵 \(Q=[q_1\ \cdots\ q_m]\)，则 \(Q^*Q=I\) 且
+      \(A=Q\Lambda Q^*\)，\(\Lambda=\operatorname{diag}(\lambda_1,\dots,\lambda_m)\) 实对角。这就是<b>谱分解</b>。</p>
+  </div>
+
+  <div class="box">
+    <b>另一条路线（如果已经学过 Schur 分解）</b><br>
+    任意方阵有 Schur 分解 \(A=QTQ^*\)，\(T\) 上三角、\(Q\) 酉。若 \(A\) 还 Hermite，则
+    \(T=Q^*AQ\) 也 Hermite，而<b>既 Hermite 又上三角的矩阵必是对角阵</b>（上三角的非对角元在转置共轭后跑到了下三角，只能为 0）。
+    于是 \(T=\Lambda\)，\(Q\) 的列就是特征向量。这条路线短，但依赖 Schur 定理。
+  </div>
+
+  <h3>2.4 三个常用推论</h3>
+  <ul>
+    <li><b>秩 = 非零特征值个数</b>：\(A=Q\Lambda Q^*\)，\(Q\) 可逆，秩就是 \(\Lambda\) 中非零元的个数。<span class="src s-add">补充</span></li>
+    <li><b>幂等 Hermite = 正交投影</b>：\(A^2=A\) 时特征值满足 \(\lambda^2=\lambda\)，只能取 0 或 1；谱分解 \(A=Q_1Q_1^*\)（\(Q_1\) 是特征值 1 对应的那几列）。<span class="src s-lec">L06</span></li>
+    <li><b>Hermite + 酉 = 反射</b>：酉矩阵特征值模为 1，Hermite 特征值为实，两者夹在一起只能 \(\lambda=\pm1\)；于是 \(A^2=Q\Lambda^2Q^*=I\)。Householder 矩阵 \(F=I-2vv^*/v^*v\) 正是这个类型。<span class="src s-lec">L08</span></li>
+  </ul>
+
+  <h2 id="pd">§03 正定：五条必要性质与三条等价</h2>
+
+  <p>
+    若对一切 \(x\ne0\) 都有 \(x^*Ax>0\)，称 \(A\) <b>Hermite 正定</b>。注意定义里"\(>0\)"能写，靠的正是
+    \(x^*Ax\in\mathbb R\)（性质 1）—— 换个非 Hermite 矩阵，这句话连意义都没有。
+  </p>
+
+  <h3>3.1 五条必要条件（L16 Thm2 逐条）</h3>
+
+  <div class="pf">
+    <div class="h">(1) 对角元是正实数</div>
+    <p>取 \(x=e_i\)：\(e_i^*Ae_i=a_{ii}>0\)。又 Hermite 的对角元本来就实。\(\square\)</p>
+  </div>
+
+  <div class="pf">
+    <div class="h">(2) 所有特征值是正实数</div>
+    <p>设 \(Ax=\lambda x\)，\(x\ne0\)：\(0&lt;x^*Ax=\lambda\|x\|^2\Rightarrow\lambda>0\)。实性来自定理 1。\(\square\)</p>
+  </div>
+
+  <div class="pf">
+    <div class="h">(3) 同时删去相同的行与列，剩下的主子矩阵仍 Hermite 正定；特别地所有主子矩阵正定</div>
+    <p>设 \(I\subseteq\{1,\dots,m\}\)，\(A_I\) 是取 \(I\) 行列得到的子矩阵。它显然 Hermite。
+      对任意 \(y\in\mathbb C^{|I|}\)、\(y\ne0\)，把 \(y\) 补零成 \(x\in\mathbb C^m\)（只在 \(I\) 的位置放 \(y\) 的分量），则 \(x\ne0\) 且
+      \(x^*Ax=y^*A_Iy>0\)。故 \(A_I\) 正定。\(\square\)</p>
+  </div>
+
+  <div class="pf">
+    <div class="h">(4) \(|a_{ij}|^2&lt;a_{ii}a_{jj}\)（\(i\ne j\)）</div>
+    <p>取由第 \(i,j\) 行列组成的 \(2\times2\) 主子矩阵 \(A_{\{i,j\}}\)，它是
+      \(\begin{bmatrix}a_{ii}&amp;a_{ij}\\ \overline{a_{ij}}&amp;a_{jj}\end{bmatrix}\)。
+      由 (3) 它正定，由 (2) 它的两个特征值都正，故行列式为正：</p>
+    <div class="eq">$$\det A_{\{i,j\}}=a_{ii}a_{jj}-|a_{ij}|^2>0 .$$</div>
+    <p>\(\square\)　这条就是"正定矩阵的非对角元被对角元压住"，后面 HW8-6 里 \(|l_{ij}|\le1\) 的直觉来源。</p>
+  </div>
+
+  <div class="pf">
+    <div class="h">(5) 绝对值最大的元素在对角线上</div>
+    <p>由 (4)，任取 \(i\ne j\)：\(|a_{ij}|&lt;\sqrt{a_{ii}a_{jj}}\le\max_k a_{kk}\)。
+      而 \(|a_{ii}|=a_{ii}\le\max_k a_{kk}\)，故所有元素的绝对值都被某个对角元压住。\(\square\)</p>
+  </div>
+
+  <h3>3.2 等价链：五句话说的是同一件事</h3>
+  <div class="chain">
+    <span>\(x^*Ax>0\ (\forall x\ne0)\)</span><i>⟺</i>
+    <span>\(\lambda_i>0\) 全部</span><i>⟺</i>
+    <span>存在上三角 \(R\)，\(A=R^*R\)，\(r_{ii}>0\)</span><i>⟺</i>
+    <span>存在可逆 \(C\)，\(A=C^*C\)</span><i>⟺</i>
+    <span>所有顺序主子式 \(>0\)</span>
+  </div>
+  <p class="step">
+    前两格是 L16 Thm2(2)+Thm3（作业 HW8-5 考的就是"\(\lambda>0\Rightarrow\) 正定"这一半）；
+    第三格是 Cholesky（§04）；第四格是第三格的宽松版；最后一格是 Sylvester 判据
+    <span class="src s-add">补充</span>，课件没写但手算题常用。
+  </p>
+
+  <div class="pf">
+    <div class="h">方向一遍历：特征值正 ⇒ 正定（= HW8-5）</div>
+    <ol class="steps">
+      <li>由谱分解 \(A=Q\Lambda Q^*\)，令 \(y=Q^*x\)。因 \(Q\) 酉，\(x\ne0\iff y\ne0\)。</li>
+      <li>\(x^*Ax=y^*\Lambda y=\sum_j\lambda_j|y_j|^2\)。</li>
+      <li>每项非负、至少一项为正（\(y\ne0\) 至少有一个 \(y_j\ne0\)），和为正。\(\square\)</li>
+    </ol>
+    <p class="step">反过来（正定 ⇒ 特征值正）就是上面的性质 (2)。</p>
+  </div>
+
+  <h3>3.3 为什么"主子式全正"能反推正定</h3>
+  <p>
+    正定 ⇒ 顺序主子式全正，用 (3) 加行列式 = 特征值之积即可。反过来（Sylvester 判据）用归纳：
+    设所有顺序主子式为正，把 \(A\) 分块成 \(\begin{bmatrix}a_{11}&amp;A_{12}\\A_{21}&amp;A_{22}\end{bmatrix}\)。
+    \(a_{11}>0\)，一步消元得 Schur 补 \(S=A_{22}-A_{21}A_{12}/a_{11}\)，而
+  </p>
+  <div class="eq">$$\det A_k=a_{11}\det S_{k-1}\quad(k\ \text{阶顺序主子式}),$$</div>
+  <p>
+    故 \(S\) 的所有顺序主子式也全正，归纳得 \(S\) 正定；再用 §04 的配方即得 \(A\) 正定。
+    <span class="src s-add">补充</span>
+  </p>
+
+  <h2 id="elim">§04 对称消元、LDL* 与 Cholesky</h2>
+
+  <h3>4.1 一步消元：Schur 补天然 Hermite</h3>
+  <p>设 \(A=\begin{bmatrix}a_{11}&amp;A_{12}\\A_{21}&amp;A_{22}\end{bmatrix}\) 且 \(a_{11}\ne0\)，消去第一列后剩下的是 Schur 补</p>
+  <div class="eq">$$S=A_{22}-A_{21}A_{11}^{-1}A_{12}\qquad(\text{此处 }A_{11}=a_{11}).$$</div>
+  <p>它<b>自动 Hermite</b>：</p>
+  <div class="eq">$$S^*=A_{22}^*-A_{12}^*(A_{11}^{-1})^*A_{21}^*=A_{22}-A_{12}A_{11}^{-1}A_{21}=S,$$</div>
+  <p>最后一步用了 \(A_{12}^*=A_{21}\)、\(A_{21}^*=A_{12}\)、\(A_{11}\in\mathbb R\)。</p>
+  <p>写成矩阵形式，一步消元就是</p>
+  <div class="eq">$$\begin{bmatrix}a_{11}&amp;A_{12}\\A_{21}&amp;A_{22}\end{bmatrix}=\begin{bmatrix}1&amp;0\\ l&amp;I\end{bmatrix}\begin{bmatrix}a_{11}&amp;0\\0&amp;S\end{bmatrix}\begin{bmatrix}1&amp;l^*\\0&amp;I\end{bmatrix},\qquad l=\frac{A_{21}}{a_{11}} .$$</div>
+  <p>右边三个因子里，中间那只用了对称性，两边互为共轭转置 —— 这就是<b>对称高斯消元</b>，它逐列重复就得到 \(A=LDL^*\)。</p>
+
+  <h3>4.2 正定性怎么传下去</h3>
+  <div class="pf">
+    <div class="h">命题 · \(A\) 正定 ⇒ 每个 \(a_{kk}>0\)，且 Schur 补 \(S\) 仍正定</div>
+    <ol class="steps">
+      <li>\(a_{kk}>0\) 已由 §03(1) 给出，所以对角主元永远不用换行也不会为 0。</li>
+      <li>取任意 \(y\ne0\)，令 \(x_1=-A_{11}^{-1}A_{12}y\)（这个选择是"对给定 \(y\) 让二次型最小"），拼成 \(z=\binom{x_1}{y}\ne0\)。</li>
+      <li>直接展开
+        <div class="eq">$$z^*Az=x_1^*A_{11}x_1+x_1^*A_{12}y+y^*A_{21}x_1+y^*A_{22}y ,$$</div>
+        代入 \(x_1\) 并利用 \(A_{12}^*=A_{21}\)，前三项合起来是 \(-y^*A_{21}A_{11}^{-1}A_{12}y\)。</li>
+      <li>故 \(z^*Az=y^*Sy\)。左边 \(>0\)（\(A\) 正定、\(z\ne0\)），于是 \(y^*Sy>0\)。\(\square\)</li>
+    </ol>
+    <p class="step">这条性质是整个 Cholesky 归纳的发动机：正定性在降维后没有丢。</p>
+  </div>
+
+  <h3>4.3 \(A=R^*R\) 的存在性与唯一性 <span class="src s-lec">L16</span></h3>
+  <div class="pf">
+    <div class="h">存在性（对阶数归纳）</div>
+    <ol class="steps">
+      <li>\(a_{11}>0\)，取 \(R_{11}=\sqrt{a_{11}}\)。</li>
+      <li>由 4.2，\(S\) 正定，归纳得 \(S=R_2^*R_2\)（\(R_2\) 上三角、对角正）。</li>
+      <li>令 \(R=\begin{bmatrix}\sqrt{a_{11}}&amp;A_{12}/\sqrt{a_{11}}\\0&amp;R_2\end{bmatrix}\)，验算 \(R^*R=A\)：
+        \((1,1)\) 块是 \(a_{11}\)，\((1,2)\) 块是 \(\sqrt{a_{11}}\cdot A_{12}/\sqrt{a_{11}}=A_{12}\)，\((2,2)\) 块是
+        <div class="eq">$$\frac{A_{12}^*A_{12}}{a_{11}}+R_2^*R_2=\frac{A_{21}A_{12}}{a_{11}}+S=A_{22}.$$</div>
+        \(\square\)</li>
+    </ol>
+  </div>
+  <div class="pf">
+    <div class="h">唯一性</div>
+    <p>若 \(A=R_1^*R_1=R_2^*R_2\)，两个因子都上三角且对角为正。令 \(U=R_1R_2^{-1}\)，则</p>
+    <div class="eq">$$U^*U=R_2^{-*}R_1^*R_1R_2^{-1}=R_2^{-*}A\,R_2^{-1}=R_2^{-*}R_2^*R_2R_2^{-1}=I,$$</div>
+    <p>即 \(U\) 酉。但上三角矩阵的逆仍上三角，故 \(U\) 上三角且酉 ⇒ \(U\) 必为对角阵，且 \(|u_{ii}|=1\)；
+      又 \(R_1,R_2\) 对角元都是正数，故 \(u_{ii}>0\)，只能 \(U=I\)，即 \(R_1=R_2\)。\(\square\)</p>
+  </div>
+  <p>成本：\(\sum_j(2(m-j)+1)\approx m^3/3\) flops，正好是 LU 的一半；不需要选主元。</p>
+
+  <h3>4.4 关于 \(|l_{ij}|\le1\)（HW8-6 的关键，但有个前提）</h3>
+  <p>
+    正定时结论很干净：取剩余对角元中最大者作主元，此时 \(a_{kk}\) 是最大对角元，由 §03(4) 有
+    \(|a_{ik}|^2&lt;a_{ii}a_{kk}\le a_{kk}^2\)，于是
+  </p>
+  <div class="eq">$$|l_{ik}|=\frac{|a_{ik}|}{|a_{kk}|}&lt;1 .$$</div>
+  <div class="warn">
+    <b>但"不一定正定"时这句话不成立</b>。反例 \(A=\begin{bmatrix}5&amp;100\\100&amp;4\end{bmatrix}\) 是实对称的，
+    最大对角元是 5，可 \(|l_{21}|=100/5=20\gg1\)（它的特征值一正一负，属不定）。
+    所以 HW8-6 里"取最大对角元就能保证 \(|l|\le1\)"这一步，严格说只在正定情形成立；
+    一般的 Hermite 不定矩阵要用 Bunch–Kaufman 的 \(1\times1/2\times2\) 混合选主元，
+    \(|l|\le1\) 靠"比较同列最大非对角元"而不是"比较对角元"来保证。<span class="src s-add">课外，不考</span>
+  </div>
+
+  <h2 id="norm">§05 范数、条件数、奇异值：全都退化成谱</h2>
+  <p>Hermite 矩阵最实惠的地方是：一旦有了 \(A=Q\Lambda Q^*\)，所有"最难算"的量都变成特征值的初等函数。</p>
+
+  <div class="pf">
+    <div class="h">\(\|A\|_2=\max_i|\lambda_i|\)</div>
+    <p>对任意 \(x\)，令 \(y=Q^*x\)，则 \(\|Ax\|=\|\Lambda y\|\)，于是</p>
+    <div class="eq">$$\|Ax\|^2=\sum_i|\lambda_i|^2|y_i|^2\le\bigl(\max_i|\lambda_i|\bigr)^2\|y\|^2=\bigl(\max_i|\lambda_i|\bigr)^2\|x\|^2 .$$</div>
+    <p>取 \(x=q_k\)（\(|\lambda_k|\) 最大者）时等号成立。\(\square\)</p>
+    <p class="step">等价说法：\(A^*A=Q|\Lambda|^2Q^*\)，故 \(\sigma_i(A)=|\lambda_i(A)|\)，而 \(\|A\|_2=\sigma_{\max}\)。</p>
+  </div>
+
+  <ul>
+    <li><b>奇异值 = 特征值绝对值</b>（降序排列后）。所以实对称矩阵的"谱"与"奇异谱"只差一个符号。</li>
+    <li><b>条件数</b>：\(A\) 可逆时 \(\kappa_2(A)=\dfrac{\max_i|\lambda_i|}{\min_i|\lambda_i|}\)。复 Hermite 也一样。</li>
+    <li><b>谱半径</b>：\(\rho(A)=\|A\|_2\)，正好让 HW1-9 的不等式 \(\rho(A)\le\|A\|\) 取等。<span class="src s-hw">HW1-9</span></li>
+    <li><b>迹与行列式</b>：\(\operatorname{tr}A=\sum_i\lambda_i\)，\(\det A=\prod_i\lambda_i\)（酉相似不改变迹与行列式）。</li>
+    <li><b>Rayleigh 商</b>：\(R(x)=\dfrac{x^*Ax}{x^*x}\) 满足 \(\lambda_{\min}\le R(x)\le\lambda_{\max}\)，
+      且 \(\max R=\lambda_{\max}\)、\(\min R=\lambda_{\min}\) 分别在对应的特征向量处取到。</li>
+  </ul>
+
+  <h2 id="ex">§06 两个算例（数字全部实测）</h2>
+
+  <h3>6.1 一个复 Hermite 矩阵走完全流程</h3>
+  <div class="eq">$$A=\begin{bmatrix}2&amp;1+i\\ 1-i&amp;3\end{bmatrix}$$</div>
+  <p>对角元实、\(a_{21}=\overline{a_{12}}\)。逐项算：</p>
+  <div class="tw"><table>
+    <thead><tr><th>量</th><th>值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>特征值</td><td>\(\lambda_1=1,\ \lambda_2=4\)</td><td>实的，且 \(1+4=5=\operatorname{tr}A\)、\(1\cdot4=4=\det A\)</td></tr>
+      <tr><td>特征向量</td><td>\(q_1=\frac1{\sqrt6}\begin{bmatrix}-2\\1-i\end{bmatrix}\)，\(q_2=\frac1{\sqrt3}\begin{bmatrix}-1\\-1+i\end{bmatrix}\)</td><td>\(q_1^*q_2=0\)，各自单位长</td></tr>
+      <tr><td>\(\|A\|_2\)、\(\kappa_2\)</td><td>\(4\)、\(4\)</td><td>\(=\max|\lambda|\)、\(=\frac{4}{1}\)</td></tr>
+      <tr><td>奇异值</td><td>\(4,\ 1\)</td><td>\(=|\lambda|\)</td></tr>
+      <tr><td>\(|a_{12}|^2\) vs \(a_{11}a_{22}\)</td><td>\(2&lt;6\)</td><td>§03(4) 成立</td></tr>
+      <tr><td>LDL*</td><td>\(l_{21}=\frac{1-i}{2}\)（\(|l_{21}|=\frac{\sqrt2}{2}\approx0.7071\)），\(d=(2,2)\)</td><td>\(|l|&lt;1\)，符合正定预期</td></tr>
+      <tr><td>Cholesky \(R\)</td><td>\(\begin{bmatrix}\sqrt2&amp;\frac{1+i}{\sqrt2}\\0&amp;\sqrt2\end{bmatrix}\)</td><td>验算 \(R^*R=A\)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="step">
+    核对 \(R^*R\) 的 \((2,2)\) 元：\(\frac{1+i}{\sqrt2}\cdot\frac{1-i}{\sqrt2}=1\)，加上 \(\sqrt2\cdot\sqrt2=2\)，共 \(3\) ✓。
+  </p>
+
+  <h3>6.2 HW2-6：\(\begin{bmatrix}0&amp;A^*\\A&amp;0\end{bmatrix}\) 凭什么一定是 Hermite</h3>
+  <p>
+    设 \(A\in\mathbb C^{n\times m}\)（\(n\ge m\)），把 \(M=\begin{bmatrix}0&amp;A^*\\A&amp;0\end{bmatrix}\) 看成 \((m+n)\times(m+n)\) 的矩阵。
+    它 Hermite 是显然的：\(M^*=\begin{bmatrix}0&amp;A^*\\A&amp;0\end{bmatrix}=M\)（两个块互换但位置对称）。
+  </p>
+  <p>设 \(A=U\Sigma V^*\)（\(U\in\mathbb C^{n\times n}\)、\(V\in\mathbb C^{m\times m}\) 酉，\(\sigma_i>0\)）。取</p>
+  <div class="eq">$$x_i^{+}=\frac1{\sqrt2}\begin{bmatrix}v_i\\ u_i\end{bmatrix},\qquad x_i^{-}=\frac1{\sqrt2}\begin{bmatrix}v_i\\ -u_i\end{bmatrix}\qquad(i=1,\dots,m).$$</div>
+  <p>直接乘：\(M x_i^{+}=\frac1{\sqrt2}\begin{bmatrix}A^*u_i\\ Av_i\end{bmatrix}=\frac1{\sqrt2}\begin{bmatrix}\sigma_i v_i\\ \sigma_i u_i\end{bmatrix}=\sigma_i x_i^{+}\)，
+    同理 \(M x_i^{-}=-\sigma_i x_i^{-}\)。再用 \(U\) 中剩下的 \(n-m\) 列，把 \((0,u_j)^{\mathrm T}\) 补成零特征向量。结论：</p>
+  <div class="eq">$$\sigma(M)=\{\pm\sigma_1,\dots,\pm\sigma_m,\underbrace{0,\dots,0}_{n-m}\}.$$</div>
+  <p class="step">
+    实测：取 \(A=\begin{bmatrix}1&amp;0\\0&amp;1\\1&amp;1\end{bmatrix}\)，\(\sigma=(\sqrt3,1)\)，
+    则 \(M\) 的谱为 \((-\sqrt3,\,-1,\,0,\,1,\,\sqrt3)\) ✓。这条把"奇异值"翻译成了"Hermite 矩阵的特征值"，
+    是 SVD 与谱定理之间最短的一座桥。
+  </p>
+
+  <h2 id="trap">§07 十条易错</h2>
+  <div class="tw"><table>
+    <thead><tr><th class="n">#</th><th>错法</th><th>纠正</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>"Hermite 就是实对称"</td><td>实对称是 Hermite 的特例；复 Hermite 对角元必须实，非对角元一般不实</td></tr>
+      <tr><td class="n">2</td><td>把 \(A^{\mathrm T}\) 当 \(A^*\)</td><td>共轭转置多一次取共轭；\(x^*Ay=\overline{y^*Ax}\) 用的是 \(A^*\)</td></tr>
+      <tr><td class="n">3</td><td>"对角元全正 ⇒ 正定"</td><td>只是必要条件。\(\begin{bmatrix}1&amp;2\\2&amp;1\end{bmatrix}\) 对角元全正但不定</td></tr>
+      <tr><td class="n">4</td><td>"特征值都正 ⇐ 顺序主子式都正" 混用</td><td>两者都等价于正定，但证明路径不同；手算时主子式更快，证明时谱分解更快</td></tr>
+      <tr><td class="n">5</td><td>只用 \(\det A>0\) 判正定</td><td>不够：\(\begin{bmatrix}-1&amp;0\\0&amp;-1\end{bmatrix}\) 的行列式是 \(+1\)，却是负定的</td></tr>
+      <tr><td class="n">6</td><td>说"Hermite 一定可逆"</td><td>\(\begin{bmatrix}1&amp;0\\0&amp;0\end{bmatrix}\) 就不可逆；正定才保证可逆</td></tr>
+      <tr><td class="n">7</td><td>相似变换后仍当 Hermite</td><td>只有<b>酉</b>相似保 Hermite；一般 \(P^{-1}AP\) 会破坏对称性</td></tr>
+      <tr><td class="n">8</td><td>\(AB\) 的 Hermite 性直接继承</td><td>需 \(AB=BA\)；否则 \((AB)^*=BA\ne AB\)</td></tr>
+      <tr><td class="n">9</td><td>Cholesky 写成 \(A=RR^*\)</td><td>课堂口径是 \(A=R^*R\)（\(R\) 上三角）。两种写法只差转置，但别在同一题里混用</td></tr>
+      <tr><td class="n">10</td><td>"不换行 ⇒ 稳定"</td><td>不换行只说明没有元素增长；Cholesky 的稳定性另有论证</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="self">§08 自测与证明模板</h2>
+
+  <h3>8.1 五个可复用的开头</h3>
+  <ol>
+    <li><b>要证"某量是实数"</b> → 证它等于自己的共轭转置（\(x^*Ax\)、\(\lambda\)、\(x^*Ay\) 都是这个套路）。</li>
+    <li><b>要证"两个向量正交"</b> → 把 \(A\) 从一个因子搬到另一个因子，凑出 \((\lambda-\mu)\langle x,y\rangle=0\)。</li>
+    <li><b>要证"存在一组特征基"</b> → 取一个特征向量，证它的正交补不变，降维归纳。</li>
+    <li><b>要证"正定"</b> → 优先用谱分解写成一个平方和 \(\sum\lambda_i|y_i|^2\)；反过来要证"不正定"就取一个特征向量当反例。</li>
+    <li><b>要证"某子结构正定"</b> → 用"限制自变量"（主子矩阵）或"配方消元"（Schur 补）。</li>
+  </ol>
+
+  <h3>8.2 六问自测</h3>
+  <ol>
+    <li>不用谱定理，只用 \(A=A^*\) 证明 \(\lambda\in\mathbb R\)。（§2.1）</li>
+    <li>若 \(A\) 正定，证明 \(\operatorname{tr}A>0\) 且 \(\det A>0\)，并说明反之不成立。</li>
+    <li>举例说明：Hermite、对角元全正、行列式为正，但仍不正定。</li>
+    <li>证明 \(A\) 正定时 \(A^{-1}\) 也正定（提示：\(A^{-1}=Q\Lambda^{-1}Q^*\)）。</li>
+    <li>证明 \(A^*A\) 的秩等于 \(A\) 的秩，从而 \(A\) 列满秩时 \(A^*A\) 正定。<span class="src s-lec">L09</span></li>
+    <li>用 §06.2 的块矩阵，把 \(A\) 的最大奇异值写成某个 Hermite 矩阵的谱半径。</li>
+  </ol>
+
+  <div class="box">
+    <b>一句话总结</b>：\(A=A^*\) 把矩阵钉死在实轴上 —— 实谱、正交特征基、二次型是实值、可开平方。
+    正定是在这条实轴上再加一条"全部为正"，于是 LU 退化成 Cholesky、范数退化成谱半径、条件数退化成特征值之比。
+  </div>
+
+  <footer>
+    <span>NLA-HERM · 18 条性质 · 14 个完整证明 · 读数闸门 44 项</span>
+    <span>数值线性代数 · 期末复习</span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>算法示波器 · 伪代码与逐步可视化｜数值线性代数</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.min.js"></script>
+<style>
+  :root{
+    --paper:#FAF9F6; --ink:#22303F; --cinn:#B04A2F; --steel:#2F5D8A;
+    --mut:#6B6A63; --line:#E2DCD0; --wash:#F1EEE7; --amber:#C8A15A;
+    --rowfill:#E6EEF6; --colfill:#FBEFD6; --xfill:#F6D9C8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:16px/1.68 -apple-system,"Segoe UI","Noto Sans SC",system-ui,sans-serif;}
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 18px 72px}
+  a{color:var(--steel);text-decoration:none;border-bottom:1px solid rgba(47,93,138,.28)}
+  a:hover{border-bottom-color:var(--steel)}
+  .nav{display:flex;gap:16px;font-size:13px;color:var(--mut);margin-bottom:22px;flex-wrap:wrap}
+  .mast{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:22px}
+  .tag{display:inline-block;font:11px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;
+    color:var(--paper);background:var(--ink);padding:4px 7px;border-radius:2px;vertical-align:middle}
+  h1{font-size:28px;line-height:1.3;margin:12px 0 8px;letter-spacing:-.01em}
+  .sub{color:var(--mut);font-size:14.5px;max-width:760px;margin:0}
+  h2{font-size:20px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  h3{font-size:14px;margin:0 0 8px;color:var(--mut);font-weight:600;letter-spacing:.04em}
+  p{margin:10px 0}
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace}
+
+  .how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:14px 0 4px}
+  .how div{background:#FFFDF9;border:1px solid var(--line);border-left:3px solid var(--steel);padding:11px 13px;font-size:14px}
+  .how b{display:block;font-size:12.5px;color:var(--steel);letter-spacing:.06em;margin-bottom:3px}
+
+  .deck{border:1px solid var(--line);background:#FFFDF9;border-radius:4px;margin-top:16px;
+    box-shadow:0 1px 0 #EFEAE0}
+  .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+    padding:14px 16px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .dtitle{display:flex;align-items:center;gap:10px;min-width:0}
+  .dtitle h2{border:0;margin:0;padding:0;font-size:17px}
+  .pick{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end;max-width:720px}
+  .pill{font:12px/1.3 inherit;color:var(--ink);background:#FFF;border:1px solid var(--line);
+    border-radius:20px;padding:5px 11px;cursor:pointer;white-space:nowrap}
+  .pill:hover{border-color:var(--steel);color:var(--steel)}
+  .pill.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+  .dbody{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr) minmax(0,1fr);gap:0}
+  .col{padding:14px 14px 16px;min-width:0}
+  .col+.col{border-left:1px solid var(--line)}
+  .c1{display:flex;flex-direction:column}
+
+  ol.code{list-style:none;margin:0;padding:0;font:12.4px/1.62 ui-monospace,SFMono-Regular,Consolas,monospace;
+    background:#FCFBF7;border:1px solid var(--line);border-radius:3px;padding:7px 4px;overflow-x:auto}
+  ol.code li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:7px;padding:1px 6px 1px 2px;
+    border-left:3px solid transparent;white-space:pre}
+  ol.code .ln{color:#B3ACA2;text-align:right;user-select:none}
+  ol.code code{color:#3A4756}
+  ol.code li.on{background:#FBEFD6;border-left-color:var(--cinn)}
+  ol.code li.on code{color:#8A3B22;font-weight:600}
+  ol.code li.on .ln{color:#B04A2F}
+
+  .vars{margin-top:12px;font:12px/1.5 ui-monospace,Consolas,monospace}
+  .vrow{display:flex;justify-content:space-between;gap:10px;padding:3px 2px;border-bottom:1px dotted var(--line)}
+  .vk{color:var(--mut)}
+  .vv{color:var(--cinn);font-weight:600;text-align:right}
+  .vempty{color:#B3ACA2}
+
+  .mats{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+  .pnl{min-width:0;max-width:100%}
+  .pt{font:10.5px/1.4 ui-monospace,Consolas,monospace;color:var(--mut);letter-spacing:.08em;margin-bottom:4px;white-space:nowrap}
+  .grid{display:grid;gap:2px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);
+    padding:5px 7px;border-radius:2px;overflow-x:auto;background:#FFFDF9}
+  .cell{font:12.4px ui-monospace,Consolas,monospace;text-align:right;padding:2px 4px;min-width:34px;
+    color:var(--ink);border-radius:2px;transition:background .12s linear}
+  .cell.r{background:var(--rowfill)}
+  .cell.c{background:var(--colfill)}
+  .cell.x{background:var(--xfill);font-weight:700;color:#8A3B22}
+  .cell.g{color:#B9B3A6;font-style:italic}
+
+  .cvbox{border:1px solid var(--line);background:#FFFDF9;border-radius:3px;padding:6px}
+  canvas#cv{display:block;width:100%;max-width:470px;aspect-ratio:1/1;height:auto;margin:0 auto}
+
+  .dbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px;
+    border-top:1px solid var(--line);background:#FCFAF4}
+  .dbar button{font:13px/1 inherit;padding:6px 11px;border:1px solid var(--line);background:#FFF;
+    border-radius:3px;cursor:pointer;color:var(--ink)}
+  .dbar button:hover{border-color:var(--steel);color:var(--steel)}
+  .dbar button:disabled{opacity:.4;cursor:default;border-color:var(--line);color:var(--ink)}
+  .dbar .sel{font-size:12.5px;color:var(--mut)}
+  .dbar select{font:12.5px inherit;padding:3px 4px;border:1px solid var(--line);border-radius:3px;background:#FFF}
+  .cnt{font:12.5px ui-monospace,Consolas,monospace;color:var(--mut);margin-left:auto}
+  .loops{display:flex;gap:6px}
+  .loops b{font:11.5px/1 ui-monospace,Consolas,monospace;font-weight:600;color:var(--steel);
+    background:#EAF0F6;border:1px solid #D3DFEA;border-radius:3px;padding:4px 7px;min-width:74px;text-align:center}
+  .prog{flex-basis:100%;height:3px;background:#EDE8DE;border-radius:2px;overflow:hidden}
+  .prog i{display:block;height:100%;width:0;background:var(--cinn);transition:width .12s linear}
+  .say{margin:0;padding:10px 16px 14px;font-size:13.5px;color:#4C5A69;border-top:1px dashed var(--line);min-height:44px}
+  .say b{color:var(--cinn)}
+
+  .tw{overflow-x:auto;margin:12px 0 4px}
+  table{width:100%;border-collapse:collapse;font-size:13.6px;margin:0}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;color:var(--mut);letter-spacing:.05em;font-weight:600;background:#F6F3EA}
+  td.mono,th.mono{font-family:ui-monospace,Consolas,monospace;font-size:12.4px}
+  .hi{color:var(--cinn);font-weight:600}
+  .box{background:#FFFDF9;border:1px solid var(--line);border-left:3px solid var(--amber);
+    padding:12px 14px;margin:14px 0;font-size:14.4px}
+  .box b{color:#8A6A24}
+  ul.tight{margin:8px 0;padding-left:20px;font-size:14.4px}
+  ul.tight li{margin:4px 0}
+  footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);
+    font:11.5px/1.6 ui-monospace,Consolas,monospace;color:var(--mut);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  mjx-container[jax="SVG"]{max-width:100%}
+  mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden}
+  mjx-container[display="true"]{min-width:0!important}
+
+  @media (max-width:1000px){
+    .dbody{grid-template-columns:minmax(0,1fr)}
+    .col+.col{border-left:0;border-top:1px solid var(--line)}
+    .how{grid-template-columns:minmax(0,1fr)}
+    .cnt{margin-left:0}
+  }
+  @media (max-width:560px){
+    th,td{padding:6px 5px;font-size:12.5px}
+  }
+  @media (max-width:520px){
+    h1{font-size:23px}
+    .wrap{padding:18px 12px 56px}
+    .pick{justify-content:flex-start}
+    .cell{min-width:30px;font-size:11.6px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a href="../index.html">← 数学可视化</a>
+    <a href="./index.html">数值线代目录</a>
+    <a href="./期末总复习清单.html">期末总复习清单</a>
+    <a href="./作业全解-HW1到HW8.html">作业全解</a>
+  </nav>
+
+  <header class="mast">
+    <span class="tag">ALG · 示波器</span>
+    <h1>算法示波器：伪代码、数字矩阵与几何，同一步</h1>
+    <p class="sub">
+      13 个算法的每一帧都同时给出三样东西：<b>正在执行哪一行伪代码</b>、<b>矩阵里哪个格子在被读/被改写</b>、<b>空间里哪个向量在动</b>。
+      内外循环不是抽象概念 —— 外循环每走一步，内循环就老老实实把这个"新定下来的东西"乘回去扣掉。
+    </p>
+  </header>
+
+  <h2>怎么用</h2>
+  <div class="how">
+    <div><b>① 先选算法</b>右上角按模块分组，从「矩阵乘向量」开始，一路到 Cholesky。</div>
+    <div><b>② 单步走</b>点 ▶ 一次走一帧，配速可以放慢；键盘 ← → 也行。</div>
+    <div><b>③ 三块对照</b>黄线是正在执行的行，橙色格是这一步真正读写的格子，画布是同一瞬间的几何。</div>
+  </div>
+
+  <section class="deck" id="deck">
+    <div class="dhead">
+      <div class="dtitle"><span class="tag" id="tag">ALG-01</span><h2 id="aname">载入中…</h2></div>
+      <div class="pick" id="pick"></div>
+    </div>
+    <div class="dbody">
+      <div class="col c1">
+        <h3>伪代码</h3>
+        <ol class="code" id="code"></ol>
+        <div class="vars" id="vars"></div>
+      </div>
+      <div class="col c2">
+        <h3>矩阵（数字）</h3>
+        <div class="mats" id="mats"></div>
+      </div>
+      <div class="col c3">
+        <h3>几何（同一帧）</h3>
+        <div class="cvbox"><canvas id="cv" width="480" height="480"></canvas></div>
+      </div>
+    </div>
+    <div class="dbar">
+      <button id="prev" title="上一步">◀</button>
+      <button id="next" title="下一步">▶</button>
+      <button id="play">播放</button>
+      <button id="reset">重置</button>
+      <span class="sel">配速
+        <select id="speed">
+          <option value="1.7">慢</option>
+          <option value="1" selected>中</option>
+          <option value="0.5">快</option>
+        </select>
+      </span>
+      <span class="cnt" id="cnt">1 / 1</span>
+      <span class="loops"><b id="lo">外循环 —</b><b id="li">内循环 —</b></span>
+      <div class="prog"><i id="prog"></i></div>
+    </div>
+    <p class="say" id="say"></p>
+  </section>
+
+  <h2>统一骨架：外层定"用谁"，内层"乘回去扣掉"</h2>
+  <p>
+    这 13 个算法看着五花八门，内层循环其实只做两种事：<b>算一个点积</b>（投影系数 \\(r_{ij}\\)、乘子 \\(l_{ik}\\)、Cholesky 的 \\(s\\)），
+    或者<b>做一次秩一／行更新</b>（把刚算出的系数乘上已定的那一列／行，再从目标里扣掉）。
+    混淆点几乎都出在"内层用来扣的是哪一列"——是<b>原始的</b>那一列（CGS），还是<b>已经被扣过的</b>那一列（MGS、Householder、MGS 之后的 QR）。
+  </p>
+  <div class="tw"><table>
+    <thead><tr><th>算法</th><th>外循环</th><th>内循环</th><th>一遍之后的产物</th><th>期末</th></tr></thead>
+    <tbody>
+      <tr><td>矩阵乘向量 · 行观点</td><td>i：第 i 行</td><td>j：\\(a_{ij}x_j\\) 累加</td><td>\\(b_i\\)（各行独立）</td><td>中</td></tr>
+      <tr><td>矩阵乘向量 · 列观点</td><td>j：第 j 列</td><td>i：\\(x_j a_j\\) 加到 b</td><td>\\(b=\\sum_j x_j a_j\\)</td><td>中</td></tr>
+      <tr><td>前代 / 回代</td><td>i（或逆序）</td><td>j：已知分量的点积</td><td>\\(x\\)</td><td class="hi">高</td></tr>
+      <tr><td>正交投影 \\(P=QQ^*\\)</td><td>j：基向量</td><td>点积 + 秩一累加</td><td>\\(p\\)，\\(r\\perp\\mathrm{span}(Q)\\)</td><td>中</td></tr>
+      <tr><td>Gram–Schmidt · 经典</td><td>j：第 j 列</td><td>i：用<b>原始</b> \\(a_j\\) 取投影</td><td>\\(Q,R\\)</td><td class="hi">高</td></tr>
+      <tr><td>Gram–Schmidt · 修正</td><td>j：第 j 列</td><td>i：用<b>已更新</b>的 \\(v\\) 取投影</td><td>\\(Q,R\\)</td><td class="hi">高</td></tr>
+      <tr><td>Householder QR</td><td>k：第 k 个反射</td><td>j：对每列做反射</td><td>\\(R\\)，\\(Q=H_1H_2\\cdots\\)</td><td class="hi">高</td></tr>
+      <tr><td>Givens QR</td><td>k：列；i：行对</td><td>一次二维旋转</td><td>\\(R\\)</td><td>中</td></tr>
+      <tr><td>正规方程</td><td>i,j：\\(G=A^*A\\)</td><td>k：点积</td><td>\\(G\\)，\\(c=A^*b\\)</td><td class="hi">高</td></tr>
+      <tr><td>QR 最小二乘</td><td>k：反射</td><td>列与 b 同时反射</td><td>\\(R\\)，\\(d=Q^*b\\)</td><td class="hi">高</td></tr>
+      <tr><td>LU（无主元）</td><td>k：第 k 列</td><td>i：行更新</td><td>\\(L,U\\)</td><td class="hi">高</td></tr>
+      <tr><td>列主元 LU</td><td>k：先选主元再消</td><td>i：行更新</td><td>\\(P,L,U\\)</td><td class="hi">高</td></tr>
+      <tr><td>Cholesky</td><td>j：第 j 列</td><td>i：点积 + 开方／除法</td><td>\\(R\\)，\\(A=R^*R\\)</td><td class="hi">高</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box">
+    <b>为什么"数字 + 几何"要同时看</b><br>
+    只跟着数字走，容易记住步骤但不知道为什么要这么做；只看几何，又会在小矩阵之外失去精度感。
+    同一帧里两边的对应关系是：<b>被高亮的格子 = 画布上正在动的那个向量／那个分量</b>。
+    一旦你能指着某个格子说出"它的几何身份是这个投影系数"，索引就不会再写反了。
+  </div>
+
+  <h2>各算法的易错点（与示波器对应）</h2>
+  <div class="tw"><table>
+    <thead><tr><th>算法</th><th>最常见错法</th><th>在示波器里怎么看出来</th></tr></thead>
+    <tbody>
+      <tr><td>行 / 列观点</td><td>把 \\(a_{ij}\\) 的行列讲反，或漏掉 \\(x_j\\) 的权重</td><td>列观点里每加一条灰箭头都必须先乘 \\(x_j\\)；箭头长度不对就是这里错</td></tr>
+      <tr><td>前代 / 回代</td><td>回代忘了除以 \\(u_{ii}\\)，或把上三角当下降</td><td>最后一步读数 \\(x_i=y_i/u_{ii}\\)；不除的话 \\(x\\) 会整体放大 \\(u_{ii}\\) 倍</td></tr>
+      <tr><td>CGS / MGS</td><td>内层用错了列：该用原始 \\(a_j\\) 的用了更新后的 \\(v\\)</td><td>看 \\(r_{ij}\\) 的来源标注；精确算术下两者几乎相同，浮点下 MGS 的正交误差小一个量级</td></tr>
+      <tr><td>Householder</td><td>符号取错：\\(v=x+\\mathrm{sign}(x_1)\\|x\\|e_1\\) 写成减号</td><td>反射后的向量应落在 <b>负</b> \\(e_1\\) 方向；画布上箭头指反就是符号错</td></tr>
+      <tr><td>Givens</td><td>旋转后 \\(a_{ik}\\) 没归零，或 \\(c,s\\) 顺序反</td><td>看 (\\(k,i\\)) 平面上那个点是否被转到横轴上</td></tr>
+      <tr><td>正规方程</td><td>忘乘 \\(A^*\\) 右边，或把 \\(G\\) 算成 \\(AA^*\\)</td><td>\\(G\\) 必须是 <b>n×n</b>；画布上平面由 \\(A\\) 的列张成</td></tr>
+      <tr><td>LU / 列主元</td><td>\\(L\\) 的位置写反（\\(l_{ik}\\) 落到 \\(U\\) 里），换行时忘了同步换 \\(L\\) 的已算列</td><td>做完后 \\(L\\) 的对角线必须全是 1，\\(U\\) 的对角线以下必须全 0</td></tr>
+      <tr><td>Cholesky</td><td>点积用的是 \\(r_{ki}r_{kj}\\) 的顺序反了，或 \\(\\sqrt{}\\) 前没扣干净</td><td>看读数里 \\(s\\) 是不是"原元素减去已算部分"；\\(s\\) 为负说明矩阵不正定</td></tr>
+    </tbody>
+  </table></div>
+
+  <footer>
+    <span>NLA-ALG · 算法示波器 · 13 个算法 / 逐步帧</span>
+    <span>数值线性代数 · 期末复习</span>
+  </footer>
+</div>
+
+<script id="core">
+/* ===== 纯函数工具 ===== */
+const SUB = '₀₁₂₃₄₅₆₇₈₉';
+function sub(n){ return String(n).split('').map(d => SUB[+d]).join(''); }
+function zip(A){ return A[0].map((_, j) => A.map(r => r[j])); }
+function dot(a, b){ let s = 0; for(let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+function nrm(a){ return Math.sqrt(dot(a, a)); }
+function scal(a, k){ return a.map(v => v * k); }
+function vsub(a, b){ return a.map((v, i) => v - b[i]); }
+function vadd(a, b){ return a.map((v, i) => v + b[i]); }
+function mm(A, B){
+  const C = [];
+  for(let i = 0; i < A.length; i++){
+    const row = [];
+    for(let j = 0; j < B[0].length; j++){
+      let s = 0;
+      for(let k = 0; k < B.length; k++) s += A[i][k] * B[k][j];
+      row.push(s);
+    }
+    C.push(row);
+  }
+  return C;
+}
+function eye(n){ const M = []; for(let i = 0; i < n; i++){ const r = []; for(let j = 0; j < n; j++) r.push(i === j ? 1 : 0); M.push(r); } return M; }
+function fmt(v, d){
+  if(v === undefined || v === null || Number.isNaN(v)) return '—';
+  if(!isFinite(v)) return '∞';
+  d = (d === undefined) ? 4 : d;
+  if(Math.abs(v) < 5e-11) return '0';
+  let s = v.toFixed(d);
+  if(s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
+  if(s === '-0') s = '0';
+  return s;
+}
+function Pm(t, M, hl){ return { t: t, m: M.map(r => r.slice()), hl: hl || {} }; }
+function Vm(t, v, hl){ return { t: t, m: [v.slice()], hl: hl || {}, vec: true }; }
+
+/* ===== ALG-01 矩阵乘向量 · 行观点 ===== */
+function algoMVrow(){
+  const A = [[1, 2, 0], [0, 1, 2], [2, 0, 1]], x = [1, 2, 1];
+  const cols = zip(A), b = [0, 0, 0];
+  return {
+    id: 'mv_row', tag: 'ALG-01', grp: '基础与运算', name: '矩阵乘向量 · 行观点',
+    pseudo: [
+      'b = 0                          // m×1',
+      'for i = 1 : m                  // 外循环：逐行',
+      '    s = 0',
+      '    for j = 1 : n              // 内循环：第 i 行的点积',
+      '        s = s + a(i,j) * x(j)',
+      '    b(i) = s',
+      'return b'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['规模', 'A: 3×3  x: 3×1'], ['b', '(0, 0, 0)']],
+        panels: [Pm('A', A), Vm('x', x), Pm('b', [b.slice()])],
+        geo: { kind: 'mv', cols: cols, b: b.slice(), x: x, row: -1 },
+        say: '三个灰箭头是 A 的列。行观点下它们只是背景——先看清 b 要由谁拼出来。' };
+      for(let i = 0; i < 3; i++){
+        yield { pc: 1, loop: { o: 'i = ' + (i + 1) },
+          vars: [['当前行 a' + sub(i + 1) + 'ᵀ', '[' + A[i].map(v => fmt(v)).join(', ') + ']'], ['s', '0']],
+          panels: [Pm('A', A, { r: [i] }), Vm('x', x), Pm('b', [b.slice()], { r: [i] })],
+          geo: { kind: 'mv', cols: cols, b: b.slice(), x: x, row: i },
+          say: '外循环取出第 ' + (i + 1) + ' 行，整行高亮；b 的第 ' + (i + 1) + ' 个格子空着等它。' };
+        let s = 0;
+        for(let j = 0; j < 3; j++){
+          s += A[i][j] * x[j];
+          yield { pc: 4, loop: { o: 'i = ' + (i + 1), i: 'j = ' + (j + 1) },
+            vars: [['a(i,j)', fmt(A[i][j])], ['x(j)', fmt(x[j])], ['s', fmt(s)]],
+            panels: [Pm('A', A, { r: [i], c: [j], x: [[i, j]] }), Vm('x', x, { c: [j] }), Pm('b', [b.slice()], { r: [i] })],
+            geo: { kind: 'mv', cols: cols, b: b.slice(), x: x, row: i },
+            say: '内循环第 ' + (j + 1) + ' 次：只用 a' + sub(i + 1) + sub(j + 1) + ' 与 x' + sub(j + 1) + '，累加到 ' + fmt(s) + '。' };
+        }
+        b[i] = s;
+        yield { pc: 5, loop: { o: 'i = ' + (i + 1) },
+          vars: [['b' + sub(i + 1), fmt(b[i])]],
+          panels: [Pm('A', A, { r: [i] }), Vm('x', x), Pm('b', [b.slice()], { x: [[0, i]] })],
+          geo: { kind: 'mv', cols: cols, b: b.slice(), x: x, row: -1 },
+          say: 'b' + sub(i + 1) + ' = ' + fmt(b[i]) + ' 落位。行与行之间没有任何依赖，天然可并行。' };
+      }
+      yield { pc: 6, loop: {}, vars: [['b', '(' + b.map(v => fmt(v)).join(', ') + ')']],
+        panels: [Pm('A', A), Vm('x', x), Pm('b', [b.slice()], { x: [[0, 0], [0, 1], [0, 2]] })],
+        geo: { kind: 'mv', cols: cols, b: b.slice(), x: x, row: -1 },
+        say: '完成。三条灰箭头按 x 加权相加正好是 b —— 这就是列观点。',
+        check: { A: A, x: x, b: b.slice() } };
+    }
+  };
+}
+
+/* ===== ALG-02 矩阵乘向量 · 列观点 ===== */
+function algoMVcol(){
+  const A = [[1, 2, 0], [0, 1, 2], [2, 0, 1]], x = [1, 2, 1];
+  const cols = zip(A), b = [0, 0, 0];
+  return {
+    id: 'mv_col', tag: 'ALG-02', grp: '基础与运算', name: '矩阵乘向量 · 列观点',
+    pseudo: [
+      'b = 0',
+      'for j = 1 : n                  // 外循环：逐列',
+      '    for i = 1 : m              // 内循环：把 x(j)·a_j 加到 b',
+      '        b(i) = b(i) + a(i,j) * x(j)',
+      'return b',
+      '',
+      '// 等价：b = Σ_j x(j) · a_j     列向量的线性组合'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['b', '(0, 0, 0)'], ['x', '(' + x.join(', ') + ')']],
+        panels: [Pm('A', A), Vm('x', x), Pm('b', [b.slice()])],
+        geo: { kind: 'mv', cols: cols, b: b.slice(), x: x, col: -1 },
+        say: '起点 b 是零向量。列观点要把三条列向量按 x 的分量加权叠起来。' };
+      for(let j = 0; j < 3; j++){
+        yield { pc: 1, loop: { o: 'j = ' + (j + 1) },
+          vars: [['取第 j 列', 'a' + sub(j + 1) + ' = [' + cols[j].map(v => fmt(v)).join(', ') + ']'], ['权重 x(j)', fmt(x[j])]],
+          panels: [Pm('A', A, { c: [j] }), Vm('x', x, { x: [[0, j]] }), Pm('b', [b.slice()])],
+          geo: { kind: 'mv', cols: cols, b: b.slice(), x: x, col: j },
+          say: '外循环锁定第 ' + (j + 1) + ' 列，权重 x' + sub(j + 1) + ' = ' + fmt(x[j]) + '。' };
+        for(let i = 0; i < 3; i++){
+          const add = A[i][j] * x[j];
+          b[i] += add;
+          yield { pc: 3, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['a(i,j)·x(j)', fmt(add)], ['b(i)', fmt(b[i])]],
+            panels: [Pm('A', A, { c: [j], r: [i], x: [[i, j]] }), Vm('x', x, { x: [[0, j]] }), Pm('b', [b.slice()], { r: [i] })],
+            geo: { kind: 'mv', cols: cols, b: b.slice(), x: x, col: j, part: j },
+            say: '把 x' + sub(j + 1) + '·a' + sub(j + 1) + ' 的第 ' + (i + 1) + ' 个分量加到 b' + sub(i + 1) + '：' + fmt(b[i]) + '。' };
+        }
+      }
+      yield { pc: 6, loop: {}, vars: [['b', '(' + b.map(v => fmt(v)).join(', ') + ')']],
+        panels: [Pm('A', A), Vm('x', x), Pm('b', [b.slice()], { x: [[0, 0], [0, 1], [0, 2]] })],
+        geo: { kind: 'mv', cols: cols, b: b.slice(), x: x, col: -1 },
+        say: 'x₁a₁ + x₂a₂ + x₃a₃ 首尾相接就是 b。这也是"矩阵的像 = 列空间"最直白的样子。',
+        check: { A: A, x: x, b: b.slice() } };
+    }
+  };
+}
+
+/* ===== ALG-03 前代与回代 ===== */
+function algoTri(){
+  const L = [[1, 0, 0], [2, 1, 0], [1, 3, 1]];
+  const U = [[3, 1, 2], [0, 2, 1], [0, 0, 4]];
+  const b = [3, 9, 8];
+  const y = [0, 0, 0], xv = [0, 0, 0];
+  return {
+    id: 'tri', tag: 'ALG-03', grp: '基础与运算', name: '前代与回代（三角求解）',
+    pseudo: [
+      '// 前代：解 L y = b（L 单位下三角）',
+      'for i = 1 : m',
+      '    y(i) = b(i)',
+      '    for j = 1 : i-1',
+      '        y(i) = y(i) - l(i,j) * y(j)',
+      '// 回代：解 U x = y',
+      'for i = m : -1 : 1',
+      '    x(i) = y(i)',
+      '    for j = i+1 : m',
+      '        x(i) = x(i) - u(i,j) * x(j)',
+      '    x(i) = x(i) / u(i,i)',
+      'return x'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['L', '单位下三角'], ['U', '上三角'], ['b', '(' + b.join(', ') + ')']],
+        panels: [Pm('L', L), Pm('U', U), Vm('b', b)],
+        geo: { kind: 'tri', phase: 'fwd', y: [null, null, null], x: [null, null, null], cur: -1 },
+        say: '两个阶段：先在 L 上前代得到 y，再在 U 上回代得到 x。三角结构保证每步只有一个未知数。' };
+      for(let i = 0; i < 3; i++){
+        y[i] = b[i];
+        yield { pc: 2, loop: { o: 'i = ' + (i + 1) },
+          vars: [['y' + sub(i + 1) + ' 初值', fmt(y[i])]],
+          panels: [Pm('L', L, { r: [i] }), Pm('U', U), Vm('b', b, { x: [[0, i]] })],
+          geo: { kind: 'tri', phase: 'fwd', y: y.slice(), x: [null, null, null], cur: i },
+          say: '前代第 ' + (i + 1) + ' 行：先把 b' + sub(i + 1) + ' 抄过来。' };
+        for(let j = 0; j < i; j++){
+          y[i] -= L[i][j] * y[j];
+          yield { pc: 4, loop: { o: 'i = ' + (i + 1), i: 'j = ' + (j + 1) },
+            vars: [['l(i,j)·y(j)', fmt(L[i][j] * y[j])], ['y' + sub(i + 1), fmt(y[i])]],
+            panels: [Pm('L', L, { r: [i], c: [j], x: [[i, j]] }), Pm('U', U), Vm('b', b, { x: [[0, i]] })],
+            geo: { kind: 'tri', phase: 'fwd', y: y.slice(), x: [null, null, null], cur: i },
+            say: '扣掉已知项的贡献，y' + sub(i + 1) + ' = ' + fmt(y[i]) + '。' };
+        }
+      }
+      for(let i = 2; i >= 0; i--){
+        xv[i] = y[i];
+        yield { pc: 7, loop: { o: 'i = ' + (i + 1) + '（逆序）' },
+          vars: [['x' + sub(i + 1) + ' 初值', fmt(xv[i])]],
+          panels: [Pm('L', L), Pm('U', U, { r: [i] }), Vm('y', y)],
+          geo: { kind: 'tri', phase: 'back', y: y.slice(), x: xv.slice(), cur: i },
+          say: '回代第 ' + (i + 1) + ' 行：从 y' + sub(i + 1) + ' = ' + fmt(y[i]) + ' 出发。' };
+        for(let j = i + 1; j < 3; j++){
+          xv[i] -= U[i][j] * xv[j];
+          yield { pc: 9, loop: { o: 'i = ' + (i + 1), i: 'j = ' + (j + 1) },
+            vars: [['u(i,j)·x(j)', fmt(U[i][j] * xv[j])], ['x' + sub(i + 1), fmt(xv[i])]],
+            panels: [Pm('L', L), Pm('U', U, { r: [i], c: [j], x: [[i, j]] }), Vm('y', y)],
+            geo: { kind: 'tri', phase: 'back', y: y.slice(), x: xv.slice(), cur: i },
+            say: '扣掉已解出的 x' + sub(j + 1) + ' 的贡献。' };
+        }
+        xv[i] /= U[i][i];
+        yield { pc: 10, loop: { o: 'i = ' + (i + 1) },
+          vars: [['÷ u(i,i)', fmt(U[i][i])], ['x' + sub(i + 1), fmt(xv[i])]],
+          panels: [Pm('L', L), Pm('U', U, { r: [i], x: [[i, i]] }), Vm('y', y)],
+          geo: { kind: 'tri', phase: 'back', y: y.slice(), x: xv.slice(), cur: i },
+          say: '最后除以对角元 —— 这一步忘了，整个 x 会放大 u(i,i) 倍。' };
+      }
+      yield { pc: 11, loop: {}, vars: [['x', '(' + xv.map(v => fmt(v)).join(', ') + ')']],
+        panels: [Pm('L', L), Pm('U', U), Vm('x', xv)],
+        geo: { kind: 'tri', phase: 'back', y: y.slice(), x: xv.slice(), cur: -1 },
+        say: '解出 x。验算：L·U·x 应回到 b。',
+        check: { L: L, U: U, b: b, x: xv.slice() } };
+    }
+  };
+}
+
+/* ===== ALG-04 正交投影 ===== */
+function algoProj(){
+  const s = Math.SQRT1_2;
+  const q1 = [s, s, 0], q2 = [0, 0, 1], b = [2, 1, 3];
+  const Q = [q1, q2], p = [0, 0, 0];
+  return {
+    id: 'proj', tag: 'ALG-04', grp: '基础与运算', name: '正交投影（P = QQ*）',
+    pseudo: [
+      '// Q 的列正交归一，P = Q Q*',
+      'p = 0',
+      'for j = 1 : 2                  // 外循环：逐列',
+      '    c(j) = q_j^* b              // 内循环：点积',
+      '    p = p + c(j) * q_j          // 秩一累加',
+      'r = b - p                      // 残差',
+      'return p, r                    // r ⟂ span(Q)'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['q₁·q₂', fmt(dot(q1, q2))], ['‖q₁‖', fmt(nrm(q1))], ['p', '(0, 0, 0)']],
+        panels: [Pm('Q', [[q1[0], q2[0]], [q1[1], q2[1]], [q1[2], q2[2]]]), Vm('b', b), Vm('p', p)],
+        geo: { kind: 'proj', q: [q1, q2], b: b, p: p.slice(), r: null, j: -1 },
+        say: 'q₁ ⊥ q₂ 且都是单位向量，所以 P = QQ* 一步就是正交投影，不用求逆。' };
+      for(let j = 0; j < 2; j++){
+        const c = dot(Q[j], b);
+        yield { pc: 3, loop: { o: 'j = ' + (j + 1) },
+          vars: [['c' + sub(j + 1) + ' = q' + sub(j + 1) + 'ᵀb', fmt(c)]],
+          panels: [Pm('Q', [[q1[0], q2[0]], [q1[1], q2[1]], [q1[2], q2[2]]], { c: [j] }), Vm('b', b), Vm('p', p)],
+          geo: { kind: 'proj', q: [q1, q2], b: b, p: p.slice(), r: null, j: j, c: c },
+          say: '内层是一个点积：b 在第 ' + (j + 1) + ' 个方向上有多少分量。' };
+        for(let i = 0; i < 3; i++) p[i] += c * Q[j][i];
+        yield { pc: 4, loop: { o: 'j = ' + (j + 1), i: 'i = 1 : 3' },
+          vars: [['p', '(' + p.map(v => fmt(v)).join(', ') + ')']],
+          panels: [Pm('Q', [[q1[0], q2[0]], [q1[1], q2[1]], [q1[2], q2[2]]], { c: [j] }), Vm('b', b), Vm('p', p)],
+          geo: { kind: 'proj', q: [q1, q2], b: b, p: p.slice(), r: null, j: j, c: c },
+          say: '秩一累加：p ← p + c' + sub(j + 1) + '·q' + sub(j + 1) + '。' };
+      }
+      const r = vsub(b, p);
+      yield { pc: 5, loop: {}, vars: [['p', '(' + p.map(v => fmt(v)).join(', ') + ')'], ['r', '(' + r.map(v => fmt(v)).join(', ') + ')'], ['pᵀr', fmt(dot(p, r))]],
+        panels: [Pm('Q', [[q1[0], q2[0]], [q1[1], q2[1]], [q1[2], q2[2]]]), Vm('b', b), Vm('p', p), Vm('r', r)],
+        geo: { kind: 'proj', q: [q1, q2], b: b, p: p.slice(), r: r, j: -1 },
+        say: '残差 r = b − p 与平面正交：pᵀr = ' + fmt(dot(p, r)) + '。这是最小二乘的几何原型。',
+        check: { q: Q, b: b, p: p.slice(), r: r } };
+    }
+  };
+}
+
+/* ===== ALG-05/06 Gram–Schmidt ===== */
+function algoGS(mode){
+  const A = [[1, 1, 0], [0, 1, 1], [1, 0, 1]];
+  const cols = zip(A);
+  const Q = [], R = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  const isCGS = (mode === 'cgs');
+  return {
+    id: isCGS ? 'cgs' : 'mgs', tag: isCGS ? 'ALG-05' : 'ALG-06', grp: '正交化与 QR',
+    name: isCGS ? 'Gram–Schmidt · 经典（CGS）' : 'Gram–Schmidt · 修正（MGS）',
+    pseudo: isCGS ? [
+      'for j = 1 : n',
+      '    v = a_j',
+      '    for i = 1 : j-1',
+      '        r(i,j) = q_i^* a_j     // 经典：始终用原始 a_j',
+      '        v = v - r(i,j) * q_i',
+      '    r(j,j) = ||v||',
+      '    q_j = v / r(j,j)',
+      'return Q, R'
+    ] : [
+      'for j = 1 : n',
+      '    v = a_j',
+      '    for i = 1 : j-1',
+      '        r(i,j) = q_i^* v       // 修正：用已被扣过的 v',
+      '        v = v - r(i,j) * q_i',
+      '    r(j,j) = ||v||',
+      '    q_j = v / r(j,j)',
+      'return Q, R'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['待处理列数', 'n = 3'], ['Q 已有', '0 列']],
+        panels: [Pm('A', A), Pm('R', R), Pm('Q', [[0, 0, 0], [0, 0, 0], [0, 0, 0]])],
+        geo: { kind: 'gs', base: cols, a: null, v: null, Q: [], projs: [], j: -1 },
+        say: '要造出正交归一的 q₁,q₂,q₃。GS 的思路：每个新列先减掉在已有 q 上的投影，再归一化。' };
+      for(let j = 0; j < 3; j++){
+        let v = cols[j].slice();
+        yield { pc: 1, loop: { o: 'j = ' + (j + 1) },
+          vars: [['v = a' + sub(j + 1), '[' + v.map(t => fmt(t)).join(', ') + ']'], ['‖v‖', fmt(nrm(v))]],
+          panels: [Pm('A', A, { c: [j] }), Pm('R', R), Pm('Q', Qmat(Q))],
+          geo: { kind: 'gs', base: cols, a: cols[j], v: v.slice(), Q: Q.map(c => c.slice()), projs: [], j: j },
+          say: '取第 ' + (j + 1) + ' 列放进 v，准备逐次扣投影。' };
+        const projs = [];
+        for(let i = 0; i < j; i++){
+          const src = isCGS ? cols[j] : v;
+          const rij = dot(Q[i], src);
+          R[i][j] = rij;
+          v = vsub(v, scal(Q[i], rij));
+          projs.push([Q[i].slice(), rij]);
+          yield { pc: 4, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['r(i,j)', fmt(rij)], ['‖v‖ 剩余', fmt(nrm(v))]],
+            panels: [Pm('A', A, { c: [j] }), Pm('R', R, { c: [j], r: [i], x: [[i, j]] }), Pm('Q', Qmat(Q))],
+            geo: { kind: 'gs', base: cols, a: cols[j], v: v.slice(), Q: Q.map(c => c.slice()), projs: projs.map(t => [t[0].slice(), t[1]]), j: j },
+            say: 'r' + sub(i + 1) + sub(j + 1) + ' = ' + fmt(rij) + '，把 ' + (isCGS ? '原始 a' + sub(j + 1) : '当前的 v') + ' 在 q' + sub(i + 1) + ' 上的分量扣掉。' };
+        }
+        R[j][j] = nrm(v);
+        Q[j] = scal(v, 1 / R[j][j]);
+        yield { pc: 6, loop: { o: 'j = ' + (j + 1) },
+          vars: [['r(j,j)', fmt(R[j][j])], ['q' + sub(j + 1), '[' + Q[j].map(t => fmt(t)).join(', ') + ']']],
+          panels: [Pm('A', A), Pm('R', R, { x: [[j, j]] }), Pm('Q', Qmat(Q), { c: [j] })],
+          geo: { kind: 'gs', base: cols, a: cols[j], v: Q[j].slice(), Q: Q.map(c => c.slice()), projs: [], j: j },
+          say: '剩下的部分长度 ' + fmt(R[j][j]) + '，归一化得到 q' + sub(j + 1) + '。' };
+      }
+      yield { pc: 7, loop: {}, vars: [['‖QᵀQ − I‖', fmt(qorthErr(Q))], ['‖QR − A‖', fmt(recErr(Q, R, A))]],
+        panels: [Pm('A', A), Pm('R', R), Pm('Q', Qmat(Q), { c: [0, 1, 2] })],
+        geo: { kind: 'gs', base: cols, a: null, v: null, Q: Q.map(c => c.slice()), projs: [], j: -1 },
+        say: '三个方向互相垂直、都是单位长：Q 的列构成一组正交基，A = QR。',
+        check: { A: A, Q: Q.map(c => c.slice()), R: R.map(r => r.slice()) } };
+    }
+  };
+}
+function Qmat(Q){
+  const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  for(let j = 0; j < Q.length; j++) for(let i = 0; i < 3; i++) M[i][j] = Q[j][i];
+  return M;
+}
+function qorthErr(Q){
+  let e = 0;
+  for(let i = 0; i < Q.length; i++) for(let j = 0; j < Q.length; j++){
+    e = Math.max(e, Math.abs(dot(Q[i], Q[j]) - (i === j ? 1 : 0)));
+  }
+  return e;
+}
+function recErr(Q, R, A){
+  let e = 0;
+  for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++){
+    let s = 0;
+    for(let k = 0; k < 3; k++) s += Q[k][i] * R[k][j];
+    e = Math.max(e, Math.abs(s - A[i][j]));
+  }
+  return e;
+}
+
+/* ===== ALG-07 Householder QR ===== */
+function algoHouse(){
+  const A0 = [[3, 1], [4, 2], [0, 1]];
+  const HC = zip(A0);
+  const A = A0.map(r => r.slice()), m = 3, n = 2;
+  const Q = eye(m);
+  const hist = [];
+  return {
+    id: 'house', tag: 'ALG-07', grp: '正交化与 QR', name: 'Householder QR（反射）',
+    pseudo: [
+      '// A 为 m×n，m ≥ n',
+      'for k = 1 : n                  // 外循环：第 k 个反射',
+      '    x = A(k:m, k)',
+      '    v = x + sign(x1)·||x||·e1',
+      '    v = v / ||v||',
+      '    for j = k : n              // 内循环：逐列反射',
+      '        w = v^* A(k:m, j)',
+      '        A(k:m, j) = A(k:m, j) - 2 w v',
+      'return R = A, Q = (H1 H2 ...)^*'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['A', '3×2'], ['目标', 'R 上三角']],
+        panels: [Pm('A', A), Pm('Q', Q)],
+        geo: { kind: 'house', base: HC, x: null, v: null, hv: null, k: -1 },
+        say: '每个反射把一个列向量的下半部分一次清零。第一个反射对准 a₁，把 a₁ 折到 e₁ 轴上。' };
+      for(let k = 0; k < n; k++){
+        const len = m - k, x = [], v = [];
+        for(let i = 0; i < len; i++) x.push(A[k + i][k]);
+        const nx = nrm(x), sgn = (x[0] >= 0 ? 1 : -1);
+        for(let i = 0; i < len; i++) v.push(x[i]);
+        v[0] += sgn * nx;
+        const nv = nrm(v);
+        for(let i = 0; i < len; i++) v[i] /= nv;
+        const hv = []; for(let i = 0; i < len; i++) hv.push(0);
+        hv[0] = -sgn * nx;
+        const emb = p => { const t = [0, 0, 0]; for(let i = 0; i < p.length; i++) t[k + i] = p[i]; return t; };
+        yield { pc: 2, loop: { o: 'k = ' + (k + 1) },
+          vars: [['x = A(' + (k + 1) + ':' + m + ', ' + (k + 1) + ')', '[' + x.map(t => fmt(t)).join(', ') + ']'], ['‖x‖', fmt(nx)]],
+          panels: [Pm('A', A, { c: [k] }), Pm('Q', Q)],
+          geo: { kind: 'house', base: HC, x: emb(x), v: null, hv: null, k: k },
+          say: '取出这一列的下半截 x，它的长度 ' + fmt(nx) + ' 就是将来 R 的对角元（带符号）。' };
+        yield { pc: 4, loop: { o: 'k = ' + (k + 1) },
+          vars: [['sign(x₁)', sgn > 0 ? '+1' : '−1'], ['v（单位化后）', '[' + v.map(t => fmt(t)).join(', ') + ']'], ['Hx =', fmt(hv[0]) + '·e₁']],
+          panels: [Pm('A', A, { c: [k] }), Pm('Q', Q)],
+          geo: { kind: 'house', base: HC, x: emb(x), v: emb(v), hv: emb(hv), k: k },
+          say: 'v 是反射方向（垂直于镜面）。符号取 sign(x₁) 是为了让 Hx 落在负半轴，避免相消。' };
+        for(let j = k; j < n; j++){
+          let w = 0;
+          for(let i = 0; i < len; i++) w += v[i] * A[k + i][j];
+          for(let i = 0; i < len; i++) A[k + i][j] -= 2 * w * v[i];
+          yield { pc: 7, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) },
+            vars: [['w = vᵀa' + sub(j + 1), fmt(w)], ['2w', fmt(2 * w)]],
+            panels: [Pm('A', A, { c: [j] }), Pm('Q', Q)],
+            geo: { kind: 'house', base: HC, x: emb(x), v: emb(v), hv: emb(hv), k: k },
+            say: '内层第 ' + (j + 1) + ' 列：算一个点积 w，再把 2w·v 从这一列扣掉。' };
+        }
+        const G = eye(m);
+        for(let a = 0; a < len; a++) for(let b = 0; b < len; b++){
+          G[k + a][k + b] = (a === b ? 1 : 0) - 2 * v[a] * v[b];
+        }
+        const nq = mm(Q, G);
+        for(let a = 0; a < m; a++) for(let b = 0; b < m; b++) Q[a][b] = nq[a][b];
+        yield { pc: 8, loop: { o: 'k = ' + (k + 1) + ' 完成' },
+          vars: [['A(' + (k + 1) + ':' + m + ', ' + (k + 1) + ')', '已清零']],
+          panels: [Pm('A', A), Pm('Q', Q)],
+          geo: { kind: 'house', base: HC, x: null, v: emb(v), hv: emb(hv), k: k },
+          say: '第 ' + (k + 1) + ' 列的对角线以下全变 0。把这次反射累乘进 Q，最后 A = Q R。' };
+      }
+      yield { pc: 8, loop: {}, vars: [['‖QR − A‖', fmt(recErr3(Q, A, A0))], ['R 下三角非零数', String(countBelow(A))]],
+        panels: [Pm('R', A), Pm('Q', Q)],
+        geo: { kind: 'house', base: HC, x: null, v: null, hv: null, k: -1 },
+        say: 'R 已是上三角（3×2 时最后一行全 0），Q 正交。两个反射，代价 4m²n − 4mn + n² 级别。',
+        check: { A0: A0, Q: Q, R: A } };
+    }
+  };
+}
+function recErr3(Q, R, A0){
+  const P = mm(Q, R);
+  let e = 0;
+  for(let i = 0; i < A0.length; i++) for(let j = 0; j < A0[0].length; j++) e = Math.max(e, Math.abs(P[i][j] - A0[i][j]));
+  return e;
+}
+function countBelow(A){
+  let c = 0;
+  for(let i = 0; i < A.length; i++) for(let j = 0; j < A[0].length; j++) if(i > j && Math.abs(A[i][j]) > 1e-10) c++;
+  return c;
+}
+
+/* ===== ALG-08 Givens QR ===== */
+function algoGivens(){
+  const A0 = [[4, 1, 1], [3, 2, 0], [0, 1, 2]];
+  const A = A0.map(r => r.slice()), m = 3, n = 3;
+  let Q = eye(m);
+  return {
+    id: 'givens', tag: 'ALG-08', grp: '正交化与 QR', name: 'Givens QR（旋转）',
+    pseudo: [
+      'for k = 1 : n',
+      '    for i = k+1 : m            // 逐对消元',
+      '        if a(i,k) = 0: continue',
+      '        c = a(k,k)/√(a(k,k)²+a(i,k)²)',
+      '        s = a(i,k)/√(a(k,k)²+a(i,k)²)',
+      '        r_k ←  c·r_k + s·r_i   // 内层：一次二维旋转',
+      '        r_i ← -s·r_k + c·r_i   // 用旧的 r_k',
+      'return R'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['A', '3×3'], ['需要消元的口', '3 处']],
+        panels: [Pm('A', A), Pm('Q', Q)],
+        geo: { kind: 'giv', k: -1, i: -1, x: 0, y: 0, r: 0, c: 1, s: 0 },
+        say: 'Givens 用平面旋转逐格清零，适合稀疏矩阵或只需消个别元素（如三对角化）的场合。' };
+      for(let k = 0; k < n; k++){
+        for(let i = k + 1; i < m; i++){
+          const x0 = A[k][k], y0 = A[i][k];
+          if(Math.abs(y0) < 1e-14){
+            yield { pc: 2, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
+              vars: [['a(i,k)', '0'], ['动作', '跳过']],
+              panels: [Pm('A', A, { r: [i], c: [k], x: [[i, k]] }), Pm('Q', Q)],
+              geo: { kind: 'giv', k: k, i: i, x: Math.abs(x0), y: 0, r: Math.abs(x0), c: 1, s: 0, skip: true },
+              say: '这个位置已经是 0，不需要旋转。' };
+            continue;
+          }
+          const rad = Math.hypot(x0, y0), c = x0 / rad, s = y0 / rad;
+          yield { pc: 4, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
+            vars: [['(a_kk, a_ik)', '(' + fmt(x0) + ', ' + fmt(y0) + ')'], ['c', fmt(c)], ['s', fmt(s)], ['半径', fmt(rad)]],
+            panels: [Pm('A', A, { r: [k, i], c: [k], x: [[i, k]] }), Pm('Q', Q)],
+            geo: { kind: 'giv', k: k, i: i, x: x0, y: y0, r: rad, c: c, s: s },
+            say: '这一对 ( ' + fmt(x0) + ', ' + fmt(y0) + ' ) 要被转到横轴上，长度 ' + fmt(rad) + ' 保留。' };
+          for(let j = 0; j < n; j++){
+            const rk = A[k][j], ri = A[i][j];
+            A[k][j] = c * rk + s * ri;
+            A[i][j] = -s * rk + c * ri;
+            yield { pc: 6, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) },
+              vars: [['r_k(j) 新', fmt(A[k][j])], ['r_i(j) 新', fmt(A[i][j])]],
+              panels: [Pm('A', A, { r: [k, i], c: [j], x: [[i, j]] }), Pm('Q', Q)],
+              geo: { kind: 'giv', k: k, i: i, x: x0, y: y0, r: rad, c: c, s: s, done: j },
+              say: '内层第 ' + (j + 1) + ' 列：两行同时转，a(i,k) 变 0，其它列一起跟着变。' };
+          }
+          const G = eye(m);
+          G[k][k] = c; G[k][i] = s; G[i][k] = -s; G[i][i] = c;
+          const Gt = [[G[0][0], G[1][0], G[2][0]], [G[0][1], G[1][1], G[2][1]], [G[0][2], G[1][2], G[2][2]]];
+          Q = mm(Q, Gt);
+          yield { pc: 7, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) + ' 完成' },
+            vars: [['a(i,k)', '= 0']],
+            panels: [Pm('A', A, { x: [[i, k]] }), Pm('Q', Q)],
+            geo: { kind: 'giv', k: k, i: i, x: x0, y: y0, r: rad, c: c, s: s, done: n },
+            say: '这一格归零。旋转正交，所以 Q 只是被乘上一个旋转因子。' };
+        }
+      }
+      yield { pc: 7, loop: {}, vars: [['‖QR − A‖', fmt(recErr3(Q, A, A0))], ['R 下三角非零数', String(countBelow(A))]],
+        panels: [Pm('R', A), Pm('Q', Q)],
+        geo: { kind: 'giv', k: -1, i: -1, x: 0, y: 0, r: 0, c: 1, s: 0 },
+        say: '得到上三角 R。Givens 的好处是每次只碰两行，代价 6n³ 级别的常数更小但总旋转次数多。',
+        check: { A0: A0, Q: Q, R: A } };
+    }
+  };
+}
+
+/* ===== ALG-09/10 最小二乘 ===== */
+const LS_A = [[1, 0], [0, 1], [1, 1]];
+const LS_B = [1, 1, 3];
+function algoLS(mode){
+  const isNE = (mode === 'ne');
+  const A = LS_A.map(r => r.slice()), b = LS_B.slice(), m = 3, n = 2;
+  return {
+    id: isNE ? 'lsne' : 'lsqr', tag: isNE ? 'ALG-09' : 'ALG-10', grp: '最小二乘',
+    name: isNE ? '最小二乘 · 正规方程（AᵀA x = Aᵀb）' : '最小二乘 · QR（Householder）',
+    pseudo: isNE ? [
+      '// G = A^*A（n×n），c = A^*b',
+      'for j = 1 : n',
+      '    for i = 1 : n',
+      '        for k = 1 : m      // 最内层：点积累加',
+      '            g(i,j) += a(k,i)·a(k,j)',
+      'c = A^*b',
+      '解 G x = c（2×2 直接解）',
+      'r = b - A x            // 检查 A^*r = 0'
+    ] : [
+      '// 对 A 做 Householder，得到 R 与 Q',
+      'for k = 1 : n',
+      '    v = householder(A(k:m,k))',
+      '    A(k:m,k:n) = A - 2v(v^*A)',
+      '    b(k:m)    = b - 2v(v^*b)   // 同一反射作用于 b',
+      'x(1:n) = R(1:n,1:n) \\ d(1:n)   // 回代',
+      'r = b_orig - A_orig x'
+    ],
+    run: function*(){
+      if(isNE) return yield* lsNE(A, b);
+      return yield* lsQR(A, b);
+    }
+  };
+}
+function* lsNE(A, b){
+  const m = 3, n = 2;
+  const G = [[0, 0], [0, 0]], c = [0, 0];
+  yield { pc: 0, loop: {}, vars: [['G', '2×2 待填'], ['c', '(0, 0)']],
+    panels: [Pm('A', A), Vm('b', b), Pm('G', G)],
+    geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+    say: '正规方程把最小二乘变成方阵求解。代价是条件数平方：κ(G) = κ(A)²。' };
+  for(let j = 0; j < n; j++){
+    for(let i = 0; i < n; i++){
+      let s = 0;
+      for(let k = 0; k < m; k++){
+        s += A[k][i] * A[k][j];
+        G[i][j] = s;
+        yield { pc: 4, loop: { o: 'i = ' + (i + 1) + ', j = ' + (j + 1), i: 'k = ' + (k + 1) },
+          vars: [['a(k,i)·a(k,j)', fmt(A[k][i] * A[k][j])], ['g(i,j)', fmt(s)]],
+          panels: [Pm('A', A, { r: [k], c: [i, j] }), Vm('b', b), Pm('G', G, { x: [[i, j]] })],
+          geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+          say: 'g' + sub(i + 1) + sub(j + 1) + ' 是 A 第 ' + (i + 1) + '、' + (j + 1) + ' 两列的内积，最内层 k 逐行累加。' };
+      }
+    }
+  }
+  for(let i = 0; i < n; i++){
+    let s = 0;
+    for(let k = 0; k < m; k++) s += A[k][i] * b[k];
+    c[i] = s;
+    yield { pc: 5, loop: { o: 'c' + sub(i + 1) },
+      vars: [['c' + sub(i + 1) + ' = a' + sub(i + 1) + 'ᵀb', fmt(s)]],
+      panels: [Pm('A', A, { c: [i] }), Vm('b', b), Pm('G', G)],
+      geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+      say: '右端项 c = Aᵀb，同样是点积。' };
+  }
+  const det = G[0][0] * G[1][1] - G[0][1] * G[1][0];
+  const x = [(c[0] * G[1][1] - G[0][1] * c[1]) / det, (G[0][0] * c[1] - c[0] * G[1][0]) / det];
+  const p = [0, 0, 0];
+  for(let k = 0; k < m; k++) p[k] = A[k][0] * x[0] + A[k][1] * x[1];
+  const r = vsub(b, p);
+  yield { pc: 6, loop: {}, vars: [['det G', fmt(det)], ['x', '(' + x.map(t => fmt(t)).join(', ') + ')'], ['‖r‖', fmt(nrm(r))]],
+    panels: [Pm('G', G), Vm('c', c), Vm('x', x)],
+    geo: { kind: 'ls', A: A, b: b, p: p, r: r, stage: 'solve' },
+    say: '2×2 直接解出 x。几何上：x 让 Ax 正好是 b 在列空间上的投影。' };
+  yield { pc: 7, loop: {}, vars: [['Aᵀr', '(' + fmt(dot([A[0][0], A[1][0], A[2][0]], r)) + ', ' + fmt(dot([A[0][1], A[1][1], A[2][1]], r)) + ')'], ['‖r‖', fmt(nrm(r))]],
+    panels: [Pm('A', A), Vm('x', x), Vm('r', r)],
+    geo: { kind: 'ls', A: A, b: b, p: p, r: r, stage: 'solve' },
+    say: '残差与两列都正交（Aᵀr = 0），所以 Ax 就是最近的投影点。',
+    check: { A: A, b: b, x: x } };
+}
+function* lsQR(Ain, b0){
+  const A = Ain.map(r => r.slice()), b = b0.slice(), m = 3, n = 2;
+  yield { pc: 0, loop: {}, vars: [['A', '3×2'], ['b', '(' + b.join(', ') + ')']],
+    panels: [Pm('A', A), Vm('b', b)],
+    geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+    say: '不做 AᵀA，直接对 A 做两个反射 —— 条件数不被平方。' };
+  for(let k = 0; k < n; k++){
+    const len = m - k, x = [], v = [];
+    for(let i = 0; i < len; i++) x.push(A[k + i][k]);
+    const nx = nrm(x), sgn = (x[0] >= 0 ? 1 : -1);
+    for(let i = 0; i < len; i++) v.push(x[i]);
+    v[0] += sgn * nx;
+    const nv = nrm(v);
+    for(let i = 0; i < len; i++) v[i] /= nv;
+    yield { pc: 2, loop: { o: 'k = ' + (k + 1) },
+      vars: [['x', '[' + x.map(t => fmt(t)).join(', ') + ']'], ['‖x‖', fmt(nx)]],
+      panels: [Pm('A', A, { c: [k] }), Vm('b', b)],
+      geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+      say: '第 ' + (k + 1) + ' 个反射：把这一列的下半截折到轴上。' };
+    for(let j = k; j < n; j++){
+      let w = 0;
+      for(let i = 0; i < len; i++) w += v[i] * A[k + i][j];
+      for(let i = 0; i < len; i++) A[k + i][j] -= 2 * w * v[i];
+      yield { pc: 3, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) },
+        vars: [['w = vᵀa' + sub(j + 1), fmt(w)]],
+        panels: [Pm('A', A, { c: [j] }), Vm('b', b)],
+        geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+        say: '内层对第 ' + (j + 1) + ' 列做反射。' };
+    }
+    let wb = 0;
+    for(let i = 0; i < len; i++) wb += v[i] * b[k + i];
+    for(let i = 0; i < len; i++) b[k + i] -= 2 * wb * v[i];
+    yield { pc: 4, loop: { o: 'k = ' + (k + 1) },
+      vars: [['vᵀb', fmt(wb)], ['d = Qᵀb', '(' + b.map(t => fmt(t)).join(', ') + ')']],
+      panels: [Pm('A', A), Vm('d', b)],
+      geo: { kind: 'ls', A: A, b: b0, p: null, r: null, stage: 'form' },
+      say: '同一个反射必须作用到 b 上 —— 这就是 d = Qᵀb。' };
+  }
+  const x2 = [0, 0];
+  x2[1] = b[1] / A[1][1];
+  x2[0] = (b[0] - A[0][1] * x2[1]) / A[0][0];
+  const p = [0, 0, 0];
+  for(let i = 0; i < m; i++) p[i] = Ain[i][0] * x2[0] + Ain[i][1] * x2[1];
+  const r = vsub(b0, p);
+  yield { pc: 5, loop: {}, vars: [['R', '[' + fmt(A[0][0]) + ' ' + fmt(A[0][1]) + '; 0 ' + fmt(A[1][1]) + ']'], ['x', '(' + x2.map(t => fmt(t)).join(', ') + ')']],
+    panels: [Pm('R', A), Vm('d', b), Vm('x', x2)],
+    geo: { kind: 'ls', A: Ain, b: b0, p: p, r: r, stage: 'solve' },
+    say: '回代只用 R 的 2×2 上三角块；x 与正规方程完全一致，但更稳。' };
+  yield { pc: 6, loop: {}, vars: [['Aᵀr', '(' + fmt(dot([Ain[0][0], Ain[1][0], Ain[2][0]], r)) + ', ' + fmt(dot([Ain[0][1], Ain[1][1], Ain[2][1]], r)) + ')'], ['‖r‖', fmt(nrm(r))]],
+    panels: [Pm('A', Ain), Vm('x', x2), Vm('r', r)],
+    geo: { kind: 'ls', A: Ain, b: b0, p: p, r: r, stage: 'solve' },
+    say: '两种做法得到同一个 x 和同一个残差：几何目标只有一个 —— 把 b 正交投影到列空间。',
+    check: { A: Ain, b: b0, x: x2 } };
+}
+
+/* ===== ALG-11/12 LU 分解 ===== */
+function algoLU(piv){
+  const A0 = piv ? [[0, 1, 2], [2, 4, 1], [1, 3, 5]] : [[2, 1, 1], [4, 3, 3], [8, 7, 9]];
+  const A = A0.map(r => r.slice()), m = 3, n = 3;
+  const L = eye(m), P = eye(m);
+  return {
+    id: piv ? 'plu' : 'lu', tag: piv ? 'ALG-12' : 'ALG-11', grp: '直接法',
+    name: piv ? 'LU 分解 · 列主元（PA = LU）' : 'LU 分解 · 无主元（A = LU）',
+    pseudo: piv ? [
+      'for k = 1 : m-1',
+      '    选 p 使 |a(p,k)| 最大        // 主元',
+      '    若 p ≠ k：交换第 p、k 行（A、P、L 的已算列）',
+      '    for i = k+1 : m',
+      '        l(i,k) = a(i,k) / a(k,k)',
+      '        a(i,k+1:n) -= l(i,k)·a(k,k+1:n)',
+      '        a(i,k) = l(i,k)          // L 落位',
+      'return P, L, U'
+    ] : [
+      'for k = 1 : m-1                // 外循环：第 k 列',
+      '    for i = k+1 : m            // 内循环：逐行消元',
+      '        l(i,k) = a(i,k) / a(k,k)',
+      '        a(i,k+1:n) -= l(i,k)·a(k,k+1:n)',
+      '        a(i,k) = l(i,k)        // L 落位',
+      'return L, U = A'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['A', '3×3'], ['L', '单位下三角（待填）']],
+        panels: [Pm('A（U 在上·L 在下）', A), Pm('L', L)].concat(piv ? [Pm('P', P)] : []),
+        geo: { kind: 'lu', rows: A.map(r => r.slice()), k: -1, i: -1, old: null, nw: null },
+        say: piv ? '第一列主元是 0，必须换行 —— 这正是需要列主元的典型场景。'
+                 : '目标：把 A 一步步变成上三角 U，同时把用过的乘子按列收进 L。' };
+      for(let k = 0; k < n - 1; k++){
+        if(piv){
+          let p = k;
+          for(let i = k + 1; i < m; i++) if(Math.abs(A[i][k]) > Math.abs(A[p][k])) p = i;
+          yield { pc: 1, loop: { o: 'k = ' + (k + 1) },
+            vars: [['列 ' + (k + 1) + ' 的最大元', '行 ' + (p + 1)], ['|a(p,k)|', fmt(Math.abs(A[p][k]))]],
+            panels: [Pm('A（U 上 / L 下）', A, { c: [k] }), Pm('L', L), Pm('P', P)],
+            geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: -1, old: null, nw: null, pick: p },
+            say: '在第 ' + (k + 1) + ' 列对角线以下找绝对值最大的元素，作为主元。' };
+          if(p !== k){
+            const t = A[p]; A[p] = A[k]; A[k] = t;
+            const tp = P[p]; P[p] = P[k]; P[k] = tp;
+            for(let j = 0; j < k; j++){ const tl = L[p][j]; L[p][j] = L[k][j]; L[k][j] = tl; }
+            yield { pc: 2, loop: { o: 'k = ' + (k + 1) },
+              vars: [['动作', '交换第 ' + (k + 1) + ' 行与第 ' + (p + 1) + ' 行']],
+              panels: [Pm('A（U 上 / L 下）', A, { r: [k, p] }), Pm('L', L), Pm('P', P, { r: [k, p] })],
+              geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: -1, old: null, nw: null, swap: [k, p] },
+              say: '换行。注意 L 里已经算好的那几列也必须跟着换，否则 PA = LU 不成立。' };
+          }
+        }
+        const pk = A[k][k];
+        yield { pc: piv ? 3 : 0, loop: { o: 'k = ' + (k + 1) },
+          vars: [['主元 a(k,k)', fmt(pk)]],
+          panels: [Pm('A（U 上 / L 下）', A, { x: [[k, k]] }), Pm('L', L)].concat(piv ? [Pm('P', P)] : []),
+          geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: -1, old: null, nw: null },
+          say: '以 a(' + (k + 1) + ',' + (k + 1) + ') = ' + fmt(pk) + ' 为基准，消掉下面各行的第 ' + (k + 1) + ' 列。' };
+        for(let i = k + 1; i < m; i++){
+          const l = A[i][k] / pk;
+          const oldRow = A[i].slice();
+          A[i][k] = l;
+          L[i][k] = l;
+          for(let j = k + 1; j < n; j++) A[i][j] -= l * A[k][j];
+          yield { pc: piv ? 5 : 3, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
+            vars: [['l(i,k)', fmt(l)], ['行 ' + (i + 1), '减去 ' + fmt(l) + '×行 ' + (k + 1)]],
+            panels: [Pm('A（U 上 / L 下）', A, { r: [i], c: [k] }), Pm('L', L, { x: [[i, k]] })].concat(piv ? [Pm('P', P)] : []),
+            geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: i, old: oldRow, nw: A[i].slice() },
+            say: '乘子 ' + fmt(l) + ' 落到 L 的第 ' + (i + 1) + ' 行第 ' + (k + 1) + ' 列；行本身继续做减法。' };
+        }
+      }
+      const U = upperOf(A);
+      yield { pc: piv ? 7 : 5, loop: {}, vars: [['L 对角', '全 1'], ['U 下三角非零', countBelow(U) + ' 个'], ['‖L·U − P·A‖', fmt(luErr(P, L, U, A0))]],
+        panels: [Pm('U', U), Pm('L', L)].concat(piv ? [Pm('P', P)] : []),
+        geo: { kind: 'lu', rows: A.map(r => r.slice()), k: -1, i: -1, old: null, nw: null },
+        say: '把对角线以下存的乘子剥掉，剩下的就是 U；L 收集了全部乘子。回代用 U，前代用 L，A 本身再也用不到了。',
+        check: { A0: A0, P: P, L: L, U: U } };
+    }
+  };
+}
+function upperOf(M){
+  return M.map((row, i) => row.map((v, j) => (i <= j ? v : 0)));
+}
+function luErr(P, L, U, A0){
+  const LU = mm(L, U), PA = mm(P, A0);
+  let e = 0;
+  for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++) e = Math.max(e, Math.abs(LU[i][j] - PA[i][j]));
+  return e;
+}
+
+/* ===== ALG-13 Cholesky ===== */
+function algoChol(){
+  const A = [[4, 2, 2], [2, 5, 1], [2, 1, 10]], m = 3;
+  const R = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  return {
+    id: 'chol', tag: 'ALG-13', grp: '直接法', name: 'Cholesky（A = R*R）',
+    pseudo: [
+      '// A 对称正定，A = R^* R，R 上三角',
+      'for j = 1 : m',
+      '    for i = 1 : j',
+      '        s = a(i,j)',
+      '        for k = 1 : i-1    // 最内层：已算部分的点积',
+      '            s = s - r(k,i)·r(k,j)',
+      '        if i < j: r(i,j) = s / r(i,i)',
+      '        else:     r(j,j) = sqrt(s)',
+      'return R'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['A', '对称正定'], ['R', '上三角（待填）']],
+        panels: [Pm('A', A), Pm('R', R)],
+        geo: { kind: 'chol', i: -1, j: -1, aij: 0, acc: 0, s: 0, div: 0 },
+        say: 'Cholesky 只对对称正定矩阵可用，代价约 m³/3，是 LU 的一半，且不需要选主元。' };
+      for(let j = 0; j < m; j++){
+        for(let i = 0; i <= j; i++){
+          let s = A[i][j], acc = 0;
+          yield { pc: 3, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['a(i,j)', fmt(s)], ['s 初值', fmt(s)]],
+            panels: [Pm('A', A, { x: [[i, j]] }), Pm('R', R)],
+            geo: { kind: 'chol', i: i, j: j, aij: A[i][j], acc: 0, s: s, div: 0 },
+            say: '取元素 a(' + (i + 1) + ',' + (j + 1) + ') = ' + fmt(s) + '，开始扣已算部分。' };
+          for(let k = 0; k < i; k++){
+            acc += R[k][i] * R[k][j];
+            s -= R[k][i] * R[k][j];
+            yield { pc: 5, loop: { o: 'j = ' + (j + 1) + ', i = ' + (i + 1), i: 'k = ' + (k + 1) },
+              vars: [['r(k,i)·r(k,j)', fmt(R[k][i] * R[k][j])], ['s', fmt(s)]],
+              panels: [Pm('A', A, { x: [[i, j]] }), Pm('R', R, { c: [i, j], r: [k], x: [[k, i], [k, j]] })],
+              geo: { kind: 'chol', i: i, j: j, aij: A[i][j], acc: acc, s: s, div: 0 },
+              say: '内层逐项扣：r' + sub(k + 1) + sub(i + 1) + '·r' + sub(k + 1) + sub(j + 1) + '，剩余 ' + fmt(s) + '。' };
+          }
+          if(i < j){
+            const div = R[i][i];
+            R[i][j] = s / div;
+            yield { pc: 6, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+              vars: [['÷ r(i,i)', fmt(div)], ['r(i,j)', fmt(R[i][j])]],
+              panels: [Pm('A', A, { x: [[i, j]] }), Pm('R', R, { x: [[i, j]] })],
+              geo: { kind: 'chol', i: i, j: j, aij: A[i][j], acc: acc, s: s, div: div },
+              say: '非对角元：剩余量除以同行的对角元，得到 r(' + (i + 1) + ',' + (j + 1) + ')。' };
+          } else {
+            R[j][j] = Math.sqrt(s);
+            yield { pc: 7, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+              vars: [['sqrt(s)', '√' + fmt(s)], ['r(j,j)', fmt(R[j][j])]],
+              panels: [Pm('A', A, { x: [[j, j]] }), Pm('R', R, { x: [[j, j]] })],
+              geo: { kind: 'chol', i: i, j: j, aij: A[i][j], acc: acc, s: s, div: -1 },
+              say: '对角元开方。s 必须为正 —— 否则矩阵不是正定的，这就是 Cholesky 的"体检"作用。' };
+          }
+        }
+      }
+      yield { pc: 8, loop: {}, vars: [['R 下三角非零', String(countBelow(R))], ['‖RᵀR − A‖', fmt(cholErr(R, A))]],
+        panels: [Pm('A', A), Pm('R', R)],
+        geo: { kind: 'chol', i: -1, j: -1, aij: 0, acc: 0, s: 0, div: 0 },
+        say: 'R 的对角线全为正，A = RᵀR 成立。解方程组时前代 Rᵀy = b、回代 Rx = y 各 m²/2。',
+        check: { A: A, R: R } };
+    }
+  };
+}
+function cholErr(R, A){
+  const Rt = [[R[0][0], R[1][0], R[2][0]], [R[0][1], R[1][1], R[2][1]], [R[0][2], R[1][2], R[2][2]]];
+  const P = mm(Rt, R);
+  let e = 0;
+  for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++) e = Math.max(e, Math.abs(P[i][j] - A[i][j]));
+  return e;
+}
+
+/* ===== 注册表 ===== */
+const ALGOS = [
+  algoMVrow(), algoMVcol(), algoTri(), algoProj(),
+  algoGS('cgs'), algoGS('mgs'), algoHouse(), algoGivens(),
+  algoLS('ne'), algoLS('qr'),
+  algoLU(false), algoLU(true), algoChol()
+];
+
+
+</script>
+<script>
+/* ===== 渲染与播放 ===== */
+const $ = s => document.querySelector(s);
+const ESC = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const COL = { ink: '#22303F', steel: '#2F5D8A', cinn: '#B04A2F', amber: '#C8A15A',
+  gray: '#B9B3A6', line: '#C4BAA6', mut: '#6B6A63', green: '#3F6B4F' };
+
+let cur = null, frames = [], idx = 0, timer = null, speed = 1;
+
+/* ---- 画布 ---- */
+const cv = $('#cv'), g2 = cv.getContext('2d');
+const CW = 480;
+let DPR = 1;
+function fitCv(){
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = CW * DPR; cv.height = CW * DPR;
+  cv.style.aspectRatio = '1 / 1';
+  g2.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+function clear(){ g2.clearRect(0, 0, CW, CW); }
+
+function arrow(x1, y1, x2, y2, col, label, dash, w){
+  const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
+  if(L < 1.6){ dot2(x2, y2, col, 2.4); return; }
+  g2.save();
+  g2.strokeStyle = col; g2.fillStyle = col; g2.lineWidth = w || 1.8; g2.lineCap = 'round';
+  if(dash) g2.setLineDash([5, 4]);
+  g2.beginPath(); g2.moveTo(x1, y1); g2.lineTo(x2, y2); g2.stroke();
+  g2.setLineDash([]);
+  const a = Math.atan2(dy, dx), h = Math.min(9, L * 0.45);
+  g2.beginPath(); g2.moveTo(x2, y2);
+  g2.lineTo(x2 - h * Math.cos(a - 0.42), y2 - h * Math.sin(a - 0.42));
+  g2.lineTo(x2 - h * Math.cos(a + 0.42), y2 - h * Math.sin(a + 0.42));
+  g2.closePath(); g2.fill();
+  if(label){
+    g2.font = '600 12px ui-monospace,Consolas,monospace';
+    g2.fillText(label, x2 + 10 * Math.cos(a), y2 + 10 * Math.sin(a) + 4);
+  }
+  g2.restore();
+}
+function dot2(x, y, col, r){ g2.save(); g2.fillStyle = col; g2.beginPath(); g2.arc(x, y, r || 3, 0, 6.2832); g2.fill(); g2.restore(); }
+function txt(s, x, y, col, align, size){
+  g2.save();
+  g2.font = (size && size >= 14 ? '600 ' : '') + (size || 12) + 'px ui-monospace,Consolas,monospace';
+  g2.fillStyle = col || COL.mut; g2.textAlign = align || 'left';
+  g2.fillText(s, x, y);
+  g2.restore();
+}
+function poly(pts, fill, stroke){
+  g2.save();
+  g2.beginPath(); g2.moveTo(pts[0][0], pts[0][1]);
+  for(let i = 1; i < pts.length; i++) g2.lineTo(pts[i][0], pts[i][1]);
+  g2.closePath();
+  if(fill){ g2.fillStyle = fill; g2.fill(); }
+  if(stroke){ g2.strokeStyle = stroke; g2.lineWidth = 1; g2.setLineDash([4, 3]); g2.stroke(); }
+  g2.restore();
+}
+
+/* ---- 3D 投影（固定视角，只做正等测） ---- */
+const YA = 0.62, PA = 0.40;
+function raw3(x, y, z){
+  const cy = Math.cos(YA), sy = Math.sin(YA);
+  const X = x * cy + y * sy, Y = -x * sy + y * cy;
+  return [X, z * Math.cos(PA) + Y * Math.sin(PA)];
+}
+let SC = 30, OX = 240, OY = 248;
+function setCam(pts){
+  const qs = [[0, 0]];
+  for(const p of pts){
+    if(!p || !isFinite(p[0]) || !isFinite(p[1])) continue;
+    qs.push(raw3(p[0], p[1], p[2] || 0));
+  }
+  let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+  for(const q of qs){ minX = Math.min(minX, q[0]); maxX = Math.max(maxX, q[0]); minY = Math.min(minY, q[1]); maxY = Math.max(maxY, q[1]); }
+  const w = Math.max(maxX - minX, 0.9), h = Math.max(maxY - minY, 0.9);
+  SC = Math.min(145, 352 / Math.max(w, h));
+  OX = 240 - (minX + maxX) / 2 * SC;
+  OY = 246 + (minY + maxY) / 2 * SC;
+}
+function P3(p){ const q = raw3(p[0], p[1], p[2]); return [OX + SC * q[0], OY - SC * q[1]]; }
+function arrow3(a, b, col, label, dash, w){
+  const p = P3(a), q = P3(b);
+  arrow(p[0], p[1], q[0], q[1], col, label, dash, w);
+}
+function axes3(len){
+  arrow3([0, 0, 0], [len, 0, 0], COL.line, 'x₁', true, 1.4);
+  arrow3([0, 0, 0], [0, len, 0], COL.line, 'x₂', true, 1.4);
+  arrow3([0, 0, 0], [0, 0, len], COL.line, 'x₃', true, 1.4);
+}
+function cross(a, b){ return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+function perpBasis(n){
+  const t = Math.abs(n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+  let u = cross(n, t); u = scal(u, 1 / (nrm(u) || 1));
+  const w = cross(n, u);
+  return [u, w];
+}
+
+/* ---- 各算法的几何画法 ---- */
+const DRAW = {
+  mv(f){
+    const g = f.geo; clear();
+    const pts = g.cols.concat([g.b]).concat([[1.7, 0, 0], [0, 1.7, 0], [0, 0, 1.7]]);
+    setCam(pts); axes3(1.7);
+    g.cols.forEach((c, j) => {
+      const hot = (g.col === j);
+      if(hot){
+        arrow3([0, 0, 0], c.map(v => v * g.x[j]), COL.amber, '', true, 1.5);
+      }
+      arrow3([0, 0, 0], c, hot ? COL.cinn : COL.gray, 'a' + (j + 1), false, hot ? 2.4 : 1.5);
+    });
+    if(g.b[0] || g.b[1] || g.b[2]) arrow3([0, 0, 0], g.b, COL.steel, 'b', false, 2.8);
+    txt('灰 = A 的列　红 = 当前列　青 = 已累加的 b', 12, 466, COL.mut, 'left', 11);
+  },
+
+  tri(f){
+    const g = f.geo; clear();
+    const x0 = 48, x1 = 432, lo = -4.6, hi = 3.6, yy = 300;
+    const X = v => x0 + (v - lo) / (hi - lo) * (x1 - x0);
+    g2.save();
+    g2.strokeStyle = COL.ink; g2.lineWidth = 1.2;
+    g2.beginPath(); g2.moveTo(x0, yy); g2.lineTo(x1, yy); g2.stroke();
+    g2.restore();
+    for(let t = -4; t <= 3; t++){
+      g2.save(); g2.strokeStyle = COL.line; g2.lineWidth = 1;
+      g2.beginPath(); g2.moveTo(X(t), yy - 4); g2.lineTo(X(t), yy + 4); g2.stroke(); g2.restore();
+      txt(String(t), X(t), yy + 18, COL.mut, 'center', 10);
+    }
+    txt(g.phase === 'fwd' ? '阶段：前代 L y = b' : '阶段：回代 U x = y', 12, 30, COL.steel, 'left', 13);
+    if(g.phase === 'fwd'){
+      g.y.forEach((v, i) => {
+        if(v === null) return;
+        dot2(X(v), yy, COL.steel, 5);
+        txt('y' + (i + 1) + '=' + fmt(v), X(v), yy - 12, COL.steel, 'center', 11);
+      });
+    } else {
+      g.y.forEach((v, i) => {
+        if(v === null) return;
+        dot2(X(v), yy + 40, COL.gray, 3.4);
+        txt('y' + (i + 1), X(v), yy + 58, COL.gray, 'center', 10);
+      });
+      g.x.forEach((v, i) => {
+        if(v === null) return;
+        dot2(X(v), yy, COL.cinn, 5);
+        txt('x' + (i + 1) + '=' + fmt(v), X(v), yy - 12, COL.cinn, 'center', 11);
+      });
+    }
+    txt('三角结构：每一步只解出一个分量，解出来的点就钉在数轴上了', 12, 466, COL.mut, 'left', 11);
+  },
+
+  proj(f){
+    const g = f.geo; clear();
+    setCam(g.q.concat([g.b], [[1.7, 0, 0], [0, 1.7, 0], [0, 0, 1.7]]));
+    axes3(1.7);
+    const o = P3([0, 0, 0]), p1 = P3(g.q[0]), p2 = P3(g.q[1]), p3 = P3(vadd(g.q[0], g.q[1]));
+    poly([o, p1, p3, p2], 'rgba(47,93,138,0.10)', 'rgba(47,93,138,0.45)');
+    arrow3([0, 0, 0], g.q[0], COL.steel, 'q₁', false, 1.8);
+    arrow3([0, 0, 0], g.q[1], COL.steel, 'q₂', false, 1.8);
+    arrow3([0, 0, 0], g.b, COL.ink, 'b', false, 2.4);
+    if(g.p && (g.p[0] || g.p[1] || g.p[2])) arrow3([0, 0, 0], g.p, COL.cinn, 'p', false, 2.6);
+    if(g.r){
+      const a = P3(g.p), b = P3(g.b);
+      arrow(a[0], a[1], b[0], b[1], COL.amber, 'r', true, 1.8);
+    }
+    txt('p 在平面内，r = b − p 垂直于平面', 12, 466, COL.mut, 'left', 11);
+  },
+
+  gs(f){
+    const g = f.geo; clear();
+    const pts = [].concat(g.a ? [g.a] : [], g.v ? [g.v] : [], g.Q || [], [[1.7, 0, 0], [0, 1.7, 0], [0, 0, 1.7]]);
+    setCam(pts); axes3(1.7);
+    (g.base || []).forEach(c => arrow3([0, 0, 0], c, '#D9D1C0', '', false, 1.3));
+    (g.Q || []).forEach((q, i) => arrow3([0, 0, 0], q, COL.steel, 'q' + (i + 1), false, 2.2));
+    if(g.a) arrow3([0, 0, 0], g.a, COL.gray, 'a' + ((g.j === undefined ? 0 : g.j) + 1), false, 1.6);
+    (g.projs || []).forEach(t => {
+      const proj = scal(t[0], t[1]);
+      arrow3([0, 0, 0], proj, COL.amber, '', true, 1.2);
+    });
+    if(g.v) arrow3([0, 0, 0], g.v, COL.cinn, 'v', false, 2.6);
+    txt('青 = 已得的 q　灰 = 原始列　黄虚线 = 被扣掉的投影　红 = 当前的 v', 12, 466, COL.mut, 'left', 11);
+  },
+
+  house(f){
+    const g = f.geo; clear();
+    const pts = [].concat(g.x ? [g.x] : [], g.v ? [g.v] : [], g.hv ? [g.hv] : [], [[1.7, 0, 0], [0, 1.7, 0], [0, 0, 1.7]]);
+    setCam(pts); axes3(1.7);
+    (g.base || []).forEach(c => arrow3([0, 0, 0], c, '#D9D1C0', '', false, 1.3));
+    if(g.v){
+      const [u, w] = perpBasis(g.v);
+      const R = Math.max(1.1, 0.55 * nrm(g.x || g.v));
+      const corners = [
+        vadd(scal(u, R), scal(w, R)), vadd(scal(u, -R), scal(w, R)),
+        vadd(scal(u, -R), scal(w, -R)), vadd(scal(u, R), scal(w, -R))
+      ].map(P3);
+      poly(corners, 'rgba(200,161,90,0.10)', 'rgba(200,161,90,0.55)');
+    }
+    if(g.x) arrow3([0, 0, 0], g.x, COL.gray, 'x', false, 1.8);
+    if(g.hv) arrow3([0, 0, 0], g.hv, COL.cinn, 'Hx', false, 2.6);
+    if(g.v) arrow3([0, 0, 0], g.v, COL.steel, 'v', true, 1.6);
+    txt('黄面 = 镜面（垂直于 v）　灰 = 原向量　红 = 反射后落在坐标轴上', 12, 466, COL.mut, 'left', 11);
+  },
+
+  giv(f){
+    const g = f.geo; clear();
+    if(!(g.k >= 0)){
+      txt('（等待第一个旋转）', 240, 230, COL.mut, 'center', 13);
+      txt('每次旋转只碰两行，把它们在第 k 列的那个分量转到横轴上', 240, 256, COL.mut, 'center', 11);
+      return;
+    }
+    const mag = Math.max(Math.abs(g.x), Math.abs(g.y), g.r, 1);
+    const S = 150 / mag;
+    const ox = 96, oy = 372;
+    const X = v => ox + v * S, Y = v => oy - v * S;
+    g2.save(); g2.strokeStyle = COL.line; g2.lineWidth = 1;
+    g2.beginPath(); g2.moveTo(ox - 30, oy); g2.lineTo(440, oy); g2.stroke();
+    g2.beginPath(); g2.moveTo(ox, oy + 26); g2.lineTo(ox, 58); g2.stroke();
+    g2.restore();
+    txt('a(' + (g.k + 1) + ',' + (g.k + 1) + ')', 438, oy + 16, COL.mut, 'right', 10);
+    txt('a(' + (g.i + 1) + ',' + (g.k + 1) + ')', ox - 6, 56, COL.mut, 'right', 10);
+    g2.save();
+    g2.strokeStyle = 'rgba(47,93,138,0.35)'; g2.setLineDash([4, 4]); g2.lineWidth = 1;
+    g2.beginPath(); g2.arc(ox, oy, g.r * S, -Math.PI / 2, 0); g2.stroke();
+    g2.restore();
+    arrow(ox, oy, X(g.x), Y(g.y), COL.gray, '(' + fmt(g.x) + ', ' + fmt(g.y) + ')', false, 1.6);
+    arrow(ox, oy, X(g.r), Y(0), COL.cinn, '', false, 2.4);
+    dot2(X(g.r), Y(0), COL.cinn, 4);
+    if(g.c !== undefined && g.s !== undefined){
+      txt('c = ' + fmt(g.c) + '   s = ' + fmt(g.s), 12, 30, COL.steel, 'left', 12);
+      txt('θ = ' + fmt(Math.atan2(g.s, g.c) * 180 / Math.PI, 1) + '°', 12, 48, COL.steel, 'left', 12);
+    }
+    txt('旋转把点转到横轴：长度不变，纵坐标归零', 12, 466, COL.mut, 'left', 11);
+  },
+
+  ls(f){
+    const g = f.geo; clear();
+    const a1 = g.A.map(r => r[0]), a2 = g.A.map(r => r[1]);
+    setCam([a1, a2, g.b].concat([[1.7, 0, 0], [0, 1.7, 0], [0, 0, 1.7]]));
+    axes3(1.7);
+    const o = P3([0, 0, 0]), p1 = P3(a1), p2 = P3(a2), p3 = P3(vadd(a1, a2));
+    poly([o, p1, p3, p2], 'rgba(47,93,138,0.10)', 'rgba(47,93,138,0.45)');
+    arrow3([0, 0, 0], a1, COL.steel, 'a₁', false, 1.7);
+    arrow3([0, 0, 0], a2, COL.steel, 'a₂', false, 1.7);
+    arrow3([0, 0, 0], g.b, COL.ink, 'b', false, 2.4);
+    if(g.p) arrow3([0, 0, 0], g.p, COL.cinn, 'Ax', false, 2.6);
+    if(g.r){
+      const a = P3(g.p), b = P3(g.b);
+      arrow(a[0], a[1], b[0], b[1], COL.amber, 'r', true, 1.8);
+    }
+    txt(g.p ? '平面 = A 的列空间；残差正交，所以 Ax 是最近点' : '平面 = A 的列空间，b 落在平面外', 12, 466, COL.mut, 'left', 11);
+  },
+
+  lu(f){
+    const g = f.geo; clear();
+    setCam(g.rows.concat([[2, 2, 2]]));
+    axes3(2.2);
+    g.rows.forEach((r, i) => {
+      const isI = (i === g.i), isK = (i === g.k);
+      arrow3([0, 0, 0], r, isI ? COL.cinn : (isK ? COL.steel : COL.gray), 'r' + (i + 1), false, isI ? 2.6 : (isK ? 2.2 : 1.4));
+    });
+    if(g.old && g.nw){
+      const p = P3(g.old), q = P3(g.nw);
+      arrow(p[0], p[1], q[0], q[1], COL.amber, '', true, 1.6);
+    }
+    txt('三条箭头 = 三个行向量；黄虚线 = 这一步行被"剪"到哪里', 12, 466, COL.mut, 'left', 11);
+  },
+
+  chol(f){
+    clear();
+    if(!(f.geo.i >= 0)){
+      txt('（等待 Cholesky 开始）', 240, 220, COL.mut, 'center', 13);
+      txt('每个元素先扣掉"同行已算部分"，再除以对角元或开方', 240, 246, COL.mut, 'center', 11);
+      return;
+    }
+    const g = f.geo;
+    const x0 = 56, W = 344, y1 = 190, H = 30;
+    const tot = Math.max(Math.abs(g.aij), 1e-9);
+    const fAcc = Math.min(1, Math.abs(g.acc) / tot);
+    const fS = Math.min(1, Math.abs(g.s) / tot);
+    txt('元素 a(' + (g.i + 1) + ',' + (g.j + 1) + ') = ' + fmt(g.aij), 12, 60, COL.ink, 'left', 13);
+    g2.save();
+    g2.fillStyle = '#EDE8DE';
+    g2.fillRect(x0, y1, W, H);
+    g2.fillStyle = 'rgba(185,179,166,0.85)';
+    g2.fillRect(x0, y1, W * fAcc, H);
+    g2.fillStyle = 'rgba(176,74,47,0.85)';
+    g2.fillRect(x0 + W * fAcc, y1, W * fS, H);
+    g2.strokeStyle = COL.ink; g2.lineWidth = 1;
+    g2.strokeRect(x0, y1, W, H);
+    g2.restore();
+    txt('已扣 ' + fmt(g.acc), x0, y1 - 8, COL.mut, 'left', 11);
+    txt('剩余 s = ' + fmt(g.s), x0 + W, y1 - 8, COL.cinn, 'right', 11);
+    txt('a(i,j) = 已扣部分 + s', x0, y1 + H + 22, COL.mut, 'left', 11);
+    if(g.div > 0){
+      arrow(x0 + W * 0.5, y1 + H + 44, x0 + W * 0.5, y1 + H + 92, COL.cinn, '', false, 2);
+      txt('r(i,j) = s / r(i,i) = ' + fmt(g.s) + ' / ' + fmt(g.div) + ' = ' + fmt(g.s / g.div), x0, y1 + H + 118, COL.cinn, 'left', 12);
+    } else if(g.div < 0){
+      arrow(x0 + W * 0.5, y1 + H + 44, x0 + W * 0.5, y1 + H + 92, COL.cinn, '', false, 2);
+      txt('r(j,j) = √s = √' + fmt(g.s) + ' = ' + fmt(Math.sqrt(Math.max(g.s, 0))), x0, y1 + H + 118, COL.cinn, 'left', 12);
+    }
+    txt('灰 = 已被前面的 r 扣掉，红 = 留给这一格', 12, 466, COL.mut, 'left', 11);
+  }
+};
+
+/* ---- 面板渲染 ---- */
+function renderPanel(p){
+  const hl = p.hl || {};
+  const has = (arr, v) => arr && arr.indexOf(v) >= 0;
+  const isX = (i, j) => hl.x && hl.x.some(c => c[0] === i && c[1] === j);
+  let body = '';
+  for(let i = 0; i < p.m.length; i++){
+    for(let j = 0; j < p.m[i].length; j++){
+      let cls = 'cell';
+      if(has(hl.r, i)) cls += ' r';
+      if(has(hl.c, j)) cls += ' c';
+      if(isX(i, j)) cls += ' x';
+      body += '<span class="' + cls + '">' + ESC(fmt(p.m[i][j])) + '</span>';
+    }
+  }
+  const cols = p.m[0].length;
+  return '<div class="pnl"><div class="pt">' + ESC(p.t) + '</div>' +
+    '<div class="grid" style="grid-template-columns:repeat(' + cols + ',minmax(32px,1fr))">' + body + '</div></div>';
+}
+
+/* ---- 主绘制 ---- */
+function paint(){
+  if(!cur || !frames.length) return;
+  const f = frames[idx];
+  $('#tag').textContent = cur.tag;
+  $('#aname').textContent = cur.name;
+  $('#code').innerHTML = cur.pseudo.map((line, k) =>
+    '<li class="' + (k === f.pc ? 'on' : '') + '"><span class="ln">' + (k + 1) + '</span><code>' + ESC(line) + '</code></li>'
+  ).join('');
+  $('#vars').innerHTML = (f.vars && f.vars.length)
+    ? f.vars.map(t => '<div class="vrow"><span class="vk">' + ESC(t[0]) + '</span><span class="vv">' + ESC(t[1]) + '</span></div>').join('')
+    : '<div class="vempty">—</div>';
+  $('#mats').innerHTML = f.panels.map(renderPanel).join('');
+  $('#lo').textContent = (f.loop && f.loop.o) ? f.loop.o : '外循环 —';
+  $('#li').textContent = (f.loop && f.loop.i) ? f.loop.i : '内循环 —';
+  $('#cnt').textContent = (idx + 1) + ' / ' + frames.length;
+  $('#prog').style.width = ((idx + 1) / frames.length * 100) + '%';
+  $('#say').innerHTML = f.say || '';
+  $('#prev').disabled = (idx === 0);
+  $('#next').disabled = (idx === frames.length - 1);
+  const d = DRAW[f.geo && f.geo.kind];
+  if(d) d(f);
+}
+
+/* ---- 播放控制 ---- */
+function select(id){
+  const a = ALGOS.find(x => x.id === id);
+  if(!a) return;
+  stopPlay();
+  cur = a;
+  frames = [...a.run()];
+  idx = 0;
+  document.querySelectorAll('.pill').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+  if(history.replaceState) history.replaceState(null, '', '#' + id);
+  paint();
+}
+function step(n){
+  idx = Math.max(0, Math.min(frames.length - 1, idx + n));
+  paint();
+}
+function stopPlay(){
+  if(timer){ clearInterval(timer); timer = null; }
+  $('#play').textContent = '播放';
+}
+function play(){
+  if(timer){ stopPlay(); return; }
+  if(idx >= frames.length - 1) idx = 0;
+  $('#play').textContent = '暂停';
+  timer = setInterval(() => {
+    if(idx >= frames.length - 1){ stopPlay(); return; }
+    idx++; paint();
+  }, 620 * speed);
+}
+
+function boot(){
+  fitCv();
+  const groups = {};
+  ALGOS.forEach(a => { (groups[a.grp] = groups[a.grp] || []).push(a); });
+  $('#pick').innerHTML = Object.keys(groups).map(g =>
+    '<span class="pill" data-id="__g" style="border:0;background:none;padding:5px 2px 5px 8px;cursor:default;color:#6B6A63;font-size:11.5px">' + g + '</span>' +
+    groups[g].map(a => '<button class="pill" data-id="' + a.id + '">' + ESC(a.name.replace(/（.*/, '')) + '</button>').join('')
+  ).join('');
+  $('#pick').addEventListener('click', e => {
+    const b = e.target.closest('button[data-id]');
+    if(b) select(b.dataset.id);
+  });
+  $('#prev').addEventListener('click', () => { stopPlay(); step(-1); });
+  $('#next').addEventListener('click', () => { stopPlay(); step(1); });
+  $('#play').addEventListener('click', play);
+  $('#reset').addEventListener('click', () => { stopPlay(); idx = 0; paint(); });
+  $('#speed').addEventListener('change', e => {
+    speed = parseFloat(e.target.value) || 1;
+    if(timer){ stopPlay(); play(); }
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'ArrowRight'){ stopPlay(); step(1); }
+    else if(e.key === 'ArrowLeft'){ stopPlay(); step(-1); }
+    else if(e.code === 'Space' && e.target === document.body){ e.preventDefault(); play(); }
+  });
+  window.addEventListener('resize', () => { fitCv(); paint(); });
+  const raw = (location.hash || '').replace('#', '');
+  const parts = raw.split('/');
+  const hid = parts[0], stp = parseInt(parts[1] || '0', 10);
+  select(ALGOS.some(a => a.id === hid) ? hid : 'mv_row');
+  if(stp > 0){ idx = Math.min(frames.length - 1, stp); paint(); }
+}
+boot();
+
+</script>
+</body>
+</html>

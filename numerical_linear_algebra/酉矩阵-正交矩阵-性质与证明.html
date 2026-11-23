@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>酉矩阵与正交矩阵 · 性质、证明与数值后果｜数值线性代数</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.min.js"></script>
+<style>
+  :root{
+    --paper:#FAF9F6; --ink:#22303F; --cinn:#B04A2F; --steel:#2F5D8A;
+    --mut:#6B6A63; --line:#E2DCD0; --wash:#F1EEE7; --amber:#C8A15A; --green:#3F6B4F;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:16px/1.72 -apple-system,"Segoe UI","Noto Sans SC",system-ui,sans-serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:26px 18px 72px}
+  a{color:var(--steel);text-decoration:none;border-bottom:1px solid rgba(47,93,138,.28)}
+  a:hover{border-bottom-color:var(--steel)}
+  .nav{display:flex;gap:16px;font-size:13px;color:var(--mut);margin-bottom:22px;flex-wrap:wrap}
+  .mast{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:20px}
+  .tag{display:inline-block;font:11px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;
+    color:var(--paper);background:var(--ink);padding:4px 7px;border-radius:2px;vertical-align:middle}
+  h1{font-size:27px;line-height:1.32;margin:12px 0 8px;letter-spacing:-.01em}
+  .sub{color:var(--mut);font-size:14.5px;max-width:780px;margin:0}
+  h2{font-size:20px;margin:40px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  h3{font-size:16px;margin:22px 0 8px}
+  p{margin:10px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92em}
+
+  .toc{background:#FFFDF9;border:1px solid var(--line);border-radius:4px;padding:12px 16px;font-size:14px;columns:2;column-gap:28px}
+  .toc a{display:block;padding:2px 0;border:0;color:var(--ink)}
+  .toc a:hover{color:var(--cinn)}
+  .toc b{display:block;font-size:12px;color:var(--mut);letter-spacing:.08em;margin-bottom:4px;column-span:all}
+
+  .src{display:inline-block;font:10.5px/1 ui-monospace,Consolas,monospace;padding:3px 6px;border-radius:2px;
+    letter-spacing:.04em;vertical-align:1px;white-space:nowrap}
+  .s-lec{background:#E7EEF6;color:#2F5D8A;border:1px solid #D3DFEA}
+  .s-hw{background:#FBEFD6;color:#8A6A24;border:1px solid #EEDDB4}
+  .s-add{background:#F0EFEA;color:#6B6A63;border:1px solid #DFDCD2}
+
+  .tw{overflow-x:auto;margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.6px;margin:0}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;color:var(--mut);font-weight:600;letter-spacing:.05em;background:#F6F3EA}
+  tbody tr:nth-child(even){background:#FCFAF4}
+  td.n{color:var(--mut);font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:nowrap}
+
+  .pf{border:1px solid var(--line);border-left:3px solid var(--steel);background:#FFFDF9;
+    padding:10px 14px 12px;margin:12px 0;border-radius:3px}
+  .pf .h{font:12px/1 ui-monospace,Consolas,monospace;color:var(--steel);letter-spacing:.08em;margin-bottom:6px}
+  .pf .step{color:var(--mut);font-size:13.5px}
+
+  .box{background:#FFFDF9;border:1px solid var(--line);border-left:3px solid var(--amber);
+    padding:11px 14px;margin:14px 0;font-size:14.4px}
+  .box b{color:#8A6A24}
+  .warn{background:#FDF6F3;border:1px solid #F0DCD3;border-left:3px solid var(--cinn);
+    padding:11px 14px;margin:14px 0;font-size:14.2px}
+  .warn b{color:var(--cinn)}
+
+  .eq{background:#FCFBF7;border:1px solid var(--line);border-radius:3px;padding:4px 10px;margin:12px 0;overflow-x:auto}
+
+  ol.steps{counter-reset:s;list-style:none;padding-left:0}
+  ol.steps>li{counter-increment:s;position:relative;padding-left:30px;margin:9px 0}
+  ol.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:20px;height:20px;
+    border-radius:50%;background:var(--ink);color:var(--paper);font:11px/20px ui-monospace,monospace;text-align:center}
+
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+  .pair>div{border:1px solid var(--line);background:#FFFDF9;border-radius:3px;padding:10px 13px}
+  .pair .ttl{font:12px/1 ui-monospace,Consolas,monospace;letter-spacing:.06em;color:var(--steel);margin-bottom:4px}
+
+  footer{margin-top:46px;padding-top:14px;border-top:1px solid var(--line);
+    font:11.5px/1.6 ui-monospace,Consolas,monospace;color:var(--mut);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  mjx-container[jax="SVG"]{max-width:100%}
+  mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden}
+  mjx-container[display="true"]{min-width:0!important}
+  @media (max-width:640px){
+    .toc{columns:1}
+    .pair{grid-template-columns:1fr}
+    h1{font-size:22px}
+    .wrap{padding:18px 12px 56px}
+    th,td{padding:6px 6px;font-size:12.6px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a href="../index.html">← 数学可视化</a>
+    <a href="./index.html">数值线代目录</a>
+    <a href="./埃尔米特矩阵-性质与证明.html">埃尔米特矩阵</a>
+    <a href="./算法示波器-伪代码与逐步可视化.html">算法示波器</a>
+    <a href="./作业全解-HW1到HW8.html">作业全解</a>
+  </nav>
+
+  <header class="mast">
+    <span class="tag">UNIT · 保结构</span>
+    <h1>酉矩阵：数值线代里唯一“不放大任何东西”的变换</h1>
+    <p class="sub">
+      埃尔米特那页讲的是<b>谱</b>（\(A=A^*\) 把矩阵钉在实轴上），这一页讲<b>结构</b>：\(Q^*Q=I\) 把长度、夹角、范数、条件数、
+      残差全部原样保住。所以分解都用它 —— QR 用 Householder（Hermite + 酉）、SVD 用两个酉矩阵、
+      Schur 与谱定理都在酉群里做。反过来，它也有一堆容易踩的坑：长方形 \(Q\) 的 \(QQ^*\) 根本不是 \(I\)。
+    </p>
+  </header>
+
+  <div class="toc">
+    <b>目录</b>
+    <a href="#tab">§00 一张表：16 条性质</a>
+    <a href="#def">§01 定义与四个等价刻画</a>
+    <a href="#alg">§02 一阶代数与自身的量</a>
+    <a href="#spec">§03 谱与结构（旋转、反射、标准形）</a>
+    <a href="#keep">§04 它到底保住了什么</a>
+    <a href="#proto">§05 两个原型：Householder 与 Givens</a>
+    <a href="#why">§06 为什么数值线代离不开它</a>
+    <a href="#ex">§07 算例：旋转、换位、反射、长方形陷阱</a>
+    <a href="#trap">§08 十条易错</a>
+    <a href="#self">§09 自测与模板</a>
+  </div>
+
+  <h2 id="tab">§00 一张表：16 条性质</h2>
+  <p>
+    <span class="src s-lec">课件</span> = 第 2、4、6、7、8、13 讲正文；<span class="src s-hw">作业</span> = 作业原题；
+    <span class="src s-add">补充</span> = 课件没写、但证明或考试要用的标准结论。
+  </p>
+  <div class="tw">
+  <table>
+    <thead><tr><th class="n">#</th><th>条件</th><th>结论</th><th>证明抓手</th><th>出处</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>\(Q^*Q=I\)</td><td>列向量标准正交：\(q_i^*q_j=\delta_{ij}\)</td><td>把矩阵乘法按元素展开</td><td><span class="src s-lec">L2</span></td></tr>
+      <tr><td class="n">2</td><td>\(Q\) 酉（方阵）</td><td>\(Q^{-1}=Q^*\)，且 \(QQ^*=I\) 也成立</td><td>左逆即右逆（有限维方阵）</td><td><span class="src s-lec">L2</span></td></tr>
+      <tr><td class="n">3</td><td>\(Q\) 酉</td><td>\((Qx)^*(Qy)=x^*y\)：保内积</td><td>\(x^*Q^*Qy=x^*y\)</td><td><span class="src s-lec">L2 Prop4</span></td></tr>
+      <tr><td class="n">4</td><td>\(Q\) 酉</td><td>\(\|Qx\|=\|x\|\)：保范数，从而保距离、保夹角</td><td>取 \(y=x\)；反过来用 \(\|Q(x\pm y)\|^2\) 展开</td><td><span class="src s-lec">L2 Prop4</span></td></tr>
+      <tr><td class="n">5</td><td>\(Q\) 酉</td><td>\(|\det Q|=1\)</td><td>\(\det(Q^*Q)=|\det Q|^2=1\)</td><td><span class="src s-add">补充</span></td></tr>
+      <tr><td class="n">6</td><td>\(Q\) 酉</td><td>特征值满足 \(|\lambda|=1\)</td><td>\(\|Qx\|=\|x\|=| \lambda|\|x\|\)</td><td><span class="src s-add">补充</span></td></tr>
+      <tr><td class="n">7</td><td>\(Q\) 酉</td><td>奇异值全是 1，\(\|Q\|_2=1\)，\(\|Q\|_F=\sqrt m\)，\(\kappa_2(Q)=1\)</td><td>\(Q^*Q=I\) 直接读奇异值</td><td><span class="src s-lec">L3</span></td></tr>
+      <tr><td class="n">8</td><td>\(Q_1,Q_2\) 酉</td><td>\(Q_1Q_2\)、\(Q^{-1}\)、\(Q^*\)、\(\bar Q\) 都仍酉</td><td>\((Q_1Q_2)^*(Q_1Q_2)=I\)</td><td><span class="src s-add">补充</span></td></tr>
+      <tr><td class="n">9</td><td>\(Q\) 实正交</td><td>\(\det Q=1\) 是旋转，\(\det Q=-1\) 是镜像反射</td><td>\(2\times2\) 分类 + 特征值实（\(\pm1\)）</td><td><span class="src s-lec">L2</span></td></tr>
+      <tr><td class="n">10</td><td>\(Q\) 实正交，\(2\times2\)</td><td>\(\det=1\) 是旋转型；\(\det=-1\) 是镜像型（两种形状见 §3.1）</td><td>两列单位正交，解方程</td><td><span class="src s-add">补充</span></td></tr>
+      <tr><td class="n">11</td><td>\(Q\) 实正交</td><td>正交相似于“若干 \(2\times2\) 旋转块 + 若干 \(\pm1\)”</td><td>实 Schur 形的实版本</td><td><span class="src s-add">补充</span></td></tr>
+      <tr><td class="n">12</td><td>\(Q\) 酉、\(A\) 任意</td><td>\(\|QA\|_2=\|A\|_2\)、\(\|QA\|_F=\|A\|_F\)、\(\kappa_2(QA)=\kappa_2(A)\)</td><td>\((QA)^*(QA)=A^*A\)</td><td><span class="src s-lec">L3/L10</span></td></tr>
+      <tr><td class="n">13</td><td>\(Q\) 酉、\(A\) Hermite</td><td>\(QAQ^*\) 仍 Hermite，且谱、奇异值、\(\kappa\) 全不变</td><td>\((QAQ^*)^*=QA^*Q^*\)</td><td><span class="src s-lec">L16</span></td></tr>
+      <tr><td class="n">14</td><td>\(Q\) 酉、\(A\) 任意</td><td>\(\|Q(Ax-b)\|=\|Ax-b\|\)：最小二乘的残差范数不变</td><td>保范数 + 线性</td><td><span class="src s-lec">L9</span></td></tr>
+      <tr><td class="n">15</td><td>\(F=I-2vv^*/v^*v\)</td><td>Hermite、酉、对合（\(F^2=I\)）、\(\det F=-1\)，特征值 \((1,\dots,1,-1)\)</td><td>展开 \(F^*F\)；用行列式引理算 det</td><td><span class="src s-lec">L8 Prop1</span></td></tr>
+      <tr><td class="n">16</td><td>\(Q\) 长方形 \(m\times n\)</td><td>\(Q^*Q=I_n\) 但 \(QQ^*\ne I_m\)；\(QQ^*\) 是到列空间的正交投影</td><td>秩：\(\operatorname{rank}(QQ^*)\le n&lt;m\)</td><td><span class="src s-lec">L7</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="def">§01 定义与四个等价刻画</h2>
+  <p>
+    方阵 \(Q\in\mathbb C^{m\times m}\) 称为<b>酉矩阵</b>，若 \(Q^*Q=I\)（等价地 \(Q^*=Q^{-1}\)）。实矩阵时称为<b>正交矩阵</b>。
+    把它按列写开，\(Q^*Q=I\) 就是 \(q_i^*q_j=\delta_{ij}\) —— <b>列向量构成 \(\mathbb C^m\) 的一组标准正交基</b>。<span class="src s-lec">L2</span>
+  </p>
+
+  <div class="pf">
+    <div class="h">命题 · 下面四句话等价</div>
+    <p>(a) \(Q^*Q=I\)；(b) \(Q\) 的列标准正交；(c) 对一切 \(x,y\)：\((Qx)^*(Qy)=x^*y\)；(d) 对一切 \(x\)：\(\|Qx\|=\|x\|\)。</p>
+    <ol class="steps">
+      <li><b>(a)⇒(b)</b>：\((Q^*Q)_{ij}=q_i^*q_j\)，等于 \(\delta_{ij}\) 就是标准正交。</li>
+      <li><b>(b)⇒(a)</b>：逐元素相同，故矩阵相同。</li>
+      <li><b>(a)⇒(c)</b>：\((Qx)^*(Qy)=x^*Q^*Qy=x^*y\)。</li>
+      <li><b>(c)⇒(d)</b>：取 \(y=x\)，得 \(\|Qx\|^2=\|x\|^2\)。</li>
+      <li><b>(d)⇒(c)</b>：对任意 \(x,y\)，展开
+        <div class="eq">$$\|Q(x+y)\|^2=\|Qx\|^2+\|Qy\|^2+2\,\mathrm{Re}\,(Qx)^*(Qy),$$</div>
+        与 \(\|x+y\|^2=\|x\|^2+\|y\|^2+2\,\mathrm{Re}\,x^*y\) 比较（用 (d) 消去范数项），得
+        \(\mathrm{Re}\,(Qx)^*(Qy)=\mathrm{Re}\,x^*y\)；再把 \(y\) 换成 \(iy\) 得虚部相同，故 \((Qx)^*(Qy)=x^*y\)。</li>
+      <li><b>(c)⇒(a)</b>：取 \(x=e_i,y=e_j\)，得第 \((i,j)\) 个元素相同，即 \(Q^*Q=I\)。\(\square\)</li>
+    </ol>
+    <p class="step">这条循环是整页的地基：后面所有“保结构”的结论都是 (c) 或 (d) 的直接推论。</p>
+  </div>
+
+  <div class="box">
+    <b>几何读法</b>（L2 原话）：向量左乘酉矩阵 = 在欧氏意义下<b>保几何结构</b>的变换。
+    实正交时更进一步：\(\det Q=1\) 是<b>刚性旋转</b>，\(\det Q=-1\) 是<b>镜像对称</b>。
+  </div>
+
+  <h2 id="alg">§02 一阶代数与自身的量</h2>
+
+  <h3>2.1 封闭性与不封闭性</h3>
+  <ul>
+    <li><b>封闭</b>：\(Q_1Q_2\)、\(Q^{-1}=Q^*\)、\(Q^*\)、\(\bar Q\)、\(Q^{\mathrm T}\) 都仍酉。</li>
+    <li><b>不封闭</b>：\(Q_1+Q_2\) 一般不酉（取 \(Q_1=Q_2=I\) 得 \(2I\)，列的模长是 2）；
+      \(\alpha Q\) 只在 \(|\alpha|=1\) 时酉。这两个是送分判断题。</li>
+  </ul>
+
+  <h3>2.2 五个自身量全部退化</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>量</th><th>值</th><th>为什么</th></tr></thead>
+    <tbody>
+      <tr><td>\(\det Q\)</td><td>模为 1（实正交时 \(\pm1\)）</td><td>\(\det(Q^*Q)=|\det Q|^2=1\)</td></tr>
+      <tr><td>特征值</td><td>全在单位圆上，\(|\lambda_j|=1\)</td><td>\(\|Qx\|=\|x\|=|\lambda|\|x\|\)</td></tr>
+      <tr><td>奇异值</td><td>全是 1</td><td>\(Q^*Q=I\) 的特征值全为 1</td></tr>
+      <tr><td>\(\|Q\|_2\)、\(\|Q\|_F\)</td><td>\(1\)、\(\sqrt m\)</td><td>谱范数是最大奇异值；F 范数 \(\sqrt{\operatorname{tr}(Q^*Q)}=\sqrt m\)</td></tr>
+      <tr><td>\(\kappa_2(Q)\)</td><td>\(1\)（最理想）</td><td>\(\sigma_{\max}/\sigma_{\min}=1/1\)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="pf">
+    <div class="h">证明 · 特征值在单位圆上</div>
+    <p>设 \(Qx=\lambda x\)，\(x\ne0\)。两边取范数：\(\|Qx\|=\|x\|\)（保范数），而 \(\|Qx\|=|\lambda|\,\|x\|\)。
+      故 \(|\lambda|=1\)。\(\square\)</p>
+    <p class="step">注意这只说明模为 1，<b>不说明是实数</b> —— 旋转矩阵的特征值是 \(e^{\pm i\theta}\)，非实。</p>
+  </div>
+
+  <h2 id="spec">§03 谱与结构：旋转、反射、标准形</h2>
+
+  <h3>3.1 实正交 \(2\times2\)：只有两种</h3>
+  <p>设 \(Q=\begin{bmatrix}a&amp;b\\c&amp;d\end{bmatrix}\) 实、\(Q^{\mathrm T}Q=I\)。两列单位正交，解得两类：</p>
+  <div class="pair">
+    <div>
+      <div class="ttl">det = 1 · 旋转</div>
+      <div class="eq">$$Q=\begin{bmatrix}c&amp;-s\\ s&amp;c\end{bmatrix},\quad c^2+s^2=1$$</div>
+      <p style="margin:6px 0 0">特征值 \(e^{\pm i\theta}\)，\(\theta=\arctan(s/c)\)。不动点只有原点。</p>
+    </div>
+    <div>
+      <div class="ttl">det = −1 · 镜像</div>
+      <div class="eq">$$Q=\begin{bmatrix}c&amp;s\\ s&amp;-c\end{bmatrix},\quad c^2+s^2=1$$</div>
+      <p style="margin:6px 0 0">特征值 \(1,-1\)。有一条不动直线（镜面），方向是特征值 1 的特征向量。</p>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="h">为什么 det = −1 时一定有特征值 1</div>
+    <p>实正交的特征多项式是实的二次式，且特征值只能取模 1 的值。若 \(\det Q=-1\)，则两个特征值之积为 \(-1\)。
+      若它们是共轭对 \(e^{\pm i\theta}\)，乘积为 1，矛盾；所以两个特征值都是实数，只能是 \(\pm1\)，乘积为 \(-1\) 就只能是 \(1\) 与 \(-1\)。
+      \(\lambda=1\) 的特征向量给出不动方向，即镜面。\(\square\)</p>
+  </div>
+
+  <h3>3.2 高阶：块对角标准形</h3>
+  <p>
+    任意实正交矩阵都实正交相似于“若干个 \(2\times2\) 旋转块 + 对角线上若干个 \(+1/-1\)”。
+    这就是实 Schur 形在正交群里的样子：复特征值成对出现，只能以旋转块的形式存在。<span class="src s-add">补充</span>
+    复酉矩阵则更干净：它正规，所以酉相似于 \(\operatorname{diag}(e^{i\theta_1},\dots,e^{i\theta_m})\)。
+  </p>
+
+  <h3>3.3 实对称又正交 = 反射</h3>
+  <p>
+    \(Q^{\mathrm T}=Q\) 且 \(Q^{\mathrm T}Q=I\) 意味着 \(Q^2=I\)：特征值只能是 \(\pm1\)，
+    且因为对称可正交对角化，\(Q=Q_1Q_1^{\mathrm T}-Q_2Q_2^{\mathrm T}\)（把特征值 1 与 −1 的特征向量分开）。
+    取 \(P=Q_1Q_1^{\mathrm T}\) 为到 \(Q_1\) 列空间的正交投影，则 \(Q=P-(I-P)=2P-I\)，
+    即“关于某子空间的反射”。Householder 矩阵 \(F=I-2vv^*/v^*v\) 正是取该子空间为 \(v^{\perp}\) 的特例。<span class="src s-lec">L6/L8</span>
+  </p>
+
+  <h2 id="keep">§04 它到底保住了什么</h2>
+
+  <h3>4.1 保几何（向量层面）</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>对象</th><th>关系</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>内积</td><td>\((Qx)^*(Qy)=x^*y\)</td><td>L2 Prop4</td></tr>
+      <tr><td>长度</td><td>\(\|Qx\|_2=\|x\|_2\)</td><td>同上取 \(y=x\)</td></tr>
+      <tr><td>距离</td><td>\(\|Qx-Qy\|=\|x-y\|\)</td><td>线性 + 保范数</td></tr>
+      <tr><td>夹角</td><td>\(\cos\angle(Qx,Qy)=\cos\angle(x,y)\)</td><td>内积与长度都不变</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="step">注意：保的是 <b>2-范数</b>。\(1\)-范数、\(\infty\)-范数<b>不保</b> —— 取 45° 旋转，\(x=(1,0)\) 的 \(\infty\)-范数是 1，转完变成 \((0.707,0.707)\)，\(\infty\)-范数掉到 0.707。</p>
+
+  <h3>4.2 保结构（矩阵层面）</h3>
+  <ul>
+    <li>\(\|QA\|_2=\|A\|_2\)、\(\|QA\|_F=\|A\|_F\)：因为 \((QA)^*(QA)=A^*A\)，奇异值一点没变。</li>
+    <li>\(\kappa_2(QA)=\kappa_2(A)\)：条件数是奇异值之比，奇异值没变。这条是“左乘酉矩阵不改变问题的病态程度”的严格说法。<span class="src s-lec">L10</span></li>
+    <li>\(QAQ^*\) 与 \(A\) <b>酉相似</b>：特征值、奇异值、\(\operatorname{tr}\)、\(\det\)、秩全不变；\(A\) Hermite 时 \(QAQ^*\) 也 Hermite。</li>
+    <li>最小二乘：\(\|Q(Ax-b)\|=\|Ax-b\|\)，所以 \(\min_x\|Ax-b\|\) 与 \(\min_x\|QAx-Qb\|\) 是同一个问题 —— QR 解最小二乘的全部合法性就在这一行。<span class="src s-lec">L9</span></li>
+  </ul>
+
+  <h2 id="proto">§05 两个原型：Householder 与 Givens</h2>
+
+  <h3>5.1 Householder：反射（Hermite + 酉 + 对合）</h3>
+  <p>对 \(v\ne0\)，令 \(F=I-2\dfrac{vv^*}{v^*v}\)。它是把 \(v^\perp\) 当镜面的反射。<span class="src s-lec">L8 Prop1</span></p>
+  <div class="pf">
+    <div class="h">三条性质一次证完</div>
+    <ol class="steps">
+      <li><b>Hermite</b>：\(F^*=I-2\dfrac{vv^*}{v^*v}=F\)（\(vv^*\) 本来就 Hermite，\(v^*v\) 是实数）。</li>
+      <li><b>对合</b>：记 \(P=\dfrac{vv^*}{v^*v}\)，则 \(P^2=P\)（因为 \(v^*v\) 是标量，\((vv^*)(vv^*)=v(v^*v)v^*=(v^*v)vv^*\)）。
+        于是 \(F^2=(I-2P)^2=I-4P+4P^2=I\)。</li>
+      <li><b>酉</b>：\(F^*F=F^2=I\)（第 1 步与第 2 步合起来）。<b>满秩</b>也由此得出（\(F^{-1}=F\)）。\(\square\)</li>
+    </ol>
+    <p>特征值：在 \(v\) 方向 \(Fv=-v\)，在 \(v^{\perp}\) 上 \(F=I\)。所以谱是 \((1,\dots,1,-1)\)，\(\det F=-1\)（行列式为特征值之积）。</p>
+  </div>
+  <p class="step">
+    实用推论（L8 原话）：既然每个 \(Q_j\) 都 Hermite，构造 \(Q^*=Q_n\cdots Q_1\) 时<b>不用给 \(Q_j\) 加星号</b>，
+    也永远不用求逆。“不用真求逆”和单位矩阵那页的 \(L\) 是同一个道理：结构给了你免费的逆。
+  </p>
+
+  <h3>5.2 Givens：旋转（det = 1）</h3>
+  <p>在 \((i,j)\) 坐标平面上转一个角（其余坐标不动），角块是</p>
+  <div class="eq">$$G_{ij}=\begin{bmatrix}c&amp;s\\-s&amp;c\end{bmatrix},\qquad c=\frac{a_{kk}}{r},\ \ s=\frac{a_{ik}}{r},\ \ r=\sqrt{a_{kk}^{2}+a_{ik}^{2}} .$$</div>
+  <p>它酉（列标准正交）、\(\det=1\)、只碰两行；这样取 \(c,s\) 就把 \(a_{ik}\) 转成 0。</p>
+
+  <h3>5.3 长方形的 \(Q\)：最容易翻车的地方</h3>
+  <p>
+    QR 里的 \(Q\) 常是 \(m\times n\)（\(m&gt;n\)）的“瘦高”矩阵。这时 \(Q^*Q=I_n\) 成立（列标准正交），但
+  </p>
+  <div class="eq">$$QQ^*\ne I_m,\qquad QQ^*=\text{到 }\operatorname{span}\{q_1,\dots,q_n\}\text{ 的正交投影}.$$</div>
+  <p>
+    理由是秩：\(\operatorname{rank}(QQ^*)\le n&lt;m\)，不可能等于 \(I_m\)。实测算例（下节）里 \(\|QQ^*-I_3\|_2=1\)。
+    只有当 \(Q\) 是方阵时，左右逆才重合，才能写 \(Q^{-1}=Q^*\)。<span class="src s-lec">L7</span>
+  </p>
+
+  <h2 id="why">§06 为什么数值线代离不开它</h2>
+  <ol>
+    <li><b>误差不被放大</b>：扰动 \(\delta A\) 经过 \(Q\) 之后，\(\|Q\,\delta A\|_2=\|\delta A\|_2\)。所以用酉变换做消元，
+      每步引入的舍入误差不会因为变换本身而变大 —— 这是 Householder QR 后向稳定的根本原因：
+      它算出的 \(\tilde Q\tilde R\) 满足 \(\tilde Q\tilde R=A+\delta A\)，而 \(\|\delta A\|=O(\epsilon\|A\|)\)。<span class="src s-lec">L13</span></li>
+    <li><b>病态程度不变</b>：\(\kappa_2(QA)=\kappa_2(A)\)。对比正规方程：形成 \(A^*A\) 把条件数平方，QR 不会。</li>
+    <li><b>不需要求逆</b>：\(Q^{-1}=Q^*\)，而且 \(Q\) 只以“一串反射/旋转”的形式存，作用是 \(O(mn^2)\) 而不是 \(O(m^3)\)。</li>
+    <li><b>谱定理、Schur、SVD 都在酉群里做</b>：因为只有酉相似既保谱又保 Hermite 结构（一般相似会把 Hermite 弄坏）。</li>
+  </ol>
+
+  <div class="box">
+    <b>一句话对比</b>：埃尔米特矩阵解决“<b>能不能对角化、对角元是什么</b>”；酉矩阵解决“<b>用什么变换去做、代价是什么</b>”。
+    两页合起来就是谱定理的完整故事：\(A=Q\Lambda Q^*\)，前者说 \(\Lambda\) 是实的，后者说 \(Q\) 不放大任何东西。
+  </div>
+
+  <h2 id="ex">§07 算例（数字全部实测）</h2>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>对象</th><th>矩阵</th><th>核对的量</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>旋转 30°</td>
+        <td>\(\begin{bmatrix}0.8660&amp;-0.5000\\0.5000&amp;0.8660\end{bmatrix}\)</td>
+        <td>\(Q^{\mathrm T}Q=I\)、\(\det=1\)、特征值 \(e^{\pm i\pi/6}=0.8660\pm0.5000i\)、\(\|Qx\|=\|x\|\)</td>
+      </tr>
+      <tr>
+        <td>换位（镜像）</td>
+        <td>\(\begin{bmatrix}0&amp;1\\1&amp;0\end{bmatrix}\)</td>
+        <td>\(\det=-1\)、特征值 \(1,-1\)、\(S^2=I\)（对合）</td>
+      </tr>
+      <tr>
+        <td>Householder（\(v=(1,1)/\sqrt2\)）</td>
+        <td>\(\begin{bmatrix}0&amp;-1\\-1&amp;0\end{bmatrix}\)</td>
+        <td>对称、正交、\(H^2=I\)、\(\det=-1\)、特征值 \(1,-1\)</td>
+      </tr>
+      <tr>
+        <td>Householder（对准 \(a=(3,4,0)\)）</td>
+        <td>\(F=I-2vv^*/v^*v\)</td>
+        <td>\(Fa=(-5,0,0)\)，\(\det F=-1\)</td>
+      </tr>
+      <tr>
+        <td>瘦高 \(Q\)（\(A=\begin{bmatrix}1&amp;0\\0&amp;1\\1&amp;1\end{bmatrix}\) 的 QR）</td>
+        <td>\(3\times2\)</td>
+        <td>\(Q^{\mathrm T}Q=I_2\) 成立；\(QQ^{\mathrm T}\) 是投影（秩 2、\(\operatorname{tr}=2\)），\(\|QQ^{\mathrm T}-I_3\|_2=1\)</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>
+    随机酉矩阵的实测（4×4）：\(|\det|=1\)、全部 \(|\lambda_j|=1\)、全部奇异值 \(=1\)、\(\|Q\|_2=1\)、\(\|Q\|_F=2=\sqrt4\)、\(\kappa_2=1\)。
+    酉相似 \(QAQ^*\) 的谱与奇异值与 \(A\) 一致（\(A\) 取 Hermite 时，\(QAQ^*\) 仍 Hermite）。
+  </p>
+
+  <h2 id="trap">§08 十条易错</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th class="n">#</th><th>错法</th><th>纠正</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>看到 \(Q^*Q=I\) 就写 \(Q^{-1}=Q^*\)</td><td>只在 \(Q\) 是<b>方阵</b>时成立。“瘦高” \(Q\) 没有逆，\(QQ^*\) 也不是 \(I\)</td></tr>
+      <tr><td class="n">2</td><td>以为 \(QQ^*=I\) 与 \(Q^*Q=I\) 等价</td><td>长方形时前者根本不成立；秩都不对</td></tr>
+      <tr><td class="n">3</td><td>“正交矩阵行列式一定是 1”</td><td>是 \(\pm1\)。\(-1\) 对应镜像，几何上不是旋转</td></tr>
+      <tr><td class="n">4</td><td>“酉矩阵特征值是实数”</td><td>是模为 1 的复数；旋转 \(30°\) 的特征值是 \(e^{\pm i\pi/6}\)</td></tr>
+      <tr><td class="n">5</td><td>把酉当“保所有范数”</td><td>只保 2-范数与内积。45° 旋转把 \(\|x\|_\infty\) 从 1 压到 0.707</td></tr>
+      <tr><td class="n">6</td><td>求 \(Q\) 的逆</td><td>\(Q^{-1}=Q^*\)；Householder 更是 \(F^{-1}=F\)，一行都不用算</td></tr>
+      <tr><td class="n">7</td><td>用一般相似讨论 Hermite</td><td>\(P^{-1}AP\) 一般不 Hermite；必须酉相似</td></tr>
+      <tr><td class="n">8</td><td>“两个酉矩阵相加仍酉”</td><td>\(I+I=2I\) 就不是。乘法才封闭</td></tr>
+      <tr><td class="n">9</td><td>Householder 的 \(\det\) 记成 \(+1\)</td><td>反射的行列式是 \(-1\)（特征值含一个 \(-1\)）；旋转才是 \(+1\)</td></tr>
+      <tr><td class="n">10</td><td>以为左乘酉矩阵会改变条件数</td><td>\(\kappa_2(QA)=\kappa_2(A)\)；会改变条件数的是形成 \(A^*A\)（平方）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="self">§09 自测与模板</h2>
+  <h3>9.1 四个可复用的开头</h3>
+  <ol>
+    <li><b>要证“保某个量”</b> → 一律写成内积或用 \((QA)^*(QA)=A^*A\)，不要逐元素算。</li>
+    <li><b>要证“某个矩阵酉/正交”</b> → 只证 \(Q^*Q=I\) 一条，其余全部免费（逆、det、奇异值、条件数）。</li>
+    <li><b>要证“某个量不变”</b> → 说明它是奇异值/特征值的函数，再说明酉相似不改谱。</li>
+    <li><b>要证“某变换是反射”</b> → 证 \(F^*=F\) 且 \(F^2=I\)，然后找特征值 1 的子空间当镜面。</li>
+  </ol>
+
+  <h3>9.2 六问</h3>
+  <ol>
+    <li>不用特征值，只用保范数证明酉矩阵的 \(|\det Q|=1\)。（提示：\(|\det Q|^2=\det(Q^*Q)\)）</li>
+    <li>举一个 \(Q^*Q=I\) 但 \(Q\) 不可逆的例子，并说明 \(QQ^*\) 是什么。</li>
+    <li>证明两个 \(2\times2\) 实正交矩阵之积仍正交，并说明 \(\det\) 怎么变。</li>
+    <li>说明为什么 QR 解最小二乘比正规方程稳（用 \(\kappa_2(QA)=\kappa_2(A)\) 与 \(\kappa_2(A^*A)=\kappa_2(A)^2\)）。</li>
+    <li>证明 Householder 的 \(\det F=-1\)，并给出其特征向量。</li>
+    <li>若 \(Q\) 酉且 \(A\) 是正规矩阵，证明 \(QAQ^*\) 仍正规。</li>
+  </ol>
+
+  <footer>
+    <span>NLA-UNIT · 16 条性质 · 8 个完整证明 · 读数闸门 44 项</span>
+    <span>数值线性代数 · 期末复习</span>
+  </footer>
+</div>
+</body>
+</html>

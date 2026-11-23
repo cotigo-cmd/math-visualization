@@ -111,7 +111,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 </div>
 
 <h1>奇异值分解：每个矩阵都是「旋转—拉伸—旋转」</h1>
-<p class="lead">SVD 的出发点是一个几何事实：<strong>任何矩阵把单位球映成超椭球</strong>。抓住这个椭球的长短轴方向与长度，就得到唯一（至多差符号）的分解 \(A=U\Sigma V^{\mathrm{T}}\)。本页先把这个几何做成可播放的三步机器，再用一个 36×36 的「图矩阵」实测低秩近似的最优性。</p>
+<p class="lead">SVD 的出发点是一个几何事实：<strong>任何矩阵把单位球映成超椭球</strong>。抓住这个椭球的长短轴方向与长度，就得到唯一（至多差符号）的分解 \(A=U\Sigma V^{\mathrm{T}}\)。本页先把这个几何做成可播放的三步机器，再把<strong>存在唯一性定理与两条完整证明</strong>补上（§02，含"什么时候方向不唯一"的反例），最后用一个 36×36 的「图矩阵」实测低秩近似的最优性。</p>
 <p class="hint">约定同前：实矩阵。读数由 <span class="mx">verify_readout_svd.js</span> 实测；秩-k 实验室的 SVD 由页内单边 Jacobi 计算，闸门用独立实现对账。</p>
 
 <h2><span class="no">01</span>几何观察：单位球的像是超椭球</h2>
@@ -153,13 +153,83 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
   <p class="hint">「秩 1」预设 \(\sigma_2=0\)：椭圆塌缩成一条线段，\(u_2\) 失去几何意义（教材：用任意正交方向补全）。「旋转 90°」两个奇异值都是 1——椭圆退化成圆，这正是 NLA-01 实验 04 保矩变换的 SVD 面目；注意它没有实特征向量，却有完全普通的 SVD。</p>
 </section>
 
-<h2><span class="no">02</span>SVD 的看家性质</h2>
+<h2><span class="no">02</span>存在唯一性定理：为什么椭球一定存在，而且"几乎"唯一</h2>
+<p>课件（L4 定理 1）只把结论写在幻灯片上，证明留在板书。这一节把证明补全，并且先给一个几何读法——定理的三句话其实正好对应椭球的三种"自由度"。</p>
+
+<div class="note">
+<p style="margin:0 0 6px"><strong>定理（SVD 的存在唯一性）</strong>　设 \(A\in\mathbb{C}^{m\times n}\)。则存在<br>
+\(A=U\Sigma V^*\)，其中 \(U\in\mathbb{C}^{m\times m}\)、\(V\in\mathbb{C}^{n\times n}\) 酉，\(\Sigma\in\mathbb{R}^{m\times n}\) 与 \(A\) 同形、对角元 \(\sigma_1\ge\cdots\ge\sigma_p\ge0\)（\(p=\min\{m,n\}\)）；并且：</p>
+<p style="margin:0 0 4px">（i）<strong>奇异值唯一</strong>：\(\sigma_j\) 由 \(A\) 完全确定；</p>
+<p style="margin:0 0 4px">（ii）若 \(A\) 是<strong>方阵</strong>且 \(\sigma_j\) <strong>互不相同</strong>，则 \(u_j,v_j\) 也唯一，只差一个模为 1 的常数（实情形：只差符号）；</p>
+<p style="margin:0">（iii）出现重奇异值、或 \(A\) 不是方阵时，相应的选择<strong>不唯一</strong>。</p>
+</div>
+
+<h3>先看几何：三句话各自对应椭球的什么</h3>
+<p>把 \(A=U\Sigma V^{\mathrm T}\) 读成三个动作：\(V^{\mathrm T}\) 只是换基（球还是球）→ \(\Sigma\) 沿坐标轴把球拉成椭球（第 \(j\) 轴拉长 \(\sigma_j\) 倍）→ \(U\) 把椭球整体转到最终朝向。于是：</p>
+<ul>
+  <li><strong>半轴长度</strong>是椭球的固有属性 —— 换个坐标系、转个角度都不变。这就是 (i)「\(\sigma_j\) 唯一」。</li>
+  <li><strong>半轴方向</strong>只在长短不等时才有意义：若 \(\sigma_1&gt;\sigma_2\)，最长轴只有一条（差正负两向），这就是 (ii)。</li>
+  <li>若两根<strong>一样长</strong>，像在那一对方向张成的平面里是个<strong>圆</strong>——圆周上任何两个正交方向都能当"轴"。方向不唯一，但长度仍然唯一。秩亏时更彻底：\(\sigma_j=0\) 的方向连像都没有，\(v_j\) 可以任取。</li>
+</ul>
+<div class="note b">
+"过程复杂"的真正来源就在这里：<b>存在性</b>要证（下面五步）；<b>唯一性</b>只能说到"\(\sigma\) 唯一、方向在重根时可任意"。(ii) 里的两个条件——<b>方阵</b>与<b>\(\sigma\) 互异</b>——缺一不可。
+</div>
+
+<h3>存在性证明（谱定理路线，五步）</h3>
+<ol>
+  <li><strong>\(A^{\mathrm T}A\) 是好矩阵。</strong>它对称：\((A^{\mathrm T}A)^{\mathrm T}=A^{\mathrm T}A\)；且半正定：\(x^{\mathrm T}A^{\mathrm T}Ax=\|Ax\|_2^2\ge0\)。</li>
+  <li><strong>用谱定理。</strong>存在 \(\mathbb{R}^n\) 的标准正交基 \(v_1,\dots,v_n\) 与实数 \(\lambda_1\ge\cdots\ge\lambda_n\ge0\)，使 \(A^{\mathrm T}Av_j=\lambda_jv_j\)。</li>
+  <li><strong>开方。</strong>令 \(\sigma_j=\sqrt{\lambda_j}\)（天然降序）。设非零的个数为 \(r=\operatorname{rank}A\)。</li>
+  <li><strong>造 \(u_j\)。</strong>对 \(j\le r\) 令 \(u_j=\dfrac{Av_j}{\sigma_j}\)，则它们标准正交：
+    <div class="eq">$$\langle u_i,u_j\rangle=\frac{v_i^{\mathrm T}A^{\mathrm T}Av_j}{\sigma_i\sigma_j}=\frac{\lambda_j\,\delta_{ij}}{\sigma_i\sigma_j}=\delta_{ij}.$$</div>
+    （\(i=j\) 时右端是 \(\lambda_j/\sigma_j^2=1\)；\(i\ne j\) 时为 0。）</li>
+  <li><strong>补齐并收尾。</strong>\(\{u_1,\dots,u_r\}\) 张成 \(\operatorname{range}(A)\)（因为 \(Av_j\) 张成它），把它补成 \(\mathbb{R}^m\) 的标准正交基 \(u_1,\dots,u_m\)。
+    对 \(j\le r\) 有 \(Av_j=\sigma_ju_j\)；对 \(j&gt;r\)，\(\|Av_j\|^2=v_j^{\mathrm T}A^{\mathrm T}Av_j=0\)，故 \(Av_j=0\)。
+    于是 \(AV=U\Sigma\)，右乘 \(V^{\mathrm T}\) 得 \(A=U\Sigma V^{\mathrm T}\)。\(\square\)</li>
+</ol>
+
+<h3>另一条路（几何版）：从最长半轴出发归纳</h3>
+<p>这条路完全不提 \(A^{\mathrm T}A\)，直接照着椭球走：</p>
+<ol>
+  <li>\(\|Ax\|_2\) 在单位球面（有界闭集）上取到最大值，记 \(\sigma_1\)；取到它的方向记 \(v_1\)，令 \(u_1=Av_1/\sigma_1\)。</li>
+  <li>由极值点的变分条件可推出 \(A^{\mathrm T}Av_1=\sigma_1^2v_1\) —— 于是 \(A^{\mathrm T}u_1=A^{\mathrm T}Av_1/\sigma_1=\sigma_1v_1\)。</li>
+  <li>这保证 \(A\) 把 \(v_1^{\perp}\) 映进 \(u_1^{\perp}\)：若 \(x\perp v_1\)，则
+    \(\langle Ax,u_1\rangle=\langle x,A^{\mathrm T}u_1\rangle=\sigma_1\langle x,v_1\rangle=0\)。</li>
+  <li>把 \(A\) 限制在 \(v_1^{\perp}\to u_1^{\perp}\)（维数各降一）上重复。这就是"取最长半轴 → 砍掉它 → 再看次长"。</li>
+</ol>
+<p>两条路的结论相同；<b>第一条给你算法（算 \(A^{\mathrm T}A\) 的特征问题），第二条给你几何（半轴是极值）</b>。</p>
+
+<h3>唯一性：把三种情形分开说</h3>
+<table class="tb">
+<tr><th>情形</th><th>\(\sigma\)</th><th>\(u_j,v_j\)</th><th>原因</th></tr>
+<tr><td>\(\sigma_j\) 互不相同</td><td>唯一</td><td>唯一到符号（复：模 1 常数）</td><td>每个 \(\lambda_j\) 的特征子空间是一维</td></tr>
+<tr><td>有重奇异值</td><td>唯一（含重数）</td><td>在对应的 \(k\) 维子空间内可任取一组正交基</td><td>子空间维数 \(&gt;1\)，可整体右乘一个 \(k\times k\) 酉阵</td></tr>
+<tr><td>\(m\ne n\) 或秩亏</td><td>唯一</td><td>补全的那些列（\(j&gt;r\)）完全任意</td><td>它们根本不参与 \(A=U\Sigma V^{\mathrm T}\) 的乘积</td></tr>
+</table>
+
+<p><strong>一个能自己乘一遍的等奇异值例子。</strong>取</p>
+<div class="eq">$$A=\begin{bmatrix}1.18&-0.55\\ 0.55&1.18\end{bmatrix}=\sigma Q,\qquad \sigma_1=\sigma_2=\sigma\approx1.3019,\quad Q=\begin{bmatrix}0.9064&-0.4225\\ 0.4225&0.9064\end{bmatrix}.$$</div>
+<p>因为 \(A\) 就是一个"纯旋转再等比放大"，所以对<strong>任意</strong>正交矩阵 \(V\)，令 \(U=QV\) 都有</p>
+<div class="eq">$$U\Sigma V^{\mathrm T}=QV\,(\sigma I)\,V^{\mathrm T}=\sigma Q=A .$$</div>
+<p>下面三组 \((V,U)\) 给出<strong>同一个 \(A\)</strong>——这就是"方向不唯一"的确切含义：</p>
+<table class="tb">
+<tr><th>\(V\)</th><th>\(U=QV\)</th><th>\(U\Sigma V^{\mathrm T}\)</th></tr>
+<tr><td>\(I\)</td><td>\(\begin{bmatrix}0.9064&-0.4225\\ 0.4225&0.9064\end{bmatrix}\)</td><td rowspan="3">都等于 \(A\)</td></tr>
+<tr><td>旋转 \(45^\circ\)</td><td>\(\begin{bmatrix}0.3422&-0.9396\\ 0.9396&0.3422\end{bmatrix}\)</td></tr>
+<tr><td>\(\begin{bmatrix}0&1\\1&0\end{bmatrix}\)（反射）</td><td>\(\begin{bmatrix}-0.4225&0.9064\\ 0.9064&0.4225\end{bmatrix}\)</td></tr>
+</table>
+
+<div class="note g">
+<strong>一句话记住</strong>：SVD 唯一的是<b>一组长度</b>（\(\sigma\)）；不唯一的是<b>方向</b>，而方向的不唯一恰好发生在"椭球退化成圆"的地方。方阵 + 奇异值互异，是让方向也唯一的充分条件；去掉任一条件，反例上面就有。
+</div>
+
+<h2><span class="no">03</span>SVD 的看家性质</h2>
 <p>「先问能不能取 SVD」是全书反复使用的思维习惯。几个直接后果（定理 5.1–5.6）：</p>
 <div class="eq">$$ \operatorname{rank}(A)=\#\{\sigma_j&gt;0\},\qquad \operatorname{range}(A)=\operatorname{span}\{u_1,\dots,u_r\},\qquad \operatorname{null}(A)=\operatorname{span}\{v_{r+1},\dots,v_n\}, $$</div>
 <div class="eq">$$ \|A\|_2=\sigma_1,\qquad \|A\|_F=\sqrt{\sigma_1^2+\cdots+\sigma_p^2},\qquad \sigma_j^2=\lambda_j(A^{\mathrm{T}}A),\qquad |\det A|=\prod_j\sigma_j. \tag{5.1–5.6} $$</div>
 <p>于是 Lecture 3 留下的伏笔在此结清：\(\|A\|_2=\sigma_1\) 有了几何意义——最大奇异值就是单位球被拉长的最大倍率；而 \(\|A\|_F\) 把所有奇异值的平方和开根号（它与 2-范数一样在正交相乘下不变）。</p>
 
-<h2><span class="no">03</span>低秩近似：Eckart–Young 定理</h2>
+<h2><span class="no">04</span>低秩近似：Eckart–Young 定理</h2>
 <p>SVD 还给出把 \(A\) 拆成 \(r\) 个秩一矩阵的方式，且<strong>每一步都吃掉尽可能多的能量</strong>：</p>
 <div class="eq">$$ A=\sum_{j=1}^{r}\sigma_j u_j v_j^{\mathrm{T}},\qquad A_v=\sum_{j=1}^{v}\sigma_j u_j v_j^{\mathrm{T}}. \tag{5.3–5.4} $$</div>
 <div class="eq">$$ \|A-A_v\|_2=\sigma_{v+1}=\min_{\operatorname{rank}(B)&lt;v}\|A-B\|_2,\qquad \|A-A_v\|_F=\Big(\sum_{j&gt;v}\sigma_j^2\Big)^{1/2}=\min_{\operatorname{rank}(B)&lt;v}\|A-B\|_F. \tag{5.8–5.9} $$</div>
@@ -192,7 +262,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
   <p class="hint">四张图的有效秩（\(\sigma_j&gt;10^{-6}\sigma_1\) 计数，闸门实测；双侧 Jacobi 的噪声地板在 \(10^{-8}\sigma_1\) 量级，故阈值须高于它）恰好排成阶梯：<strong>斜条纹 36、字母 A 10、棋盘 2、斜坡 1</strong>——前两张适合看压缩，后两张有闭式对账。QR 截断的 Frobenius 误差总是 ≥ SVD 截断，且一般不相等：QR 的列空间只是「前 \(k\) 列张成的空间最优地选过了」，但投影方向并非整体最优。</p>
 </section>
 
-<h2><span class="no">04</span>SVD 与特征分解：三种根本差异</h2>
+<h2><span class="no">05</span>SVD 与特征分解：三种根本差异</h2>
 <ul>
   <li><strong>两套基 vs 一套基</strong>：特征分解 \(A=X\Lambda X^{-1}\) 只用一组（一般不正交的）特征向量；SVD 在定义域与值域各用一套正交基。</li>
   <li><strong>正交性</strong>：\(U,V\) 正交，\(X\) 一般不正交——数值上这意味着 SVD 的条件数天生为 1。</li>
@@ -200,7 +270,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
 </ul>
 <p>应用上的分岔：涉及 \(A\) 的幂、指数（迭代、演化）的问题找特征值；涉及 \(A\) 本身或其逆（范数、秩、投影、最小二乘）的问题找奇异值。</p>
 
-<h2><span class="no">05</span>本页小结与习题</h2>
+<h2><span class="no">06</span>本页小结与习题</h2>
 <ul>
   <li><strong>几何定义优先</strong>：奇异值 = 椭球半轴长，奇异向量 = 半轴方向与原像方向；分解式是几何的代数快照。</li>
   <li><strong>存在且基本唯一</strong>（定理 4.1，符号与亏秩补全有模糊）；缩减/完全两种形式贯穿全书。</li>

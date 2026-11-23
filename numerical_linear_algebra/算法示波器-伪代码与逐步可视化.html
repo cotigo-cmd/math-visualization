@@ -44,7 +44,10 @@ window.MathJax = {
     padding:14px 16px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
   .dtitle{display:flex;align-items:center;gap:10px;min-width:0}
   .dtitle h2{border:0;margin:0;padding:0;font-size:17px}
-  .pick{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end;max-width:720px}
+  .pick{display:flex;flex-direction:column;gap:5px;max-width:760px}
+  .pgrp{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+  .glab{font:11.5px/1.6 ui-monospace,Consolas,monospace;color:var(--mut);min-width:88px;text-align:right;letter-spacing:.03em}
+  .gbtns{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
   .pill{font:12px/1.3 inherit;color:var(--ink);background:#FFF;border:1px solid var(--line);
     border-radius:20px;padding:5px 11px;cursor:pointer;white-space:nowrap}
   .pill:hover{border-color:var(--steel);color:var(--steel)}
@@ -151,14 +154,14 @@ window.MathJax = {
     <span class="tag">ALG · 示波器</span>
     <h1>算法示波器：伪代码、数字矩阵与几何，同一步</h1>
     <p class="sub">
-      13 个算法的每一帧都同时给出三样东西：<b>正在执行哪一行伪代码</b>、<b>矩阵里哪个格子在被读/被改写</b>、<b>空间里哪个向量在动</b>。
+      20 个算法/成本项的每一帧都同时给出三样东西：<b>正在执行哪一行伪代码</b>、<b>矩阵里哪个格子在被读/被改写</b>、<b>空间里哪个向量在动</b>。
       内外循环不是抽象概念 —— 外循环每走一步，内循环就老老实实把这个"新定下来的东西"乘回去扣掉。
     </p>
   </header>
 
   <h2>怎么用</h2>
   <div class="how">
-    <div><b>① 先选算法</b>右上角按模块分组，从「矩阵乘向量」开始，一路到 Cholesky。</div>
+    <div><b>① 先选算法</b>右上角按模块分组：从「矩阵乘向量」一路到 Cholesky，最后一组是「计算成本」。</div>
     <div><b>② 单步走</b>点 ▶ 一次走一帧，配速可以放慢；键盘 ← → 也行。</div>
     <div><b>③ 三块对照</b>黄线是正在执行的行，橙色格是这一步真正读写的格子，画布是同一瞬间的几何。</div>
   </div>
@@ -204,7 +207,7 @@ window.MathJax = {
 
   <h2>统一骨架：外层定"用谁"，内层"乘回去扣掉"</h2>
   <p>
-    这 13 个算法看着五花八门，内层循环其实只做两种事：<b>算一个点积</b>（投影系数 \\(r_{ij}\\)、乘子 \\(l_{ik}\\)、Cholesky 的 \\(s\\)），
+    这些算法看着五花八门，内层循环其实只做两种事：<b>算一个点积</b>（投影系数 \\(r_{ij}\\)、乘子 \\(l_{ik}\\)、Cholesky 的 \\(s\\)），
     或者<b>做一次秩一／行更新</b>（把刚算出的系数乘上已定的那一列／行，再从目标里扣掉）。
     混淆点几乎都出在"内层用来扣的是哪一列"——是<b>原始的</b>那一列（CGS），还是<b>已经被扣过的</b>那一列（MGS、Householder、MGS 之后的 QR）。
   </p>
@@ -223,9 +226,30 @@ window.MathJax = {
       <tr><td>QR 最小二乘</td><td>k：反射</td><td>列与 b 同时反射</td><td>\\(R\\)，\\(d=Q^*b\\)</td><td class="hi">高</td></tr>
       <tr><td>LU（无主元）</td><td>k：第 k 列</td><td>i：行更新</td><td>\\(L,U\\)</td><td class="hi">高</td></tr>
       <tr><td>列主元 LU</td><td>k：先选主元再消</td><td>i：行更新</td><td>\\(P,L,U\\)</td><td class="hi">高</td></tr>
+      <tr><td>对称主元 · LDL*</td><td>j：只在剩余<strong>对角元</strong>里选主元</td><td>i：行更新，且换行必换列</td><td>\(P,L,D\)，\(PAP^{\mathrm T}=LDL^*\)</td><td class="hi">高</td></tr>
       <tr><td>Cholesky</td><td>j：第 j 列</td><td>i：点积 + 开方／除法</td><td>\\(R\\)，\\(A=R^*R\\)</td><td class="hi">高</td></tr>
     </tbody>
   </table></div>
+
+  <h3>第四个模块：计算成本（不是步骤，是开销）</h3>
+  <p>
+    成本模块没有"内层扣谁"的问题，它只回答一件事：<b>同一个算法在 n 翻倍时工作量翻几倍</b>。
+    每个成本项给一张 4/8/16/32/64/128 的成本表、一张六个算法并排的条形图，以及相对 LU 与 Cholesky 的倍数。
+    作业里那句"Givens 比 MGS 多 50%"就在这一模块里被数值验证：\(3n^3/2n^3=1.5\)。
+  </p>
+  <div class="tw">
+  <table>
+    <thead><tr><th>算法</th><th>主项</th><th>方阵时的常数</th><th>相对 Cholesky</th><th>记忆点</th></tr></thead>
+    <tbody>
+      <tr><td>矩阵乘向量</td><td>\(2mn\)</td><td>\(2n^2\)</td><td>\(6/n\)</td><td>只有两层，没有"消"的动作</td></tr>
+      <tr><td>Gram–Schmidt（CGS/MGS）</td><td>\(2mn^2\)</td><td>\(2n^3\)</td><td>\(6\)</td><td>每个 <code>(i,j)</code> 一次点积 + 一次 axpy</td></tr>
+      <tr><td>Householder QR</td><td>\(2mn^2-2n^3/3\)</td><td>4/3 · n³</td><td>\(4\)</td><td>反射只作用在剩下的块上，比 GS 省 1/3</td></tr>
+      <tr><td>Givens QR</td><td>\(3n^3\)</td><td>\(3n^3\)</td><td>\(9\)</td><td>只碰两行，但旋转 n²/2 次</td></tr>
+      <tr><td>LU</td><td>\(2m^3/3\)</td><td>2/3 · n³</td><td>\(2\)</td><td>与 Householder 同阶（常数略小）</td></tr>
+      <tr><td>Cholesky</td><td>\(m^3/3\)</td><td>1/3 · n³</td><td>\(1\)</td><td>对称性换来的对折</td></tr>
+    </tbody>
+  </table>
+  </div>
 
   <div class="box">
     <b>为什么"数字 + 几何"要同时看</b><br>
@@ -250,7 +274,7 @@ window.MathJax = {
   </table></div>
 
   <footer>
-    <span>NLA-ALG · 算法示波器 · 13 个算法 / 逐步帧</span>
+    <span>NLA-ALG · 算法示波器 · 20 个算法与成本项 / 逐步帧</span>
     <span>数值线性代数 · 期末复习</span>
   </footer>
 </div>
@@ -289,7 +313,14 @@ function fmt(v, d){
   if(s === '-0') s = '0';
   return s;
 }
-function Pm(t, M, hl){ return { t: t, m: M.map(r => r.slice()), hl: hl || {} }; }
+function Pm(t, M, hl, f){ return { t: t, m: M.map(r => r.slice()), hl: hl || {}, f: f }; }
+function fmtBig(v){
+  if(v === 0) return '0';
+  if(v < 1e3) return fmt(v, 0);
+  if(v < 1e6) return (v / 1e3).toFixed(1) + 'k';
+  if(v < 1e9) return (v / 1e6).toFixed(1) + 'M';
+  return (v / 1e9).toFixed(1) + 'G';
+}
 function Vm(t, v, hl){ return { t: t, m: [v.slice()], hl: hl || {}, vec: true }; }
 
 /* ===== ALG-01 矩阵乘向量 · 行观点 ===== */
@@ -1064,12 +1095,148 @@ function cholErr(R, A){
 }
 
 /* ===== 注册表 ===== */
+/* ===== ALG-13b 对称主元（HW8-6）：只比对角元，换行必换列 ===== */
+function algoSyPivot(){
+  const A0 = [[2, 1, 1], [1, 3, 1], [1, 1, 2]];
+  const A = A0.map(r => r.slice()), m = 3;
+  const L = eye(m), P = eye(m), D = [0, 0, 0];
+  const snap = () => A.map(r => r.slice());
+  return {
+    id: 'sypivot', tag: 'ALG-13b', grp: '直接法', name: '对称主元 · LDL*（HW8-6）',
+    pseudo: [
+      'for j = 1 : m-1',
+      '    取 p ≥ j 使 |a(p,p)| 最大     // 只比对角元',
+      '    若 p ≠ j：同时交换第 p、j 行与第 p、j 列',
+      '    for i = j+1 : m',
+      '        l(i,j) = a(i,j) / a(j,j)',
+      '        a(i,j+1:m) -= l(i,j)·a(j,j+1:m)',
+      '        a(i,j) = l(i,j)',
+      'return P, L, D（= A 消完后的对角元）'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['A', 'Hermite（先当正定看）'], ['目标', 'P A Pᵀ = L D L*']],
+        panels: [Pm('P', P), Pm('L', L), Pm('A', A)],
+        geo: { kind: 'lu', rows: snap(), k: -1, i: -1, old: null, nw: null },
+        say: '对称消元：换行时必须同时换列，否则 Hermite 结构当场就没了。' };
+      for(let j = 0; j < m - 1; j++){
+        let p = j;
+        for(let i = j + 1; i < m; i++) if(Math.abs(A[i][i]) > Math.abs(A[p][p])) p = i;
+        yield { pc: 1, loop: { o: 'j = ' + (j + 1) },
+          vars: [['对角元', '|a₁₁|=' + fmt(Math.abs(A[0][0])) + '  |a₂₂|=' + fmt(Math.abs(A[1][1])) + '  |a₃₃|=' + fmt(Math.abs(A[2][2]))],
+                 ['主元位置', 'p = ' + (p + 1)]],
+          panels: [Pm('P', P), Pm('L', L), Pm('A', A, { x: [[0, 0], [1, 1], [2, 2]] })],
+          geo: { kind: 'lu', rows: snap(), k: j, i: -1, old: null, nw: null },
+          say: '只在剩余<b>对角元</b>里挑最大的（不是本列最大）—— 这是保持对称的代价，也是它的要点。' };
+        if(p !== j){
+          const tr = A[p]; A[p] = A[j]; A[j] = tr;
+          for(let r = 0; r < m; r++){ const t = A[r][p]; A[r][p] = A[r][j]; A[r][j] = t; }
+          const tp = P[p]; P[p] = P[j]; P[j] = tp;
+          for(let c = 0; c < j; c++){ const t = L[p][c]; L[p][c] = L[j][c]; L[j][c] = t; }
+          yield { pc: 2, loop: { o: 'j = ' + (j + 1) },
+            vars: [['动作', '交换第 ' + (j + 1) + '、' + (p + 1) + ' 行与列']],
+            panels: [Pm('P', P, { r: [j, p] }), Pm('L', L), Pm('A', A, { r: [j, p], c: [j, p] })],
+            geo: { kind: 'lu', rows: snap(), k: j, i: -1, old: null, nw: null, swap: [j, p] },
+            say: '换行 + 换列 = 换了一组坐标。P 记下这次置换，L 里已经算好的那几列也要跟着换。' };
+        }
+        const piv = A[j][j];
+        for(let i = j + 1; i < m; i++){
+          const l = A[i][j] / piv;
+          const oldRow = A[i].slice();
+          for(let c = j + 1; c < m; c++) A[i][c] -= l * A[j][c];
+          A[i][j] = l; L[i][j] = l;
+          yield { pc: 5, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['主元 a(j,j)', fmt(piv)], ['l(i,j)', fmt(l)], ['|l| ≤ 1 ?', Math.abs(l) <= 1 ? '是' : '否（不定时可能超 1）']],
+            panels: [Pm('P', P), Pm('L', L, { x: [[i, j]] }), Pm('A', A, { r: [i], c: [j] })],
+            geo: { kind: 'lu', rows: snap(), k: j, i: i, old: oldRow, nw: A[i].slice() },
+            say: '乘子 ' + fmt(l) + ' 落进 L；这一行继续减，右下角那块就是 Schur 补，仍 Hermite。' };
+        }
+      }
+      for(let k = 0; k < m; k++) D[k] = A[k][k];
+      yield { pc: 7, loop: {}, vars: [['D', '(' + D.map(v => fmt(v)).join(', ') + ')'], ['P·A·Pᵀ − L·D·Lᵀ', fmt(symErr(P, L, D, A0))]],
+        panels: [Pm('P', P), Pm('L', L), Pm('D', [D.slice()])],
+        geo: { kind: 'lu', rows: snap(), k: -1, i: -1, old: null, nw: null },
+        say: '消完后的对角元就是 D，下三角存的是 L。正定时 D 全正，再开方就是 Cholesky 的 R。',
+        check: { A0: A0, P: P, L: L, D: D.slice() } };
+    }
+  };
+}
+function symErr(P, L, D, A0){
+  const m = D.length, LD = L.map((r, i) => r.map((v, j) => v * D[j]));
+  const LDLt = mm(LD, [[L[0][0], L[1][0], L[2][0]], [L[0][1], L[1][1], L[2][1]], [L[0][2], L[1][2], L[2][2]]]);
+  const PA = mm(mm(P, A0), [[P[0][0], P[1][0], P[2][0]], [P[0][1], P[1][1], P[2][1]], [P[0][2], P[1][2], P[2][2]]]);
+  let e = 0;
+  for(let i = 0; i < m; i++) for(let j2 = 0; j2 < m; j2++) e = Math.max(e, Math.abs(LDLt[i][j2] - PA[i][j2]));
+  return e;
+}
+
+/* ===== 计算成本模块（C1–C6）===== */
+const COST_NS = [4, 8, 16, 32, 64, 128];
+const COST_SPECS = [
+  { id: 'cost_mv', tag: 'ALG-C1', name: '成本 · 矩阵乘向量',
+    f: n => 2 * n * n, formula: '2mn',
+    pseudo: ['flops = 0', 'for i = 1 : m', '    for j = 1 : n',
+      '        flops += 2      // 一次乘 + 一次加', '// 求和 → 2mn            ← 本帧', 'return 2mn'],
+    who: 'm = n', note: '每个元素一次乘、一次加，没有别的工作。' },
+  { id: 'cost_gs', tag: 'ALG-C2', name: '成本 · Gram–Schmidt',
+    f: n => 2 * n * n * n, formula: '2mn²',
+    pseudo: ['flops = 0', 'for j = 1 : n', '    for i = 1 : j-1',
+      '        flops += 4m     // 点积 2m + axpy 2m', '// 求和 → 2mn²           ← 本帧', 'return 2mn²'],
+    who: 'm = n', note: '每个 (i,j) 一次点积加一次 axpy，共 n²/2 组。' },
+  { id: 'cost_house', tag: 'ALG-C3', name: '成本 · Householder QR',
+    f: n => 2 * n * n * n - (2 / 3) * n * n * n, formula: '2mn² − 2n³/3',
+    pseudo: ['flops = 0', 'for k = 1 : n', '    for j = k : n',
+      '        flops += 4(m-k+1)  // 算 w + 更新一列', '// 求和 → 2mn² − 2n³/3  ← 本帧', 'return 2mn² − 2n³/3'],
+    who: 'm = n', note: '反射只作用在剩下的块上，所以比 GS 省（方阵时约 2/3 倍）。' },
+  { id: 'cost_givens', tag: 'ALG-C4', name: '成本 · Givens QR',
+    f: n => 3 * n * n * n, formula: '3n³',
+    pseudo: ['flops = 0', 'for k = 1 : n', '    for i = k+1 : m',
+      '        flops += 6n     // 两行 ~4n + 算 c,s ~2', '// 求和 → 3n³ ≈ MGS 的 1.5 倍 ← 本帧', 'return 3n³'],
+    who: 'm = n', note: '每次只碰两行，但旋转次数是 n²/2 量级；作业里那句“比 MGS 多 50%”就是 3n³ / 2n³。' },
+  { id: 'cost_lu', tag: 'ALG-C5', name: '成本 · LU 消元',
+    f: n => (2 / 3) * n * n * n, formula: '2m³/3',
+    pseudo: ['flops = 0', 'for k = 1 : m-1', '    for i = k+1 : m',
+      '        flops += 2(n-k)     // 行更新', '// 求和 → 2m³/3          ← 本帧', 'return 2m³/3'],
+    who: 'm = n', note: 'Σ_k 2(m−k)(n−k)，方阵时收敛到 2m³/3。' },
+  { id: 'cost_chol', tag: 'ALG-C6', name: '成本 · Cholesky',
+    f: n => (1 / 3) * n * n * n, formula: 'm³/3',
+    pseudo: ['flops = 0', 'for j = 1 : m', '    for i = 1 : j',
+      '        flops += 2(i-1)+1   // 点积 + 除法/开方', '// 求和 → m³/3           ← 本帧', 'return m³/3'],
+    who: 'm = n', note: '只处理一半的元素，正好是 LU 的一半 —— 对称性换来的折扣。' }
+];
+function costAlgo(spec){
+  return {
+    id: spec.id, tag: spec.tag, grp: '计算成本', name: spec.name,
+    pseudo: spec.pseudo,
+    run: function*(){
+      const vals = COST_NS.map(n => spec.f(n));
+      yield { pc: 0, loop: {}, vars: [['口径', '一次浮点乘或加 = 1 flop'], ['规模', spec.who]],
+        panels: [Pm('成本表（flop）', [COST_NS.slice(), vals.slice()], null, fmtBig)],
+        geo: { kind: 'cost', ns: COST_NS, vals: vals, cur: 2, id: spec.id },
+        say: '这一模块不比“步骤”，比**开销**：同一台机器上，n 翻倍时工作量翻几倍。' };
+      for(let i = 0; i < COST_NS.length; i++){
+        const n = COST_NS[i], v = vals[i], chol = n * n * n / 3, lu = 2 * n * n * n / 3;
+        yield { pc: 4, loop: { o: 'n = ' + n },
+          vars: [['n', String(n)], ['flops', fmtBig(v)], ['相对 LU', (v / lu).toFixed(2) + '×'], ['相对 Cholesky', (v / chol).toFixed(2) + '×']],
+          panels: [Pm('成本表（flop）', [COST_NS.slice(), vals.slice()], { c: [i], x: [[1, i]] }, fmtBig)],
+          geo: { kind: 'cost', ns: COST_NS, vals: vals, cur: i, id: spec.id },
+          say: 'n = ' + n + '：' + fmtBig(v) + ' flop。看它随 n 涨的速度 —— 指数就是伪代码里嵌套的层数。' };
+      }
+      yield { pc: 5, loop: {}, vars: [['闭式', spec.formula], ['n = 128 时', fmtBig(vals[5])]],
+        panels: [Pm('成本表（flop）', [COST_NS.slice(), vals.slice()], { x: [[1, 5]] }, fmtBig)],
+        geo: { kind: 'cost', ns: COST_NS, vals: vals, cur: 5, id: spec.id },
+        say: '闭式 ' + spec.formula + '。' + spec.note,
+        check: { kind: 'cost', id: spec.id, ns: COST_NS.slice(), vals: vals.slice() } };
+    }
+  };
+}
+
 const ALGOS = [
   algoMVrow(), algoMVcol(), algoTri(), algoProj(),
   algoGS('cgs'), algoGS('mgs'), algoHouse(), algoGivens(),
   algoLS('ne'), algoLS('qr'),
-  algoLU(false), algoLU(true), algoChol()
-];
+  algoLU(false), algoLU(true), algoChol(), algoSyPivot()
+].concat(COST_SPECS.map(costAlgo));
+
 
 
 </script>
@@ -1338,6 +1505,28 @@ const DRAW = {
     txt('三条箭头 = 三个行向量；黄虚线 = 这一步行被"剪"到哪里', 12, 466, COL.mut, 'left', 11);
   },
 
+  cost(f){
+    const g = f.geo; clear();
+    const i0 = (g.cur < 0) ? 0 : g.cur;
+    const n = g.ns[i0];
+    const rows = COST_SPECS.map(s => ({ id: s.id, name: s.name.replace('成本 · ', ''), v: s.f(n) }));
+    const mx = Math.max.apply(null, rows.map(r => r.v));
+    const x0 = 168, W = 232, y0 = 62, h = 26, gap = 14;
+    rows.forEach((r, i) => {
+      const hot = (r.id === g.id);
+      const w = Math.max(2, W * r.v / mx);
+      const yy = y0 + i * (h + gap);
+      g2.save();
+      g2.fillStyle = hot ? 'rgba(176,74,47,.82)' : 'rgba(47,93,138,.22)';
+      g2.fillRect(x0, yy, w, h);
+      g2.restore();
+      txt(r.name, x0 - 8, yy + 18, hot ? COL.cinn : COL.mut, 'right', 13);
+      txt(fmtBig(r.v), x0 + w + 6, yy + 18, hot ? COL.cinn : COL.mut, 'left', 12);
+    });
+    txt('n = ' + n + ' 时的浮点运算次数', 12, 32, COL.ink, 'left', 14);
+    txt('红 = 当前算法；条形按本行最大值归一', 12, 466, COL.mut, 'left', 11);
+  },
+
   chol(f){
     clear();
     if(!(f.geo.i >= 0)){
@@ -1387,7 +1576,7 @@ function renderPanel(p){
       if(has(hl.r, i)) cls += ' r';
       if(has(hl.c, j)) cls += ' c';
       if(isX(i, j)) cls += ' x';
-      body += '<span class="' + cls + '">' + ESC(fmt(p.m[i][j])) + '</span>';
+      body += '<span class="' + cls + '">' + ESC((p.f || fmt)(p.m[i][j])) + '</span>';
     }
   }
   const cols = p.m[0].length;
@@ -1454,8 +1643,9 @@ function boot(){
   const groups = {};
   ALGOS.forEach(a => { (groups[a.grp] = groups[a.grp] || []).push(a); });
   $('#pick').innerHTML = Object.keys(groups).map(g =>
-    '<span class="pill" data-id="__g" style="border:0;background:none;padding:5px 2px 5px 8px;cursor:default;color:#6B6A63;font-size:11.5px">' + g + '</span>' +
-    groups[g].map(a => '<button class="pill" data-id="' + a.id + '">' + ESC(a.name.replace(/（.*/, '')) + '</button>').join('')
+    '<div class="pgrp"><span class="glab">' + ESC(g) + '</span><span class="gbtns">' +
+    groups[g].map(a => '<button class="pill" data-id="' + a.id + '">' + ESC(a.name.replace(/（.*/, '').replace('成本 · ', '')) + '</button>').join('') +
+    '</span></div>'
   ).join('');
   $('#pick').addEventListener('click', e => {
     const b = e.target.closest('button[data-id]');

@@ -45,9 +45,9 @@ window.MathJax = {
   .dtitle{display:flex;align-items:center;gap:10px;min-width:0}
   .dtitle h2{border:0;margin:0;padding:0;font-size:17px}
   .pick{display:flex;flex-direction:column;gap:5px;max-width:760px}
-  .pgrp{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
-  .glab{font:11.5px/1.6 ui-monospace,Consolas,monospace;color:var(--mut);min-width:88px;text-align:right;letter-spacing:.03em}
-  .gbtns{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+  .pgrp{display:flex;gap:6px;align-items:center;justify-content:flex-start;flex-wrap:wrap}
+  .glab{font:11.5px/1.6 ui-monospace,Consolas,monospace;color:var(--mut);min-width:92px;text-align:left;letter-spacing:.03em}
+  .gbtns{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-start}
   .pill{font:12px/1.3 inherit;color:var(--ink);background:#FFF;border:1px solid var(--line);
     border-radius:20px;padding:5px 11px;cursor:pointer;white-space:nowrap}
   .pill:hover{border-color:var(--steel);color:var(--steel)}
@@ -170,7 +170,7 @@ window.MathJax = {
     <span class="tag">ALG · 示波器</span>
     <h1>算法示波器：伪代码、数字矩阵与几何，同一步</h1>
     <p class="sub">
-      20 个算法/成本项的每一帧都同时给出三样东西：<b>正在执行哪一行伪代码</b>、<b>矩阵里哪个格子在被读/被改写</b>、<b>空间里哪个向量在动</b>。
+      21 个算法/成本项的每一帧都同时给出三样东西：<b>正在执行哪一行伪代码</b>、<b>矩阵里哪个格子在被读/被改写</b>、<b>空间里哪个向量在动</b>。
       内外循环不是抽象概念 —— 外循环每走一步，内循环就老老实实把这个"新定下来的东西"乘回去扣掉。
     </p>
   </header>
@@ -246,6 +246,7 @@ window.MathJax = {
       <tr><td>Gram–Schmidt · 修正</td><td>j：第 j 列</td><td>i：用<b>已更新</b>的 \\(v\\) 取投影</td><td>\\(Q,R\\)</td><td class="hi">高</td></tr>
       <tr><td>Householder QR</td><td>k：第 k 个反射</td><td>j：对每列做反射</td><td>\\(R\\)，\\(Q=H_1H_2\\cdots\\)</td><td class="hi">高</td></tr>
       <tr><td>Givens QR</td><td>k：列；i：行对</td><td>一次二维旋转</td><td>\\(R\\)</td><td>中</td></tr>
+      <tr><td>SVD（单边 Jacobi）</td><td>p,q：列对</td><td>一次二维旋转把两列转垂直</td><td>\(U,\Sigma,V\)，\(A=U\Sigma V^*\)</td><td>中</td></tr>
       <tr><td>正规方程</td><td>i,j：\\(G=A^*A\\)</td><td>k：点积</td><td>\\(G\\)，\\(c=A^*b\\)</td><td class="hi">高</td></tr>
       <tr><td>QR 最小二乘</td><td>k：反射</td><td>列与 b 同时反射</td><td>\\(R\\)，\\(d=Q^*b\\)</td><td class="hi">高</td></tr>
       <tr><td>LU（无主元）</td><td>k：第 k 列</td><td>i：行更新</td><td>\\(L,U\\)</td><td class="hi">高</td></tr>
@@ -307,7 +308,7 @@ window.MathJax = {
   </div>
 
   <footer>
-    <span>NLA-ALG · 算法示波器 · 20 个算法与成本项 / 逐步帧</span>
+    <span>NLA-ALG · 算法示波器 · 21 个算法与成本项 / 逐步帧</span>
     <span>数值线性代数 · 期末复习</span>
   </footer>
 </div>
@@ -1291,6 +1292,8 @@ const ALGO_META = {
             u: '避开零主元、压制元素增长；通用求解器的默认策略' },
   chol:   { i: 'Hermite 正定矩阵 A', o: '上三角 R（对角正），A = R*R',
             u: '解方程、正规方程、判定正定（s < 0 即不正定）；成本仅 m³/3' },
+  svd:    { i: '任意 m×n 矩阵 A', o: 'U、Σ、V，使 A = U Σ V*（σ 降序）',
+            u: '降维、压缩、伪逆、秩判定、Eckart–Young 截断；也不能靠形成 AᵀA 来算' },
   sypivot:{ i: 'Hermite 矩阵（可不定）', o: 'P、L、D，使 P A P* = L D L*',
             u: '换行必换列以保住对称结构；正定时 D > 0，开方即 Cholesky' }
 };
@@ -1317,6 +1320,7 @@ const ALGO_CORE = {
   lu: '消元的同时把乘子存下来，下次换个右端可以复用',
   plu: '先换行挑最大的主元再消元，避开零主元与元素增长',
   chol: '对称 + 正定 ⇒ 只需一半工作，而且能「开平方」',
+  svd: '只用两列之间的旋转把列转成互相垂直，垂直后列长就是奇异值',
   sypivot: '选主元只能在剩余对角元里选，代价是换行必须同时换列',
   cost_mv: '数清楚内层做了多少次乘加',
   cost_gs: '数清楚内层做了多少次乘加',
@@ -1456,6 +1460,21 @@ const ALGO_WHY = {
       '对角元：剩余量开方；s ≤ 0 说明矩阵不正定',
       'R 上三角、对角正；成本 m³/3，正好是 LU 的一半'
   ],
+  svd: [
+    '任意矩阵都有 SVD；这里只处理 n 列的互相正交',
+    'V 记下所有旋转的累积，C 是会被转的列副本',
+    '扫一轮不够就再来一轮，直到所有列对都垂直',
+    '外层：第一个列下标',
+    '内层：第二个列下标（只取 p<q，避免重复）',
+    '只需三个数就能判断这一对要不要转',
+    '已经很垂直就跳过，省一次旋转',
+    '这个 c、s 是唯一能让 γ 变 0 的旋转',
+    '两列同时更新：相当于对 A 右乘一个 Givens 旋转',
+    'V 也右乘同一个旋转，A = UΣV* 才对得上',
+    '收敛判据：所有 |cos∠| 都小于容差',
+    '列长即奇异值；排序后归一化得到 U',
+    '返回三个因子；全程只用旋转，不形成 AᵀA',
+  ],
   sypivot: [
       '逐列消元，但每一步先挑一个「好」的对角元',
       '只在对角元里挑最大 —— 这是保持对称的选法',
@@ -1516,11 +1535,111 @@ const ALGO_WHY = {
   ]
 };
 
+/* ===== ALG-SVD 单边 Jacobi ===== */
+function algoSVD(){
+  const A0 = [[1, 2, 0], [0, 1, 1], [1, 0, 1]];
+  const m = 3, n = 3;
+  const C = zip(A0).map(c => c.slice());
+  let V = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+  const snap = () => zip(C).map(r => r.slice());
+  const sig = () => C.map(c => nrm(c));
+  return {
+    id: 'svd', tag: 'ALG-09b', grp: '正交化与 QR', name: 'SVD · 单边 Jacobi',
+    pseudo: [
+      '// A 为 m×n，目标 A = U Σ V*',
+      'V = I ；C = A 的列（会被反复旋转）',
+      'repeat                        // 一轮扫过所有列对',
+      '    for p = 1 : n-1',
+      '        for q = p+1 : n',
+      '            α = ‖a_p‖²  β = ‖a_q‖²  γ = a_p^* a_q',
+      '            if |γ| 已足够小: continue',
+      '            (c,s)：旋转后 γ = 0',
+      '            a_p, a_q ← c·a_p − s·a_q,  s·a_p + c·a_q',
+      '            V 的第 p、q 列同样右乘这个旋转',
+      'until 所有列对都足够正交',
+      'σ_i = ‖a_i‖，u_i = a_i / σ_i，按 σ 降序排列',
+      'return U, Σ, V'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['规模', '3×3'], ['当前列长', sig().map(v => fmt(v)).join('  ')]],
+        panels: [Pm('A', snap()), Pm('V', V)],
+        geo: { kind: 'svd', cols: C.map(c => c.slice()), p: -1, q: -1 },
+        say: '目标：只靠“两列之间做一次旋转”，把三列转成互相垂直 —— 垂直之后，列长就是奇异值。' };
+      let sweep = 0, worst = 1;
+      while(sweep < 5){
+        sweep++;
+        for(let p2 = 0; p2 < n - 1; p2++){
+          for(let q2 = p2 + 1; q2 < n; q2++){
+            const al = dot(C[p2], C[p2]), be = dot(C[q2], C[q2]), ga = dot(C[p2], C[q2]);
+            const cosang = Math.abs(ga) / Math.sqrt(al * be || 1);
+            yield { pc: 5, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) },
+              vars: [['α = ‖a_p‖²', fmt(al)], ['β = ‖a_q‖²', fmt(be)], ['γ = a_pᵀa_q', fmt(ga)], ['|cos∠|', fmt(cosang)]],
+              panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V)],
+              geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
+              say: '只量三件事：两列各自的长度平方，和它们的内积 γ。γ = 0 就说明这一对已经垂直。' };
+            if(cosang < 1e-14){ worst = Math.min(worst, cosang); continue; }
+            const zeta = (be - al) / (2 * ga);
+            const sg = (zeta >= 0 ? 1 : -1);
+            const t = sg / (Math.abs(zeta) + Math.sqrt(1 + zeta * zeta));
+            const c = 1 / Math.sqrt(1 + t * t), sn = c * t;
+            yield { pc: 7, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) },
+              vars: [['ζ = (β−α)/(2γ)', fmt(zeta)], ['tanθ = t', fmt(t)], ['c', fmt(c)], ['s', fmt(sn)], ['θ', fmt(Math.atan2(sn, c) * 180 / Math.PI, 1) + '°']],
+              panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V)],
+              geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
+              say: '这个 c、s 是唯一能让 γ 变 0 的旋转（解一个 2×2 对称特征问题）。' };
+            const cp = C[p2].slice(), cq = C[q2].slice();
+            for(let i = 0; i < m; i++){ C[p2][i] = c * cp[i] - sn * cq[i]; C[q2][i] = sn * cp[i] + c * cq[i]; }
+            for(let i = 0; i < m; i++){ const vp = V[i][p2], vq = V[i][q2]; V[i][p2] = c * vp - sn * vq; V[i][q2] = sn * vp + c * vq; }
+            const ga2 = dot(C[p2], C[q2]);
+            worst = Math.min(worst, Math.abs(ga2) / Math.sqrt(dot(C[p2], C[p2]) * dot(C[q2], C[q2]) || 1));
+            yield { pc: 9, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) + ' 完成' },
+              vars: [['新的 γ', fmt(ga2)], ['列长', sig().map(v => fmt(v)).join('  ')]],
+              panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V, { c: [p2, q2] })],
+              geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
+              say: '这两列现在垂直了。注意：长度变了 —— 旋转把“夹角”换成了“长度”，总能量不变。' };
+          }
+        }
+        let mx = 0;
+        for(let p3 = 0; p3 < n - 1; p3++) for(let q3 = p3 + 1; q3 < n; q3++){
+          const gg = Math.abs(dot(C[p3], C[q3])) / Math.sqrt(dot(C[p3], C[p3]) * dot(C[q3], C[q3]) || 1);
+          mx = Math.max(mx, gg);
+        }
+        if(mx < 1e-12) break;
+      }
+      const S = C.map(c => nrm(c));
+      const order = S.map((v, i) => i).sort((a, b) => S[b] - S[a]);
+      const U = order.map(i => C[i].map(v => v / S[i]));
+      const Vv = order.map(i => V.map(r => r[i]));
+      const Um = zip(U), Vm = zip(Vv);
+      const Ss = order.map(i => S[i]);
+      yield { pc: 11, loop: {}, vars: [['σ', '（' + S.map(v => fmt(v)).join(', ') + '）'], ['列两两内积', '≈ 0']],
+        panels: [Pm('A（已正交）', snap()), Pm('V', V)],
+        geo: { kind: 'svd', cols: C.map(c => c.slice()), p: -1, q: -1 },
+        say: '所有列对都垂直了。此时列长就是奇异值 σ_i，归一化后就是 U 的列。' };
+      yield { pc: 12, loop: {}, vars: [['σ（降序）', S.slice().sort((a, b) => b - a).map(v => fmt(v)).join('  ')], ['‖UΣVᵀ − A‖', fmt(svdErr(Um, Ss, Vm, A0))]],
+        panels: [Pm('Σ', [Ss.slice()]), Pm('U', Um), Pm('V', Vm)],
+        geo: { kind: 'svd', cols: C.map(c => c.slice()), p: -1, q: -1 },
+        say: 'A = UΣVᵀ。整个算法只用旋转，从不形成 AᵀA —— 所以条件数没有被平方。',
+        check: { A0: A0, U: Um, S: Ss.slice(), V: Vm } };
+    }
+  };
+}
+function svdErr(U, S, V, A0){
+  const m = U.length, n = V.length;
+  let e = 0;
+  for(let i = 0; i < m; i++) for(let j = 0; j < A0[0].length; j++){
+    let sum = 0;
+    for(let k = 0; k < S.length; k++) sum += U[i][k] * S[k] * V[j][k];
+    e = Math.max(e, Math.abs(sum - A0[i][j]));
+  }
+  return e;
+}
+
 const ALGOS = [
   algoMVrow(), algoMVcol(), algoTri(), algoProj(),
   algoGS('cgs'), algoGS('mgs'), algoHouse(), algoGivens(),
   algoLS('ne'), algoLS('qr'),
-  algoLU(false), algoLU(true), algoChol(), algoSyPivot()
+  algoSVD(), algoLU(false), algoLU(true), algoChol(), algoSyPivot()
 ].concat(COST_SPECS.map(costAlgo));
 
 
@@ -1789,6 +1908,19 @@ const DRAW = {
       arrow(p[0], p[1], q[0], q[1], COL.amber, '', true, 1.6);
     }
     txt('三条箭头 = 三个行向量；黄虚线 = 这一步行被"剪"到哪里', 12, 466, COL.mut, 'left', 11);
+  },
+
+  svd(f){
+    const g = f.geo; clear();
+    const pts = g.cols.concat([[1.7, 0, 0], [0, 1.7, 0], [0, 0, 1.7]]);
+    setCam(pts); axes3(1.7);
+    g.cols.forEach((c, i) => {
+      const hot = (i === g.p || i === g.q);
+      arrow3([0, 0, 0], c, hot ? COL.cinn : COL.gray, 'a' + (i + 1), false, hot ? 2.5 : 1.5);
+    });
+    const s2 = g.cols.map(c => Math.sqrt(c.reduce((t, v) => t + v * v, 0)));
+    txt('列长：' + s2.map(v => v.toFixed(3)).join('   '), 12, 30, COL.ink, 'left', 12);
+    txt('红 = 正在旋转的一对；转完它们就垂直了', 12, 462, COL.mut, 'left', 11);
   },
 
   cost(f){

@@ -669,11 +669,20 @@ function algoHouse(){
   const HC = zip(A0);
   const A = A0.map(r => r.slice()), m = 3, n = 2;
   const Q = eye(m);
-  const hist = [];
+  const qErr = () => {
+    let e = 0;
+    for(let i = 0; i < m; i++) for(let j = 0; j < m; j++){
+      let t = 0;
+      for(let k2 = 0; k2 < m; k2++) t += Q[k2][i] * Q[k2][j];
+      e = Math.max(e, Math.abs(t - (i === j ? 1 : 0)));
+    }
+    return e;
+  };
   return {
     id: 'house', tag: 'ALG-07', grp: '正交化与 QR', name: 'Householder QR（反射）',
     pseudo: [
-      '// A 为 m×n，m ≥ n',
+      '// A 为 m×n，m ≥ n；目标 A = Q R',
+      'Q = I                          // Q 从单位阵开始累积',
       'for k = 1 : n                  // 外循环：第 k 个反射',
       '    x = A(k:m, k)',
       '    v = x + sign(x1)·||x||·e1',
@@ -681,13 +690,14 @@ function algoHouse(){
       '    for j = k : n              // 内循环：逐列反射',
       '        w = v^* A(k:m, j)',
       '        A(k:m, j) = A(k:m, j) - 2 w v',
-      'return R = A, Q = (H1 H2 ...)^*'
+      '    Q = Q · H_k                // H_k 对称，不用加星',
+      'return R = A, Q'
     ],
     run: function*(){
-      yield { pc: 0, loop: {}, vars: [['A', '3×2'], ['目标', 'R 上三角']],
-        panels: [Pm('A', A), Pm('Q', Q)],
+      yield { pc: 0, loop: {}, vars: [['A', '3×2'], ['Q', '起点 = 单位阵 I']],
+        panels: [Pm('A', A), Pm('Q（起点：I）', Q)],
         geo: { kind: 'house', base: HC, x: null, v: null, hv: null, k: -1 },
-        say: '每个反射把一个列向量的下半部分一次清零。第一个反射对准 a₁，把 a₁ 折到 e₁ 轴上。' };
+        say: '反射是“一边清 A、一边攒 Q”。Q 此刻还是单位阵 —— 它不是一个已知矩阵，是累乘出来的。' };
       for(let k = 0; k < n; k++){
         const len = m - k, x = [], v = [];
         for(let i = 0; i < len; i++) x.push(A[k + i][k]);
@@ -698,43 +708,48 @@ function algoHouse(){
         for(let i = 0; i < len; i++) v[i] /= nv;
         const hv = []; for(let i = 0; i < len; i++) hv.push(0);
         hv[0] = -sgn * nx;
-        const emb = p => { const t = [0, 0, 0]; for(let i = 0; i < p.length; i++) t[k + i] = p[i]; return t; };
-        yield { pc: 2, loop: { o: 'k = ' + (k + 1) },
+        const emb = p2 => { const t = [0, 0, 0]; for(let i = 0; i < p2.length; i++) t[k + i] = p2[i]; return t; };
+        yield { pc: 3, loop: { o: 'k = ' + (k + 1) },
           vars: [['x = A(' + (k + 1) + ':' + m + ', ' + (k + 1) + ')', '[' + x.map(t => fmt(t)).join(', ') + ']'], ['‖x‖', fmt(nx)]],
-          panels: [Pm('A', A, { c: [k] }), Pm('Q', Q)],
+          panels: [Pm('A', A, { c: [k] }), Pm('Q（k=' + k + ' 次反射后）', Q)],
           geo: { kind: 'house', base: HC, x: emb(x), v: null, hv: null, k: k },
           say: '取出这一列的下半截 x，它的长度 ' + fmt(nx) + ' 就是将来 R 的对角元（带符号）。' };
-        yield { pc: 4, loop: { o: 'k = ' + (k + 1) },
+        yield { pc: 5, loop: { o: 'k = ' + (k + 1) },
           vars: [['sign(x₁)', sgn > 0 ? '+1' : '−1'], ['v（单位化后）', '[' + v.map(t => fmt(t)).join(', ') + ']'], ['Hx =', fmt(hv[0]) + '·e₁']],
-          panels: [Pm('A', A, { c: [k] }), Pm('Q', Q)],
+          panels: [Pm('A', A, { c: [k] }), Pm('Q（k=' + k + ' 次反射后）', Q)],
           geo: { kind: 'house', base: HC, x: emb(x), v: emb(v), hv: emb(hv), k: k },
           say: 'v 是反射方向（垂直于镜面）。符号取 sign(x₁) 是为了让 Hx 落在负半轴，避免相消。' };
         for(let j = k; j < n; j++){
           let w = 0;
           for(let i = 0; i < len; i++) w += v[i] * A[k + i][j];
           for(let i = 0; i < len; i++) A[k + i][j] -= 2 * w * v[i];
-          yield { pc: 7, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) },
+          yield { pc: 8, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) },
             vars: [['w = vᵀa' + sub(j + 1), fmt(w)], ['2w', fmt(2 * w)]],
-            panels: [Pm('A', A, { c: [j] }), Pm('Q', Q)],
+            panels: [Pm('A', A, { c: [j] }), Pm('Q（k=' + k + ' 次反射后）', Q)],
             geo: { kind: 'house', base: HC, x: emb(x), v: emb(v), hv: emb(hv), k: k },
-            say: '内层第 ' + (j + 1) + ' 列：算一个点积 w，再把 2w·v 从这一列扣掉。' };
+            say: '内层第 ' + (j + 1) + ' 列：算一个点积 w，再把 2w·v 从这一列扣掉。注意 Q 这一帧没动。' };
         }
+        yield { pc: 8, loop: { o: 'k = ' + (k + 1) + '：A 已清完' },
+          vars: [['A(' + (k + 1) + ':' + m + ', ' + (k + 1) + ')', '已清零'], ['Q', '还没动']],
+          panels: [Pm('A', A), Pm('Q（k=' + k + ' 次反射后）', Q)],
+          geo: { kind: 'house', base: HC, x: null, v: emb(v), hv: emb(hv), k: k },
+          say: '第 ' + (k + 1) + ' 列已清零，但 Q 还是老样子 —— 反射只作用在 A 上，Q 要另外攒。' };
         const G = eye(m);
         for(let a = 0; a < len; a++) for(let b = 0; b < len; b++){
           G[k + a][k + b] = (a === b ? 1 : 0) - 2 * v[a] * v[b];
         }
         const nq = mm(Q, G);
         for(let a = 0; a < m; a++) for(let b = 0; b < m; b++) Q[a][b] = nq[a][b];
-        yield { pc: 8, loop: { o: 'k = ' + (k + 1) + ' 完成' },
-          vars: [['A(' + (k + 1) + ':' + m + ', ' + (k + 1) + ')', '已清零']],
-          panels: [Pm('A', A), Pm('Q', Q)],
-          geo: { kind: 'house', base: HC, x: null, v: emb(v), hv: emb(hv), k: k },
-          say: '第 ' + (k + 1) + ' 列的对角线以下全变 0。把这次反射累乘进 Q，最后 A = Q R。' };
+        yield { pc: 9, loop: { o: 'k = ' + (k + 1) + '：攒 Q' },
+          vars: [['动作', 'Q ← Q · H' + sub(k + 1)], ['‖QᵀQ − I‖', fmt(qErr())]],
+          panels: [Pm('A', A), Pm('Q（k=' + (k + 1) + ' 次反射后）', Q)],
+          geo: { kind: 'house', base: HC, x: null, v: null, hv: null, k: k },
+          say: 'Q 现在等于前 ' + (k + 1) + ' 个反射的乘积；因为每个 H 都对称，这里写 Q·H 不用加星。' };
       }
-      yield { pc: 8, loop: {}, vars: [['‖QR − A‖', fmt(recErr3(Q, A, A0))], ['R 下三角非零数', String(countBelow(A))]],
+      yield { pc: 10, loop: {}, vars: [['‖QR − A‖', fmt(recErr3(Q, A, A0))], ['R 下三角非零数', String(countBelow(A))]],
         panels: [Pm('R', A), Pm('Q', Q)],
         geo: { kind: 'house', base: HC, x: null, v: null, hv: null, k: -1 },
-        say: 'R 已是上三角（3×2 时最后一行全 0），Q 正交。两个反射，代价 4m²n − 4mn + n² 级别。',
+        say: 'R 已是上三角（3×2 时最后一行全 0），Q 由 ' + n + ' 个反射累乘而成且正交。',
         check: { A0: A0, Q: Q, R: A } };
     }
   };
@@ -1392,16 +1407,18 @@ const ALGO_WHY = {
       '浮点下 MGS 的正交误差比 CGS 小一个量级'
   ],
   house: [
-      'm ≥ n；目标是用一个反射把整列下半部分清零',
-      '外循环 k：处理第 k 列，也就是第 k 个反射',
-      '取出这一列从第 k 行往下的部分',
-      'v 取 x + ‖x‖e₁：这样反射后 x 落到 −e₁ 方向，不会相消',
-      '归一化：反射只认方向，不认长度',
-      '内层 j：右边每一列都要做同样的反射',
-      '先算 v 在这一列上的分量 w（一个点积）',
-      '再减去 2wv，就是 I−2vv* 作用在这一列上',
-      'R 已上三角；Q 不必显式形成，按反射顺序累乘'
-  ],
+    'm ≥ n；目标是用反射把 A 变上三角，同时把 Q 攒出来',
+    'Q 的起点是单位阵 —— 它不是已知量，是累乘的结果',
+    '外循环 k：处理第 k 列，也就是第 k 个反射',
+    '取出这一列从第 k 行往下的部分',
+    'v 取 x + ‖x‖e₁：这样反射后 x 落到 −e₁ 方向，不会相消',
+    '归一化：反射只认方向，不认长度',
+    '内层 j：右边每一列都要做同样的反射',
+    '先算 v 在这一列上的分量 w（一个点积）',
+    '再减去 2wv，就是 I−2vv* 作用在这一列上',
+    'A 清完之后，再把这次反射右乘到 Q 上',
+    'R 已上三角，Q 是全部反射的乘积',
+],
   givens: [
       '逐列推进，把每列对角线以下逐个转掉',
       '内层：第 k 列里从第 k+1 行往下处理',

@@ -53,6 +53,10 @@ window.MathJax = {
   .pill:hover{border-color:var(--steel);color:var(--steel)}
   .pill.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 
+  .meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--line);background:#FBFAF5}
+  .meta div{padding:9px 14px 10px;font-size:13px;line-height:1.55;color:#3A4756}
+  .meta div+div{border-left:1px solid var(--line)}
+  .meta b{display:block;font:10.5px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.1em;color:var(--steel);margin-bottom:2px}
   .dbody{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr) minmax(0,1fr);gap:0}
   .col{padding:14px 14px 16px;min-width:0}
   .col+.col{border-left:1px solid var(--line)}
@@ -123,6 +127,10 @@ window.MathJax = {
   mjx-container[jax="SVG"][display="true"]{overflow-x:auto;overflow-y:hidden}
   mjx-container[display="true"]{min-width:0!important}
 
+  @media (max-width:820px){
+    .meta{grid-template-columns:minmax(0,1fr)}
+    .meta div+div{border-left:0;border-top:1px solid var(--line)}
+  }
   @media (max-width:1000px){
     .dbody{grid-template-columns:minmax(0,1fr)}
     .col+.col{border-left:0;border-top:1px solid var(--line)}
@@ -170,6 +178,11 @@ window.MathJax = {
     <div class="dhead">
       <div class="dtitle"><span class="tag" id="tag">ALG-01</span><h2 id="aname">载入中…</h2></div>
       <div class="pick" id="pick"></div>
+    </div>
+    <div class="meta">
+      <div><b>对象（输入）</b><span id="mIn">—</span></div>
+      <div><b>结果（输出）</b><span id="mOut">—</span></div>
+      <div><b>用处（为什么学它）</b><span id="mUse">—</span></div>
     </div>
     <div class="dbody">
       <div class="col c1">
@@ -272,6 +285,15 @@ window.MathJax = {
       <tr><td>Cholesky</td><td>点积用的是 \\(r_{ki}r_{kj}\\) 的顺序反了，或 \\(\\sqrt{}\\) 前没扣干净</td><td>看读数里 \\(s\\) 是不是"原元素减去已算部分"；\\(s\\) 为负说明矩阵不正定</td></tr>
     </tbody>
   </table></div>
+
+  <h2>20 项一览：对象 · 结果 · 用处</h2>
+  <p>下表由脚本按每个算法的说明生成，与播放器标题下那一行同源 —— 用来扫读"我到底在学什么"。</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>算法</th><th>对象（输入）</th><th>结果（输出）</th><th>用处</th></tr></thead>
+      <tbody id="ovBody"></tbody>
+    </table>
+  </div>
 
   <footer>
     <span>NLA-ALG · 算法示波器 · 20 个算法与成本项 / 逐步帧</span>
@@ -1230,6 +1252,45 @@ function costAlgo(spec){
   };
 }
 
+/* ===== 每个算法的「对象 / 结果 / 用处」 ===== */
+const ALGO_META = {
+  mv_row: { i: 'm×n 矩阵 A 与 n 维向量 x', o: 'm 维向量 b = Ax（逐行点积）',
+            u: '残差 b − Ax 是一切迭代法的内核；也说明"行与行之间互不干扰"' },
+  mv_col: { i: 'm×n 矩阵 A 与 n 维向量 x', o: 'm 维向量 b = Σ xⱼaⱼ（列的组合）',
+            u: '把 Ax 读成"用 x 当系数拼列向量"：A 的像就是它的列空间' },
+  tri:    { i: '三角矩阵（L 或 U）与右端 b', o: '解向量 x（前代得 y，回代得 x）',
+            u: 'LU/Cholesky 之后的必经 m² 步；"分解一次、解多次"里的那个"多次"' },
+  proj:   { i: '正交基 Q（列）与任意向量 b', o: '投影 p = QQ*b 与残差 r = b − p',
+            u: '最小二乘的几何本质；P² = P 与 P* = P 正是投影算子的判据' },
+  cgs:    { i: '列满秩矩阵 A 的列向量', o: 'Q（列标准正交）与 R，使 A = QR',
+            u: '最小二乘与 QR 迭代的入口；精确算术下与 MGS 同解，浮点下更弱' },
+  mgs:    { i: '列满秩矩阵 A 的列向量', o: 'Q 与 R，使 A = QR（内层用已更新的 v）',
+            u: '教科书版稳定 GS：正交误差 ∝ κ(A)·ε，而 CGS 是 κ² 量级' },
+  house:  { i: 'm×n 矩阵 A（m ≥ n）', o: 'R 上三角 + 一串反射（Q 不显式形成）',
+            u: 'LAPACK 的 QR 主力：后向稳定，且每次反射都酉，误差不被放大' },
+  givens: { i: '矩阵 A，尤其稀疏/带状', o: 'R 上三角 + 一串平面旋转',
+            u: '一次只碰两行：适合稀疏结构、三对角化与并行' },
+  lsne:   { i: '超定方程组 A x ≈ b（m > n）', o: '最小二乘解 x，满足 A*Ax = A*b',
+            u: '曲线拟合的经典做法；代价是条件数被平方（κ → κ²）' },
+  lsqr:   { i: '超定方程组 A x ≈ b（m > n）', o: '同一个最小二乘解 x，但走 QR 路线',
+            u: '稳定的最小二乘实现：κ 不被平方，实践中替代正规方程' },
+  lu:     { i: '方阵 A（各阶顺序主子式非零）', o: 'L（单位下三角）与 U，A = LU',
+            u: '解方程、算行列式、求逆；一次分解可反复用于不同右端' },
+  plu:    { i: '任意方阵 A', o: '置换 P 与 L、U，使 PA = LU',
+            u: '避开零主元、压制元素增长；通用求解器的默认策略' },
+  chol:   { i: 'Hermite 正定矩阵 A', o: '上三角 R（对角正），A = R*R',
+            u: '解方程、正规方程、判定正定（s < 0 即不正定）；成本仅 m³/3' },
+  sypivot:{ i: 'Hermite 矩阵（可不定）', o: 'P、L、D，使 P A P* = L D L*',
+            u: '换行必换列以保住对称结构；正定时 D > 0，开方即 Cholesky' }
+};
+['mv', 'gs', 'house', 'givens', 'lu', 'chol'].forEach(k => {
+  ALGO_META['cost_' + k] = {
+    i: '算法本身，只看规模 n（m = n）',
+    o: '所需浮点运算次数随 n 的增长',
+    u: '同精度下选便宜的那个；也用来判断 n 翻倍时机器是否还扛得住'
+  };
+});
+
 const ALGOS = [
   algoMVrow(), algoMVcol(), algoTri(), algoProj(),
   algoGS('cgs'), algoGS('mgs'), algoHouse(), algoGivens(),
@@ -1590,6 +1651,10 @@ function paint(){
   const f = frames[idx];
   $('#tag').textContent = cur.tag;
   $('#aname').textContent = cur.name;
+  const mt = ALGO_META[cur.id] || { i: '—', o: '—', u: '—' };
+  $('#mIn').textContent = mt.i;
+  $('#mOut').textContent = mt.o;
+  $('#mUse').textContent = mt.u;
   $('#code').innerHTML = cur.pseudo.map((line, k) =>
     '<li class="' + (k === f.pc ? 'on' : '') + '"><span class="ln">' + (k + 1) + '</span><code>' + ESC(line) + '</code></li>'
   ).join('');
@@ -1665,6 +1730,10 @@ function boot(){
     else if(e.code === 'Space' && e.target === document.body){ e.preventDefault(); play(); }
   });
   window.addEventListener('resize', () => { fitCv(); paint(); });
+  $('#ovBody').innerHTML = ALGOS.map(a => {
+    const m = ALGO_META[a.id] || {};
+    return '<tr><td>' + ESC(a.name) + '</td><td>' + ESC(m.i || '') + '</td><td>' + ESC(m.o || '') + '</td><td>' + ESC(m.u || '') + '</td></tr>';
+  }).join('');
   const raw = (location.hash || '').replace('#', '');
   const parts = raw.split('/');
   const hid = parts[0], stp = parseInt(parts[1] || '0', 10);

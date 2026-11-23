@@ -687,10 +687,11 @@ function algoHouse(){
       '    x = A(k:m, k)',
       '    v = x + sign(x1)·||x||·e1',
       '    v = v / ||v||',
-      '    for j = k : n              // 内循环：逐列反射',
+      '    H_k = I - 2 v v^*          // 这次反射：Hermite、酉、对合',
+      '    for j = k : n              // 内层：逐列左乘 H_k',
       '        w = v^* A(k:m, j)',
       '        A(k:m, j) = A(k:m, j) - 2 w v',
-      '    Q = Q · H_k                // H_k 对称，不用加星',
+      '    Q = Q · H_k                // 右乘同一个 H_k',
       'return R = A, Q'
     ],
     run: function*(){
@@ -714,22 +715,22 @@ function algoHouse(){
           panels: [Pm('A', A, { c: [k] }), Pm('Q（k=' + k + ' 次反射后）', Q)],
           geo: { kind: 'house', base: HC, x: emb(x), v: null, hv: null, k: k },
           say: '取出这一列的下半截 x，它的长度 ' + fmt(nx) + ' 就是将来 R 的对角元（带符号）。' };
-        yield { pc: 5, loop: { o: 'k = ' + (k + 1) },
+        yield { pc: 6, loop: { o: 'k = ' + (k + 1) },
           vars: [['sign(x₁)', sgn > 0 ? '+1' : '−1'], ['v（单位化后）', '[' + v.map(t => fmt(t)).join(', ') + ']'], ['Hx =', fmt(hv[0]) + '·e₁']],
           panels: [Pm('A', A, { c: [k] }), Pm('Q（k=' + k + ' 次反射后）', Q)],
           geo: { kind: 'house', base: HC, x: emb(x), v: emb(v), hv: emb(hv), k: k },
-          say: 'v 不是 a 的单位化：镜面是 a 与目标 −‖a‖e₁ 的垂直平分面，法向 v ∝ a + ‖a‖e₁ = (8,4,0)，归一化才成 (0.894,0.447,0)。若取 a/‖a‖=(3/5,4/5)，反射只会把 a 变成 −a。' };
+          say: 'v 是镜面法向（不是 a 的单位化：取 a/‖a‖ 只会把 a 反射成 −a）。这一步同时定下 H_k = I − 2vv^*：它 Hermite、酉、且 H²=I。' };
         for(let j = k; j < n; j++){
           let w = 0;
           for(let i = 0; i < len; i++) w += v[i] * A[k + i][j];
           for(let i = 0; i < len; i++) A[k + i][j] -= 2 * w * v[i];
-          yield { pc: 8, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) },
+          yield { pc: 9, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) },
             vars: [['w = vᵀa' + sub(j + 1), fmt(w)], ['2w', fmt(2 * w)]],
             panels: [Pm('A', A, { c: [j] }), Pm('Q（k=' + k + ' 次反射后）', Q)],
             geo: { kind: 'house', base: HC, x: emb(x), v: emb(v), hv: emb(hv), k: k },
             say: '内层第 ' + (j + 1) + ' 列：算一个点积 w，再把 2w·v 从这一列扣掉。注意 Q 这一帧没动。' };
         }
-        yield { pc: 8, loop: { o: 'k = ' + (k + 1) + '：A 已清完' },
+        yield { pc: 9, loop: { o: 'k = ' + (k + 1) + '：A 已清完' },
           vars: [['A(' + (k + 1) + ':' + m + ', ' + (k + 1) + ')', '已清零'], ['Q', '还没动']],
           panels: [Pm('A', A), Pm('Q（k=' + k + ' 次反射后）', Q)],
           geo: { kind: 'house', base: HC, x: null, v: emb(v), hv: emb(hv), k: k },
@@ -740,13 +741,13 @@ function algoHouse(){
         }
         const nq = mm(Q, G);
         for(let a = 0; a < m; a++) for(let b = 0; b < m; b++) Q[a][b] = nq[a][b];
-        yield { pc: 9, loop: { o: 'k = ' + (k + 1) + '：攒 Q' },
+        yield { pc: 10, loop: { o: 'k = ' + (k + 1) + '：攒 Q' },
           vars: [['动作', 'Q ← Q · H' + sub(k + 1)], ['‖QᵀQ − I‖', fmt(qErr())]],
           panels: [Pm('A', A), Pm('Q（k=' + (k + 1) + ' 次反射后）', Q)],
           geo: { kind: 'house', base: HC, x: null, v: null, hv: null, k: k },
           say: 'Q 现在等于前 ' + (k + 1) + ' 个反射的乘积；因为每个 H 都对称，这里写 Q·H 不用加星。' };
       }
-      yield { pc: 10, loop: {}, vars: [['‖QR − A‖', fmt(recErr3(Q, A, A0))], ['R 下三角非零数', String(countBelow(A))]],
+      yield { pc: 11, loop: {}, vars: [['‖QR − A‖', fmt(recErr3(Q, A, A0))], ['R 下三角非零数', String(countBelow(A))]],
         panels: [Pm('R', A), Pm('Q', Q)],
         geo: { kind: 'house', base: HC, x: null, v: null, hv: null, k: -1 },
         say: 'R 已是上三角（3×2 时最后一行全 0），Q 由 ' + n + ' 个反射累乘而成且正交。',
@@ -1413,10 +1414,11 @@ const ALGO_WHY = {
     '取出这一列从第 k 行往下的部分',
     'v 取 x + ‖x‖e₁：这样反射后 x 落到 −e₁ 方向，不会相消',
     '归一化：反射只认方向，不认长度',
-    '内层 j：右边每一列都要做同样的反射',
+    'H_k 就是这次反射本身：I − 2vv*，Hermite、酉、H²=I',
+    '内层 j：右边每一列都要左乘同一个 H_k',
     '先算 v 在这一列上的分量 w（一个点积）',
-    '再减去 2wv，就是 I−2vv* 作用在这一列上',
-    'A 清完之后，再把这次反射右乘到 Q 上',
+    '再减去 2wv —— 这就是 H_k 作用在这一列上，不必真乘矩阵',
+    'A 清完后，把同一个 H_k 右乘到 Q 上（H_k 对称，不用加星）',
     'R 已上三角，Q 是全部反射的乘积',
 ],
   givens: [

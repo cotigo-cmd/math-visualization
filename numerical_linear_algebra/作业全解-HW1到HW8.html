@@ -831,7 +831,7 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 
 <p><strong>关键引理</strong>：消元一次后，尾块仍严格列对角占优。命门是一个数</p>
 <div class="eq">$$\theta:=\sum_{i&gt;k}|l_{ik}|=\frac{1}{|a_{kk}|}\sum_{i&gt;k}|a_{ik}|&lt;1 .$$</div>
-<p>\(\theta&lt;1\) 恰好由第 \(k\) 列的严格占优给出，也是整个证明里唯一用到"严格"两个字的地方。记 \(S_j\) 为第 \(j\) 列去掉 \(a_{kj}\) 之后的非对角绝对值之和，对 \(j&gt;k\) 有</p>
+<p>\(\theta&lt;1\) 恰好由第 \(k\) 列的严格占优给出，也是整个证明里唯一用到"严格"两个字的地方。记 \(S_j:=\sum_{i&gt;k,\,i\ne j}|a_{ij}|\)——尾块第 \(j\) 列<strong>除对角元 \(a_{jj}\) 与主元行 \(a_{kj}\) 之外</strong>的元素绝对值之和，对 \(j&gt;k\) 有</p>
 <div class="eq">$$\begin{aligned}|\hat a_{jj}|&amp;\ge |a_{jj}|-|l_{jk}|\,|a_{kj}|,\\ \sum_{i&gt;k,\,i\ne j}|\hat a_{ij}|&amp;\le S_j+|a_{kj}|\bigl(\theta-|l_{jk}|\bigr).\end{aligned}$$</div>
 <p>第二个式子不是看出来的，是逐项放大再提公因子。消元只会动到 \(i&gt;k\) 的行：\(\hat a_{ij}=a_{ij}-l_{ik}a_{kj}\)，于是对每个 \(i&gt;k,\ i\ne j\) 有</p>
 <div class="eq">$$|\hat a_{ij}|=|a_{ij}-l_{ik}a_{kj}|\le|a_{ij}|+|l_{ik}|\,|a_{kj}| .$$</div>

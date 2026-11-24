@@ -289,7 +289,9 @@ Hermite \(A\) 的特征值全大于 0 \(\iff\) \(A\) 正定（即 \(x^*Ax&gt;0\)
 <div class="body"><p>\(|a_{kk}|&gt;\sum_{j\ne k}|a_{jk}|\)。证明列主元高斯消元过程中不会出现行交换。</p></div>
 <details><summary>答案要点</summary><div class="ans">
 <p>第 1 步：\(|a_{11}|&gt;\sum_{j&gt;1}|a_{j1}|\) ⇒ 第 1 列的最大元就在对角线上，无需换行。</p>
-<p>消元后 \(a_{ij}'=a_{ij}-a_{i1}a_{1j}/a_{11}\)（\(i,j&gt;1\)）。估计：\(|a_{jj}'|\ge|a_{jj}|-|a_{j1}||a_{1j}|/|a_{11}|\)，而 \(\sum_{i&gt;1,i\ne j}|a_{ij}'|\le\sum_{i\ne j}|a_{ij}|+\frac{|a_{1j}|}{|a_{11}|}\sum_{i&gt;1,i\ne j}|a_{i1}|\)，两式相减利用原占优条件即可得子块仍严格列对角占优。归纳到第 \(k\) 步。</p>
+<p>消元后 \(a_{ij}'=a_{ij}-a_{i1}a_{1j}/a_{11}\)（\(i,j&gt;1\)）。估计：\(|a_{jj}'|\ge|a_{jj}|-|a_{j1}||a_{1j}|/|a_{11}|\)，而 \(\sum_{i&gt;1,i\ne j}|a_{ij}'|\le\sum_{i&gt;1,i\ne j}|a_{ij}|+\frac{|a_{1j}|}{|a_{11}|}\sum_{i&gt;1,i\ne j}|a_{i1}|\)（<b>两处求和都必须排除 \(i=1\)</b>：消元不动第 1 行，把 \(|a_{1j}|\) 也算进上界就收不回来了）。乘子求和 \(\sum_{i&gt;1,i\ne j}|a_{i1}|/|a_{11}|=\theta-|l_{j1}|\)，两式相减时 \(|l_{j1}||a_{1j}|\) 出现两次、正好相消，只剩 \(\theta|a_{1j}|\)：</p>
+<div class="eq">$$|a_{jj}'|-\sum_{i&gt;1,i\ne j}|a_{ij}'|\ge\Bigl(|a_{jj}|-\sum_{i&gt;1,i\ne j}|a_{ij}|\Bigr)-\theta\,|a_{1j}|&gt;(1-\theta)\,|a_{1j}|&gt;0,$$</div>
+<p>最后一步用原占优条件 \(|a_{jj}|&gt;|a_{1j}|+\sum_{i&gt;1,i\ne j}|a_{ij}|\)，以及 \(\theta&lt;1\)。归纳到第 \(k\) 步。</p>
 <p class="hint">考场若时间紧，写"归纳 + 消元后仍严格对角占优"两句即可拿到主要分，估计式可略。</p>
 </div></details>
 </div>

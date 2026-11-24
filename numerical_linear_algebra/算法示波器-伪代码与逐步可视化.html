@@ -182,6 +182,13 @@ window.MathJax = {
     <div><b>③ 三块对照</b>黄线是正在执行的行，橙色格是这一步真正读写的格子，画布是同一瞬间的几何。</div>
   </div>
 
+  <h2>数字怎么读（先看这条，再点播放）</h2>
+  <div class="how">
+    <div><b>① 能写精确值就写精确值</b>屏幕上不出现"1.4142"这种要你猜的数：能整除就写小数（<strong>3/5 写成 0.6</strong>），除不尽就写分数（<strong>1/3 就是 1/3</strong>），带根号就写根式（<strong>√2、√6/2、√5/5</strong>）。看到分数或根式，就说明它是精确值，可以手算复现。</div>
+    <div><b>② 带 ≈ 的是迭代值</b>只有单边 Jacobi（SVD）这类<strong>迭代</strong>算法会出现 ≈：它的旋转参数 c、s 是 <strong>(√15+√3)/6</strong> 这种嵌套根式，没有能手算的简单形式，只能给 4 位小数。判据不是"看着像"—— 末帧直接给 <strong>‖UΣVᵀ − A‖ = 5.6e-16</strong>，近似只停在机器精度那一层。</div>
+    <div><b>③ 示例数据按勾股数挑过</b>Householder、最小二乘、Givens 的矩阵都让每一步的 ‖x‖ 正好是 5 或 √2，所以你会看到 <strong>‖x‖ = 5、c = 0.8、s = 0.6、v = (2√5/5, √5/5, 0)</strong>，而不是一串没法核对的 4 位小数。</div>
+  </div>
+
   <section class="deck" id="deck">
     <div class="dhead">
       <div class="dtitle"><span class="tag" id="tag">ALG-01</span><h2 id="aname">载入中…</h2></div>
@@ -230,6 +237,7 @@ window.MathJax = {
   </section>
 
   <h2>统一骨架：外层定"用谁"，内层"乘回去扣掉"</h2>
+
   <p>
     这些算法看着五花八门，内层循环其实只做两种事：<b>算一个点积</b>（投影系数 \\(r_{ij}\\)、乘子 \\(l_{ik}\\)、Cholesky 的 \\(s\\)），
     或者<b>做一次秩一／行更新</b>（把刚算出的系数乘上已定的那一列／行，再从目标里扣掉）。
@@ -337,20 +345,79 @@ function mm(A, B){
   return C;
 }
 function eye(n){ const M = []; for(let i = 0; i < n; i++){ const r = []; for(let j = 0; j < n; j++) r.push(i === j ? 1 : 0); M.push(r); } return M; }
+/* ---- 精确显示：整数 → 有限小数 → 分数 → 根式 → ≈小数 ----
+   原则：出现的每个数都要能手算验证。
+     · 能整除的写小数：3/5 显示 0.6，1/8 显示 0.125
+     · 除不尽的写分数：1/3 显示 1/3（不写 0.3333）
+     · 带根号的写根式：√2 显示 √2，1/√2 显示 √2/2，√(3/2) 显示 √6/2
+     · 只有迭代出来、没有简单闭式的量（SVD 的 σ、CG 的残差）才写 ≈ 并注明
+   所以看到 ≈ 就说明「这个数只能数值逼近」，看到根式/分数就说明「它是精确值」。 */
+const _SQFREE = [2, 3, 5, 6, 7, 10, 11, 13, 14, 15, 17, 19, 21, 22, 23, 26, 29, 30, 31,
+  33, 34, 35, 37, 38, 39, 41, 42, 43, 46, 47, 51, 53, 55, 57, 58, 59, 61, 62, 65, 66,
+  67, 69, 70, 71, 73, 74, 77, 78, 79, 82, 83, 85, 86, 87, 89, 91, 93, 94, 95, 97,
+  101, 102, 103, 105, 106, 107, 109, 110, 111, 113, 114, 115, 118, 119, 122, 123,
+  127, 129, 130, 131, 133, 134, 137, 138, 139, 141, 142, 143, 145, 146, 149, 151,
+  154, 155, 157, 158, 159, 161, 163, 165, 166, 167, 170, 173, 174, 177, 178, 179,
+  181, 182, 183, 185, 186, 187, 190, 191, 193, 194, 195, 197, 199];
+function _decPlaces(v){
+  const av = Math.abs(v);
+  for(let k = 0; k <= 6; k++){
+    const t = av * Math.pow(10, k);
+    if(Math.abs(t - Math.round(t)) <= 1e-10 * Math.max(1, t)) return k;
+  }
+  return -1;                       // 除不尽：说明它是分数或根式
+}
+function _ratOf(v, maxQ){
+  for(let q = 1; q <= maxQ; q++){
+    const p = Math.round(v * q);
+    if(Math.abs(v - p / q) <= 1e-10 * Math.max(1, Math.abs(v))) return [p, q];
+  }
+  return null;
+}
+function _radOf(v){
+  const av = Math.abs(v);
+  if(av < 1e-4 || av > 1e4) return null;
+  for(let i = 0; i < _SQFREE.length; i++){
+    const s = _SQFREE[i], t = av / Math.sqrt(s);
+    const r = _ratOf(t, 60);
+    if(!r) continue;
+    const p = r[0], q = r[1];
+    if(p === 0 || p > 400) continue;
+    const num = (p === 1 ? '' : String(p)) + '√' + s;
+    return (v < 0 ? '−' : '') + (q === 1 ? num : num + '/' + q);
+  }
+  return null;
+}
 function fmt(v, d){
+  if(v === undefined || v === null || Number.isNaN(v)) return '—';
+  if(!isFinite(v)) return '∞';
+  if(Math.abs(v) < 5e-11) return '0';
+  d = (d === undefined) ? 4 : d;
+  const av = Math.abs(v);
+  if(Math.abs(av - Math.round(av)) <= 1e-10 * Math.max(1, av)) return String(Math.round(v));
+  const dp = _decPlaces(v);
+  // 只写 ≤4 位的小数；更多位多半是算出来的噪声，交给分数/根式/≈ 判
+  if(dp >= 0 && dp <= 4){ let s = v.toFixed(dp); if(s === '-0') s = '0'; return s; }
+  const r = _ratOf(v, 60);
+  if(r && Math.abs(r[0]) <= 999) return (v < 0 ? '−' : '') + Math.abs(r[0]) + '/' + r[1];
+  const rad = _radOf(v);
+  if(rad) return rad;
+  return '≈' + v.toFixed(d);
+}
+/* 只写小数（角度、误差这类不该伪装成分数/根式的量） */
+function fmtDec(v, d){
   if(v === undefined || v === null || Number.isNaN(v)) return '—';
   if(!isFinite(v)) return '∞';
   d = (d === undefined) ? 4 : d;
   if(Math.abs(v) < 5e-11) return '0';
   let s = v.toFixed(d);
   if(s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
-  if(s === '-0') s = '0';
-  return s;
+  return s === '-0' ? '0' : s;
 }
 function Pm(t, M, hl, f){ return { t: t, m: M.map(r => r.slice()), hl: hl || {}, f: f }; }
 function fmtBig(v){
   if(v === 0) return '0';
-  if(v < 1e3) return fmt(v, 0);
+  if(v < 1e3) return String(Math.round(v));   // flop 计数按整数报（公式里的 1/3 是主项近似带出来的）
   if(v < 1e6) return (v / 1e3).toFixed(1) + 'k';
   if(v < 1e9) return (v / 1e6).toFixed(1) + 'M';
   return (v / 1e9).toFixed(1) + 'G';
@@ -665,7 +732,10 @@ function recErr(Q, R, A){
 
 /* ===== ALG-07 Householder QR ===== */
 function algoHouse(){
-  const A0 = [[3, 1], [4, 2], [0, 1]];
+  // 选这组数是为了「每一步都能手算」：
+  //   第 1 列 (3,4,0)：‖x‖ = 5；第 2 列经第 1 次反射后下半截变成 (3,4)：‖x‖ 又是 5。
+  //   于是 v = (8,4)/‖·‖ = (2√5/5, √5/5)，H 的元素全是 1/5 的倍数，R 全整数。
+  const A0 = [[3, 0], [4, 5], [0, 4]];
   const HC = zip(A0);
   const A = A0.map(r => r.slice()), m = 3, n = 2;
   const Q = eye(m);
@@ -837,8 +907,10 @@ function algoGivens(){
 }
 
 /* ===== ALG-09/10 最小二乘 ===== */
-const LS_A = [[1, 0], [0, 1], [1, 1]];
-const LS_B = [1, 1, 3];
+// 最小二乘的例子：A 的两列都让 ‖·‖ 走 3-4-5，b 取成 A·(1,1) + r₀（r₀ ⟂ col(A)），
+// 所以真解就是 x = (1,1)、残差 r = (16,−12,15)、‖r‖ = 25 —— 全部可以手算对答案。
+const LS_A = [[3, 3], [4, 9], [0, 4]];
+const LS_B = [22, 1, 19];
 function algoLS(mode){
   const isNE = (mode === 'ne');
   const A = LS_A.map(r => r.slice()), b = LS_B.slice(), m = 3, n = 2;
@@ -1336,7 +1408,7 @@ const ALGO_CORE = {
   lu: '消元的同时把乘子存下来，下次换个右端可以复用',
   plu: '先换行挑最大的主元再消元，避开零主元与元素增长',
   chol: '对称 + 正定 ⇒ 只需一半工作，而且能「开平方」',
-  svd: '只用两列之间的旋转把列转成互相垂直，垂直后列长就是奇异值',
+  svd: '只用两列之间的旋转把列转成互相垂直，垂直后列长就是奇异值。这是迭代法：旋转参数 c、s 是嵌套根式，中间量只能给近似值（标 ≈），但每步都精确保持列对的夹角被清零，末帧 UΣVᵀ 回到 A 的误差在 1e-16 量级 —— 近似只停在机器精度那一层',
   sypivot: '选主元只能在剩余对角元里选，代价是换行必须同时换列',
   cost_mv: '数清楚内层做了多少次乘加',
   cost_gs: '数清楚内层做了多少次乘加',
@@ -1596,13 +1668,13 @@ function algoSVD(){
               panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V)],
               geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
               say: '只量三件事：两列各自的长度平方，和它们的内积 γ。γ = 0 就说明这一对已经垂直。' };
-            if(cosang < 1e-14){ worst = Math.min(worst, cosang); continue; }
+            if(cosang < 1e-12){ worst = Math.min(worst, cosang); continue; }
             const zeta = (be - al) / (2 * ga);
             const sg = (zeta >= 0 ? 1 : -1);
             const t = sg / (Math.abs(zeta) + Math.sqrt(1 + zeta * zeta));
             const c = 1 / Math.sqrt(1 + t * t), sn = c * t;
             yield { pc: 7, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) },
-              vars: [['ζ = (β−α)/(2γ)', fmt(zeta)], ['tanθ = t', fmt(t)], ['c', fmt(c)], ['s', fmt(sn)], ['θ', fmt(Math.atan2(sn, c) * 180 / Math.PI, 1) + '°']],
+              vars: [['ζ = (β−α)/(2γ)', fmt(zeta)], ['tanθ = t', fmt(t)], ['c', fmt(c)], ['s', fmt(sn)], ['θ', fmtDec(Math.atan2(sn, c) * 180 / Math.PI, 2) + '°']],
               panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V)],
               geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
               say: '这个 c、s 是唯一能让 γ 变 0 的旋转（解一个 2×2 对称特征问题）。' };
@@ -1635,7 +1707,7 @@ function algoSVD(){
         panels: [Pm('A（已正交）', snap()), Pm('V', V)],
         geo: { kind: 'svd', cols: C.map(c => c.slice()), p: -1, q: -1 },
         say: '所有列对都垂直了。此时列长就是奇异值 σ_i，归一化后就是 U 的列。' };
-      yield { pc: 12, loop: {}, vars: [['σ（降序）', S.slice().sort((a, b) => b - a).map(v => fmt(v)).join('  ')], ['‖UΣVᵀ − A‖', fmt(svdErr(Um, Ss, Vm, A0))]],
+      yield { pc: 12, loop: {}, vars: [['σ（降序）', S.slice().sort((a, b) => b - a).map(v => fmt(v)).join('  ')], ['‖UΣVᵀ − A‖', svdErr(Um, Ss, Vm, A0).toExponential(1) + '（机器精度，即“零”）']],
         panels: [Pm('Σ', [Ss.slice()]), Pm('U', Um), Pm('V', Vm)],
         geo: { kind: 'svd', cols: C.map(c => c.slice()), p: -1, q: -1 },
         say: 'A = UΣVᵀ。整个算法只用旋转，从不形成 AᵀA —— 所以条件数没有被平方。',
@@ -1847,7 +1919,8 @@ const DRAW = {
 
   house(f){
     const g = f.geo; clear();
-    const pts = [].concat(g.x ? [g.x] : [], g.v ? [g.v] : [], g.hv ? [g.hv] : [], [[1.7, 0, 0], [0, 1.7, 0], [0, 0, 1.7]]);
+    const pts = [].concat(g.x ? [g.x] : [], g.v ? [g.v] : [], g.hv ? [g.hv] : [],
+      (g.base || []), [[1.7, 0, 0], [0, 1.7, 0], [0, 0, 1.7]]);
     setCam(pts); axes3(1.7);
     (g.base || []).forEach(c => arrow3([0, 0, 0], c, '#D9D1C0', '', false, 1.3));
     if(g.v){
@@ -1938,7 +2011,7 @@ const DRAW = {
       arrow3([0, 0, 0], c, hot ? COL.cinn : COL.gray, 'a' + (i + 1), false, hot ? 2.5 : 1.5);
     });
     const s2 = g.cols.map(c => Math.sqrt(c.reduce((t, v) => t + v * v, 0)));
-    txt('列长：' + s2.map(v => v.toFixed(3)).join('   '), 12, 30, COL.ink, 'left', 12);
+    txt('列长：' + s2.map(v => fmt(v)).join('   '), 12, 30, COL.ink, 'left', 12);
     txt('红 = 正在旋转的一对；转完它们就垂直了', 12, 462, COL.mut, 'left', 11);
   },
 

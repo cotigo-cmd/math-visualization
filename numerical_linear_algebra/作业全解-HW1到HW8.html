@@ -55,6 +55,12 @@ a{color:var(--steel)}
 .note.b{border-left-color:var(--steel);background:#EFF4F9}
 .note.g{border-left-color:var(--green);background:#EDF6F1}
 .note .h{font-weight:680;display:block;margin-bottom:2px}
+.pc{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:12.6px;line-height:1.62;
+  background:#F7F8FA;border:1px solid var(--line);border-radius:9px;padding:10px 13px;margin:11px 0;
+  overflow-x:auto;white-space:pre;tab-size:2}
+.pc .c{color:var(--ink2)}
+@media(max-width:560px){.pc{font-size:11.2px;line-height:1.55}}
+.pc .n{color:var(--cinn);font-weight:600}
 mjx-container[jax="SVG"]{max-width:100%}
 mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden;padding:2px 0;font-size:.92em}
 table.tb{border-collapse:collapse;margin:12px 0;font-size:13.5px;width:100%}
@@ -462,12 +468,48 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 <p>\(A\) 为 \(m\times n\)。确定用经典 Gram–Schmidt 计算降维 QR 所涉及的浮点加、减、乘、除的准确数目。</p>
 <span class="lab">解答</span>
 <div class="sol">
-<p>对每个 \(j=1..n\)：内层对 \(i=1..j-1\) 做 ① 内积 \(r_{ij}=q_i^*a_j\)（\(m\) 次乘 + \((m-1)\) 次加），② 更新 \(a_j\leftarrow a_j-r_{ij}q_i\)（\(m\) 次乘 + \(m\) 次减）；最后归一化 \(q_j=a_j/r_{jj}\)（\(m\) 次除，\(r_{jj}=\|a_j\|_2\) 还需 \(m\) 次乘 + \((m-1)\) 次加 + 1 次开方）。</p>
-<p>累计（略去低阶项）：</p>
-<div class="eq">$$\text{乘/除}\approx mn^2,\qquad \text{加/减}\approx mn^2,\qquad \text{合计}\approx 2mn^2\ \text{flops}.$$</div>
-<p>更精确：</p>
-<div class="eq">$$\sum_{j=1}^{n}\big[(j-1)(4m-1)+3m\big]=2mn^2-\tfrac12n^2+\tfrac12mn-\tfrac12n,$$</div>
-<p>仍是 \(2mn^2\) 量级，低阶项只是把系数从 \(2\) 往下修一点。</p>
+<p><strong>算账只有一条路</strong>：先把伪代码写到「每行只干一件小事」，数出每行的乘除与加减，最后对循环变量做一次求和。公式可以忘，但照着数三遍不会错。</p>
+<div class="pc"><span class="n">1</span> for j = 1 : n
+<span class="n">2</span>     a = A(:,j)                     <span class="c"># 取第 j 列，后面就地把 a 改成残差</span>
+<span class="n">3</span>     for i = 1 : j-1
+<span class="n">4</span>         r(i,j) = q(:,i)' * a       <span class="c"># 内积</span>
+<span class="n">5</span>         a      = a - r(i,j) * q(:,i) <span class="c"># 正交化更新</span>
+<span class="n">6</span>     next i
+<span class="n">7</span>     r(j,j) = sqrt(a' * a)          <span class="c"># 列范数</span>
+<span class="n">8</span>     q(:,j) = a / r(j,j)            <span class="c"># 归一化</span>
+<span class="n">9</span> next j</div>
+
+<p><strong>① 每行执行一次的账。</strong>加法与减法都归「加减」（各 1 次浮点运算），乘与除归「乘除」：</p>
+<div class="tw"><table class="tb small">
+<tr><th>行</th><th>做什么</th><th>乘/除</th><th>加减</th><th>由来</th></tr>
+<tr><td class="c">4</td><td>\(r_{ij}=q_i^*a_j\)</td><td class="c">\(m\)</td><td class="c">\(m-1\)</td><td>\(m\) 对分量相乘，累加只需 \(m-1\) 次</td></tr>
+<tr><td class="c">5</td><td>\(a\leftarrow a-r_{ij}q_i\)</td><td class="c">\(m\)</td><td class="c">\(m\)</td><td>每个分量 1 乘 1 减</td></tr>
+<tr><td class="c">7</td><td>\(r_{jj}=\|a\|_2\)</td><td class="c">\(m\)</td><td class="c">\(m-1\)</td><td>同内积，另加 1 次开方</td></tr>
+<tr><td class="c">8</td><td>\(q_j=a/r_{jj}\)</td><td class="c">\(m\)</td><td class="c">\(0\)</td><td>每个分量 1 次除法</td></tr>
+</table></div>
+
+<p><strong>② 内层循环转几次。</strong>第 3 行令 \(i=1,\dots,j-1\)，共 \(j-1\) 次；每次执行第 4、5 两行，各 \(2m\) 次乘除、\((2m-1)\) 次加减：</p>
+<div class="eq">$$\text{乘/除}=2m(j-1),\qquad \text{加减}=(2m-1)(j-1).$$</div>
+
+<p><strong>③ 一列 \(j\) 的总账。</strong>加入第 7、8 行（每列固定 \(2m\) 乘除、\(m-1\) 加减、1 次开方）：</p>
+<div class="eq">$$\text{乘/除}(j)=2m(j-1)+2m=2mj,\qquad \text{加减}(j)=(2m-1)(j-1)+(m-1).$$</div>
+
+<p><strong>④ 对 \(j=1..n\) 求和。</strong>只用三个标准式：</p>
+<div class="eq">$$\sum_{j=1}^n 1=n,\qquad \sum_{j=1}^n j=\frac{n(n+1)}{2},\qquad \sum_{j=1}^n (j-1)=\frac{n(n-1)}{2}.$$</div>
+<p>乘除一项：</p>
+<div class="eq">$$\sum_{j=1}^n 2mj=2m\cdot\frac{n(n+1)}{2}=mn^2+mn.$$</div>
+<p>加减拆成两项：</p>
+<div class="eq">$$\sum_{j=1}^n (2m-1)(j-1)=(2m-1)\cdot\frac{n(n-1)}{2}=mn^2-mn-\frac{n^2}{2}+\frac{n}{2},$$</div>
+<div class="eq">$$\sum_{j=1}^n (m-1)=mn-n,$$</div>
+<div class="eq">$$\Rightarrow\quad \text{加减}=mn^2-\frac{n^2}{2}-\frac{n}{2}.$$</div>
+
+<p><strong>⑤ 合计</strong>（开方另记 \(n\) 次）：</p>
+<div class="eq">$$(\,mn^2+mn\,)+\Big(mn^2-\frac{n^2}{2}-\frac{n}{2}\Big)+n=2mn^2+mn-\frac{n^2}{2}+\frac{n}{2}.$$</div>
+<p>若开方不计入 flops，减去 \(n\)：\(2mn^2+mn-\frac{n^2}{2}-\frac{n}{2}\)。只留首项就是 \(2mn^2\) —— 它就是「乘除 \(mn^2\)」与「加减 \(mn^2\)」相加，不是另一个要背的常数。</p>
+
+<div class="note b"><span class="h">数值核对（自己也能数）</span>
+逐项枚举伪代码：\(m=5,n=3\) 得 102；\(m=10,n=4\) 得 354；\(m=8,n=8\) 得 1060；\(m=16,n=5\) 得 870。与闭式 \(2mn^2+mn-\frac{n^2}{2}+\frac{n}{2}\) 完全相等（开方计入）。
+</div>
 </div>
 <div class="warn">易错：只给 \(O(mn^2)\)（题目要"准确数目"）；只数乘除不数加减；把归一化的 \(m\) 次除法漏掉。</div>
 </div>
@@ -882,14 +924,29 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 <div class="eq">$$|l_{ij}|=\frac{|a_{ij}|}{|a_{jj}|}\le1,\qquad i&gt;j .$$</div>
 <p>（这一步是本题的关键：普通部分主元只换行，不保 Hermite 结构；\(|l|\le1\) 的推导用到了正定性，不定时须改用 \(1\times1/2\times2\) 混合主元，见 §4.4。）</p>
 <p><strong>（b）</strong>\(PAP^{\mathrm T}=L\,D\,L^*\)，其中 \(L\) 单位下三角、\(D\) 对角（实对称时为 \(1\times1\) 与 \(2\times2\) 块的对角）。正定时 \(D\) 的对角元全正，进一步即 Cholesky。</p>
-<p><strong>（c）</strong>按"第 \(j\) 步只更新尾子阵的<strong>下三角</strong>"逐项数。记 \(s=m-j\) 为第 \(j\) 步尾子阵的阶数（\(s\) 从 \(m\) 走到 \(2\)）：</p>
-<ul>
-<li><strong>除法（算乘子）</strong>：\(l_{ij}=a_{ij}/a_{jj}\)，尾子阵里除首行外每行一个，共 \(s-1\) 个 ⇒ \(\sum_{s=2}^{m}(s-1)=\frac{m(m-1)}{2}\)；</li>
-<li><strong>尾子阵更新</strong>：\(a_{ik}\leftarrow a_{ik}-l_{ij}a_{jk}\)（\(i>j,\ j\le k\le i\)），因为对称只需算下三角含对角，条目数 \(\frac{(s-1)s}{2}\)，每条 1 乘 1 加减 = 2 flops ⇒ \((s-1)s\)；</li>
-<li><strong>求和</strong>：\(\sum_{s=2}^{m}(s-1)s=\frac{m(m^2-1)}{3}=\frac{m^3}{3}+O(m)\)。</li>
-</ul>
-<div class="eq">$$\text{flops}\approx\frac{m^3}{3}+\frac{m^2}{2}+O(m),\qquad \text{（LU 是 }\frac{2m^3}{3}\text{，Cholesky 是 }\frac{m^3}{3}\text{）}$$</div>
-<p>省下的一半正是上三角：不必算，按对称性拷过去。数值核对：\(m=400\) 实测 \(2.14\times10^7\) flops，与闭式 \(m(m^2-1)/3+m(m-1)/2\) 逐项相等，除以 \(m^3\) 得 0.3346（\(m\to\infty\) 趋于 \(1/3\)）。</p>
+<p><strong>（c）</strong>先写伪代码。第 \(j\) 步处理的是尾子阵 \(A_{j:m,\,j:m}\)，其阶数记 \(s=m-j+1\)（\(s\) 从 \(m\) 走到 \(2\)）：</p>
+<div class="pc"><span class="n">1</span> for j = 1 : m                          <span class="c"># 尾子阵阶数 s = m-j+1</span>
+<span class="n">2</span>     p = argmax{ |a(i,i)| : i &gt;= j }      <span class="c"># 只在尾子阵对角上挑</span>
+<span class="n">3</span>     swap rows/cols j &lt;-&gt; p               <span class="c"># 对称置换 ΠAΠᵀ：行列一起换</span>
+<span class="n">4</span>     for i = j+1 : m
+<span class="n">5</span>         l(i,j) = a(i,j) / a(j,j)         <span class="c"># 乘子，共 s-1 个</span>
+<span class="n">6</span>     for i = j+1 : m
+<span class="n">7</span>         for k = j+1 : i                   <span class="c"># 只扫下三角（含对角），k &lt;= i</span>
+<span class="n">8</span>             a(i,k) = a(i,k) - l(i,j)*a(j,k)  <span class="c"># 1 乘 1 减</span>
+<span class="n">9</span> next j</div>
+
+<p><strong>① 除法（第 5 行）。</strong>\(i=j+1,\dots,m\) 共 \(s-1\) 个，每个 1 次除：</p>
+<div class="eq">$$\sum_{s=2}^{m}(s-1)=\sum_{t=1}^{m-1}t=\frac{m(m-1)}{2}.$$</div>
+
+<p><strong>② 尾子阵更新（第 7–8 行）。</strong>固定 \(i\)，\(k\) 从 \(j+1\) 到 \(i\)，共 \(i-j\) 个条目；令 \(t=i-j\) 从 \(1\) 走到 \(s-1\)，条目数就是 \(1+2+\dots+(s-1)=\frac{(s-1)s}{2}\)。每条 1 乘 1 减 = 2 flops：</p>
+<div class="eq">$$\sum_{s=2}^{m}2\cdot\frac{(s-1)s}{2}=\sum_{s=2}^{m}(s-1)s.$$</div>
+<p>把求和打开（\(s=1\) 时项为 0，可直接从 1 起加）：</p>
+<div class="eq">$$\sum_{s=1}^{m}(s^2-s)=\frac{m(m+1)(2m+1)}{6}-\frac{m(m+1)}{2}=\frac{m(m+1)(2m-2)}{6}=\frac{m(m^2-1)}{3}.$$</div>
+
+<p><strong>③ 合起来。</strong></p>
+<div class="eq">$$\underbrace{\frac{m(m-1)}{2}}_{\text{除法}}+\underbrace{\frac{m(m^2-1)}{3}}_{\text{更新}}=\frac{m^3}{3}+\frac{m^2}{2}-\frac{5m}{6}\approx\frac{m^3}{3}+\frac{m^2}{2},$$</div>
+<p>即约 \(m^3/3\) flops（LU 是 \(2m^3/3\)）。省下的正是上三角：不必算，按对称性拷过去。</p>
+<p>数值核对：逐项枚举伪代码，\(m=10\) 得 375、\(m=50\) 得 42875、\(m=400\) 得 \(2.1413\times10^7\)，与闭式 \(m(m^2-1)/3+m(m-1)/2\) 完全相等；除以 \(m^3\) 得 0.3346（\(m\to\infty\) 趋于 \(1/3\)）。</p>
 </div>
 <div class="warn">易错：用普通部分主元（只换行）就不保对称；只写 \(LDL^{\mathrm T}\) 却不说明 \(|l|\le1\) 的来源；成本写成 \(2m^3/3\)（那是 LU），或只数除法得 \(m^2/2\)（漏掉尾子阵更新）。</div>
 </div>
@@ -924,6 +981,74 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 <p>收尾补一句：成本 \(m^3/3\)，是 LU（\(2m^3/3\)）的一半，且不需要选主元。</p>
 </div>
 <div class="warn">易错：只证分解那一步（题目要整体）；忘套精度定理（少 \(\kappa\)）；前代与回代顺序写反；把 \(\tilde Q\) 那套符号直接照抄成 \(R\)。</div>
+</div>
+
+<div class="note b" id="s8-8-bak">
+<span class="h">补充：题目引用的三条结论 —— 陈述 + 简要证明</span>
+<p>上面的解答把三件事当已知用了，教材只引用不证：<b>(0) QR 解 \(Ax=b\) 为什么后向稳定</b>（题目说"仿照"的就是它）、<b>(A) Cholesky 分解的后向稳定性定理</b>、<b>(B) 三角前代／回代的稳定性定理</b>。三条成立的理由各不相同，被追问一句"凭什么"要答得出来。</p>
+<p>记号：\(\epsilon\) 是单位舍入；\(\gamma_k=\dfrac{k\epsilon}{1-k\epsilon}\) 表示 \(k\) 次运算累积的相对误差上界（\(k\epsilon+O(\epsilon^2)\)）；\(|M|\) 表示逐元素取模，\(|M|\le c|N|\) 按<strong>逐元素</strong>理解。</p>
+
+<h3>(0) QR 解 \(Ax=b\)：三层各自后向稳定，误差不被放大</h3>
+<p>算法是 \(A=QR\)、解 \(Rx=Q^*b\)，三层分别是：</p>
+<p><b>① 分解层。</b> \(\hat Q\hat R=A+\delta A_1\)，\(\|\delta A_1\|=O(\epsilon)\|A\|\)。<br>
+凭什么是这样：Householder 第 \(k\) 步算的是 \(\tilde H_k=I-2\hat w\hat w^*/\|\hat w\|^2\)，其中 \(\hat w\) 是浮点算出的、带 \(O(\epsilon)\) 误差的向量。<b>关键：不管 \(\hat w\) 是什么，\(\tilde H_k\) 都是精确的酉（正交）矩阵</b> —— 酉性一分不少，误差全部折进"被反射的是另一个几乎相同的向量"。所以每步只相当于对输入做一次 \(O(\epsilon)\) 的相对扰动，而酉变换不放大长度（\(\|\tilde H_k\|_2=1\)），误差不会滚雪球。QR 里 \(\|A\|_2=\|R\|_2\)，于是 \(\|\delta A_1\|=O(\epsilon)\|A\|\) 直接成立。<br>
+顺带解释为什么不用 Gram–Schmidt：GS 算出的 \(\hat Q\) 本身不正交（\(\|\hat Q^*\hat Q-I\|\) 可达 \(\kappa\epsilon\) 量级），这一步就没有"酉性免费"这层保护。</p>
+<p><b>② 右端层。</b> \(\hat y=\hat Q^*b\) 是酉阵连乘作用在 \(b\) 上，后向稳定 —— 见 <a href="#ex6-6">6-6</a>。</p>
+<p><b>③ 回代层。</b> 见下面定理 (B)。</p>
+<p>三层串起来就是 \((A+\Delta A)\hat x=b\)，\(\|\Delta A\|=O(\epsilon)\|A\|\)。</p>
+
+<h3>(A) 定理：Cholesky 分解后向稳定</h3>
+<p>设 \(A\) 正定，\(\hat R\) 是浮点算出的上三角因子（对角取正），则存在 \(\Delta A\) 使</p>
+<div class="eq">$$\begin{aligned}\hat R^*\hat R&=A+\Delta A,\\ |\Delta A|&\le\gamma_{m+1}\,|R^*|\,|R| .\end{aligned}$$</div>
+<p>而且这个界还能收紧到<b>不出现任何增长因子</b>：</p>
+<div class="eq">$$|\Delta A_{ij}|\le\gamma_{m+1}\sqrt{a_{ii}\,a_{jj}} .$$</div>
+<p>上面这条对<strong>一切</strong> \(i,j\) 成立；因为正定矩阵本身满足 \(|a_{ij}|\le\sqrt{a_{ii}a_{jj}}\)，上式就是说"每一个元素的相对扰动都是 \(O(\epsilon)\)"，故 \(\|\Delta A\|/\|A\|=O(\epsilon)\)。</p>
+<p><b>证明分两步。</b></p>
+<p><b>第一步：逐元素误差记账。</b> Cholesky 的递推是</p>
+<div class="eq">$$\begin{aligned}r_{ij}&=\frac{a_{ij}-\sum_{k&lt;i}r_{ki}r_{kj}}{r_{ii}}\quad(i&lt;j),\\ r_{jj}&=\sqrt{a_{jj}-\sum_{k&lt;j}r_{kj}^2}.\end{aligned}$$</div>
+<p>把每个浮点结果写成"精确值 \(\times(1+\delta)\)"：分子里的点积后向稳定（<a href="#ex6-1">6-1</a>），\(\mathrm{fl}(\sum_k r_{ki}r_{kj})=\sum_k r_{ki}r_{kj}(1+\theta)\)，\(|\theta|\le\gamma_{i}\)；一次减法、一次除法各再乘一个 \(1+\delta\)；开方在 \(s&gt;0\) 时满足 \(\mathrm{fl}(\sqrt s)=\sqrt s(1+\delta)\)，\(|\delta|\le\epsilon/2\)，等价于 \((\hat r_{jj})^2=s(1+\delta)^2\)。把这些 \((1+\delta)\) 逐层剥到最外层，就得到</p>
+<div class="eq">$$\begin{aligned}(\hat R^*\hat R)_{ij}&=a_{ij}(1+\theta_{ij}),\\ |\theta_{ij}|&\le\gamma_{m+1},\end{aligned}$$</div>
+<p>也就是 \(\Delta A_{ij}=a_{ij}\theta_{ij}\)。这一步只用到"点积后向稳定 + 三角结构"，和回代完全同构。</p>
+<p><b>第二步：为什么可以不选主元。</b> 由 \(A=R^*R\) 得 \(a_{jj}=\sum_{k\le j}r_{kj}^2\)，于是</p>
+<div class="eq">$$|r_{ij}|\le\sqrt{a_{jj}}\qquad(i\le j).$$</div>
+<p>（浮点下是 \(\lesssim\sqrt{a_{jj}}\)，多一个 \(1+O(\epsilon)\)。）这条"列长封顶"就是 Cholesky 不需要主元的定量版本：乘子 \(|r_{ij}/r_{ii}|\) 天生被压住，不会出现 LU 里那种元素增长。把它代进第一步的记账：</p>
+<div class="eq">$$\sum_k|r_{ki}||r_{kj}|\le\|r_{\cdot i}\|_2\,\|r_{\cdot j}\|_2 ,$$</div>
+<p>（Cauchy–Schwarz，\(r_{\cdot i}\) 表示第 \(i\) 列整列）。再由 \(a_{jj}=\sum_k r_{kj}^2\) 得列长就是对角元的平方根：</p>
+<div class="eq">$$\|r_{\cdot i}\|_2=\sqrt{a_{ii}},\qquad \|r_{\cdot j}\|_2=\sqrt{a_{jj}} ,$$</div>
+<p>两式相乘就得到上面那个 \(\sqrt{a_{ii}a_{jj}}\) 的界 —— 上界与 \(|a_{ij}|\) 同量级，所以"逐元素 \(O(\epsilon)\)"能升格成"范数 \(O(\epsilon)\)"。注意第二步不能省：没有它，第一步只给出"相对误差 \(O(\epsilon)\) 乘以 \(|R^*||R|\)"，而那个量在一般矩阵上可以远大于 \(\|A\|\)。</p>
+
+<h3>(B) 定理：三角前代／回代后向稳定</h3>
+<p>设 \(T\) 上三角非奇异，\(\hat x\) 由回代算出，则存在 \(\Delta T\) 使</p>
+<div class="eq">$$(T+\Delta T)\hat x=b,\qquad |\Delta T|\le\gamma_{m}|T| .$$</div>
+<p>前代同理（\(T\) 换成下三角，证明一字不改）。</p>
+<p><b>证明（对行号归纳）。</b> 回代第 \(i\) 行是</p>
+<div class="eq">$$\begin{aligned}\hat x_i&=\mathrm{fl}\Big(\frac{b_i-s_i}{t_{ii}}\Big),\\ s_i&=\mathrm{fl}\Big(\sum_{j&gt;i}t_{ij}\hat x_j\Big).\end{aligned}$$</div>
+<p>把它反过来读：<b>不是</b>"\(\hat x\) 有误差"，而是"若把系数稍微改一改，\(\hat x\) 就是精确解"。取（下面这个等式是<strong>精确</strong>的，不是近似）</p>
+<div class="eq">$$\hat T\hat x=b .$$</div>
+<p>\(\hat T\) 的第 \(i\) 行是 \((\hat t_{ii},\hat t_{i,i+1},\dots,\hat t_{im})\)，逐元素写开就是 \(\hat t_{ii}\hat x_i+\sum_{j&gt;i}\hat t_{ij}\hat x_j=b_i\)。</p>
+<ul>
+<li>\(i=m\)：\(\hat x_m=\mathrm{fl}(b_m/t_{mm})\)，取 \(\hat t_{mm}=t_{mm}\cdot b_m/(t_{mm}\hat x_m)\)，则 \(|\hat t_{mm}-t_{mm}|\le\epsilon|t_{mm}|\)，等式精确成立。</li>
+<li>归纳步：设 \(i+1,\dots,m\) 行的 \(\hat t\) 已取定。内积 \(\mathrm{fl}(\sum_{j&gt;i}t_{ij}\hat x_j)\) 后向稳定（<a href="#ex6-1">6-1</a>），存在 \(|\hat t_{ij}-t_{ij}|\le\gamma_{m-i}|t_{ij}|\) 使它等于 \(\sum\hat t_{ij}\hat x_j\)；再做一次减法和一次除法，各引入 \((1+\delta)\)，把这两个因子也折进 \(\hat t_{ii}\) 与 \(\hat t_{ij}\)。每往上一行多累积一层 \(\gamma\)，最终 \(|\hat t_{ij}-t_{ij}|\le\gamma_{m-i+2}|t_{ij}|\le\gamma_m|t_{ij}|\)。</li>
+</ul>
+<p><b>机制一句话：</b>系数 \(t_{ij}\) 在这一行只用一次，之后永不出现，所以舍入误差可以<strong>全部记在系数上</strong>，不会被后续步骤二次放大。这与消元不同 —— 消元的主元行会被后面每一行反复使用，误差会滚；所以 LU 要靠选主元压增长，而三角求解不需要任何额外操作就已后向稳定。</p>
+
+<h3>(C) 把两步接起来：为什么 \(\|\Delta A\|=O(\epsilon)\|A\|\)</h3>
+<p>把前代、回代的后向估计代入（\(\delta R_1\)、\(\delta R_2\) 都满足 \(\|\delta R_i\|=O(\epsilon)\|\hat R\|\)）：</p>
+<div class="eq">$$\begin{aligned}&(\hat R^*+\delta R_1)(\hat R+\delta R_2)\\&\quad=\hat R^*\hat R+\hat R^*\delta R_2\\&\quad+\delta R_1\hat R+\delta R_1\delta R_2,\end{aligned}$$</div>
+<p>其中 \(\hat R^*\hat R=A+\delta A_{\text{chol}}\)，所以括号里的四项就是 \(A+\Delta A\)。三个一阶项的量级要算清楚，这里有一个 Cholesky 特有的"平方根配对"：</p>
+<div class="eq">$$\begin{aligned}\|\hat R\|_2^2&=\|\hat R^*\hat R\|_2\\&=\|A\|_2 .\end{aligned}$$</div>
+<div class="eq">$$\begin{aligned}\|\hat R^*\delta R_2\|_2&\le\|\hat R\|_2\|\delta R_2\|_2\\&=O(\epsilon)\|\hat R\|_2^2\\&=O(\epsilon)\|A\|_2 .\end{aligned}$$</div>
+<p>两个 \(O(\epsilon\|\hat R\|)\) 因子相乘，正好凑成一次 \(O(\epsilon\|A\|)\)；\(\delta R_1\delta R_2\) 是 \(O(\epsilon^2)\)，丢掉。于是 \((A+\Delta A)\hat x=b\)，\(\|\Delta A\|=O(\epsilon)\|A\|\) —— 这就是题目要的整体后向稳定。</p>
+<p>对照 QR：那边 \(\|Q\|_2=1\)、\(\|A\|_2=\|R\|_2\)，量级天然对齐，不需要这层配对。两条证明的结构完全一样，差别只在"酉因子不放大"还是"三角因子按平方根放大"。</p>
+
+<div class="note" style="margin-top:12px">
+<span class="h">考场上写多少</span>
+三个定理只要各写一句陈述 + 一句机制就够拿分，不必把 \(\gamma_k\) 记账全过程摊开：<br>
+<b>(A)</b> "逐元素 \(R^*R=A+\Delta A\)，\(|\Delta A|\le\gamma_{m+1}|R^*||R|\)；因 \(|r_{ij}|\le\sqrt{a_{jj}}\) 无增长，故 \(\|\Delta A\|/\|A\|=O(\epsilon)\)。"<br>
+<b>(B)</b> "系数只被用一次，误差可全部折进 \(T\)：\((T+\Delta T)\hat x=b\)，\(|\Delta T|\le\gamma_m|T|\)。"<br>
+<b>(C)</b> "\(\|R\|^2=\|A\|\)，两个 \(O(\epsilon\|R\|)\) 相乘得 \(O(\epsilon\|A\|)\)。"<br>
+最后别忘题目明写的那一步：后向稳定只给到 \(\|\hat x-x\|/\|x\|=O(\kappa(A)\epsilon)\)，<b>κ 是精度的事，不是稳定的事</b>。
+</div>
 </div>
 
 <div class="note b">

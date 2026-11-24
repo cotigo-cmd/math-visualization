@@ -170,14 +170,14 @@ window.MathJax = {
     <span class="tag">ALG · 示波器</span>
     <h1>算法示波器：伪代码、数字矩阵与几何，同一步</h1>
     <p class="sub">
-      21 个算法/成本项的每一帧都同时给出三样东西：<b>正在执行哪一行伪代码</b>、<b>矩阵里哪个格子在被读/被改写</b>、<b>空间里哪个向量在动</b>。
+      25 个算法/成本项的每一帧都同时给出三样东西：<b>正在执行哪一行伪代码</b>、<b>矩阵里哪个格子在被读/被改写</b>、<b>空间里哪个向量在动</b>。
       内外循环不是抽象概念 —— 外循环每走一步，内循环就老老实实把这个"新定下来的东西"乘回去扣掉。
     </p>
   </header>
 
   <h2>怎么用</h2>
   <div class="how">
-    <div><b>① 先选算法</b>右上角按模块分组：从「矩阵乘向量」一路到 Cholesky，最后一组是「计算成本」。</div>
+    <div><b>① 先选算法</b>右上角按模块分组：从「矩阵乘向量」一路到 Cholesky，接着一组「分解对照 · 同一个 A」（四种分解做同一个矩阵，横向看性质），最后一组是「计算成本」。</div>
     <div><b>② 单步走 = 走一行</b>点 ▶ 一次只前进一步：连 <code>for</code> 头、<code>s = 0</code>、空循环、每次赋值都各占一帧，黄线不会跳行。键盘 ← → 也行。</div>
     <div><b>③ 三块对照</b>黄线是正在执行的行，橙色格是这一步真正读写的格子，读数给出「旧值 → 算式 → 新值」，画布是同一瞬间的几何。</div>
   </div>
@@ -306,7 +306,103 @@ window.MathJax = {
     </tbody>
   </table></div>
 
-  <h2>20 项一览：对象 · 结果 · 用处</h2>
+  <h2>同一个 A，四种分解各读出什么</h2>
+
+  <p>
+    前面每个算法各挑一个"方便演示"的矩阵。这里反过来：<b>只留一个矩阵</b>，让四种分解全做一遍，
+    看它们各自把 \(A\) 的哪一面翻出来。播放器最后一组「分解对照 · 同一个 A」就是这四条的逐步版本。
+  </p>
+
+  <p>$$ A=\begin{bmatrix}2&1&0\\1&2&1\\0&1&2\end{bmatrix},\qquad b=\begin{bmatrix}3\\4\\3\end{bmatrix},\qquad x=A^{-1}b=\begin{bmatrix}1\\1\\1\end{bmatrix} $$</p>
+
+  <p>
+    为什么挑它：这个 \(A\) 同时是 <b>三对角（上下带宽都是 1）</b>、<b>对称</b>、<b>正定</b>、<b>Toeplitz</b>，
+    元素全是小整数。换个说法，它就是"每个点取自己的两倍、再加上左右邻居"这条一维差分模板（泊松／热传导离散后的形状，差一个符号）。
+    四条性质同时成立，四种分解才全都做得动 —— 少任何一条，比较就不成立了。
+  </p>
+
+  <div class="tw"><table>
+    <thead><tr><th>分解</th><th>形式</th><th>本例产出的数字</th><th>读出了什么性质</th><th>拿来解什么问题</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>LU<br><span class="mono">ALG-14</span></td>
+        <td>\(A=LU\)</td>
+        <td>\(L\) 下双对角：\(l_{21}=1/2,\ l_{32}=2/3\)；<br>\(U\) 上双对角：\(2,\ 3/2,\ 4/3\)</td>
+        <td><b>带状结构保住了</b>：\(a_{13}=0\) 让乘数 \(l_{31}=0\)，带外从头到尾是 0，填充 = 0</td>
+        <td>解 \(Ax=b\)、求 \(\det A=4\)；三对角时退化成 \(O(m)\) 的 Thomas 算法</td>
+      </tr>
+      <tr>
+        <td>Cholesky<br><span class="mono">ALG-15</span></td>
+        <td>\(A=R^*R\)</td>
+        <td>\(R\) 二对角，只有 5 个非零元：<br>\(\sqrt2,\ \sqrt2/2,\ \sqrt6/2,\ \sqrt6/3,\ 2\sqrt3/3\)</td>
+        <td><b>正定性</b>：开方之前那三个 \(s\) 是 \(2,\ 3/2,\ 4/3\)，全为正才开得下去 —— 开方这一步就是体检</td>
+        <td>解方程、正规方程；采样多元正态（要的就是这个 \(R\)）；判定"是不是正定"</td>
+      </tr>
+      <tr>
+        <td>QR<br><span class="mono">ALG-16</span></td>
+        <td>\(A=QR\)</td>
+        <td>\(Q\) 的列标准正交；\(R\) 上三角，元素是 \(\sqrt5,\ 4\sqrt5/5,\ \sqrt5/5,\ \sqrt{70}/5,\ 8\sqrt{70}/35,\ 2\sqrt{14}/7\)</td>
+        <td><b>列空间的正交基</b>；且 \(A^*A=R^*R\)，所以 \(R\) 就是 \(\mathrm{chol}(A^*A)\)</td>
+        <td>最小二乘（不形成 \(A^*A\)，\(\kappa\) 不被平方）、QR 迭代求特征值</td>
+      </tr>
+      <tr>
+        <td>SVD<br><span class="mono">ALG-17</span></td>
+        <td>\(A=U\Sigma V^*\)</td>
+        <td>\(U=V=Q\)（\(A\) 对称）；<br>\(\sigma=2+\sqrt2,\ 2,\ 2-\sqrt2\)</td>
+        <td><b>谱</b>：各方向放大率、条件数 \(\kappa_2=3+2\sqrt2\approx5.83\)、可截断到秩 \(k\)</td>
+        <td>低秩近似（误差正好是下一个 \(\sigma\)）、伪逆、PCA、条件数估计</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <p>
+    四条路线解的是<b>同一个</b>方程组，答案都是 \(x=(1,1,1)\)，但产出的信息完全不同：
+    LU 给了"结构没被破坏"和行列式，Cholesky 给了"正定"这张证书，QR 给了列空间的一组正交基，
+    SVD 给了"每个方向被放大多少"。哪个分解有用，取决于你要回答的问题。
+  </p>
+
+  <h3>同一个 A 身上的"数值指纹"</h3>
+  <div class="tw"><table>
+    <thead><tr><th>你关心的量</th><th>本例的值</th><th>哪个分解最直接给出</th></tr></thead>
+    <tbody>
+      <tr><td>行列式 \(\det A\)</td><td>\(4\)</td><td>LU：主元之积 \(2\cdot\frac32\cdot\frac43\)</td></tr>
+      <tr><td>是否正定</td><td>是（三个 \(s\) 全正）</td><td>Cholesky：开方开不下去就不是</td></tr>
+      <tr><td>带宽 / 填充</td><td>带宽 1，填充 0</td><td>LU 或 Cholesky：带外元素恒为 0</td></tr>
+      <tr><td>条件数 \(\kappa_2\)</td><td>\(3+2\sqrt2\approx5.83\)</td><td>SVD：最长半轴 ÷ 最短半轴</td></tr>
+      <tr><td>秩 2 截断的误差</td><td>\(2-\sqrt2\approx0.586\)（相对 \(3-2\sqrt2\approx0.172\)）</td><td>SVD：\(\|A-A_k\|_2=\sigma_{k+1}\)</td></tr>
+      <tr><td>方程组的解</td><td>\((1,1,1)\)</td><td>任一条；四条都对</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>为什么同一个矩阵能有好几种分解</h3>
+  <p>
+    分解就是<b>把 \(A\) 写成几种"标准形状"的乘积</b>。选哪套标准形状，等于选你想让 \(A\) 的哪一面显形：
+  </p>
+  <div class="how">
+    <div><b>三角 × 三角</b>三角形状让求解变成逐个击破（前代／回代，\(O(m^2)\)）。
+      代价是"结构信息"留在 \(L,U\) 里，要自己读：填充、主元、行列式。</div>
+    <div><b>正交 × 上三角</b>正交因子不放大误差，所以最稳。\(Q\) 顺便给出列空间的正交基 ——
+      这就是最小二乘偏爱它的原因。</div>
+    <div><b>正交 × 对角 × 正交</b>把 \(A\) 彻底拆成"旋转—拉伸—旋转"。
+      谱信息（各方向放大力、条件数、低秩结构）全在这一步暴露。</div>
+  </div>
+  <p>
+    第四种是 \(A=R^*R\)（Cholesky）：它是前两类在"\(A\) 对称正定"时的合体 ——
+    上三角的转置乘自己，代价只有 LU 的一半，还顺手证明了正定性。
+    有的书写成 \(A=U^*U\)（\(U\) 上三角），和 \(R^*R\) 是同一件事，只是字母不同。
+  </p>
+
+  <h3>三条最容易混的边界</h3>
+  <div class="how">
+    <div><b>① \(A=R^*R\) 不是总能做</b>它专门标记"对称正定"：本例外 \(s\) 全正所以做得通；
+      一旦某个 \(s\le0\)，这个分解<b>根本不存在</b>，不是数值算不准。</div>
+    <div><b>② QR 的 \(R\) 不是 \(\mathrm{chol}(A)\)</b>它等于 \(\mathrm{chol}(A^*A)\)（本例差 \(2.2\times10^{-16}\)），
+      和 \(\mathrm{chol}(A)\) 差着 \(1.096\)。因为 \(A=QR\Rightarrow A^*A=R^*R\)。</div>
+    <div><b>③ 对称时 SVD 才等于谱分解</b>不对称时两者毫无关系：平面旋转 \(\begin{bmatrix}0&-1\\1&0\end{bmatrix}\)
+      的 \(\sigma\) 是 \(1,1\)（完全良态），特征值却是 \(\pm\mathrm i\)（一个实特征向量都没有）。</div>
+  </div>
+
+  <h2>25 项一览：对象 · 结果 · 用处</h2>
   <p>下表由脚本按每个算法的说明生成，与播放器标题下那一行同源 —— 用来扫读"我到底在学什么"。</p>
   <div class="tw">
     <table>
@@ -316,7 +412,7 @@ window.MathJax = {
   </div>
 
   <footer>
-    <span>NLA-ALG · 算法示波器 · 21 个算法与成本项 / 逐步帧</span>
+    <span>NLA-ALG · 算法示波器 · 25 个算法与成本项 / 逐步帧</span>
     <span>数值线性代数 · 期末复习</span>
   </footer>
 </div>
@@ -1550,6 +1646,387 @@ function symErr(P, L, D, A0){
   return e;
 }
 
+/* ===== 分解对照：同一个 A，四种分解 =====
+   A = [[2,1,0],[1,2,1],[0,1,2]]：一维二阶差分（Poisson / 热传导）的离散模板。
+   它同时是 对称正定、三对角（带宽 1）、Toeplitz、元素全正 —— 所以 LU、Cholesky、
+   QR、SVD（= 谱分解）四种分解全都做得动，正好拿同一个矩阵横向比。
+   实测（verify_decomp_same_a.js）：
+     主元 2, 3/2, 4/3；det = 4；κ₂ = 3+2√2 ≈ 5.828
+     R_chol 的 5 个非零元 √2, √2/2, √6/2, √6/3, 2√3/3
+     R_QR = chol(AᵀA)（差 2.2e-16），但 ≠ chol(A)（差 1.096）—— 别把这两件事混了
+     σ = 2−√2, 2, 2+√2；截断误差 ‖A−A_k‖₂ 依次 2+√2 → 2 → 2−√2 → 0 */
+const SAME_A = [[2, 1, 0], [1, 2, 1], [0, 1, 2]];
+const SAME_B = [3, 4, 3];                       // 真解 x = (1,1,1)
+const SAME_LAM = [2 - Math.SQRT2, 2, 2 + Math.SQRT2];
+function lamFmt(v){
+  if(Math.abs(v - SAME_LAM[0]) < 1e-9) return '2−√2';
+  if(Math.abs(v - SAME_LAM[2]) < 1e-9) return '2+√2';
+  return fmt(v);
+}
+function copyM(A){ return A.map(r => r.slice()); }
+function frow(v){ return '(' + v.map(fmt).join(', ') + ')'; }
+function triErr(F, A){                          // ‖F*F − A‖∞
+  const Ft = [[F[0][0], F[1][0], F[2][0]], [F[0][1], F[1][1], F[2][1]], [F[0][2], F[1][2], F[2][2]]];
+  const P = mm(Ft, F);
+  let e = 0;
+  for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++) e = Math.max(e, Math.abs(P[i][j] - A[i][j]));
+  return e;
+}
+function mulErr(L, U, A){                       // ‖L·U − A‖∞
+  const P = mm(L, U);
+  let e = 0;
+  for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++) e = Math.max(e, Math.abs(P[i][j] - A[i][j]));
+  return e;
+}
+function chol3(A){                              // 通用 3×3 Cholesky，供 QR 条目现场算对照
+  const R = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  for(let j = 0; j < 3; j++) for(let i = 0; i <= j; i++){
+    let s = A[i][j];
+    for(let k = 0; k < i; k++) s -= R[k][i] * R[k][j];
+    if(i < j) R[i][j] = s / R[i][i]; else R[j][j] = Math.sqrt(s);
+  }
+  return R;
+}
+function mergeLU(L, U){                          // 拼成一块：左下放 L，右上放 U
+  const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++) M[i][j] = (i > j) ? L[i][j] : U[i][j];
+  return M;
+}
+function fillCount(L, U){                       // 带宽之外的非零数（"填充"）
+  let c = 0;
+  for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++){
+    if(j < i - 1 && Math.abs(L[i][j]) > 1e-12) c++;
+    if(j > i + 1 && Math.abs(U[i][j]) > 1e-12) c++;
+  }
+  return c;
+}
+
+/* ---- ALG-14 LU：三对角会不会被填满？ ---- */
+function algoSAlu(){
+  const A0 = copyM(SAME_A), m = 3;
+  const A = copyM(A0), L = eye(m), piv = [];
+  return {
+    id: 'sa_lu', tag: 'ALG-14', grp: '分解对照 · 同一个 A', name: 'LU · 三对角零填充',
+    pseudo: [
+      '// A 三对角：上带宽 1、下带宽 1（一维差分的模板）',
+      'for k = 1 : m-1',
+      '    for i = k+1 : m',
+      '        l(i,k) = a(i,k) / a(k,k)',
+      '        for j = k+1 : m',
+      '            a(i,j) = a(i,j) - l(i,k)·a(k,j)',
+      'U = 就地矩阵,  L = 乘数 + 单位对角',
+      'det A = u11·u22·u33'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['A', '三对角 (1,2,1)'], ['带宽', '上 1 / 下 1'], ['b', frow(SAME_B)]],
+        panels: [Pm('A', A), Pm('L', L)],
+        geo: { kind: 'band', A: A0, F: mergeLU(L, A), mode: 'lu', i: -1, j: -1, note: '非零元 5 个' },
+        say: 'A 的非零元只占中间三条对角线 —— 它是一维二阶差分（Poisson / 热传导）的离散模板。下面看消元会不会在这里"填"出新非零元。' };
+      for(let k = 0; k < m - 1; k++){
+        piv.push(A[k][k]);
+        yield { pc: 1, loop: { o: 'k = ' + (k + 1) },
+          vars: [['外循环', 'k = ' + (k + 1) + ' / ' + (m - 1)], ['主元', 'a(' + (k + 1) + ',' + (k + 1) + ') = ' + fmt(A[k][k])]],
+          panels: [Pm('A', A, { x: [[k, k]] }), Pm('L', L)],
+          geo: { kind: 'band', A: A0, F: mergeLU(L, A), mode: 'lu', i: k, j: k, note: '主元 = ' + fmt(A[k][k]) },
+          say: '第 ' + (k + 1) + ' 列：拿 a(' + (k + 1) + ',' + (k + 1) + ') 当主元，把它下面的那个元素消成 0。' };
+        for(let i = k + 1; i < m; i++){
+          yield { pc: 2, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
+            vars: [['内层', 'i = ' + (i + 1)], ['这一行', 'r' + (i + 1) + ' ← r' + (i + 1) + ' − l·r' + (k + 1)]],
+            panels: [Pm('A', A, { x: [[i, k]] }), Pm('L', L)],
+            geo: { kind: 'band', A: A0, F: mergeLU(L, A), mode: 'lu', i: i, j: k, note: 'a(' + (i + 1) + ',' + (k + 1) + ') = ' + fmt(A[i][k]) },
+            say: '第 ' + (i + 1) + ' 行要被剪一次，剪的比例就是这个格子的乘数。' };
+          const aik0 = A[i][k];
+          const l = aik0 / A[k][k];
+          L[i][k] = l;
+          A[i][k] = 0;                          // 消成零：U 的下三角必须干干净净
+          yield { pc: 3, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
+            vars: [['除法', 'a(' + (i + 1) + ',' + (k + 1) + ')/a(' + (k + 1) + ',' + (k + 1) + ') = ' + fmt(aik0) + '/' + fmt(A[k][k])], ['l(' + (i + 1) + ',' + (k + 1) + ')', fmt(l)], ['这一格', '0 ← 被消掉']],
+            panels: [Pm('A', A, { x: [[i, k]] }), Pm('L', L, { x: [[i, k]] })],
+            geo: { kind: 'band', A: A0, F: mergeLU(L, A), mode: 'lu', i: i, j: k, note: 'l = ' + fmt(l) + (Math.abs(l) < 1e-12 ? '（结构零 → 整行不动）' : '') },
+            say: Math.abs(l) < 1e-12
+              ? 'a(' + (i + 1) + ',1) 本来就是 0：乘数是 0，下面这一整行不会被改动 —— 这就是三对角结构能保住的原因。'
+              : '乘数存进 L 的同一位置。存下来是为了以后换 b 时不必重算消元。' };
+          yield { pc: 4, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1), i: 'j = ' + (k + 2) + ' : ' + m },
+            vars: [['内层 j', 'j = ' + (k + 2) + ' … ' + m + '（共 ' + (m - k - 1) + ' 个）'], ['只扫主元右边', 'a(k+1,k+1) 之后，不该动的位置不去碰']],
+            panels: [Pm('A', A, { r: [i], c: [k + 1, m - 1] }), Pm('L', L)],
+            geo: { kind: 'band', A: A0, F: mergeLU(L, A), mode: 'lu', i: i, j: k + 1, note: '行 ' + (i + 1) + ' 的更新范围' },
+            say: '内层只扫主元右边的列。左边已经是 0，再减一次纯属浪费。' };
+          for(let j = k + 1; j < m; j++){
+            const old = A[i][j], kk = A[k][j], nw = old - l * kk;
+            A[i][j] = nw;
+            yield { pc: 5, loop: { o: 'k = ' + (k + 1) + ', i = ' + (i + 1), i: 'j = ' + (j + 1) },
+              vars: [['a(' + (i + 1) + ',' + (j + 1) + ')', fmt(old) + ' − ' + fmt(l) + '×' + fmt(kk) + ' = ' + fmt(nw)],
+                ['a(' + (k + 1) + ',' + (j + 1) + ') 的来源', Math.abs(kk) < 1e-12 ? '= 0（不在带内）→ 这一格原样不动' : '在带内，真的被减']],
+              panels: [Pm('A', A, { x: [[i, j]], r: [k] }), Pm('L', L)],
+              geo: { kind: 'band', A: A0, F: mergeLU(L, A), mode: 'lu', i: i, j: j, note: Math.abs(kk) < 1e-12 ? '带外 → 不填' : '带内 → 更新' },
+              say: Math.abs(kk) < 1e-12
+                ? 'a(' + (k + 1) + ',' + (j + 1) + ') 在三对角之外，是 0。减 0 等于没减：原本是零的格子还是零，不会长出新的非零元。'
+                : '一行的更新：' + fmt(old) + ' − ' + fmt(l) + '×' + fmt(kk) + ' = ' + fmt(nw) + '。' };
+          }
+        }
+      }
+      piv.push(A[2][2]);
+      let det = 1; for(const v of piv) det *= v;
+      const fill = fillCount(L, A);
+      yield { pc: 6, loop: {}, vars: [['L', '下三角，对角全 1'], ['U', '上三角（就地矩阵）'], ['填充', String(fill) + ' 个（带宽外新增非零）']],
+        panels: [Pm('L', L), Pm('U', A)],
+        geo: { kind: 'band', A: A0, F: mergeLU(L, A), mode: 'lu', i: -1, j: -1, note: '填充 ' + fill },
+        say: 'L 和 U 都只有两条带：三对角结构被完整保留，填充 = 0。这就是"三对角矩阵可以做 O(m) 的 Thomas 算法"的前提。' };
+      yield { pc: 7, loop: {}, vars: [['主元', piv.map(fmt).join(' × ')], ['det', fmt(det)], ['‖LU − A‖', fmt(mulErr(L, A, A0))]],
+        panels: [Pm('L', L), Pm('U', A)],
+        geo: { kind: 'band', A: A0, F: mergeLU(L, A), mode: 'lu', i: -1, j: -1, note: 'det = ' + fmt(det) },
+        say: 'det = ' + piv.map(fmt).join(' × ') + ' = ' + fmt(det) + '，与直接算 3×3 一致；LU 精确回到 A。回头看：这个矩阵从没被"填满"过，所以它适合带状直接法；若矩阵稠密，同样位置会长出非零。',
+        check: { A0: A0, L: L, U: A, b: SAME_B, x: [1, 1, 1], det: det, fill: fill, piv: piv.slice() } };
+    }
+  };
+}
+
+/* ---- ALG-15 Cholesky：A = R*R（"u*u" 那一支） ---- */
+function algoSAchol(){
+  const A0 = copyM(SAME_A), m = 3;
+  const R = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  return {
+    id: 'sa_chol', tag: 'ALG-15', grp: '分解对照 · 同一个 A', name: 'Cholesky · A = R*R',
+    pseudo: [
+      '// A 对称正定 ⇒ 存在上三角 R（对角为正），使 A = R*R',
+      'for j = 1 : m',
+      '    for i = 1 : j',
+      '        s = a(i,j) - Σ_{k<i} r(k,i)·r(k,j)',
+      '        if i < j: r(i,j) = s / r(i,i)',
+      '        else:     r(j,j) = sqrt(s)   // s ≤ 0 ⇒ 不正定',
+      'R 只有 5 个非零元：带宽 1 传给了 R（r(1,3) = 0）',
+      '解 A x = b：先 R*y = b 前代，再 R x = y 回代'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['A', '对称正定（主元全正 ⇔ 正定）'], ['要算的', '只有上三角一半'], ['成本', 'm³/3，是 LU 的一半']],
+        panels: [Pm('A', A0), Pm('R', R)],
+        geo: { kind: 'band', A: A0, F: R, mode: 'chol', i: -1, j: -1, note: 'R 待填' },
+        say: '同一个 A，这次只算上三角的一半，还要把每个对角元"开方"取出来。能不能开下去，就是正定性的体检。' };
+      for(let j = 0; j < m; j++){
+        yield { pc: 1, loop: { o: 'j = ' + (j + 1) },
+          vars: [['外循环', 'j = ' + (j + 1) + ' / ' + m], ['这一列', 'r(1:' + (j + 1) + ',' + (j + 1) + ') 共 ' + (j + 1) + ' 个']],
+          panels: [Pm('A', A0, { c: [j] }), Pm('R', R)],
+          geo: { kind: 'band', A: A0, F: R, mode: 'chol', i: -1, j: j, note: '算第 ' + (j + 1) + ' 列' },
+          say: '第 ' + (j + 1) + ' 列从上往下算，对角元最后开方。' };
+        for(let i = 0; i <= j; i++){
+          yield { pc: 2, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['内层', 'i = ' + (i + 1) + ' / ' + (j + 1)], ['这一格', 'r(' + (i + 1) + ',' + (j + 1) + ')' + (i === j ? '（对角元）' : '')]],
+            panels: [Pm('A', A0, { x: [[i, j]] }), Pm('R', R, { x: [[i, j]] })],
+            geo: { kind: 'band', A: A0, F: R, mode: 'chol', i: i, j: j, note: 'r(' + (i + 1) + ',' + (j + 1) + ')' },
+            say: '先看要扣多少：前 ' + i + ' 行已经算好了 r 的对应元素。' };
+          let s = A0[i][j];
+          yield { pc: 3, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['a(i,j)', fmt(A0[i][j])], ['s 初值', fmt(s)]],
+            panels: [Pm('A', A0, { x: [[i, j]] }), Pm('R', R)],
+            geo: { kind: 'band', A: A0, F: R, mode: 'chol', i: i, j: j, note: 's = ' + fmt(s) },
+            say: '取原矩阵的元素当起点：a(' + (i + 1) + ',' + (j + 1) + ') = ' + fmt(s) + '。' };
+          for(let k = 0; k < i; k++){
+            const t = R[k][i] * R[k][j], s0 = s;
+            s -= t;
+            yield { pc: 3, loop: { o: 'j = ' + (j + 1) + ', i = ' + (i + 1), i: 'k = ' + (k + 1) },
+              vars: [['扣掉', 'r' + sub(k + 1) + sub(i + 1) + '·r' + sub(k + 1) + sub(j + 1) + ' = ' + fmt(R[k][i]) + '×' + fmt(R[k][j]) + ' = ' + fmt(t)],
+                ['s', fmt(s0) + ' − ' + fmt(t) + ' = ' + fmt(s)]],
+              panels: [Pm('A', A0, { x: [[i, j]] }), Pm('R', R, { r: [k], x: [[k, i], [k, j]] })],
+              geo: { kind: 'band', A: A0, F: R, mode: 'chol', i: i, j: j, note: 's = ' + fmt(s) },
+              say: '第 ' + (k + 1) + ' 行的两个已算元素相乘再扣掉。' };
+          }
+          if(i < j){
+            const dv = R[i][i];
+            R[i][j] = s / dv;
+            yield { pc: 4, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+              vars: [['÷ r(i,i)', fmt(dv)], ['r(' + (i + 1) + ',' + (j + 1) + ')', fmt(R[i][j])]],
+              panels: [Pm('A', A0, { x: [[i, j]] }), Pm('R', R, { x: [[i, j]] })],
+              geo: { kind: 'band', A: A0, F: R, mode: 'chol', i: i, j: j, note: 'r = ' + fmt(R[i][j]) },
+              say: Math.abs(R[i][j]) < 1e-12
+                ? '这一格算出 0：a(1,3) 在三对角之外，R 的 (1,3) 也留空 —— 带宽 1 被原样传给 R，所以 R 是二对角，只有 5 个非零元。'
+                : '非对角元：剩余量除以同行的对角元。' };
+          } else {
+            R[j][j] = Math.sqrt(s);
+            yield { pc: 5, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+              vars: [['√s', '√' + fmt(s)], ['r(' + (j + 1) + ',' + (j + 1) + ')', fmt(R[j][j])], ['s 的符号', s > 0 ? '正 → 正定这一项合格' : '非正 → 矩阵不正定，停']],
+              panels: [Pm('A', A0, { x: [[j, j]] }), Pm('R', R, { x: [[j, j]] })],
+              geo: { kind: 'band', A: A0, F: R, mode: 'chol', i: i, j: j, note: '√' + fmt(s) + ' = ' + fmt(R[j][j]) },
+              say: '对角元开方。三个 s 分别是 2、3/2、4/3，全正 —— 这个"能不能开下去"就是正定性最直接的判据，LU 没有这道关卡。' };
+          }
+        }
+      }
+      const z = [0, 0, 0], xc = [0, 0, 0];
+      z[0] = SAME_B[0] / R[0][0];
+      z[1] = (SAME_B[1] - R[0][1] * z[0]) / R[1][1];
+      z[2] = (SAME_B[2] - R[1][2] * z[1]) / R[2][2];
+      xc[2] = z[2] / R[2][2];
+      xc[1] = (z[1] - R[1][2] * xc[2]) / R[1][1];
+      xc[0] = (z[0] - R[0][1] * xc[1]) / R[0][0];
+      yield { pc: 6, loop: {}, vars: [['R 的非零元', '√2, √2/2, √6/2, √6/3, 2√3/3'], ['r(1,3)', fmt(R[0][2]) + '（带宽之外，从未计算）'], ['‖RᵀR − A‖', triErr(R, A0).toExponential(1)]],
+        panels: [Pm('A', A0), Pm('R', R)],
+        geo: { kind: 'band', A: A0, F: R, mode: 'chol', i: -1, j: -1, note: 'R 二对角，5 个非零' },
+        say: '三个对角元 √2、√6/2、2√3/3 全为正，A = RᵀR 精确成立。开方这一步是 Cholesky 独有的"体检"：s 一旦为负，矩阵就不是正定，分解根本不存在。' };
+      yield { pc: 7, loop: {}, vars: [['前代解 R*y = b', frow(z)], ['回代解 R x = y', frow(xc)], ['实际解', 'x = (1,1,1)，b = (3,4,3)']],
+        panels: [Pm('R', R), Vm('y（前代结果）', z)],
+        geo: { kind: 'band', A: A0, F: R, mode: 'chol', i: -1, j: -1, note: 'x = (1,1,1)' },
+        say: '两条三角求解，各 m²/2。全程只用了一半的存储和一半的乘法 —— 这就是"对称 + 正定"换来的对折。',
+        check: { A: A0, R: R, b: SAME_B, x: xc } };
+    }
+  };
+}
+
+/* ---- ALG-16 QR（MGS）：R 到底等于谁的 Cholesky？ ---- */
+function algoSAqr(){
+  const A0 = copyM(SAME_A), n = 3;
+  const cols = zip(A0);
+  const Q = [], R = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  const AtA = [[5, 4, 1], [4, 6, 4], [1, 4, 5]];
+  const Rg = [[Math.sqrt(5), 4 / Math.sqrt(5), 1 / Math.sqrt(5)],
+    [0, Math.sqrt(70) / 5, 8 * Math.sqrt(70) / 35],
+    [0, 0, 2 * Math.sqrt(14) / 7]];
+  return {
+    id: 'sa_qr', tag: 'ALG-16', grp: '分解对照 · 同一个 A', name: 'QR · 与 A*A 的关系',
+    pseudo: [
+      '// 列满秩 A：A = QR，Q 的列标准正交，R 上三角',
+      'for j = 1 : n',
+      '    v = a(j)',
+      '    for i = 1 : j-1',
+      '        r(i,j) = q(i)* v',
+      '        v = v - r(i,j)·q(i)',
+      '    r(j,j) = ‖v‖,  q(j) = v / r(j,j)',
+      'A*A = R*R  ⇒  R 就是 chol(A*A)，不是 chol(A)'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['A', '三对角 (1,2,1)'], ['列', 'a₁ = (2,1,0)  a₂ = (1,2,1)  a₃ = (0,1,2)'], ['注意', 'A 的列并不正交']],
+        panels: [Pm('Q', [[0, 0, 0], [0, 0, 0], [0, 0, 0]]), Pm('R', R)],
+        geo: { kind: 'qrcol', cols: cols.map(c => c.slice()), qs: [], v: null, j: -1, i: -1 },
+        say: '同一个 A，换成"把列掰成正交"的路线。QR 的产物是 Q（正交）和 R（上三角），两个都不是 A 本身的性质，而是这个正交化过程的记录。' };
+      for(let j = 0; j < n; j++){
+        yield { pc: 1, loop: { o: 'j = ' + (j + 1) },
+          vars: [['外循环', 'j = ' + (j + 1) + ' / ' + n], ['这一列', 'a' + sub(j + 1) + ' = ' + frow(cols[j])]],
+          panels: [Pm('Q', qmatOf(Q, cols)), Pm('R', R, { c: [j] })],
+          geo: { kind: 'qrcol', cols: cols.map(c => c.slice()), qs: Q.map(q => q.slice()), v: null, j: j, i: -1 },
+          say: '处理第 ' + (j + 1) + ' 列：它要减掉在之前所有 q 方向上的分量。' };
+        let v = cols[j].slice();
+        yield { pc: 2, loop: { o: 'j = ' + (j + 1) },
+          vars: [['v 初值', 'a' + sub(j + 1) + ' = ' + frow(v)], ['目标', '把 v 掰到与 q₁…q' + (j === 0 ? '（空）' : sub(j)) + ' 都垂直']],
+          panels: [Pm('Q', qmatOf(Q, cols)), Pm('R', R, { c: [j] })],
+          geo: { kind: 'qrcol', cols: cols.map(c => c.slice()), qs: Q.map(q => q.slice()), v: v.slice(), j: j, i: -1 },
+          say: 'v 从原始列出发 —— 每扣一次都会改写它，最后剩下的就是"垂直于前面所有方向"的那部分。' };
+        for(let i = 0; i < j; i++){
+          yield { pc: 3, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['内层', 'i = ' + (i + 1) + ' / ' + (j - 1)], ['对谁取投影', 'q' + sub(i + 1)]],
+            panels: [Pm('Q', qmatOf(Q, cols), { c: [i] }), Pm('R', R, { x: [[i, j]] })],
+            geo: { kind: 'qrcol', cols: cols.map(c => c.slice()), qs: Q.map(q => q.slice()), v: v.slice(), j: j, i: i },
+            say: '在 q' + sub(i + 1) + ' 方向上取投影系数。' };
+          const rij = dot(Q[i], v);
+          R[i][j] = rij;
+          yield { pc: 4, loop: { o: 'j = ' + (j + 1) + ', i = ' + (i + 1) },
+            vars: [['点积', 'q' + sub(i + 1) + 'ᵀ v = ' + fmt(rij)], ['r(' + (i + 1) + ',' + (j + 1) + ')', fmt(rij)]],
+            panels: [Pm('Q', qmatOf(Q, cols), { c: [i] }), Pm('R', R, { x: [[i, j]] })],
+            geo: { kind: 'qrcol', cols: cols.map(c => c.slice()), qs: Q.map(q => q.slice()), v: v.slice(), j: j, i: i },
+            say: '这个投影系数直接就是 R 的元素：R 记录"每个方向上占了多长"。' };
+          const v0 = v.slice();
+          v = v.map((t, k2) => t - rij * Q[i][k2]);
+          yield { pc: 5, loop: { o: 'j = ' + (j + 1) + ', i = ' + (i + 1) },
+            vars: [['v', frow(v0) + ' − ' + fmt(rij) + '·q' + sub(i + 1)], ['= ', frow(v)]],
+            panels: [Pm('Q', qmatOf(Q, cols), { c: [i] }), Pm('R', R)],
+            geo: { kind: 'qrcol', cols: cols.map(c => c.slice()), qs: Q.map(q => q.slice()), v: v.slice(), j: j, i: i },
+            say: '扣掉这一份。注意下一个点积用的是扣过的 v（MGS），而不是原始列（CGS）—— 这就是两者精度差异的来源。' };
+        }
+        const nv = nrm(v);
+        R[j][j] = nv;
+        Q.push(v.map(t => t / nv));
+        yield { pc: 6, loop: { o: 'j = ' + (j + 1) },
+          vars: [['‖v‖', fmt(nv)], ['q' + sub(j + 1), frow(Q[j])]],
+          panels: [Pm('Q', qmatOf(Q, cols), { c: [j] }), Pm('R', R, { x: [[j, j]] })],
+          geo: { kind: 'qrcol', cols: cols.map(c => c.slice()), qs: Q.map(q => q.slice()), v: v.slice(), j: j, i: -1 },
+          say: '剩下的长度写进 r' + sub(j + 1) + sub(j + 1) + '（正好是新的列长），方向归一化后就是 q' + sub(j + 1) + '。' };
+      }
+      const Qm = qmatOf(Q, cols);
+      let e = 0;
+      for(let i = 0; i < 3; i++) for(let k = 0; k < 3; k++){
+        let t = 0; for(let j2 = 0; j2 < 3; j2++) t += Qm[j2][i] * Qm[j2][k];
+        e = Math.max(e, Math.abs(t - (i === k ? 1 : 0)));
+      }
+      let dA = 0, dAtA = 0;
+      const RcA = chol3(A0);
+      for(let i = 0; i < 3; i++) for(let j2 = 0; j2 < 3; j2++){
+        dA = Math.max(dA, Math.abs(R[i][j2] - RcA[i][j2]));
+        dAtA = Math.max(dAtA, Math.abs(R[i][j2] - Rg[i][j2]));
+      }
+      const dTxt = dAtA < 1e-15 ? '< 1e-15' : dAtA.toExponential(1);
+      yield { pc: 7, loop: {}, vars: [['QᵀQ − I', e.toExponential(1)], ['‖R − chol(AᵀA)‖', dTxt], ['‖R − chol(A)‖', fmt(dA)]],
+        panels: [Pm('Q', Qm), Pm('R', R), Pm('chol(AᵀA)', Rg)],
+        geo: { kind: 'qrcol', cols: cols.map(c => c.slice()), qs: Q.map(q => q.slice()), v: null, j: -1, i: -1 },
+        say: '关键一条：R 不是 A 的 Cholesky 因子 —— 它等于 chol(AᵀA)（差 ' + dTxt + '），和 chol(A) 差着 ' + fmt(dA) + '。因为 A = QR ⇒ AᵀA = RᵀR。这条同时解释了为什么"正规方程 + Cholesky"和"QR 最小二乘"给出同一个解，以及为什么后者更稳：AᵀA 显式形成，κ 就平方了。',
+        check: { A0: A0, Q: Qm, R: R, Rg: Rg } };
+    }
+  };
+}
+function qmatOf(Q, cols){
+  const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  Q.forEach((q, j) => { for(let i = 0; i < 3; i++) M[i][j] = q[i]; });
+  return M;
+}
+
+/* ---- ALG-17 SVD = 谱分解：同一个东西的两种说法 ---- */
+function algoSAspec(){
+  const A0 = copyM(SAME_A), m = 3;
+  const sq = Math.SQRT1_2;
+  const V = [[0.5, sq, 0.5], [sq, 0, -sq], [0.5, -sq, 0.5]];   // 列 = v(2+√2), v(2), v(2−√2)
+  const sig = [SAME_LAM[2], SAME_LAM[1], SAME_LAM[0]];         // 降序
+  const Ak = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  const rankOne = k => {
+    const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+    for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++) M[i][j] = sig[k] * V[i][k] * V[j][k];
+    return M;
+  };
+  return {
+    id: 'sa_svd', tag: 'ALG-17', grp: '分解对照 · 同一个 A', name: 'SVD = 谱分解 · 逐项低秩',
+    pseudo: [
+      '// A 对称正定 ⇒ 谱分解就是 SVD：U = V = Q，σ = λ',
+      '1) 单位球的像 = 椭球，三条半轴就是三个 λ',
+      '2) 按 σ 降序累加秩一项：A_k = A_{k-1} + σ_k u_k v_kᵀ',
+      '3) 截断误差 ‖A − A_k‖₂ = σ_{k+1}   （Eckart–Young）',
+      '4) 解 A x = b：x = Σ (v_kᵀ b / λ_k) v_k',
+      '5) κ₂ = λmax/λmin = (2+√2)/(2−√2) = 3+2√2'
+    ],
+    run: function*(){
+      yield { pc: 0, loop: {}, vars: [['σ', '2+√2, 2, 2−√2（降序）'], ['U 与 V', '同一个 Q（因为 A = Aᵀ）'], ['为什么', '对称 ⇒ 左右奇异向量只差符号，取正号即重合']],
+        panels: [Pm('A', A0), Pm('σ', [[sig[0], sig[1], sig[2]]], null, lamFmt)],
+        geo: { kind: 'spec', V: V, sig: sig, k: 0, resid: sig[0] },
+        say: '对一般的 A，SVD 要算两个不同的正交基 U、V；这个 A 对称，所以 U = V，SVD 直接退化成特征分解。σ 与 λ 同值同序，只是换了名字。' };
+      yield { pc: 1, loop: {}, vars: [['主轴 v₁ v₂ v₃', '两两正交，单位长'], ['半轴长', '2+√2 > 2 > 2−√2']],
+        panels: [Pm('A', A0), Pm('σ', [[sig[0], sig[1], sig[2]]], null, lamFmt)],
+        geo: { kind: 'spec', V: V, sig: sig, k: 0, resid: sig[0] },
+        say: '几何读法：A 把单位球压成一个椭球，三条半轴就是三个 λ，方向就是三个特征向量。画布上三条箭头就是这半个椭球的三条半轴。' };
+      for(let k = 0; k < m; k++){
+        const one = rankOne(k);
+        for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++) Ak[i][j] += one[i][j];
+        yield { pc: 2, loop: { o: '第 ' + (k + 1) + ' 项' },
+          vars: [['加上', 'σ' + sub(k + 1) + '·u' + sub(k + 1) + 'v' + sub(k + 1) + 'ᵀ, σ = ' + lamFmt(sig[k])], ['列 v' + sub(k + 1), frow(V.map(r => r[k]))], ['A_k 的秩', String(k + 1)]],
+          panels: [Pm('A_k', Ak, { r: [0, 1, 2] }), Pm('σ', [[sig[0], sig[1], sig[2]]], { x: [[0, k]] }, lamFmt)],
+          geo: { kind: 'spec', V: V, sig: sig, k: k + 1, resid: sig[0] },
+          say: '秩一更新：只沿 v' + sub(k + 1) + ' 一个方向加料。这一项的"重量"就是 σ' + sub(k + 1) + ' = ' + lamFmt(sig[k]) + '。' };
+        const resid = (k + 1 < m) ? sig[k + 1] : 0;
+        yield { pc: 3, loop: { o: '第 ' + (k + 1) + ' 项' },
+          vars: [['‖A − A_k‖₂', resid ? lamFmt(resid) : '0'], ['Eckart–Young', '误差正好等于下一个 σ'], ['相对误差', resid ? fmt(resid / sig[0]) : '0']],
+          panels: [Pm('A', A0), Pm('A_k', Ak), Pm('σ', [[sig[0], sig[1], sig[2]]], { x: [[0, k]] }, lamFmt)],
+          geo: { kind: 'spec', V: V, sig: sig, k: k + 1, resid: resid },
+          say: resid
+            ? '丢掉还没加的那部分，谱范数误差恰好是下一个 σ = ' + lamFmt(resid) + '（相对 ' + fmt(resid / sig[0]) + '）。这就是压缩、降维敢截断的理论依据 —— 误差可预测，不是"看着差不多"。'
+            : '三项加完，A_3 = A 精确成立。' };
+      }
+      const xq = V.map(r => r.reduce((s, v, j) => s + v * (V.reduce((t, rr, i) => t + rr[j] * SAME_B[i], 0)) / SAME_LAM[2 - j], 0));
+      yield { pc: 4, loop: {}, vars: [['v_kᵀb', V[0].reduce((s, v, i) => s + v * SAME_B[i], 0).toFixed(4) + ' 等三个'], ['x = Σ (v_kᵀb/λ_k) v_k', frow(xq)], ['与 LU 路线比', '同一个 (1,1,1)']],
+        panels: [Pm('A', A0), Pm('σ', [[sig[0], sig[1], sig[2]]], null, lamFmt)],
+        geo: { kind: 'spec', V: V, sig: sig, k: 3, resid: 0 },
+        say: '分解的另一半用处：解方程。在特征基里 A 变成对角矩阵，逐个除以 λ_k 就完事 —— 这也是"沿各方向的放大率"这句话的实际用法。λ 中有一个 2−√2 很小，那个方向上的误差被放大 1/(2−√2) 倍。' };
+      yield { pc: 5, loop: {}, vars: [['κ₂', '(2+√2)/(2−√2) = 3+2√2 ≈ 5.83'], ['det', 'λ₁λ₂λ₃ = 4'], ['对称 ⇒', 'σ_min = |λ_min|，无需另算']],
+        panels: [Pm('A', A0), Pm('σ', [[sig[0], sig[1], sig[2]]], null, lamFmt)],
+        geo: { kind: 'spec', V: V, sig: sig, k: 3, resid: 0 },
+        say: '条件数 5.83 来自最长半轴与最短半轴之比：椭球越扁，解对 b 的扰动越敏感。这条在 SVD 里一眼可见，在 LU 里要额外算。',
+        check: { A: A0, V: V, sig: sig, x: xq, kappa: 3 + 2 * Math.SQRT2 } };
+    }
+  };
+}
+
 /* ===== 计算成本模块（C1–C6）===== */
 const COST_NS = [4, 8, 16, 32, 64, 128];
 const COST_SPECS = [
@@ -1655,7 +2132,15 @@ const ALGO_META = {
   svd:    { i: '任意 m×n 矩阵 A', o: 'U、Σ、V，使 A = U Σ V*（σ 降序）',
             u: '降维、压缩、伪逆、秩判定、Eckart–Young 截断；也不能靠形成 AᵀA 来算' },
   sypivot:{ i: 'Hermite 矩阵（可不定）', o: 'P、L、D，使 P A P* = L D L*',
-            u: '换行必换列以保住对称结构；正定时 D > 0，开方即 Cholesky' }
+            u: '换行必换列以保住对称结构；正定时 D > 0，开方即 Cholesky' },
+  sa_lu:  { i: '三对角方阵 A（本例弱对角占优，不必选主元）', o: 'L（单位下三角）与 U，A = LU',
+            u: '解方程、算行列式；本例证明带状结构不会被填满（填充 0），这就是三对角只花 O(m) 的依据' },
+  sa_chol:{ i: 'Hermite 正定矩阵 A', o: '上三角 R（对角为正），A = R*R',
+            u: '解方程与正规方程；"s 能不能开方"就是正定性判据 —— LU 没有这道关' },
+  sa_qr:  { i: '列满秩矩阵 A', o: 'Q（列正交）与 R（上三角），A = QR',
+            u: '最小二乘与 QR 迭代；R = chol(A*A)，这正是正规方程与 QR 同解的代数原因' },
+  sa_svd: { i: '任意矩阵 A（本例对称正定）', o: 'U、Σ、V，A = U Σ V*；对称时 U = V = Q',
+            u: '低秩近似（误差正好是下一个 σ）、伪逆、条件数；截断误差可预测是它最大的用处' }
 };
 ['mv', 'gs', 'house', 'givens', 'lu', 'chol'].forEach(k => {
   ALGO_META['cost_' + k] = {
@@ -1682,6 +2167,10 @@ const ALGO_CORE = {
   chol: '对称 + 正定 ⇒ 只需一半工作，而且能「开平方」',
   svd: '只用两列之间的旋转把列转成互相垂直，垂直后列长就是奇异值。这是迭代法：旋转参数 c、s 是嵌套根式，中间量只能给近似值（标 ≈），但每步都精确保持列对的夹角被清零，末帧 UΣVᵀ 回到 A 的误差在 1e-16 量级 —— 近似只停在机器精度那一层',
   sypivot: '选主元只能在剩余对角元里选，代价是换行必须同时换列',
+  sa_lu: '消元只在带内动 —— 三对角结构自动保住，填充为 0，于是 Thomas 算法只需 O(m)',
+  sa_chol: '对称 + 正定 ⇒ 只算一半、只开方不选主元；s 的符号就是正定性的体检',
+  sa_qr: '把列逐个掰正交；R 记录每个方向占多长，所以 R*R = A*A',
+  sa_svd: '对称 ⇒ 谱分解就是 SVD；按 σ 降序截断，误差正好是下一个 σ',
   cost_mv: '数清楚内层做了多少次乘加',
   cost_gs: '数清楚内层做了多少次乘加',
   cost_house: '数清楚内层做了多少次乘加',
@@ -1842,6 +2331,44 @@ const ALGO_WHY = {
       '行更新（对称性由「同换行列」保证）',
       '乘子落位，腾出空间存 L',
       'PAP* = LDL*；正定时 D 全正，开方即 Cholesky'
+  ],
+  sa_lu: [
+      '三对角 = 只有中间三条线非零，这是一维差分模板的标志',
+      '逐列消元，用第 k 列当刀',
+      '只削下面几行（上面已经消过）',
+      '乘数 = 要消掉的元素 ÷ 主元；先存下来，换 b 时复用',
+      '内层只扫主元右边的列，左边的 0 不去碰',
+      '行更新：主元行按乘数放大后从这一行减掉',
+      'L 存乘数（对角补 1），U 就是就地改写后的矩阵',
+      '主元之积 = 行列式；本例 2 × 3/2 × 4/3 = 4'
+  ],
+  sa_chol: [
+      '正定性保证 R 存在，且对角元能开方为正',
+      '逐列，只算上三角（下三角由对称性免费得到）',
+      '每列从上往下一直到对角线',
+      '把前面已算的 r 的内积扣干净，剩下的才是这一格自己的贡献',
+      '非对角元 = 剩余量 ÷ 同行的对角元',
+      '对角元 = 开方；s ≤ 0 说明矩阵不正定，分解根本不存在',
+      'a(1,3) = 0 使 r(1,3) 也 = 0：带宽 1 被原样继承，R 只有 5 个非零元',
+      '前代 + 回代各 m²/2；整个求解比 LU 省一半'
+  ],
+  sa_qr: [
+      '目标：A = QR，Q 的列标准正交，R 上三角',
+      '逐列处理，q 一旦定下就不再改（这是它比 SVD 简单的地方）',
+      'v 从原始列出发，每扣一次就改写它',
+      '对每个已有 q 方向取投影',
+      '投影系数原样存进 R：它记录"这列在 q_i 上占多长"',
+      '扣掉这一份，剩下的才与 q_i 垂直（用扣过的 v，所以是 MGS）',
+      '最后剩下的长度写进 r(j,j)，方向归一化就是 q_j',
+      'A = QR ⇒ A*A = R*R，所以 R = chol(A*A) —— 不是 chol(A)'
+  ],
+  sa_svd: [
+      '对称 ⇒ U 与 V 是同一组特征向量，σ 与 λ 同值同序',
+      '单位球在 A 下的像：三条半轴长就是 σ，本例 σ = λ',
+      '秩一累加：每加一项多恢复一个方向，项重就是 σ_k',
+      '截断误差由下一个 σ 封顶（谱范数下这是最优的，Eckart–Young）',
+      '特征基下 A 成了对角阵，解方程变成逐项相除',
+      '最长半轴 ÷ 最短半轴 = 条件数；这里 κ₂ = 3+2√2 ≈ 5.83'
   ],
   cost_mv: [
       '计数从 0 开始',
@@ -2044,7 +2571,8 @@ const ALG_FACTORY = [
   algoMVrow, algoMVcol, algoTri, algoProj,
   () => algoGS('cgs'), () => algoGS('mgs'), algoHouse, algoGivens,
   () => algoLS('ne'), () => algoLS('qr'),
-  algoSVD, () => algoLU(false), () => algoLU(true), algoChol, algoSyPivot
+  algoSVD, () => algoLU(false), () => algoLU(true), algoChol, algoSyPivot,
+  algoSAlu, algoSAchol, algoSAqr, algoSAspec
 ].concat(COST_SPECS.map(c => () => costAlgo(c)));
 const ALGOS = ALG_FACTORY.map(f => f());
 function makeAlgo(id){
@@ -2396,6 +2924,78 @@ const DRAW = {
       txt('r(j,j) = √s = √' + fmt(g.s) + ' = ' + fmt(Math.sqrt(Math.max(g.s, 0))), x0, y1 + H + 118, COL.cinn, 'left', 12);
     }
     txt('灰 = 已被前面的 r 扣掉，红 = 留给这一格', 12, 466, COL.mut, 'left', 11);
+  },
+
+  /* 分解对照：左边原始结构，右边当前因子 —— 看"零"有没有被填上 */
+  band(f){
+    const g = f.geo; clear();
+    const cell = 62, oy = 132;
+    const put = (ox, M, label, mode, hl) => {
+      txt(label, ox, oy - 14, COL.mut, 'left', 11);
+      for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++){
+        const x = ox + j * cell, y = oy + i * cell, v = M[i][j];
+        const zero = Math.abs(v) < 1e-12;
+        const hot = hl && hl[0] === i && hl[1] === j;
+        let fill = '#F7F4ED';
+        if(!zero) fill = (mode === 'a') ? 'rgba(34,48,63,0.05)'
+          : (mode === 'chol') ? (i <= j ? 'rgba(200,161,90,0.30)' : 'rgba(0,0,0,0)')
+          : (i > j ? 'rgba(47,93,138,0.22)' : 'rgba(200,161,90,0.30)');
+        g2.save();
+        g2.fillStyle = hot ? 'rgba(176,74,47,0.34)' : fill;
+        g2.fillRect(x, y, cell, cell);
+        g2.strokeStyle = hot ? COL.cinn : '#E2DCD0';
+        g2.lineWidth = hot ? 2 : 1;
+        g2.strokeRect(x + 0.5, y + 0.5, cell - 1, cell - 1);
+        g2.restore();
+        if(zero){
+          txt('0', x + cell / 2, y + cell / 2 + 5, '#C9C1B2', 'center', 12);
+        } else {
+          txt(fmt(v), x + cell / 2, y + cell / 2 + 5, hot ? COL.cinn : COL.ink, 'center', 13);
+        }
+      }
+    };
+    put(40, g.A, 'A（原始结构）', 'a', null);
+    put(258, g.F, g.mode === 'chol' ? 'R：只算上三角' : 'L（左下）/ U（右上）', g.mode,
+      (g.i >= 0) ? [g.i, g.j] : null);
+    txt(g.note || '', 12, 70, COL.cinn, 'left', 15);
+    txt(g.mode === 'chol'
+      ? '淡黄 = R 的上三角（下三角恒 0）　灰「0」= 带外，从未计算'
+      : '淡黄 = U 区　淡蓝 = L 区　灰「0」在带外：全程没被碰过', 12, 470, COL.mut, 'left', 11);
+  },
+
+  /* QR：原始列怎么被掰成正交的 q */
+  qrcol(f){
+    const g = f.geo; clear();
+    const pts = g.cols.concat(g.qs || []).concat(g.v ? [g.v] : []).concat([[1.9, 0, 0], [0, 1.9, 0], [0, 0, 1.9]]);
+    setCam(pts); axes3(1.9);
+    g.cols.forEach((c, i) => {
+      const hot = (i === g.j && !g.v);
+      arrow3([0, 0, 0], c, hot ? COL.amber : '#D9D1C0', 'a' + (i + 1), false, hot ? 2.2 : 1.4);
+    });
+    (g.qs || []).forEach((q, i) => arrow3([0, 0, 0], q, COL.steel, 'q' + (i + 1), false, 2.1));
+    if(g.v) arrow3([0, 0, 0], g.v, COL.cinn, 'v', false, 2.6);
+    txt('青 = 已定下的 q　灰 = 待处理的列　黄 = 当前列　红 = 扣到一半的 v', 12, 466, COL.mut, 'left', 11);
+  },
+
+  /* 谱分解：单位球像的三条半轴 */
+  spec(f){
+    const g = f.geo; clear();
+    const pts = [[1.9, 0, 0], [0, 1.9, 0], [0, 0, 1.9]];
+    const dirs = [];
+    for(let k = 0; k < 3; k++){
+      const col = g.V.map(r => r[k]);
+      dirs.push(col);
+      pts.push(scal(col, Math.max(g.sig[k], 0.35)));
+    }
+    setCam(pts); axes3(1.9);
+    for(let k = 0; k < 3; k++){
+      const used = k < g.k;
+      arrow3([0, 0, 0], scal(dirs[k], Math.max(g.sig[k], 0.35)), used ? COL.steel : COL.gray,
+        lamFmt(g.sig[k]), !used, used ? 2.8 : 1.5);
+    }
+    txt('三条箭头 = 椭球的三条半轴（互相垂直）', 12, 30, COL.ink, 'left', 12);
+    txt('青 = 已加入 A_k　灰虚线 = 被丢掉的部分', 12, 466, COL.mut, 'left', 11);
+    if(g.resid !== undefined) txt('‖A − A_k‖₂ = ' + (g.resid ? lamFmt(g.resid) : '0'), 12, 448, COL.cinn, 'left', 13);
   }
 };
 

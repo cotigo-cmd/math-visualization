@@ -986,7 +986,7 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 <div class="note b" id="s8-8-bak">
 <span class="h">补充：题目引用的三条结论 —— 陈述 + 简要证明</span>
 <p>上面的解答把三件事当已知用了，教材只引用不证：<b>(0) QR 解 \(Ax=b\) 为什么后向稳定</b>（题目说"仿照"的就是它）、<b>(A) Cholesky 分解的后向稳定性定理</b>、<b>(B) 三角前代／回代的稳定性定理</b>。三条成立的理由各不相同，被追问一句"凭什么"要答得出来。</p>
-<p>记号：\(\epsilon\) 是单位舍入；\(\gamma_k=\dfrac{k\epsilon}{1-k\epsilon}\) 表示 \(k\) 次运算累积的相对误差上界（\(k\epsilon+O(\epsilon^2)\)）；\(|M|\) 表示逐元素取模，\(|M|\le c|N|\) 按<strong>逐元素</strong>理解。</p>
+<p>记号：\(\epsilon\) 是单位舍入；\(\gamma_k=k\epsilon/(1-k\epsilon)\) 表示 \(k\) 次运算累积的相对误差上界（\(\approx k\epsilon\)）；\(|M|\) 表示逐元素取模，\(|M|\le c|N|\) 按<strong>逐元素</strong>理解。</p>
 
 <h3>(0) QR 解 \(Ax=b\)：三层各自后向稳定，误差不被放大</h3>
 <p>算法是 \(A=QR\)、解 \(Rx=Q^*b\)，三层分别是：</p>
@@ -1019,7 +1019,7 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 
 <h3>(B) 定理：三角前代／回代后向稳定</h3>
 <p>设 \(T\) 上三角非奇异，\(\hat x\) 由回代算出，则存在 \(\Delta T\) 使</p>
-<div class="eq">$$(T+\Delta T)\hat x=b,\qquad |\Delta T|\le\gamma_{m}|T| .$$</div>
+<div class="eq">$$\begin{aligned}(T+\Delta T)\hat x&=b,\\ |\Delta T|&\le\gamma_m|T| .\end{aligned}$$</div>
 <p>前代同理（\(T\) 换成下三角，证明一字不改）。</p>
 <p><b>证明（对行号归纳）。</b> 回代第 \(i\) 行是</p>
 <div class="eq">$$\begin{aligned}\hat x_i&=\mathrm{fl}\Big(\frac{b_i-s_i}{t_{ii}}\Big),\\ s_i&=\mathrm{fl}\Big(\sum_{j&gt;i}t_{ij}\hat x_j\Big).\end{aligned}$$</div>

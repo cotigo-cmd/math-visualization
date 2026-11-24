@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>算法稳定性档案 · 哪些算法能放心用，哪些要换写法｜数值线性代数</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.min.js"></script>
+<style>
+  :root{
+    --paper:#FAF9F6; --ink:#22303F; --cinn:#B04A2F; --steel:#2F5D8A;
+    --mut:#6B6A63; --line:#E2DCD0; --amber:#C8A15A; --green:#3F6B4F;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:16px/1.72 -apple-system,"Segoe UI","Noto Sans SC",system-ui,sans-serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:26px 18px 72px}
+  a{color:var(--steel);text-decoration:none;border-bottom:1px solid rgba(47,93,138,.28)}
+  a:hover{border-bottom-color:var(--steel)}
+  .nav{display:flex;gap:16px;font-size:13px;color:var(--mut);margin-bottom:22px;flex-wrap:wrap}
+  .mast{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:20px}
+  .tag{display:inline-block;font:11px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;
+    color:var(--paper);background:var(--ink);padding:4px 7px;border-radius:2px;vertical-align:middle}
+  h1{font-size:27px;line-height:1.32;margin:12px 0 8px;letter-spacing:-.01em}
+  .sub{color:var(--mut);font-size:14.5px;max-width:800px;margin:0}
+  h2{font-size:20px;margin:40px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  h3{font-size:16px;margin:22px 0 8px}
+  p{margin:10px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92em}
+
+  .toc{background:#FFFDF9;border:1px solid var(--line);border-radius:4px;padding:12px 16px;font-size:14px;columns:2;column-gap:28px}
+  .toc a{display:block;padding:2px 0;border:0;color:var(--ink)}
+  .toc a:hover{color:var(--cinn)}
+  .toc b{display:block;font-size:12px;color:var(--mut);letter-spacing:.08em;margin-bottom:4px;column-span:all}
+
+  .tw{overflow-x:auto;margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.6px;margin:0}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;color:var(--mut);font-weight:600;letter-spacing:.05em;background:#F6F3EA}
+  tbody tr:nth-child(even){background:#FCFAF4}
+  td.num{font-family:ui-monospace,Consolas,monospace;font-size:12.8px;white-space:nowrap}
+
+  .pf{border:1px solid var(--line);border-left:3px solid var(--steel);background:#FFFDF9;
+    padding:10px 14px 12px;margin:12px 0;border-radius:3px}
+  .pf .h{font:12px/1 ui-monospace,Consolas,monospace;color:var(--steel);letter-spacing:.08em;margin-bottom:6px}
+  .box{background:#FFFDF9;border:1px solid var(--line);border-left:3px solid var(--amber);
+    padding:11px 14px;margin:14px 0;font-size:14.4px}
+  .box b{color:#8A6A24}
+  .warn{background:#FDF6F3;border:1px solid #F0DCD3;border-left:3px solid var(--cinn);
+    padding:11px 14px;margin:14px 0;font-size:14.2px}
+  .warn b{color:var(--cinn)}
+  .eq{background:#FCFBF7;border:1px solid var(--line);border-radius:3px;padding:4px 10px;margin:12px 0;overflow-x:auto}
+
+  .lab{border:1px solid var(--line);border-radius:4px;background:#FFFDF9;margin:16px 0;padding:12px 14px}
+  .lab .hd{font:12px/1 ui-monospace,Consolas,monospace;color:var(--cinn);letter-spacing:.08em;margin-bottom:10px}
+  .ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:6px 0 10px;font-size:13px;color:var(--mut)}
+  .ctl input[type=range]{width:180px}
+  .ctl button{font:12.5px/1 inherit;padding:6px 11px;border:1px solid var(--line);background:#FFF;
+    border-radius:3px;cursor:pointer;color:var(--ink)}
+  .ctl button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  canvas{display:block;width:100%;max-width:560px;height:auto;margin:6px auto}
+  .ro{font:12px/1.7 ui-monospace,Consolas,monospace;color:#3A4756;margin-top:8px}
+  .ro b{color:var(--cinn);font-weight:600}
+  .cap{font:11px/1.6 ui-monospace,Consolas,monospace;color:var(--mut);margin-top:6px}
+
+  .verdict{display:inline-block;font:11px/1 ui-monospace,Consolas,monospace;padding:3px 7px;border-radius:2px;white-space:nowrap}
+  .v-ok{background:#E8F0E9;color:#3F6B4F;border:1px solid #CFE0D2}
+  .v-mid{background:#FBEFD6;color:#8A6A24;border:1px solid #EEDDB4}
+  .v-bad{background:#FBE9E3;color:#B04A2F;border:1px solid #EFD3C9}
+
+  footer{margin-top:46px;padding-top:14px;border-top:1px solid var(--line);
+    font:11.5px/1.6 ui-monospace,Consolas,monospace;color:var(--mut);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  mjx-container[jax="SVG"]{max-width:100%}
+  mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden}
+  mjx-container[display="true"]{min-width:0!important}
+  @media (max-width:720px){
+    .toc{columns:1}
+    h1{font-size:22px}
+    .wrap{padding:18px 12px 56px}
+    th,td{padding:6px 6px;font-size:12.6px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a href="../index.html">← 数学可视化</a>
+    <a href="./index.html">数值线代目录</a>
+    <a href="./后向稳定性-误差如何合成.html">后向稳定性（误差怎么合成）</a>
+    <a href="./条件数-几何与误差放大.html">条件数</a>
+  </nav>
+
+  <header class="mast">
+    <span class="tag">STAB · 算法档案</span>
+    <h1>算法稳定性档案：哪些算法能放心用，哪些必须换写法</h1>
+    <p class="sub">
+      「这个算法稳定吗」不是一个能含糊过去的问题。它必须拆成两句：
+      <b>后向误差有多大</b>（算法本身有没有把题目改掉），和 <b>误差会被放大多少倍</b>（题目自己有多敏感）。
+      本页把课程里会考、会用到、也会踩坑的算法逐个过一遍 —— 每个给一句判据、一个实测数字、一个反例。
+      上一页 <a href="./后向稳定性-误差如何合成.html">后向稳定性</a> 讲误差怎么一步步合成，本页讲<b>哪个算法值得记、哪个只能记它的替代品</b>。
+    </p>
+  </header>
+
+  <nav class="toc">
+    <b>目录</b>
+    <a href="#s0">§00 五个词，一张表分清</a>
+    <a href="#s1">§01 标量层：四则、开方、cos</a>
+    <a href="#s2">§02 二次方程：必须记住的改写</a>
+    <a href="#s3">§03 求和：后向稳定，前向糟糕</a>
+    <a href="#s4">§04 内积与矩阵乘</a>
+    <a href="#s5">§05 解方程组：LU、主元、Cholesky</a>
+    <a href="#s6">§06 QR 分解：三种写法差在哪</a>
+    <a href="#s7">§07 最小二乘：κ 与 κ²</a>
+    <a href="#s8">§08 特征值：后向稳定救不了重根</a>
+    <a href="#s9">§09 总表：22 个算法一张清单</a>
+    <a href="#s10">§10 易错与自测</a>
+  </nav>
+
+<h2 id="s0">§00 五个词，一张表分清</h2>
+
+<p>先固定说法。以下一律用 \(u=\varepsilon_{\text{mach}}=2^{-52}\approx 2.22\times10^{-16}\)，并假设
+输入 \(x\) 本身是精确的（输入的误差算在「条件数」那一栏，不算算法的账）。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>说法</th><th>精确含义</th><th>怎么验</th><th>例子</th></tr></thead>
+<tbody>
+<tr><td><b>前向误差</b></td><td>算出来的答案离真答案多远：\(\|\hat y-y\|\)</td><td>和精确解比</td><td>任何算法都能问</td></tr>
+<tr><td><b>后向误差</b></td><td>把 \(\hat y\) 当精确解，题目要被改成什么样：最小的 \(\Delta\) 使 \(\hat y=f(x+\Delta)\)</td><td>代回原方程算残量</td><td>\(\hat x\) 代回 \(A\hat x-b\)</td></tr>
+<tr><td><b>后向稳定</b></td><td>后向误差 ≤ \(c(n)\,u\)，\(c\) 只依赖规模、不依赖数据</td><td>测 \(\|\Delta\|/(u\|x\|)\)</td><td>Householder QR、部分主元 LU</td></tr>
+<tr><td><b>稳定</b>（弱）</td><td>后向误差 ≤ \(c(n)\,\kappa\,u\)，允许随条件数长</td><td>换病态数据看是否退化</td><td>MGS、Cholesky 的某些变体</td></tr>
+<tr><td><b>不稳定</b></td><td>存在数据使后向误差 \(\gg u\)（甚至解全错）</td><td>找反例</td><td>CGS、无主元 LU、正规方程</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="pf">
+  <div class="h">唯一需要背下来的合成公式</div>
+  <p style="margin:4px 0">若算法后向稳定、问题条件数为 \(\kappa\)，则</p>
+  <div class="eq">$$ \frac{\|\hat y-y\|}{\|y\|}\;\lesssim\;\kappa\cdot c(n)\,u .$$</div>
+  <p class="step" style="margin:6px 0 0">于是判一个算法「能不能用」，永远是两个问题：
+  ① 它后向稳定吗？② 这个问题的 \(\kappa\) 有多大？<b>两个都答完才能下结论</b>，任缺一个都是耍流氓。</p>
+</div>
+
+<h2 id="s1">§01 标量层：四则、开方、cos</h2>
+
+<p>IEEE 754 规定 \(+,-,\times,\div,\sqrt{\ }\) 是<b>正确舍入</b>的：结果等于精确值的最近浮点数。等价写法是</p>
+
+<div class="eq">$$ \mathrm{fl}(x\circ y)=(x\circ y)(1+\delta),\qquad |\delta|\le u ,\qquad
+\mathrm{fl}(\sqrt x)=\sqrt{x}(1+\delta),\ |\delta|\le u .$$</div>
+
+<p>这个式子说明：<b>单个标量运算永远后向稳定</b>，因为 \((x\circ y)(1+\delta)\) 恰好等于对输入做一个小扰动后的精确结果 ——
+\(x(1+\delta)\circ y\)。所以「加法不稳定」「乘法不稳定」这类说法本身就是错的。<b>标量层只有两种真危险</b>：</p>
+
+<ol>
+<li><b>抵消（cancellation）</b>：\(x-y\) 当 \(x\approx y\) 时，\(\mathrm{fl}(x)-\mathrm{fl}(y)\) 的相对误差是
+\(\dfrac{u(|x|+|y|)}{|x-y|}\) —— 分母是残差，可以任意小。这不是算法不稳定，但后果和灾难一样。</li>
+<li><b>输入构造</b>：\(x\) 本身已经错了，任何算法都救不回来。下面这个交互台就是这件事。</li>
+</ol>
+
+<h3>交互台 1 · cos 到底错在哪一环</h3>
+
+<p>流行说法是「\(x\) 大到 \(10^{22}\) 时 <code>cos</code> 就算错了」。实测（见读数栏）V8 的 libm 在这里仍然是 0.5 ulp 正确 —— 它内部用 Payne–Hanek 做 \(\pi\) 的多精度约减，不是「先取模再算」。
+真正坏掉的是<b>输入</b>：\(10^{22}\) 附近的浮点间隔（ulp）是 \(2^{21}\approx 2.1\times10^{6}\)，所以 \(10^{22}+10^{6}\) 与 \(10^{22}\) 是<b>同一个 double</b>。拖动滑杆改变「第几个 ulp」，看 \(\cos\) 能跳多远。</p>
+
+<div class="lab">
+  <div class="hd">LAB-1 · 1e22 附近的 cos：算法没问题，输入没有区分度</div>
+  <div class="ctl">
+    <span>偏移 = <b id="kOut">0</b> ulp</span>
+    <input type="range" id="k" min="0" max="40" step="1" value="0">
+    <button id="resetK">回到 0</button>
+  </div>
+  <div class="ro" id="kReadout"></div>
+  <div class="cap">上下两行都是实测：上行是内置 <code>Math.cos</code>，下行是本页用 BigInt 把 \(x\) 精确约减到 \([-\pi/2,\pi/2]\) 后展成 Taylor 级数得到的参考值。</div>
+</div>
+
+<div class="warn">
+<b>结论要分清层次。</b>「cos 不稳定」是错的，cos 是后向稳定的；「\(10^{22}\) 上的 cos 没有意义」是对的，因为条件数
+\(\kappa_{\cos}(x)=|x\tan x|\approx 10^{22}\)，要 1 位有效数字就需要输入精确到 \(10^{-22}\)，double 只有 16 位。
+<b>条件数是问题自带的，谁来算都一样。</b>
+</div>
+
+<h3>初等函数的正确说法</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>运算</th><th>后向稳定？</th><th>真正该担心的</th></tr></thead>
+<tbody>
+<tr><td>\(+,-,\times,\div,\sqrt{\ }\)</td><td><span class="verdict v-ok">是，1 步</span></td><td>减法抵消；除法的 \(|y|\) 极小</td></tr>
+<tr><td>\(\cos,\sin,\exp,\log\)（现代 libm）</td><td><span class="verdict v-ok">是，≤1 ulp</span></td><td>大参数的约减位数；\(x\to0\) 时的 \(\log(1+x)\)、\(\exp(x)-1\)（用 <code>log1p</code> / <code>expm1</code>）</td></tr>
+<tr><td>\(\log(1+x)\) 用 <code>Math.log(1+x)</code></td><td><span class="verdict v-bad">不</span></td><td>\(x\) 小到 \(10^{-17}\)，\(1+x\) 舍成 \(1\)，结果直接是 0；改用 <code>log1p</code></td></tr>
+<tr><td>\(e^x-1\) 用 <code>Math.exp(x)-1</code></td><td><span class="verdict v-bad">不</span></td><td>同上，抵消；改用 <code>expm1</code></td></tr>
+<tr><td>\(1-\cos x\)（\(x\) 小）</td><td><span class="verdict v-bad">不</span></td><td>改写 \(2\sin^2(x/2)\)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="s2">§02 二次方程：必须记住的改写</h2>
+
+<p>这是「同一个公式，两种写法，一个精确一个废掉」的最短例子。解 \(x^2-10^{8}x+1=0\)：</p>
+
+<div class="eq">$$ x_{1,2}=\frac{-b\pm\sqrt{b^2-4ac}}{2a}
+\qquad\text{vs}\qquad
+x_{\text{小}}=\frac{c}{a\,x_{\text{大}}}\ (\text{韦达定理}) .$$</div>
+
+<p>实测：标准公式给出大根 \(10^{8}\)（对），小根 \(\mathbf{7.45\times10^{-9}}\)（<b>相对误差 25.5%</b>）—— 因为 \(b^2-4ac\approx b^2\)，\(\sqrt{\ }\) 与 \(b\) 相减时前 16 位全被吃掉。
+用韦达定理从大根算小根，得到 \(10^{-8}\)，<b>相对误差 0</b>（这个例子下精确）。</p>
+
+<div class="box">
+<b>要背的判据：</b>凡是形如「两个几乎相等的量相减」的公式，都要问一句「能不能换成用加法的那一支」。
+\(-b+\sqrt{\ }\) 与 \(-b-\sqrt{\ }\) 只有一支会抵消，另一支永远是好的 —— 所以对称公式的标准解法是<b>先用不抵消的那一支求一个根，再用韦达定理求另一个</b>。
+</div>
+
+<h2 id="s3">§03 求和：后向稳定，但前向可以很差</h2>
+
+<p>朴素求和 <code>s += a[i]</code> 是<b>后向稳定</b>的：可以证明每个部分和都满足
+\(\hat s_k=(a_1+\cdots+a_k)(1+k u)\)，把它们合并就等价于对每一项做了 ≤\(nu\) 的相对扰动。
+但「对每项扰动 \(nu\)」在 \(\sum|a_i|\gg|\sum a_i|\) 时会被放大成灾难：</p>
+
+<div class="eq">$$ \left|\frac{\hat s-s}{s}\right|\;\le\;\frac{n u\sum_i|a_i|}{|s|} .$$</div>
+
+<p>当 \(\sum|a_i|/|s|=10^{12}\)（强烈的正负抵消），界就退化成「什么都不保证」。这就是<b>后向稳定 ≠ 前向准确</b>的最干净例子。</p>
+
+<div class="lab">
+  <div class="hd">LAB-2 · 1 后面跟 10 万个 \(10^{-p}\)：三种求和</div>
+  <div class="ctl">
+    <span>每项 \(s=10^{-p}\)，\(p=\) <b id="pOut">8</b></span>
+    <input type="range" id="p" min="2" max="17" step="1" value="8">
+  </div>
+  <canvas id="cSum" width="1120" height="560"></canvas>
+  <div class="ro" id="sumReadout"></div>
+  <div class="cap">柱高 = \(\log_{10}\) 相对误差（越矮越好，柱底是 \(10^{-18}\)，即「精确」）。虚线是两条理论尺度：朴素和 \(nu\)，两两求和 \(\log_2 n\cdot u\)。</div>
+</div>
+
+<p>实测（\(n=10^{5}\)，单位：相对误差）：</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>\(p\)</th><th>朴素 <code>s+=a[i]</code></th><th>两两求和</th><th>Kahan</th></tr></thead>
+<tbody>
+<tr><td class="num">2</td><td class="num">7.6e-13</td><td class="num">1.1e-16</td><td class="num">&lt;1e-18</td></tr>
+<tr><td class="num">6</td><td class="num">7.5e-12</td><td class="num">&lt;1e-18</td><td class="num">&lt;1e-18</td></tr>
+<tr><td class="num">10</td><td class="num">8.3e-13</td><td class="num">&lt;1e-18</td><td class="num">&lt;1e-18</td></tr>
+<tr><td class="num">14</td><td class="num">8.0e-13</td><td class="num">&lt;1e-18</td><td class="num">&lt;1e-18</td></tr>
+<tr><td class="num">17</td><td class="num">1.0e-12</td><td class="num">2.2e-16</td><td class="num">&lt;1e-18</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>朴素和稳定地停在 \(10^{-12}\sim10^{-11}\)（每步丢一点、\(10^{5}\) 步累起来，比 \(nu=2.2\times10^{-11}\) 小一些，因为舍入符号有正有负，走的是 \(\sqrt n\) 而不是 \(n\) 的量级）。
+两两求和把累加树压到 \(\log_2 n\approx17\) 层，直接到 \(u\)。Kahan 的补偿项让误差在一阶就抵消，实测在 double 下测不出来。</p>
+
+<div class="box">
+<b>怎么选：</b>数据量 \(&lt;10^{4}\) 且没有抵消，朴素够了；有抵消或数据量大，用两两求和（<b>不需要额外存储、可并行、误差 \(O(\log n)\)</b>）；
+Kahan 只有在「严格串行、要求接近正确舍入」时才值得（它的向量化版本 Neumaier 更好，但实现坑在编译器优化）。
+<b>判据记法：求和的后向误差永远是 \(O(nu)\)，前向误差是 \(O(nu)\cdot\sum|a|/|s|\)。</b>
+</div>
+
+<h2 id="s4">§04 内积与矩阵乘</h2>
+
+<p>点积 \(\hat s=\mathrm{fl}(x^{\top}y)\) 满足一个非常干净的后向结论：存在 \(\Delta y\) 使</p>
+
+<div class="eq">$$ \hat s=x^{\top}(y+\Delta y),\qquad |\Delta y_i|\le n u\,|y_i| ,$$</div>
+
+<p>即<b>点积是后向稳定的</b>，且扰动只落在 \(y\) 上、按分量相对大小分配。矩阵乘 \(C=AB\) 同理：
+\(\hat C=A(B+\Delta B)\)，\(\|\Delta B\|/\|B\|=O(nu)\)。实测（随机数据，\(n=100\)）：点积的相对误差 \(1.2\times10^{-15}\)，落在 \(nu\sum|x_i y_i|/|x^{\top}y|\) 之内。</p>
+
+<div class="warn">
+<b>但注意界里的 \(\sum|x_iy_i|/|x^{\top}y|\)。</b>后向稳定只保证「扰动小」，不保证「答案准」。
+\(x=(1,\ 1)\)、\(y=(1,\ -1+10^{-16})\) 这类数据上，\(x^{\top}y\approx 0\) 而 \(\sum|x_iy_i|\approx 2\)，相对误差直接爆掉。
+<b>典型的坑：用 \(\|x\|^2-\|y\|^2\) 算 \(\|x-y\|\cdot\|x+y\|\) 类的量。</b>
+</div>
+
+<h2 id="s5">§05 解方程组：LU、主元、Cholesky</h2>
+
+<h3>部分主元高斯消元：后向稳定（Wilkinson）</h3>
+
+<p>这是整个数值线代最重要的一条稳定性定理。设 \(\hat L\hat U=\hat A\) 是算出来的分解，则存在 \(\Delta A\) 使</p>
+
+<div class="eq">$$ \hat L\hat U=A+\Delta A,\qquad \|\Delta A\|_\infty\le c\,n^3\rho\,u\,\|A\|_\infty ,$$</div>
+
+<p>其中 \(\rho=\max|\hat u_{ij}|/\max|a_{ij}|\) 是<b>增长因子</b>。部分主元保证 \(\rho\le 2^{n-1}\)（理论上界，实际几乎总是个位数），
+所以实践中它就是后向稳定的。<b>这个结论与 \(A\) 的条件数无关</b> —— 病态矩阵解错，是 \(\kappa\) 的账，不是算法的账。</p>
+
+<p>实测（Hilbert 矩阵，相对 Frobenius 意义下的后向误差，单位 \(u\)）：\(n=6\) 时 \(0.096\)，\(n=12\) 时 \(0.170\)。
+即<b>后向误差一直在 \(0.1u\) 附近，而同期解的前向误差从 \(10^{-10}\) 涨到 \(9.5\times10^{-2}\)</b> —— 增幅全部来自 \(\kappa(H_n)\)。</p>
+
+<h3>无主元的反例：解可以完全错</h3>
+
+<p>取 \(A=\begin{pmatrix}10^{-20}&1\\1&1\end{pmatrix}\)，\(b=(1,2)^{\top}\)。精确解 \(x\approx(1,1)\)。实测：</p>
+<ul>
+<li>无主元：\(\hat x=(0,\ 1)\) —— <b>第一个分量整整错了 100%</b>（\(10^{-20}\) 被当成主元，除法把 \(1\) 放大成 \(10^{20}\)，随后在减法里湮灭）。</li>
+<li>部分主元：\(\hat x=(1,\ 1)\) —— 正确。</li>
+</ul>
+
+<h3>Cholesky：后向稳定，且只要一半代价</h3>
+
+<p>对称正定时 \(\hat L\hat L^{\top}=A+\Delta A\)，\(\|\Delta A\|_2/\|A\|_2=O(nu)\)，实测 Hilbert \(n=12\) 时 \(0.122u\)。
+但它<b>只能用于正定</b>：遇到非正定，\(\sqrt{\ }\) 里出现负数就是信号（不要加 <code>abs</code> 混过去）。
+另外<b>不要为了「更稳」给 Cholesky 加主元</b> —— 正定时不需要，非正定时应该换 LDLᵀ 或 QR。</p>
+
+<h2 id="s6">§06 QR 分解：三种写法差在哪</h2>
+
+<div class="tw">
+<table>
+<thead><tr><th>写法</th><th>后向误差</th><th>结论</th></tr></thead>
+<tbody>
+<tr><td>CGS（经典 Gram–Schmidt）</td><td>无界，可与 \(\kappa^2\) 同阶</td><td><span class="verdict v-bad">不稳定</span> 失去正交性，\(\|\hat Q^{\top}\hat Q-I\|\) 可以到 \(O(1)\)</td></tr>
+<tr><td>MGS（改进 Gram–Schmidt）</td><td>\(O(\kappa u)\) 意义下稳定</td><td><span class="verdict v-mid">弱稳定</span> 正交性损失 \(O(\kappa u)\)，够用但不放心</td></tr>
+<tr><td>Householder</td><td>\(O(nu)\)，与 \(\kappa\) 无关</td><td><span class="verdict v-ok">后向稳定</span> 默认选它</td></tr>
+<tr><td>Givens</td><td>\(O(nu)\)</td><td><span class="verdict v-ok">后向稳定</span> 稀疏/并行时用它</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>实测（Vandermonde，\(n=12\)，\(\kappa_2=1.96\times10^{9}\)）：Householder 的分解残量
+\(\|A-\hat Q\hat R\|_F/(u\|A\|_F)=\mathbf{1.36}\) —— 十几倍 \(u\)，与 \(\kappa\) 完全无关。
+同一组数据上，用正规方程解最小二乘的相对误差是 \(0.223\)（见下一节），差了 15 个量级。</p>
+
+<div class="box">
+<b>为什么 Householder 稳：</b>每一步是乘一个正交矩阵 \(Q_k\)，正交变换不放大误差（\(\|Q_kE\|=\|E\|\)），
+所以误差只是「每步新加一份 \(u\)」，共 \(n\) 步。而 CGS 每步做的是 \(q_j\leftarrow q_j-(q_i^{\top}q_j)q_i\)，
+系数 \(q_i^{\top}q_j\) 本身在抵消后算不准，误差被 \(\kappa\) 放大又回灌进后续所有列。
+</div>
+
+<h2 id="s7">§07 最小二乘：κ 与 κ²</h2>
+
+<p>同一个问题 \(\min\|Ax-b\|_2\)，三种解法，误差界差一个 \(\kappa\)：</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>解法</th><th>相对误差界</th><th>后向稳定？</th></tr></thead>
+<tbody>
+<tr><td>正规方程 \(A^{\top}Ax=A^{\top}b\)</td><td>\(O(\kappa^2 u)\)</td><td><span class="verdict v-bad">不</span> 显式形成 \(A^{\top}A\)，条件数平方</td></tr>
+<tr><td>Householder QR（解 \(Rx=Q^{\top}b\)）</td><td>\(O(\kappa u)\)</td><td><span class="verdict v-ok">是</span> 对 \([A\ b]\) 的后向扰动</td></tr>
+<tr><td>SVD（截断小奇异值）</td><td>\(O(\kappa u)\)，秩亏时唯一可用</td><td><span class="verdict v-ok">是</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="lab">
+  <div class="hd">LAB-3 · Vandermonde 上三种解法的实测误差（\(x_{\text{true}}=1/(j+1)\)）</div>
+  <div class="ctl">
+    <span>规模 \(n=\)</span>
+    <button data-n="4" class="on">4</button>
+    <button data-n="6">6</button>
+    <button data-n="8">8</button>
+    <button data-n="10">10</button>
+    <button data-n="12">12</button>
+  </div>
+  <canvas id="cLS" width="1120" height="400"></canvas>
+  <div class="ro" id="lsReadout"></div>
+  <div class="cap">横条是 \(\log_{10}\) 相对误差，从左到右：正规方程 / QR。竖虚线是两条参考尺度 \(u\kappa\) 与 \(u\kappa^2\)。</div>
+</div>
+
+<p>实测：</p>
+<div class="tw">
+<table>
+<thead><tr><th>\(n\)</th><th>\(\kappa_2(A)\)</th><th>正规方程相对误差</th><th>QR 相对误差</th><th>QR 后向误差 \(/\mu\)</th></tr></thead>
+<tbody>
+<tr><td class="num">4</td><td class="num">9.89e1</td><td class="num">2.5e-14</td><td class="num">4.4e-15</td><td class="num">0.23</td></tr>
+<tr><td class="num">6</td><td class="num">4.92e3</td><td class="num">2.6e-10</td><td class="num">1.3e-13</td><td class="num">0.99</td></tr>
+<tr><td class="num">8</td><td class="num">2.68e5</td><td class="num">1.0e-6</td><td class="num">1.4e-11</td><td class="num">1.31</td></tr>
+<tr><td class="num">10</td><td class="num">1.52e7</td><td class="num">7.4e-4</td><td class="num">9.4e-11</td><td class="num">1.15</td></tr>
+<tr><td class="num">12</td><td class="num">1.96e9</td><td class="num">2.2e-1</td><td class="num">7.8e-8</td><td class="num">1.36</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>读法：\(u\kappa\) 与 \(u\kappa^2\) 两条尺度正好夹住两列实测值，且二者之比 \(\approx\kappa\)（\(n=12\) 时实测比值 \(2.9\times10^{6}\)，\(\kappa=2.0\times10^{9}\) —— 差一个常数因子，量级一致）。
+<b>「正规方程错 22%，QR 错 \(7.8\times10^{-8}\)」不是实现问题，是数学。</b></p>
+
+<div class="warn">
+<b>补一句常被漏掉的前提：</b>QR 解最小二乘的后向稳定是对 \([A\ b]\) 整体的。
+所以当余量 \(\|b-Ax\|\) 很小时（超定接近相容），解的相对误差还会被 \(\kappa+\kappa^2\|r\|/(\|A\|\|x\|)\) 控制；
+残量为 0 的极端情形（相容方程组）就该直接用 QR 解方程，不必走最小二乘的框架。
+</div>
+
+<h2 id="s8">§08 特征值：后向稳定救不了重根</h2>
+
+<p>QR 算法（Householder 化到 Hessenberg + 移位）每一步都是<b>正交相似变换</b>，所以它是后向稳定的：
+算出来的 \(\hat\lambda_i\) 恰好是某个 \(A+\Delta A\) 的精确特征值，\(\|\Delta A\|=O(nu)\|A\|\)。
+但特征值对扰动极度敏感 —— 因为<b>特征值问题的条件数不是 \(\kappa(A)\)，而是特征向量的条件数</b>：</p>
+
+<div class="eq">$$ \kappa(\lambda)=\frac{1}{|y^{*}x|},\qquad
+|\Delta\lambda|\;\lesssim\;\frac{\|\Delta A\|}{|y^{*}x|} .$$</div>
+
+<p>取下面这个矩阵，它的特征值可以手算：</p>
+<div class="eq">$$ A=\begin{pmatrix}1&1\\\delta&1\end{pmatrix},\qquad \lambda=1\pm\sqrt{\delta} .$$</div>
+<p>取 \(\delta=10^{-16}\) 时两个特征值相距 \(2\times10^{-8}\)，
+而 \(u\|A\|=2.2\times10^{-16}\) —— 一个后向稳定的算法<b>只保证</b> \(\Delta\lambda\lesssim u/\sqrt\delta=2.2\times10^{-8}\)，
+正好和两特征值的间距同量级，也就是<b>分辨不出这是一个重根还是两个靠得很近的根</b>。</p>
+
+<div class="lab">
+  <div class="hd">LAB-4 · 后向误差恒为 \(u\)，前向误差随 \(\delta\) 变（300 次 \(\pm u\|A\|\) 扰动采样）</div>
+  <div class="ctl">
+    <span>\(\delta=10^{-}\)<b id="dOut">8</b></span>
+    <input type="range" id="dlt" min="2" max="16" step="1" value="8">
+  </div>
+  <canvas id="cEig" width="1120" height="420"></canvas>
+  <div class="ro" id="eigReadout"></div>
+  <div class="cap">散点是 300 次随机扰动的特征值位置（真实位置在 \(\pm\sqrt\delta\) 处）；竖虚线是「真值」，灰带是 \(u/\sqrt\delta\) 的理论放大带。</div>
+</div>
+
+<p>实测（误差取两条特征值中较差的一条）：</p>
+<div class="tw">
+<table>
+<thead><tr><th>\(\delta\)</th><th>真值 \(1\pm\sqrt\delta\)</th><th>实测前向误差（中位 / 最大）</th><th>\(u/\sqrt\delta\)</th><th>还能分辨吗</th></tr></thead>
+<tbody>
+<tr><td class="num">1e-2</td><td class="num">1±0.1</td><td class="num">6.7e-16 / 2.2e-15</td><td class="num">2.2e-15</td><td><span class="verdict v-ok">能</span></td></tr>
+<tr><td class="num">1e-4</td><td class="num">1±0.01</td><td class="num">6.2e-15 / 2.3e-14</td><td class="num">2.2e-14</td><td><span class="verdict v-ok">能</span></td></tr>
+<tr><td class="num">1e-8</td><td class="num">1±1e-4</td><td class="num">8.1e-13 / 2.0e-12</td><td class="num">2.2e-12</td><td><span class="verdict v-mid">勉强</span></td></tr>
+<tr><td class="num">1e-12</td><td class="num">1±1e-6</td><td class="num">6.7e-11 / 2.3e-10</td><td class="num">2.2e-10</td><td><span class="verdict v-mid">退化</span></td></tr>
+<tr><td class="num">1e-16</td><td class="num">1±1e-8</td><td class="num">8.3e-9 / 1.1e-8</td><td class="num">2.2e-8</td><td><span class="verdict v-bad">不能</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box">
+<b>一句话记住：</b>QR 算法<b>永远</b>后向稳定（误差 \(O(nu)\|A\|\)），但重根/近重根、非正规矩阵（\(|y^{*}x|\ll1\)）上前向误差是
+\(u^{1/m}\)（\(m\) 是重数）。所以「换个更稳的 QR 实现」是无效的 —— <b>该换的是问题的表述</b>（用 Schur 形、用 SVD 处理对称情形、或者接受「根不可分辨」这个事实）。
+</div>
+
+<h2 id="s9">§09 总表：22 个算法一张清单</h2>
+
+<p>「要掌握」的意思分三档：<b>记住结论</b>（考场上要能一句话答）、<b>记住反例</b>（能举出它坏在哪）、<b>只记替代品</b>（知道别用，用哪个）。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>算法</th><th>后向稳定</th><th>前向误差</th><th>掌握到哪一档</th></tr></thead>
+<tbody>
+<tr><td>标量 \(+-\times\div\sqrt{\ }\)</td><td><span class="verdict v-ok">是</span></td><td>\(u\)，但减法抵消会炸</td><td>记住结论（正确舍入的定义）</td></tr>
+<tr><td>\(\cos,\sin,\exp,\log\)</td><td><span class="verdict v-ok">是</span></td><td>\(u\cdot\kappa_f(x)\)，\(\kappa_{\cos}\approx|x\tan x|\)</td><td>记住结论 + 大参数约减</td></tr>
+<tr><td>二次方程标准公式</td><td><span class="verdict v-bad">不（小根）</span></td><td>小根相对误差可到 \(100\%\)</td><td>记住改写（韦达定理）</td></tr>
+<tr><td>朴素求和</td><td><span class="verdict v-ok">是</span></td><td>\(nu\cdot\frac{\sum|a|}{|s|}\)</td><td>记住结论（稳定但可以很差）</td></tr>
+<tr><td>两两求和</td><td><span class="verdict v-ok">是</span></td><td>\(\log n\cdot u\cdot\frac{\sum|a|}{|s|}\)</td><td>记住替代品</td></tr>
+<tr><td>Kahan 求和</td><td><span class="verdict v-ok">是</span></td><td>\(\approx u\)（与 \(n\) 无关）</td><td>只记用途</td></tr>
+<tr><td>点积 / 矩阵乘</td><td><span class="verdict v-ok">是</span></td><td>\(nu\cdot\frac{\sum|x_iy_i|}{|x^{\top}y|}\)</td><td>记住结论</td></tr>
+<tr><td>Horner 多项式求值</td><td><span class="verdict v-ok">是</span></td><td>\(nu\)，对系数扰动</td><td>记住结论（根的问题另算）</td></tr>
+<tr><td>前代 / 回代</td><td><span class="verdict v-ok">是</span></td><td>\(\kappa(T)u\)</td><td>记住结论</td></tr>
+<tr><td>高斯消元（无主元）</td><td><span class="verdict v-bad">不</span></td><td>可 \(O(1)\) 全错</td><td><b>记住反例</b> \(\begin{pmatrix}10^{-20}&1\\1&1\end{pmatrix}\)</td></tr>
+<tr><td>部分主元 LU</td><td><span class="verdict v-ok">是</span>（\(\rho\) 小）</td><td>\(\kappa(A)u\)</td><td>记住结论 + 增长因子 \(\rho\)</td></tr>
+<tr><td>Cholesky</td><td><span class="verdict v-ok">是</span></td><td>\(\kappa(A)u\)，仅正定</td><td>记住结论 + 前提</td></tr>
+<tr><td>CGS</td><td><span class="verdict v-bad">不</span></td><td>正交性损失 \(O(\kappa^2u)\)</td><td><b>记住反例</b>（Hilbert 12 上 5.48 对 0.161）</td></tr>
+<tr><td>MGS</td><td><span class="verdict v-mid">弱稳定</span></td><td>正交性损失 \(O(\kappa u)\)</td><td>知道它比 CGS 好、比 Householder 差</td></tr>
+<tr><td>Householder QR</td><td><span class="verdict v-ok">是</span></td><td>\(O(nu)\)，与 \(\kappa\) 无关</td><td>记住结论（实测 1.36\(u\)）</td></tr>
+<tr><td>Givens QR</td><td><span class="verdict v-ok">是</span></td><td>同 Householder，代价 2 倍</td><td>知道适用场景（稀疏/并行）</td></tr>
+<tr><td>正规方程解 LS</td><td><span class="verdict v-bad">不</span></td><td>\(\kappa^2u\)</td><td><b>记住反例</b>（实测错 22%）</td></tr>
+<tr><td>QR 最小二乘</td><td><span class="verdict v-ok">是</span>（对 \([A\ b]\)）</td><td>\(\kappa u\)</td><td>记住结论</td></tr>
+<tr><td>SVD 最小二乘</td><td><span class="verdict v-ok">是</span></td><td>\(\kappa u\)，可截断</td><td>记住用途（秩亏）</td></tr>
+<tr><td>QR 算法（特征值）</td><td><span class="verdict v-ok">是</span></td><td>\(u/|y^{*}x|\)，重根时 \(u^{1/m}\)</td><td>记住「后向稳但前向可能无用」</td></tr>
+<tr><td>幂法 / 反幂法</td><td><span class="verdict v-ok">是</span>（特征向量）</td><td>由特征值间隔决定</td><td>知道它收敛的是子空间</td></tr>
+<tr><td>共轭梯度（有限精度）</td><td><span class="verdict v-bad">不</span></td><td>失去正交性，迭代数超 \(n\) 后停滞</td><td>知道要预条件 / 重正交</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="s10">§10 易错与自测</h2>
+
+<h3>八条易错</h3>
+<ol>
+<li><b>把「后向稳定」当成「答案准」。</b>两者之间隔着一个 \(\kappa\)。求和、点积都是后向稳定的，都可以给出错答案。</li>
+<li><b>把「病态问题解错」怪到算法头上。</b>部分主元 LU 在 Hilbert 14 上实测相对误差 \(39\) 倍（\(3929\%\)）—— 这不是 LU 的错，\(\kappa(H_{14})\approx10^{17}\)。</li>
+<li><b>以为给 Cholesky 加主元会更稳。</b>正定时不需要；非正定时该换分解，不是加主元。</li>
+<li><b>用 \(\|A-\hat Q\hat R\|\) 判断 QR 稳不稳，却用 \(\|\hat Q^{\top}\hat Q-I\|\) 判断 CGS。</b>两个指标测的是不同东西：前者是后向误差，后者是（前向的）正交性损失。CGS 可以在后向误差上过得去而正交性全丢。</li>
+<li><b>认为 \(\kappa(A^{\top}A)=\kappa(A)^2\) 只在「条件数很大时」才要紧。</b>\(\kappa=10^{3}\) 时 \(10^{6}\) 的放大已经让 \(10^{-16}\) 的误差变成 \(10^{-10}\)，正好是「看起来对、其实只有 6 位」的区间，最难发现。</li>
+<li><b>在大参数上纠结 cos/sin 的精度。</b>先算 \(u|x|\)：超过 1 就说明输出连一位有效数字都没有，问题不在算法。</li>
+<li><b>认为「迭代法更稳」。</b>CG 在有限精度下会失去正交性，收敛停滞；它不后向稳定。</li>
+<li><b>把「重根算不准」当成 bug。</b>\(u^{1/2}\) 的误差是重根的数学性质，换任何后向稳定算法都一样。</li>
+</ol>
+
+<h3>自测六问</h3>
+<ol>
+<li>证明：若 \(\hat s=\mathrm{fl}(x^{\top}y)\)，则存在 \(|\Delta y_i|\le nu|y_i|\) 使 \(\hat s=x^{\top}(y+\Delta y)\)。这个结论为什么<b>不</b>蕴含「点积准确」？</li>
+<li>二次方程 \(x^2-10^{8}x+1=0\) 的小根，标准公式错在哪一步？给出相对误差的表达式。</li>
+<li>朴素求和 \(n=10^{5}\)、数据如上表 \(p=6\)，实测相对误差 \(7.5\times10^{-12}\)。用它反推「有效位丢失」了多少位？为什么比 \(nu=2.2\times10^{-11}\) 小？</li>
+<li>为什么 Householder QR 的后向误差与 \(\kappa(A)\) 无关，而 CGS 有关？从「每步乘的是不是正交矩阵」说。</li>
+<li>\(A=\begin{pmatrix}1&1\\10^{-16}&1\end{pmatrix}\) 的两个特征值。给一个后向误差为 \(u\) 的算法，它的前向误差<b>至少</b>能有多大？用 \(\kappa(\lambda)\) 说明。</li>
+<li>什么时候该用 SVD 而不是 QR 解最小二乘？答「\(\kappa\) 很大」不够，要说清是哪个量。</li>
+</ol>
+
+<div class="box">
+<b>和本系列其它页的关系：</b>
+<a href="./后向稳定性-误差如何合成.html">后向稳定性</a> 讲误差怎么一步步合成（两个交互实验）；
+<a href="./条件数-几何与误差放大.html">条件数</a> 讲 \(\kappa\) 的几何意义；
+<a href="./期末复习-指南.html">期末复习指南</a> 里有「稳定 / 后向稳定对照表」与 \(O(\kappa u)\) 定理的完整写法。
+本页是它们的<b>算法清单版</b>：把结论落到「这个算法要不要用、要不要换写法」上。
+</div>
+
+  <footer>
+    <span>STAB · 算法稳定性档案 · 数值线性代数</span>
+    <span>实测环境：Node 22 / V8 libm，\(u=2.22\times10^{-16}\)</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  var U = 2.220446049250313e-16;
+
+  /* ================= LAB-1：1e22 附近的 cos ================= */
+  var PI100 = '31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644';
+
+  function piScaled(D){ return BigInt(PI100.slice(0, D + 1)); }
+
+  // 把 double 精确拆成 mant * 2^e，再对 2π 取模（BigInt）
+  function reduceMod2Pi(x){
+    var D = 45, piS = piScaled(D), one = 10n ** BigInt(D);
+    var dv = new DataView(new ArrayBuffer(8));
+    dv.setFloat64(0, Math.abs(x));
+    var hi = dv.getUint32(0), lo = dv.getUint32(4);
+    var eb = (hi >>> 20) & 0x7ff;
+    var mant = BigInt(hi & 0xfffff) * 4294967296n + BigInt(lo);
+    var e = -1074;
+    if (eb !== 0){ mant += 1n << 52n; e = eb - 1075; }
+    var xs = (e >= 0) ? (mant << BigInt(e)) * one : (mant * one) / (1n << BigInt(-e));
+    var twoPi = 2n * piS;
+    var r = xs % twoPi;
+    if (r > piS) r -= twoPi;
+    return (x < 0 ? -1 : 1) * Number(r) / Math.pow(10, D);
+  }
+  function cosHP(x){
+    var r = reduceMod2Pi(x), neg = 1;
+    if (r > Math.PI / 2){ r = Math.PI - r; neg = -1; }
+    if (r < -Math.PI / 2){ r = -Math.PI - r; neg = -1; }
+    var term = 1, sum = 1;
+    for (var k = 1; k < 45; k++){ term *= -r * r / ((2 * k - 1) * (2 * k)); sum += term; }
+    return neg * sum;
+  }
+  // 1e22 附近 ulp 与精确十进制值
+  function exactDec(x){
+    var dv = new DataView(new ArrayBuffer(8));
+    dv.setFloat64(0, x);
+    var hi = dv.getUint32(0), lo = dv.getUint32(4);
+    var eb = (hi >>> 20) & 0x7ff;
+    var mant = BigInt(hi & 0xfffff) * 4294967296n + BigInt(lo);
+    var e = -1074;
+    if (eb !== 0){ mant += 1n << 52n; e = eb - 1075; }
+    if (e >= 0) return (mant << BigInt(e)).toString();
+    return (mant / (1n << BigInt(-e))).toString(); // 本页只在 1e22 用，e>0
+  }
+  function ulpOf(x){
+    var e = Math.floor(Math.log2(Math.abs(x)));
+    return Math.pow(2, e - 52);
+  }
+  var X0 = 1e22;
+  function lab1(){
+    var k = Number($('k').value);
+    var ulp = ulpOf(X0);
+    var x = X0 + k * ulp;
+    var c = Math.cos(x), ref = cosHP(x);
+    var du = Math.abs(c - ref) / U;
+    $('kOut').textContent = String(k);
+    $('kReadout').innerHTML =
+      'ulp = 2^21 = ' + ulp.toExponential(3) + '<br>' +
+      'x = ' + exactDec(x) + '<br>' +
+      'cos(x) = <b>' + c.toFixed(15) + '</b><br>' +
+      '参考值 = ' + ref.toFixed(15) + '　（差 ' + du.toFixed(2) + ' ulp of 1）';
+  }
+  $('k').addEventListener('input', lab1);
+  $('resetK').addEventListener('click', function(){ $('k').value = 0; lab1(); });
+
+  /* ================= LAB-2：求和 ================= */
+  var NP = 100000;
+  function sumNaive(a){ var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s; }
+  function sumPair(a){
+    var b = a.slice(), n = b.length;
+    while (n > 1){ var k = 0; for (var i = 0; i + 1 < n; i += 2) b[k++] = b[i] + b[i + 1]; if (n & 1) b[k++] = b[n - 1]; n = k; }
+    return b[0] || 0;
+  }
+  function sumKahan(a){ var s = 0, c = 0; for (var i = 0; i < a.length; i++){ var y = a[i] - c, t = s + y; c = (t - s) - y; s = t; } return s; }
+  function sumDD(a){ var sh = 0, sl = 0; for (var i = 0; i < a.length; i++){ var v = a[i], t = sh + v, z = t - sh; sl += (sh - (t - z)) + (v - z); sh = t; } return sh + sl; }
+
+  function buildSum(p){ var s = Math.pow(10, -p), a = new Array(NP); for (var i = 0; i < NP; i++) a[i] = s; a[0] = 1; return a; }
+
+  function drawSum(p){
+    var a = buildSum(p);
+    var ex = sumDD(a);
+    var vals = [sumNaive(a), sumPair(a), sumKahan(a)].map(function(v){
+      var r = Math.abs(v - ex) / Math.abs(ex);
+      return r === 0 ? 1e-18 : r;
+    });
+    var names = ['朴素', '两两', 'Kahan'];
+    var cv = $('cSum'), ctx = cv.getContext('2d');
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    var L = 100, R = W - 60, T = 40, B = H - 70;
+    var lo = -18, hi = -9;
+    var yOf = function(lg){ return B - (lg - lo) / (hi - lo) * (B - T); };
+    // 网格
+    ctx.font = '22px ui-monospace, Consolas, monospace';
+    ctx.fillStyle = '#6B6A63'; ctx.strokeStyle = '#E2DCD0'; ctx.lineWidth = 1;
+    for (var d = -18; d <= -9; d += 3){
+      var y = yOf(d);
+      ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(R, y); ctx.stroke();
+      ctx.fillText('1e' + d, 12, y + 7);
+    }
+    // 理论线
+    var lgn = Math.log2(NP);
+    var yNaive = yOf(Math.log10(NP * U)), yPair = yOf(Math.log10(lgn * U));
+    ctx.strokeStyle = '#B04A2F'; ctx.setLineDash([8, 6]);
+    ctx.beginPath(); ctx.moveTo(L, yNaive); ctx.lineTo(R, yNaive); ctx.stroke();
+    ctx.strokeStyle = '#2F5D8A';
+    ctx.beginPath(); ctx.moveTo(L, yPair); ctx.lineTo(R, yPair); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#B04A2F'; ctx.fillText('n·u', L + 12, yNaive - 10);
+    ctx.fillStyle = '#2F5D8A'; ctx.fillText('log₂n·u', L + 12, yPair - 10);
+    // 柱
+    var bw = (R - L) / 3 * 0.5;
+    for (var i = 0; i < 3; i++){
+      var lg = Math.log10(Math.max(vals[i], 1e-18));
+      lg = Math.max(lo, Math.min(hi, lg));
+      var cx = L + (R - L) / 3 * (i + 0.5);
+      var y0 = yOf(lg);
+      ctx.fillStyle = (i === 0) ? '#B04A2F' : (i === 1 ? '#2F5D8A' : '#3F6B4F');
+      ctx.fillRect(cx - bw / 2, y0, bw, B - y0);
+      ctx.fillStyle = '#22303F';
+      ctx.fillText(names[i], cx - 26, B + 34);
+      var txt = (vals[i] <= 1.0000001e-18) ? '0' : vals[i].toExponential(1);
+      ctx.fillText(txt, cx - 40, y0 - 12);
+    }
+    $('pOut').textContent = String(p);
+    $('sumReadout').innerHTML =
+      's = 10^-' + p + '　精确和 = ' + ex.toPrecision(8) + '<br>' +
+      '朴素 <b>' + (vals[0] * 1).toExponential(2) + '</b>　' +
+      '两两 ' + vals[1].toExponential(2) + '　' +
+      'Kahan ' + (vals[2] <= 1.0000001e-18 ? '0' : vals[2].toExponential(2));
+    return { ex: ex, vals: vals };
+  }
+  $('p').addEventListener('input', function(){ drawSum(Number($('p').value)); });
+
+  /* ================= LAB-3：最小二乘（实测数据，切换预设） ================= */
+  var LS = {
+    4:  { kap: 98.86773851, eNE: 2.548845991e-14, eQR: 4.3782782e-15, back: 0.2319384614 },
+    6:  { kap: 4924.371057, eNE: 2.603450568e-10, eQR: 1.265759091e-13, back: 0.9933495857 },
+    8:  { kap: 267816.8074, eNE: 1.039651699e-6, eQR: 1.437273726e-11, back: 1.306374364 },
+    10: { kap: 15185428.73, eNE: 7.43765692e-4, eQR: 9.371506133e-11, back: 1.15450604 },
+    12: { kap: 1963360261, eNE: 0.2233815898, eQR: 7.789331386e-8, back: 1.364541255 }
+  };
+  function drawLS(n){
+    var d = LS[n];
+    var cv = $('cLS'), ctx = cv.getContext('2d');
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    var L = 250, R = W - 70, T = 46, B = H - 56;
+    var lo = -16, hi = 1;
+    var xOf = function(lg){ return L + (lg - lo) / (hi - lo) * (R - L); };
+    ctx.font = '22px ui-monospace, Consolas, monospace';
+    ctx.strokeStyle = '#E2DCD0'; ctx.lineWidth = 1;
+    ctx.fillStyle = '#6B6A63';
+    for (var e = -16; e <= 0; e += 4){
+      var x = xOf(e);
+      ctx.beginPath(); ctx.moveTo(x, T); ctx.lineTo(x, B); ctx.stroke();
+      ctx.fillText('1e' + e, x - 22, B + 34);
+    }
+    // 左轴
+    ctx.strokeStyle = '#22303F'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, B); ctx.stroke();
+    ctx.lineWidth = 1;
+    // 参考线：u*kappa, u*kappa^2
+    var refs = [
+      { v: Math.log10(U * d.kap), c: '#2F5D8A', t: 'u·κ' },
+      { v: Math.log10(U * d.kap * d.kap), c: '#B04A2F', t: 'u·κ²' }
+    ];
+    refs.forEach(function(r){
+      if (r.v > hi || r.v < lo) return;
+      ctx.strokeStyle = r.c; ctx.setLineDash([8, 6]);
+      ctx.beginPath(); ctx.moveTo(xOf(r.v), T); ctx.lineTo(xOf(r.v), B); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = r.c; ctx.fillText(r.t, xOf(r.v) - 22, T - 12);
+    });
+    // 两条横条
+    var rows = [
+      { v: d.eNE, c: '#B04A2F', t: '正规方程' },
+      { v: d.eQR, c: '#3F6B4F', t: 'QR' }
+    ];
+    rows.forEach(function(r, i){
+      var yy = T + 70 + i * 110;
+      var lg = Math.max(lo, Math.min(hi, Math.log10(r.v)));
+      ctx.fillStyle = r.c;
+      ctx.fillRect(L, yy, xOf(lg) - L, 46);
+      ctx.fillStyle = '#22303F';
+      ctx.fillText(r.t, 20, yy + 34);
+      ctx.fillText(r.v.toExponential(2), Math.min(xOf(lg) + 12, R - 130), yy + 34);
+    });
+    $('lsReadout').innerHTML =
+      'n = ' + n + '　κ₂(A) = <b>' + d.kap.toExponential(2) + '</b><br>' +
+      '正规方程 <b>' + d.eNE.toExponential(2) + '</b>　= ' + (d.eNE / (U * d.kap * d.kap)).toExponential(1) + ' × uκ²<br>' +
+      'QR ' + d.eQR.toExponential(2) + '　= ' + (d.eQR / (U * d.kap)).toExponential(1) + ' × uκ<br>' +
+      'QR 后向误差 = ' + d.back.toFixed(2) + ' u（与 κ 无关）';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-n]'), function(b){
+    b.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('[data-n]'), function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      drawLS(Number(b.getAttribute('data-n')));
+    });
+  });
+
+  /* ================= LAB-4：特征值敏感度 ================= */
+  var seed = 12345;
+  function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+  function drawEig(pe){
+    seed = 12345;
+    var dlt = Math.pow(10, -pe), t0 = Math.sqrt(dlt);
+    var M = [[1, 1], [dlt, 1]];
+    var pts = [], errs = [];
+    for (var t = 0; t < 300; t++){
+      var E = M.map(function(r){ return r.map(function(v){ return v + (2 * rnd() - 1) * U; }); });
+      var tr = E[0][0] + E[1][1], det = E[0][0] * E[1][1] - E[0][1] * E[1][0];
+      var dd = tr * tr / 4 - det;
+      if (dd < 0) continue;
+      var q = Math.sqrt(dd), l1 = tr / 2 + q, l2 = tr / 2 - q;
+      pts.push({ v: l1, g: 0 }, { v: l2, g: 1 });
+      var e1 = Math.min(Math.abs(l1 - (1 + t0)), Math.abs(l2 - (1 + t0)));
+      var e2 = Math.min(Math.abs(l1 - (1 - t0)), Math.abs(l2 - (1 - t0)));
+      errs.push(Math.max(e1, e2));
+    }
+    errs.sort(function(a, b){ return a - b; });
+    var med = errs[errs.length >> 1], mx = errs[errs.length - 1];
+
+    var cv = $('cEig'), ctx = cv.getContext('2d');
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    // 横轴：1 + s，s ∈ [-1.6√δ, 1.6√δ]
+    var half = 1.6 * t0, B = H - 60, T = 30;
+    var xOf = function(v){ return W / 2 + (v - 1) / half * (W / 2 - 60); };
+    ctx.strokeStyle = '#22303F'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(60, B); ctx.lineTo(W - 60, B); ctx.stroke();
+    // 灰带 u/√δ
+    var band = U / t0;
+    ctx.fillStyle = 'rgba(107,106,99,0.10)';
+    var bw0 = xOf(1 - band), bw1 = xOf(1 + band);
+    ctx.fillRect(bw0, T, bw1 - bw0, B - T);
+    // 真值
+    ctx.strokeStyle = '#2F5D8A'; ctx.setLineDash([8, 6]);
+    [1 - t0, 1 + t0].forEach(function(v){
+      var x = xOf(v); if (x < 50 || x > W - 50) return;
+      ctx.beginPath(); ctx.moveTo(x, T); ctx.lineTo(x, B); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    // 散点：按两条特征值分支分上下两带，加确定性抖动
+    var midY = (T + B) / 2, halfH = (B - T) * 0.34;
+    ctx.fillStyle = 'rgba(176,74,47,0.45)';
+    for (var i = 0; i < pts.length; i++){
+      var px = xOf(pts[i].v);
+      if (px < 50 || px > W - 50) continue;
+      var jit = ((i * 29) % 41) - 20;
+      var py = pts[i].g === 0 ? (midY - halfH / 2 + jit) : (midY + halfH / 2 + jit);
+      ctx.beginPath(); ctx.arc(px, py, 3.4, 0, 6.2832); ctx.fill();
+    }
+    ctx.font = '20px ui-monospace, Consolas, monospace';
+    ctx.fillStyle = '#8A6A24';
+    ctx.fillText('λ₂ 分支', 62, midY - halfH / 2 - 34);
+    ctx.fillText('λ₁ 分支', 62, midY + halfH / 2 + 52);
+    ctx.fillStyle = '#6B6A63';
+    ctx.fillText('1−' + t0.toExponential(1), xOf(1 - t0) - 130, B + 34);
+    ctx.fillText('1+' + t0.toExponential(1), xOf(1 + t0) - 30, B + 34);
+    ctx.fillStyle = '#2F5D8A';
+    ctx.fillText('灰带 = u/√δ = ' + band.toExponential(1), 80, T + 26);
+
+    $('dOut').textContent = String(pe);
+    $('eigReadout').innerHTML =
+      'δ = 1e-' + pe + '　特征值 = 1 ± ' + t0.toExponential(3) + '<br>' +
+      '前向误差：中位 <b>' + med.toExponential(2) + '</b>　最大 ' + mx.toExponential(2) + '<br>' +
+      '后向误差恒 = ' + U.toExponential(1) + '‖A‖　→ 放大 <b>' + (med / U).toExponential(1) + '</b> 倍<br>' +
+      '误差 / 特征值间距 = ' + (function(){ var r = med / (2 * t0); return r >= 0.01 ? (r * 100).toFixed(1) + '%' : r.toExponential(1); })();
+    return { med: med, max: mx, band: band };
+  }
+  $('dlt').addEventListener('input', function(){ drawEig(Number($('dlt').value)); });
+
+  /* ================= 初始化 ================= */
+  lab1();
+  drawSum(8);
+  drawLS(4);
+  drawEig(8);
+
+  // 供闸门调用
+  window.__stab = {
+    U: U, cosHP: cosHP, reduceMod2Pi: reduceMod2Pi, exactDec: exactDec, ulpOf: ulpOf,
+    sumNaive: sumNaive, sumPair: sumPair, sumKahan: sumKahan, sumDD: sumDD, buildSum: buildSum,
+    LS: LS, drawLS: drawLS, drawSum: drawSum, drawEig: drawEig, lab1: lab1
+  };
+})();
+</script>
+</body>
+</html>

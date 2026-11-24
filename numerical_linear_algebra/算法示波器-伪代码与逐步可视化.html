@@ -81,9 +81,9 @@ window.MathJax = {
   ol.code li.on .ln{color:#B04A2F}
 
   .vars{margin-top:12px;font:12px/1.5 ui-monospace,Consolas,monospace}
-  .vrow{display:flex;justify-content:space-between;gap:10px;padding:3px 2px;border-bottom:1px dotted var(--line)}
-  .vk{color:var(--mut)}
-  .vv{color:var(--cinn);font-weight:600;text-align:right}
+  .vrow{display:flex;justify-content:space-between;gap:10px;padding:3px 2px;border-bottom:1px dotted var(--line);flex-wrap:wrap}
+  .vk{color:var(--mut);min-width:0;flex:1 1 auto;word-break:break-word}
+  .vv{color:var(--cinn);font-weight:600;text-align:right;min-width:0;flex:0 1 auto;word-break:break-word}
   .vempty{color:#B3ACA2}
 
   .mats{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
@@ -178,8 +178,8 @@ window.MathJax = {
   <h2>怎么用</h2>
   <div class="how">
     <div><b>① 先选算法</b>右上角按模块分组：从「矩阵乘向量」一路到 Cholesky，最后一组是「计算成本」。</div>
-    <div><b>② 单步走</b>点 ▶ 一次走一帧，配速可以放慢；键盘 ← → 也行。</div>
-    <div><b>③ 三块对照</b>黄线是正在执行的行，橙色格是这一步真正读写的格子，画布是同一瞬间的几何。</div>
+    <div><b>② 单步走 = 走一行</b>点 ▶ 一次只前进一步：连 <code>for</code> 头、<code>s = 0</code>、空循环、每次赋值都各占一帧，黄线不会跳行。键盘 ← → 也行。</div>
+    <div><b>③ 三块对照</b>黄线是正在执行的行，橙色格是这一步真正读写的格子，读数给出「旧值 → 算式 → 新值」，画布是同一瞬间的几何。</div>
   </div>
 
   <h2>数字怎么读（先看这条，再点播放）</h2>
@@ -983,8 +983,9 @@ function algoGivens(){
       '        if a(i,k) = 0: continue',
       '        c = a(k,k)/√(a(k,k)²+a(i,k)²)',
       '        s = a(i,k)/√(a(k,k)²+a(i,k)²)',
-      '        r_k ←  c·r_k + s·r_i   // 内层：一次二维旋转',
+      '        r_k ←  c·r_k + s·r_i   // 内层：逐列扫过两行',
       '        r_i ← -s·r_k + c·r_i   // 用旧的 r_k',
+      '        Q ← Q · Gᵀ              // 同一个旋转也作用在 Q 上',
       'return R'
     ],
     run: function*(){
@@ -993,44 +994,79 @@ function algoGivens(){
         geo: { kind: 'giv', k: -1, i: -1, x: 0, y: 0, r: 0, c: 1, s: 0 },
         say: 'Givens 用平面旋转逐格清零，适合稀疏矩阵或只需消个别元素（如三对角化）的场合。' };
       for(let k = 0; k < n; k++){
+        yield { pc: 0, loop: { o: 'k = ' + (k + 1) },
+          vars: [['外循环', 'k = ' + (k + 1) + ' / ' + n], ['这一轮要清', '第 ' + (k + 1) + ' 列第 ' + (k + 1) + ' 行以下的口']],
+          panels: [Pm('A', A, { c: [k] }), Pm('Q', Q)],
+          geo: { kind: 'giv', k: k, i: -1, x: 0, y: 0, r: 0, c: 1, s: 0 },
+          say: '按列推进：第 ' + (k + 1) + ' 列要从第 ' + (k + 2) + ' 行开始往下清零。' };
+        if(k === n - 1){
+          yield { pc: 1, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (k + 2) + ' : ' + m + '（不进循环）' },
+            vars: [['内循环', 'i 从 ' + (k + 2) + ' 到 ' + m + ' —— 一次都不执行'], ['原因', '最后一列下面没有格子了']],
+            panels: [Pm('A', A, { c: [k] }), Pm('Q', Q)],
+            geo: { kind: 'giv', k: k, i: -1, x: 0, y: 0, r: 0, c: 1, s: 0 },
+            say: '最后一列只有对角元，下面没有要消的口 —— 内循环直接不进。' };
+        }
         for(let i = k + 1; i < m; i++){
+          yield { pc: 1, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
+            vars: [['内循环', 'i = ' + (i + 1) + ' / ' + m], ['要消的格子', 'a(' + (i + 1) + ',' + (k + 1) + ')']],
+            panels: [Pm('A', A, { r: [k, i], c: [k], x: [[i, k]] }), Pm('Q', Q)],
+            geo: { kind: 'giv', k: k, i: i, x: A[k][k], y: A[i][k], r: Math.hypot(A[k][k], A[i][k]), c: 1, s: 0 },
+            say: '取第 ' + (k + 1) + ' 行和第 ' + (i + 1) + ' 行这一对，用一次旋转把下面那个数转成 0。' };
           const x0 = A[k][k], y0 = A[i][k];
           if(Math.abs(y0) < 1e-14){
             yield { pc: 2, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
-              vars: [['a(i,k)', '0'], ['动作', '跳过']],
+              vars: [['判 a(i,k) = 0', '成立（' + fmt(y0) + '）'], ['动作', 'continue —— 跳过这一对']],
               panels: [Pm('A', A, { r: [i], c: [k], x: [[i, k]] }), Pm('Q', Q)],
               geo: { kind: 'giv', k: k, i: i, x: Math.abs(x0), y: 0, r: Math.abs(x0), c: 1, s: 0, skip: true },
-              say: '这个位置已经是 0，不需要旋转。' };
+              say: '这个位置本来就是 0，旋转只会白做 —— 直接跳过。' };
             continue;
           }
+          yield { pc: 2, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
+            vars: [['判 a(i,k) = 0', '不成立（' + fmt(y0) + '）'], ['动作', '继续往下做旋转']],
+            panels: [Pm('A', A, { r: [k, i], c: [k], x: [[i, k]] }), Pm('Q', Q)],
+            geo: { kind: 'giv', k: k, i: i, x: x0, y: y0, r: Math.hypot(x0, y0), c: 1, s: 0 },
+            say: '这一格不是 0，必须转。' };
           const rad = Math.hypot(x0, y0), c = x0 / rad, s = y0 / rad;
+          yield { pc: 3, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
+            vars: [['半径 = √(a_kk² + a_ik²)', fmt(x0) + '² + ' + fmt(y0) + '² → ' + fmt(rad)],
+                   ['c = a_kk / 半径', fmt(x0) + ' / ' + fmt(rad) + ' = ' + fmt(c)]],
+            panels: [Pm('A', A, { r: [k, i], c: [k], x: [[i, k]] }), Pm('Q', Q)],
+            geo: { kind: 'giv', k: k, i: i, x: x0, y: y0, r: rad, c: 1, s: 0 },
+            say: '先算这对数的半径 ' + fmt(rad) + '，再拿第一行除以它得到余弦 c = ' + fmt(c) + '。' };
           yield { pc: 4, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
-            vars: [['(a_kk, a_ik)', '(' + fmt(x0) + ', ' + fmt(y0) + ')'], ['c', fmt(c)], ['s', fmt(s)], ['半径', fmt(rad)]],
+            vars: [['s = a_ik / 半径', fmt(y0) + ' / ' + fmt(rad) + ' = ' + fmt(s)],
+                   ['自检 c² + s²', fmt(c * c) + ' + ' + fmt(s * s) + ' = ' + fmt(c * c + s * s)]],
             panels: [Pm('A', A, { r: [k, i], c: [k], x: [[i, k]] }), Pm('Q', Q)],
             geo: { kind: 'giv', k: k, i: i, x: x0, y: y0, r: rad, c: c, s: s },
-            say: '这一对 ( ' + fmt(x0) + ', ' + fmt(y0) + ' ) 要被转到横轴上，长度 ' + fmt(rad) + ' 保留。' };
+            say: '同一分母再算正弦 s = ' + fmt(s) + '；两者平方和必须等于 1，不满足就是算错了。' };
           for(let j = 0; j < n; j++){
             const rk = A[k][j], ri = A[i][j];
             A[k][j] = c * rk + s * ri;
-            A[i][j] = -s * rk + c * ri;
-            yield { pc: 6, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) },
-              vars: [['r_k(j) 新', fmt(A[k][j])], ['r_i(j) 新', fmt(A[i][j])]],
-              panels: [Pm('A', A, { r: [k, i], c: [j], x: [[i, j]] }), Pm('Q', Q)],
+            yield { pc: 5, loop: { o: 'k = ' + (k + 1), i: '第 ' + (j + 1) + ' 列：上行' },
+              vars: [['r_k(' + (j + 1) + ') ← c·r_k + s·r_i', fmt(c) + '·' + fmt(rk) + ' + ' + fmt(s) + '·' + fmt(ri) + ' = ' + fmt(A[k][j])]],
+              panels: [Pm('A', A, { r: [k], c: [j], x: [[k, j]] }), Pm('Q', Q)],
               geo: { kind: 'giv', k: k, i: i, x: x0, y: y0, r: rad, c: c, s: s, done: j },
-              say: '内层第 ' + (j + 1) + ' 列：两行同时转，a(i,k) 变 0，其它列一起跟着变。' };
+              say: '第 ' + (j + 1) + ' 列的上行：' + fmt(c) + '·' + fmt(rk) + ' + ' + fmt(s) + '·' + fmt(ri) + ' = ' + fmt(A[k][j]) + '。' };
+            A[i][j] = -s * rk + c * ri;
+            yield { pc: 6, loop: { o: 'k = ' + (k + 1), i: '第 ' + (j + 1) + ' 列：下行' },
+              vars: [['r_i(' + (j + 1) + ') ← −s·r_k + c·r_i', '(−' + fmt(s) + ')·' + fmt(rk) + ' + ' + fmt(c) + '·' + fmt(ri) + ' = ' + fmt(A[i][j])],
+                     ['用的还是旧的 r_k', fmt(rk)]],
+              panels: [Pm('A', A, { r: [i], c: [j], x: [[i, j]] }), Pm('Q', Q)],
+              geo: { kind: 'giv', k: k, i: i, x: x0, y: y0, r: rad, c: c, s: s, done: j },
+              say: '下行用同一个旧 r_k：(−' + fmt(s) + ')·' + fmt(rk) + ' + ' + fmt(c) + '·' + fmt(ri) + ' = ' + fmt(A[i][j]) + '。写成先取新值就全错了。' };
           }
           const G = eye(m);
           G[k][k] = c; G[k][i] = s; G[i][k] = -s; G[i][i] = c;
           const Gt = [[G[0][0], G[1][0], G[2][0]], [G[0][1], G[1][1], G[2][1]], [G[0][2], G[1][2], G[2][2]]];
           Q = mm(Q, Gt);
           yield { pc: 7, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) + ' 完成' },
-            vars: [['a(i,k)', '= 0']],
+            vars: [['a(i,k)', '= 0（已归零）'], ['动作', 'Q ← Q · Gᵀ'], ['‖QᵀQ − I‖', fmt(qorthErr(Q))]],
             panels: [Pm('A', A, { x: [[i, k]] }), Pm('Q', Q)],
             geo: { kind: 'giv', k: k, i: i, x: x0, y: y0, r: rad, c: c, s: s, done: n },
-            say: '这一格归零。旋转正交，所以 Q 只是被乘上一个旋转因子。' };
+            say: '这一格归零。旋转是正交的，所以 Q 只是被乘上一个旋转因子，正交性不变。' };
         }
       }
-      yield { pc: 7, loop: {}, vars: [['‖QR − A‖', fmt(recErr3(Q, A, A0))], ['R 下三角非零数', String(countBelow(A))]],
+      yield { pc: 8, loop: {}, vars: [['‖QR − A‖', fmt(recErr3(Q, A, A0))], ['R 下三角非零数', String(countBelow(A))]],
         panels: [Pm('R', A), Pm('Q', Q)],
         geo: { kind: 'giv', k: -1, i: -1, x: 0, y: 0, r: 0, c: 1, s: 0 },
         say: '得到上三角 R。Givens 的好处是每次只碰两行，代价 6n³ 级别的常数更小但总旋转次数多。',
@@ -1082,16 +1118,33 @@ function* lsNE(A, b){
     geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
     say: '正规方程把最小二乘变成方阵求解。代价是条件数平方：κ(G) = κ(A)²。' };
   for(let j = 0; j < n; j++){
+    yield { pc: 1, loop: { o: 'j = ' + (j + 1) },
+      vars: [['外循环', 'j = ' + (j + 1) + ' / ' + n], ['要算的列', 'G 的第 ' + (j + 1) + ' 列']],
+      panels: [Pm('A', A, { c: [j] }), Vm('b', b), Pm('G', G)],
+      geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+      say: 'G = AᵀA 的第 ' + (j + 1) + ' 列：等于 A 的每一列与第 ' + (j + 1) + ' 列的内积。' };
     for(let i = 0; i < n; i++){
+      yield { pc: 2, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+        vars: [['内循环', 'i = ' + (i + 1) + ' / ' + n], ['当前格子', 'g(' + (i + 1) + ',' + (j + 1) + ') = a' + sub(i + 1) + 'ᵀa' + sub(j + 1)]],
+        panels: [Pm('A', A, { c: [i, j] }), Vm('b', b), Pm('G', G, { x: [[i, j]] })],
+        geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+        say: '格 g' + sub(i + 1) + sub(j + 1) + '：拿第 ' + (i + 1) + ' 列和第 ' + (j + 1) + ' 列逐行相乘再相加。' };
       let s = 0;
       for(let k = 0; k < m; k++){
-        s += A[k][i] * A[k][j];
-        G[i][j] = s;
-        yield { pc: 4, loop: { o: 'i = ' + (i + 1) + ', j = ' + (j + 1), i: 'k = ' + (k + 1) },
-          vars: [['a(k,i)·a(k,j)', fmt(A[k][i] * A[k][j])], ['g(i,j)', fmt(s)]],
-          panels: [Pm('A', A, { r: [k], c: [i, j] }), Vm('b', b), Pm('G', G, { x: [[i, j]] })],
+        yield { pc: 3, loop: { o: 'j = ' + (j + 1) + ', i = ' + (i + 1), i: 'k = ' + (k + 1) },
+          vars: [['最内层', 'k = ' + (k + 1) + ' / ' + m], ['要乘的两个数', 'a' + sub(k + 1) + sub(i + 1) + '=' + fmt(A[k][i]) + '，a' + sub(k + 1) + sub(j + 1) + '=' + fmt(A[k][j])]],
+          panels: [Pm('A', A, { r: [k], c: [i, j], x: [[k, i], [k, j]] }), Vm('b', b), Pm('G', G, { x: [[i, j]] })],
           geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
-          say: 'g' + sub(i + 1) + sub(j + 1) + ' 是 A 第 ' + (i + 1) + '、' + (j + 1) + ' 两列的内积，最内层 k 逐行累加。' };
+          say: '第 ' + (k + 1) + ' 行：' + fmt(A[k][i]) + ' × ' + fmt(A[k][j]) + '，准备累加。' };
+        const t = A[k][i] * A[k][j];
+        const s0 = s;
+        s += t;
+        G[i][j] = s;
+        yield { pc: 4, loop: { o: 'j = ' + (j + 1) + ', i = ' + (i + 1), i: 'k = ' + (k + 1) },
+          vars: [['这一项', fmt(A[k][i]) + ' × ' + fmt(A[k][j]) + ' = ' + fmt(t)], ['g(i,j) 累加', fmt(s0) + ' + ' + fmt(t) + ' = ' + fmt(s)]],
+          panels: [Pm('A', A, { r: [k], c: [i, j], x: [[k, i], [k, j]] }), Vm('b', b), Pm('G', G, { x: [[i, j]] })],
+          geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+          say: 'g' + sub(i + 1) + sub(j + 1) + ' 从 ' + fmt(s0) + ' 加到 ' + fmt(s) + '。三层循环都走完，这一格才算完。' };
       }
     }
   }
@@ -1128,26 +1181,41 @@ function* lsQR(Ain, b0){
     say: '不做 AᵀA，直接对 A 做两个反射 —— 条件数不被平方。' };
   for(let k = 0; k < n; k++){
     const len = m - k, x = [], v = [];
+    yield { pc: 1, loop: { o: 'k = ' + (k + 1) },
+      vars: [['外循环', 'k = ' + (k + 1) + ' / ' + n], ['这次要清的', '第 ' + (k + 1) + ' 列第 ' + (k + 1) + ':' + m + ' 行']],
+      panels: [Pm('A', A, { c: [k] }), Vm('b', b)],
+      geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+      say: '第 ' + (k + 1) + ' 个反射：和 Householder QR 完全一样，只是最后求解的是最小二乘。' };
     for(let i = 0; i < len; i++) x.push(A[k + i][k]);
+    yield { pc: 2, loop: { o: 'k = ' + (k + 1) },
+      vars: [['x = A(' + (k + 1) + ':' + m + ', ' + (k + 1) + ')', '[' + x.map(t => fmt(t)).join(', ') + ']'], ['‖x‖', fmt(nrm(x))]],
+      panels: [Pm('A', A, { c: [k] }), Vm('b', b)],
+      geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+      say: '取出这一列下半截，长度 ' + fmt(nrm(x)) + '。' };
     const nx = nrm(x), sgn = (x[0] >= 0 ? 1 : -1);
     for(let i = 0; i < len; i++) v.push(x[i]);
     v[0] += sgn * nx;
     const nv = nrm(v);
     for(let i = 0; i < len; i++) v[i] /= nv;
     yield { pc: 2, loop: { o: 'k = ' + (k + 1) },
-      vars: [['x', '[' + x.map(t => fmt(t)).join(', ') + ']'], ['‖x‖', fmt(nx)]],
+      vars: [['v（单位化后）', '[' + v.map(t => fmt(t)).join(', ') + ']'], ['‖v‖', '1（构造时已归一）']],
       panels: [Pm('A', A, { c: [k] }), Vm('b', b)],
       geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
-      say: '第 ' + (k + 1) + ' 个反射：把这一列的下半截折到轴上。' };
+      say: 'householder 内部：v = x + sign(x₁)‖x‖e₁ 再单位化，得到镜面法向。' };
     for(let j = k; j < n; j++){
-      let w = 0;
-      for(let i = 0; i < len; i++) w += v[i] * A[k + i][j];
-      for(let i = 0; i < len; i++) A[k + i][j] -= 2 * w * v[i];
-      yield { pc: 3, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) },
-        vars: [['w = vᵀa' + sub(j + 1), fmt(w)]],
+      let w = 0; const terms = [];
+      for(let i = 0; i < len; i++){ const t = v[i] * A[k + i][j]; terms.push(t); w += t; }
+      yield { pc: 3, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) + '：算 w' },
+        vars: [['w = vᵀa' + sub(j + 1), terms.map(t => fmt(t)).join(' + ') + ' = ' + fmt(w)]],
         panels: [Pm('A', A, { c: [j] }), Vm('b', b)],
         geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
-        say: '内层对第 ' + (j + 1) + ' 列做反射。' };
+        say: '内层第 ' + (j + 1) + ' 列：先算点积 w = ' + fmt(w) + '。' };
+      for(let i = 0; i < len; i++) A[k + i][j] -= 2 * w * v[i];
+      yield { pc: 3, loop: { o: 'k = ' + (k + 1), i: 'j = ' + (j + 1) + '：扣 2wv' },
+        vars: [['2w·v', '(' + v.map(t => fmt(2 * w * t)).join(', ') + ')'], ['这一列之后', '(' + A.map(r => r[j]).map(t => fmt(t)).join(', ') + ')']],
+        panels: [Pm('A', A, { c: [j] }), Vm('b', b)],
+        geo: { kind: 'ls', A: A, b: b, p: null, r: null, stage: 'form' },
+        say: '把 2w·v 逐分量从这一列扣掉。' };
     }
     let wb = 0;
     for(let i = 0; i < len; i++) wb += v[i] * b[k + i];
@@ -1207,50 +1275,68 @@ function algoLU(piv){
         say: piv ? '第一列主元是 0，必须换行 —— 这正是需要列主元的典型场景。'
                  : '目标：把 A 一步步变成上三角 U，同时把用过的乘子按列收进 L。' };
       for(let k = 0; k < n - 1; k++){
+        const pkI = piv ? 3 : 1, pkL = piv ? 4 : 2, pkCell = piv ? 5 : 3, pkPlace = piv ? 6 : 4;
+        yield { pc: 0, loop: { o: 'k = ' + (k + 1) },
+          vars: [['外循环', 'k = ' + (k + 1) + ' / ' + (n - 1)], ['这一轮要清的列', '第 ' + (k + 1) + ' 列对角线以下']],
+          panels: [Pm('A（U 上 / L 下）', A, { c: [k] }), Pm('L', L)].concat(piv ? [Pm('P', P)] : []),
+          geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: -1, old: null, nw: null },
+          say: '第 ' + (k + 1) + ' 轮：用第 ' + (k + 1) + ' 行去消掉下面各行在第 ' + (k + 1) + ' 列上的分量。' };
         if(piv){
           let p = k;
           for(let i = k + 1; i < m; i++) if(Math.abs(A[i][k]) > Math.abs(A[p][k])) p = i;
           yield { pc: 1, loop: { o: 'k = ' + (k + 1) },
-            vars: [['列 ' + (k + 1) + ' 的最大元', '行 ' + (p + 1)], ['|a(p,k)|', fmt(Math.abs(A[p][k]))]],
+            vars: [['逐行比 |a(i,k)|', A.map((r, i) => i >= k ? '行' + (i + 1) + ':' + fmt(Math.abs(r[k])) : '').filter(Boolean).join('  ')],
+                   ['最大的是', '行 ' + (p + 1)], ['|a(p,k)|', fmt(Math.abs(A[p][k]))]],
             panels: [Pm('A（U 上 / L 下）', A, { c: [k] }), Pm('L', L), Pm('P', P)],
             geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: -1, old: null, nw: null, pick: p },
-            say: '在第 ' + (k + 1) + ' 列对角线以下找绝对值最大的元素，作为主元。' };
+            say: '在第 ' + (k + 1) + ' 列对角线以下找绝对值最大的元素，作为主元 —— 换上来可以避免除以很小的数。' };
           if(p !== k){
             const t = A[p]; A[p] = A[k]; A[k] = t;
             const tp = P[p]; P[p] = P[k]; P[k] = tp;
             for(let j = 0; j < k; j++){ const tl = L[p][j]; L[p][j] = L[k][j]; L[k][j] = tl; }
             yield { pc: 2, loop: { o: 'k = ' + (k + 1) },
-              vars: [['动作', '交换第 ' + (k + 1) + ' 行与第 ' + (p + 1) + ' 行']],
+              vars: [['判 p ≠ k', '成立（' + (p + 1) + ' ≠ ' + (k + 1) + '）'], ['动作', '交换第 ' + (k + 1) + '、' + (p + 1) + ' 行']],
               panels: [Pm('A（U 上 / L 下）', A, { r: [k, p] }), Pm('L', L), Pm('P', P, { r: [k, p] })],
               geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: -1, old: null, nw: null, swap: [k, p] },
               say: '换行。注意 L 里已经算好的那几列也必须跟着换，否则 PA = LU 不成立。' };
+          } else {
+            yield { pc: 2, loop: { o: 'k = ' + (k + 1) },
+              vars: [['判 p ≠ k', '不成立（p = k = ' + (k + 1) + '）'], ['动作', '不换行，继续']],
+              panels: [Pm('A（U 上 / L 下）', A), Pm('L', L), Pm('P', P)],
+              geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: -1, old: null, nw: null },
+              say: '最大的就在对角线上，不用换 —— 这一帧没有矩阵元素改变。' };
           }
         }
         const pk = A[k][k];
         yield { pc: piv ? 3 : 0, loop: { o: 'k = ' + (k + 1) },
-          vars: [['主元 a(k,k)', fmt(pk)]],
+          vars: [['主元 a(k,k)', fmt(pk)], ['要用它除', '第 ' + (k + 2) + ' 行往下的 a(i,' + (k + 1) + ')']],
           panels: [Pm('A（U 上 / L 下）', A, { x: [[k, k]] }), Pm('L', L)].concat(piv ? [Pm('P', P)] : []),
           geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: -1, old: null, nw: null },
-          say: '以 a(' + (k + 1) + ',' + (k + 1) + ') = ' + fmt(pk) + ' 为基准，消掉下面各行的第 ' + (k + 1) + ' 列。' };
+          say: '锁定主元 a(' + (k + 1) + ',' + (k + 1) + ') = ' + fmt(pk) + '，接下来下面每行都要除它一次。' };
         for(let i = k + 1; i < m; i++){
+          yield { pc: pkI, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
+            vars: [['内循环', 'i = ' + (i + 1) + ' / ' + m], ['这一行', '第 ' + (i + 1) + ' 行，a(i,k) = ' + fmt(A[i][k])]],
+            panels: [Pm('A（U 上 / L 下）', A, { r: [i], c: [k], x: [[i, k]] }), Pm('L', L)].concat(piv ? [Pm('P', P)] : []),
+            geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: i, old: null, nw: null },
+            say: '处理第 ' + (i + 1) + ' 行：先算乘子，再整行相减。' };
           const rowStart = A[i].slice();
           const mult = A[i][k] / pk;
-          yield { pc: piv ? 4 : 2, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
-            vars: [['a(i,k)', fmt(A[i][k])], ['a(k,k)', fmt(pk)], ['l(i,k)', fmt(mult)]],
+          yield { pc: pkL, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) },
+            vars: [['a(i,k)', fmt(A[i][k])], ['a(k,k)', fmt(pk)], ['l(i,k) = a(i,k)/a(k,k)', fmt(A[i][k]) + ' ÷ ' + fmt(pk) + ' = ' + fmt(mult)]],
             panels: [Pm('A（U 上 / L 下）', A, { r: [i], c: [k], x: [[i, k]] }), Pm('L', L)].concat(piv ? [Pm('P', P)] : []),
             geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: i, old: null, nw: null },
             say: '先只算乘子：' + fmt(A[i][k]) + ' ÷ ' + fmt(pk) + ' = ' + fmt(mult) + '。这一步不动 A 的任何元素。' };
           for(let j = k + 1; j < n; j++){
             const before = A[i][j], sub = mult * A[k][j];
             A[i][j] -= sub;
-            yield { pc: piv ? 5 : 3, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) + ', j = ' + (j + 1) },
-              vars: [['a(i,j) 原值', fmt(before)], ['l·a(k,j)', fmt(sub)], ['a(i,j) 新值', fmt(A[i][j])]],
+            yield { pc: pkCell, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) + ', j = ' + (j + 1) },
+              vars: [['a(i,j) 原值', fmt(before)], ['l·a(k,j)', fmt(mult) + '×' + fmt(A[k][j]) + ' = ' + fmt(sub)], ['a(i,j) 新值', fmt(A[i][j])]],
               panels: [Pm('A（U 上 / L 下）', A, { r: [i], c: [j], x: [[i, j]] }), Pm('L', L)].concat(piv ? [Pm('P', P)] : []),
               geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: i, old: rowStart, nw: A[i].slice() },
               say: '这一帧只改一个格子：' + fmt(before) + ' − ' + fmt(mult) + '×' + fmt(A[k][j]) + ' = ' + fmt(A[i][j]) + '。' };
           }
           A[i][k] = mult; L[i][k] = mult;
-          yield { pc: piv ? 6 : 4, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) + ' 完成' },
+          yield { pc: pkPlace, loop: { o: 'k = ' + (k + 1), i: 'i = ' + (i + 1) + ' 完成' },
             vars: [['l(i,k) 落位', fmt(mult)], ['a(i,k) 被覆盖成', fmt(mult)]],
             panels: [Pm('A（U 上 / L 下）', A, { r: [i], c: [k], x: [[i, k]] }), Pm('L', L, { x: [[i, k]] })].concat(piv ? [Pm('P', P)] : []),
             geo: { kind: 'lu', rows: A.map(r => r.slice()), k: k, i: i, old: rowStart, nw: A[i].slice() },
@@ -1299,21 +1385,44 @@ function algoChol(){
         geo: { kind: 'chol', i: -1, j: -1, aij: 0, acc: 0, s: 0, div: 0 },
         say: 'Cholesky 只对对称正定矩阵可用，代价约 m³/3，是 LU 的一半，且不需要选主元。' };
       for(let j = 0; j < m; j++){
+        yield { pc: 1, loop: { o: 'j = ' + (j + 1) },
+          vars: [['外循环', 'j = ' + (j + 1) + ' / ' + m], ['这一列要算', 'r(1:' + (j + 1) + ',' + (j + 1) + ') 共 ' + (j + 1) + ' 个']],
+          panels: [Pm('A', A, { c: [j] }), Pm('R', R)],
+          geo: { kind: 'chol', i: -1, j: j, aij: A[0][j], acc: 0, s: 0, div: 0 },
+          say: '第 ' + (j + 1) + ' 列：从上往下算 ' + (j + 1) + ' 个元素，对角元最后开方。' };
         for(let i = 0; i <= j; i++){
+          yield { pc: 2, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['内循环', 'i = ' + (i + 1) + ' / ' + (j + 1)], ['这一格', 'r(' + (i + 1) + ',' + (j + 1) + ')' + (i === j ? '（对角元）' : '')]],
+            panels: [Pm('A', A, { x: [[i, j]] }), Pm('R', R, { x: [[i, j]] })],
+            geo: { kind: 'chol', i: i, j: j, aij: A[i][j], acc: 0, s: 0, div: 0 },
+            say: '第 ' + (i + 1) + ' 行：先扣掉前 ' + i + ' 个已算元素的内积，再看是除还是开方。' };
           let s = A[i][j], acc = 0;
           yield { pc: 3, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
-            vars: [['a(i,j)', fmt(s)], ['s 初值', fmt(s)]],
+            vars: [['a(i,j)', fmt(A[i][j])], ['s 初值', fmt(s)]],
             panels: [Pm('A', A, { x: [[i, j]] }), Pm('R', R)],
             geo: { kind: 'chol', i: i, j: j, aij: A[i][j], acc: 0, s: s, div: 0 },
             say: '取元素 a(' + (i + 1) + ',' + (j + 1) + ') = ' + fmt(s) + '，开始扣已算部分。' };
+          if(i === 0){
+            yield { pc: 4, loop: { o: 'j = ' + (j + 1), i: 'i = 1', i: 'k = 1 : 0（不进循环）' },
+              vars: [['内循环', 'k 从 1 到 i−1 = 0 —— 一次都不执行'], ['所以', 's 就是 a(i,j) 本身']],
+              panels: [Pm('A', A, { x: [[i, j]] }), Pm('R', R)],
+              geo: { kind: 'chol', i: i, j: j, aij: A[i][j], acc: 0, s: s, div: 0 },
+              say: '第一行没有更早的 r 可以扣，内层范围是空的。' };
+          }
           for(let k = 0; k < i; k++){
+            yield { pc: 4, loop: { o: 'j = ' + (j + 1) + ', i = ' + (i + 1), i: 'k = ' + (k + 1) },
+              vars: [['内层', 'k = ' + (k + 1) + ' / ' + i], ['要扣的项', 'r' + sub(k + 1) + sub(i + 1) + '·r' + sub(k + 1) + sub(j + 1) + ' = ' + fmt(R[k][i]) + ' × ' + fmt(R[k][j])]],
+              panels: [Pm('A', A, { x: [[i, j]] }), Pm('R', R, { r: [k], c: [i, j], x: [[k, i], [k, j]] })],
+              geo: { kind: 'chol', i: i, j: j, aij: A[i][j], acc: acc, s: s, div: 0 },
+              say: '第 ' + (k + 1) + ' 行：r' + sub(k + 1) + sub(i + 1) + ' 与 r' + sub(k + 1) + sub(j + 1) + ' 相乘。' };
             acc += R[k][i] * R[k][j];
-            s -= R[k][i] * R[k][j];
+            const sub2 = R[k][i] * R[k][j], s0 = s;
+            s -= sub2;
             yield { pc: 5, loop: { o: 'j = ' + (j + 1) + ', i = ' + (i + 1), i: 'k = ' + (k + 1) },
-              vars: [['r(k,i)·r(k,j)', fmt(R[k][i] * R[k][j])], ['s', fmt(s)]],
+              vars: [['r(k,i)·r(k,j)', fmt(sub2)], ['s', fmt(s0) + ' − ' + fmt(sub2) + ' = ' + fmt(s)]],
               panels: [Pm('A', A, { x: [[i, j]] }), Pm('R', R, { c: [i, j], r: [k], x: [[k, i], [k, j]] })],
               geo: { kind: 'chol', i: i, j: j, aij: A[i][j], acc: acc, s: s, div: 0 },
-              say: '内层逐项扣：r' + sub(k + 1) + sub(i + 1) + '·r' + sub(k + 1) + sub(j + 1) + '，剩余 ' + fmt(s) + '。' };
+              say: '内层逐项扣：' + fmt(s0) + ' − ' + fmt(sub2) + ' = ' + fmt(s) + '。' };
           }
           if(i < j){
             const div = R[i][i];
@@ -1395,15 +1504,32 @@ function algoSyPivot(){
         }
         const piv = A[j][j];
         for(let i = j + 1; i < m; i++){
+          yield { pc: 3, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['内循环', 'i = ' + (i + 1) + ' / ' + m], ['这一行', '第 ' + (i + 1) + ' 行，a(i,j) = ' + fmt(A[i][j])]],
+            panels: [Pm('P', P), Pm('L', L), Pm('A', A, { r: [i], c: [j], x: [[i, j]] })],
+            geo: { kind: 'lu', rows: snap(), k: j, i: i, old: null, nw: null },
+            say: '用这一行的 a(i,j) 算乘子。' };
           const l = A[i][j] / piv;
-          const oldRow = A[i].slice();
-          for(let c = j + 1; c < m; c++) A[i][c] -= l * A[j][c];
-          A[i][j] = l; L[i][j] = l;
-          yield { pc: 5, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
-            vars: [['主元 a(j,j)', fmt(piv)], ['l(i,j)', fmt(l)], ['|l| ≤ 1 ?', Math.abs(l) <= 1 ? '是' : '否（不定时可能超 1）']],
+          yield { pc: 4, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['l(i,j) = a(i,j)/a(j,j)', fmt(A[i][j]) + ' ÷ ' + fmt(piv) + ' = ' + fmt(l)], ['|l| ≤ 1 ?', Math.abs(l) <= 1 ? '是（正定时必成立）' : '否（不定时可能超 1）']],
             panels: [Pm('P', P), Pm('L', L, { x: [[i, j]] }), Pm('A', A, { r: [i], c: [j] })],
+            geo: { kind: 'lu', rows: snap(), k: j, i: i, old: null, nw: null },
+            say: '乘子 ' + fmt(l) + '：正定矩阵下 |l| ≤ 1 恒成立，这也是对称主元稳的原因。' };
+          const oldRow = A[i].slice();
+          const subs = [];
+          for(let c = j + 1; c < m; c++){ subs.push([c, A[i][c], l * A[j][c]]); A[i][c] -= l * A[j][c]; }
+          yield { pc: 5, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
+            vars: [['行更新', subs.length ? subs.map(t => 'a' + sub(i + 1) + sub(t[0] + 1) + ': ' + fmt(t[1]) + '−' + fmt(t[2])).join('  ') : '右边没有要更新的格子（最后一列）'],
+                   ['右下块', '仍是 Hermite（Schur 补保结构）']],
+            panels: [Pm('P', P), Pm('L', L), Pm('A', A, { r: [i], c: [j] })],
             geo: { kind: 'lu', rows: snap(), k: j, i: i, old: oldRow, nw: A[i].slice() },
-            say: '乘子 ' + fmt(l) + ' 落进 L；这一行继续减，右下角那块就是 Schur 补，仍 Hermite。' };
+            say: subs.length ? '逐格相减：' + subs.map(t => fmt(t[1]) + ' − ' + fmt(t[2]) + ' = ' + fmt(A[i][t[0]])).join('；') + '。' : '这一行右边已经没有元素，只有乘子要写回。' };
+          A[i][j] = l; L[i][j] = l;
+          yield { pc: 6, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) + ' 落位' },
+            vars: [['a(i,j) ← l(i,j)', fmt(l)], ['L(i,j)', fmt(l)]],
+            panels: [Pm('P', P), Pm('L', L, { x: [[i, j]] }), Pm('A', A, { r: [i], c: [j], x: [[i, j]] })],
+            geo: { kind: 'lu', rows: snap(), k: j, i: i, old: oldRow, nw: A[i].slice() },
+            say: '乘子写进 a(i,j) 与 L(i,j)：同一块空间既存乘子又存消元结果。' };
         }
       }
       for(let k = 0; k < m; k++) D[k] = A[k][k];
@@ -1468,6 +1594,19 @@ function costAlgo(spec){
         panels: [Pm('成本表（flop）', [COST_NS.slice(), vals.slice()], null, fmtBig)],
         geo: { kind: 'cost', ns: COST_NS, vals: vals, cur: 2, id: spec.id },
         say: '这一模块不比“步骤”，比**开销**：同一台机器上，n 翻倍时工作量翻几倍。' };
+      const line = k => String(spec.pseudo[k] || '').replace(/\/\/.*$/, '').trim();
+      yield { pc: 1, loop: {}, vars: [['这一行', line(1)], ['含义', '外层一共走 n 次（这里 n 取 4…128）']],
+        panels: [Pm('成本表（flop）', [COST_NS.slice(), vals.slice()], null, fmtBig)],
+        geo: { kind: 'cost', ns: COST_NS, vals: vals, cur: 0, id: spec.id },
+        say: '外层跑 n 次；每往里一层，就把上一次的次数再乘一遍 —— 层数决定指数。' };
+      yield { pc: 2, loop: {}, vars: [['这一行', line(2)], ['含义', '内层把单次代价累乘起来']],
+        panels: [Pm('成本表（flop）', [COST_NS.slice(), vals.slice()], null, fmtBig)],
+        geo: { kind: 'cost', ns: COST_NS, vals: vals, cur: 1, id: spec.id },
+        say: '最内层：每执行一次就加固定的 flop 数（点积 2m、axpy 2m 之类）。' };
+      yield { pc: 3, loop: {}, vars: [['这一行', line(3)], ['单次代价', line(3).replace(/flops\s*\+=?\s*/, '')], ['累乘出来', spec.formula]],
+        panels: [Pm('成本表（flop）', [COST_NS.slice(), vals.slice()], null, fmtBig)],
+        geo: { kind: 'cost', ns: COST_NS, vals: vals, cur: 2, id: spec.id },
+        say: '单次代价 × 次数 = 主项，也就是最后的 ' + spec.formula + '。' };
       for(let i = 0; i < COST_NS.length; i++){
         const n = COST_NS[i], v = vals[i], chol = n * n * n / 3, lu = 2 * n * n * n / 3;
         yield { pc: 4, loop: { o: 'n = ' + n },
@@ -1625,9 +1764,10 @@ const ALGO_WHY = {
       '内层：第 k 列里从第 k+1 行往下处理',
       '已经是 0 就跳过，省一次旋转',
       'c 是「保留的那一份」：a(k,k)/半径',
-      's 是「要转走的那一份」：a(i,k)/半径',
+      's 是「要转走的那一份」：a(i,k)/半径；c²+s² 必须为 1',
       '第 k 行：按 c、s 混合新旧两行',
       '第 i 行：用旧的 r_k 算；转完 a(i,k) 正好为 0',
+      'Q 也被同一个旋转右乘（Gᵀ），这样 QR 才等于原矩阵',
       'R 上三角；每次只碰两行，适合稀疏与并行'
   ],
   lsne: [
@@ -1783,11 +1923,31 @@ function algoSVD(){
         panels: [Pm('A', snap()), Pm('V', V)],
         geo: { kind: 'svd', cols: C.map(c => c.slice()), p: -1, q: -1 },
         say: '目标：只靠“两列之间做一次旋转”，把三列转成互相垂直 —— 垂直之后，列长就是奇异值。' };
+      yield { pc: 1, loop: {}, vars: [['V 初值', '单位阵 I'], ['C', '= A 的三列（会被反复旋转）'],
+                 ['三列长度', sig().map(v => fmt(v)).join('  ')]],
+        panels: [Pm('A', snap()), Pm('V', V)],
+        geo: { kind: 'svd', cols: C.map(c => c.slice()), p: -1, q: -1 },
+        say: '准备：V 从单位阵开始，C 直接抄 A 的三列。之后只动 C 和 V，绝不去形成 AᵀA。' };
       let sweep = 0, worst = 1;
       while(sweep < 5){
         sweep++;
+        yield { pc: 2, loop: { o: '第 ' + sweep + ' 轮' },
+          vars: [['repeat', '第 ' + sweep + ' 轮开始'], ['一轮做什么', '把所有列对 (p<q) 各看一遍']],
+          panels: [Pm('A', snap()), Pm('V', V)],
+          geo: { kind: 'svd', cols: C.map(c => c.slice()), p: -1, q: -1 },
+          say: '一轮 = 把所有列对扫一遍。每扫一遍，最不垂直的那对会被修好一些。' };
         for(let p2 = 0; p2 < n - 1; p2++){
+          yield { pc: 3, loop: { o: '第 ' + sweep + ' 轮', i: 'p = ' + (p2 + 1) },
+            vars: [['for p', 'p = ' + (p2 + 1) + ' / ' + (n - 1)], ['这一轮的主角', '第 ' + (p2 + 1) + ' 列']],
+            panels: [Pm('A', snap(), { c: [p2] }), Pm('V', V)],
+            geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: -1 },
+            say: '固定 p = ' + (p2 + 1) + '，接下来拿它和后面每一列配对。' };
           for(let q2 = p2 + 1; q2 < n; q2++){
+            yield { pc: 4, loop: { o: '第 ' + sweep + ' 轮', i: 'q = ' + (q2 + 1) },
+              vars: [['for q', 'q = ' + (q2 + 1) + ' : ' + n], ['这一对', '(' + (p2 + 1) + ', ' + (q2 + 1) + ')']],
+              panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V)],
+              geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
+              say: '配对 (' + (p2 + 1) + ', ' + (q2 + 1) + ')：只在这两列之间做二维旋转。' };
             const al = dot(C[p2], C[p2]), be = dot(C[q2], C[q2]), ga = dot(C[p2], C[q2]);
             const cosang = Math.abs(ga) / Math.sqrt(al * be || 1);
             yield { pc: 5, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) },
@@ -1795,26 +1955,45 @@ function algoSVD(){
               panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V)],
               geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
               say: '只量三件事：两列各自的长度平方，和它们的内积 γ。γ = 0 就说明这一对已经垂直。' };
-            if(cosang < 1e-12){ worst = Math.min(worst, cosang); continue; }
+            if(cosang < 1e-12){
+              worst = Math.min(worst, cosang);
+              yield { pc: 6, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) },
+                vars: [['判 |γ| 已足够小', '成立（|cos∠| = ' + fmt(cosang) + '）'], ['动作', 'continue，跳过这一对']],
+                panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V)],
+                geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
+                say: '这一对已经垂直，不用再转 —— 跳过。' };
+              continue;
+            }
+            yield { pc: 6, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) },
+              vars: [['判 |γ| 已足够小', '不成立（|cos∠| = ' + fmt(cosang) + '）'], ['动作', '继续，算旋转']],
+              panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V)],
+              geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
+              say: '还不垂直（夹角余弦 ' + fmt(cosang) + '），必须转。' };
             const zeta = (be - al) / (2 * ga);
             const sg = (zeta >= 0 ? 1 : -1);
             const t = sg / (Math.abs(zeta) + Math.sqrt(1 + zeta * zeta));
             const c = 1 / Math.sqrt(1 + t * t), sn = c * t;
             yield { pc: 7, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) },
-              vars: [['ζ = (β−α)/(2γ)', fmt(zeta)], ['tanθ = t', fmt(t)], ['c', fmt(c)], ['s', fmt(sn)], ['θ', fmtDec(Math.atan2(sn, c) * 180 / Math.PI, 2) + '°']],
+              vars: [['ζ = (β−α)/(2γ)', fmt(zeta)], ['tanθ = t = sign/(|ζ|+√(1+ζ²))', fmt(t)], ['c = 1/√(1+t²)', fmt(c)], ['s = c·t', fmt(sn)], ['θ', fmtDec(Math.atan2(sn, c) * 180 / Math.PI, 2) + '°']],
               panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V)],
               geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
-              say: '这个 c、s 是唯一能让 γ 变 0 的旋转（解一个 2×2 对称特征问题）。' };
+              say: '这个 c、s 是唯一能让 γ 变 0 的旋转（解一个 2×2 对称特征问题）。tanθ 用半角公式算，避免相消。' };
             const cp = C[p2].slice(), cq = C[q2].slice();
             for(let i = 0; i < m; i++){ C[p2][i] = c * cp[i] - sn * cq[i]; C[q2][i] = sn * cp[i] + c * cq[i]; }
+            yield { pc: 8, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) + '：转 C' },
+              vars: [['a_p 旧 / 新', '[' + cp.map(v => fmt(v)).join(', ') + '] → [' + C[p2].map(v => fmt(v)).join(', ') + ']'],
+                     ['a_q 旧 / 新', '[' + cq.map(v => fmt(v)).join(', ') + '] → [' + C[q2].map(v => fmt(v)).join(', ') + ']']],
+              panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V)],
+              geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
+              say: '两列同时转：a_p ← c·a_p − s·a_q，a_q ← s·a_p + c·a_q。注意右边用的都是旧值。' };
             for(let i = 0; i < m; i++){ const vp = V[i][p2], vq = V[i][q2]; V[i][p2] = c * vp - sn * vq; V[i][q2] = sn * vp + c * vq; }
             const ga2 = dot(C[p2], C[q2]);
             worst = Math.min(worst, Math.abs(ga2) / Math.sqrt(dot(C[p2], C[p2]) * dot(C[q2], C[q2]) || 1));
-            yield { pc: 9, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) + ' 完成' },
-              vars: [['新的 γ', fmt(ga2)], ['列长', sig().map(v => fmt(v)).join('  ')]],
+            yield { pc: 9, loop: { o: '第 ' + sweep + ' 轮', i: 'p=' + (p2 + 1) + ', q=' + (q2 + 1) + '：转 V' },
+              vars: [['V 的第 p、q 列', '右乘同一个旋转'], ['新的 γ', fmt(ga2)], ['列长', sig().map(v => fmt(v)).join('  ')]],
               panels: [Pm('A', snap(), { c: [p2, q2] }), Pm('V', V, { c: [p2, q2] })],
               geo: { kind: 'svd', cols: C.map(c => c.slice()), p: p2, q: q2 },
-              say: '这两列现在垂直了。注意：长度变了 —— 旋转把“夹角”换成了“长度”，总能量不变。' };
+              say: 'V 也要跟着转同样的角度（这样 UΣVᵀ 才不变）。这一对现在垂直了：γ = ' + fmt(ga2) + '。' };
           }
         }
         let mx = 0;
@@ -1822,6 +2001,11 @@ function algoSVD(){
           const gg = Math.abs(dot(C[p3], C[q3])) / Math.sqrt(dot(C[p3], C[p3]) * dot(C[q3], C[q3]) || 1);
           mx = Math.max(mx, gg);
         }
+        yield { pc: 10, loop: { o: '第 ' + sweep + ' 轮结束' },
+          vars: [['until 判据', '所有列对的 max|cos∠|'], ['当前值', fmt(mx)], ['是否退出', mx < 1e-12 ? '已到 10⁻¹² → 退出循环' : '还大于 10⁻¹² → 再扫一轮']],
+          panels: [Pm('A', snap()), Pm('V', V)],
+          geo: { kind: 'svd', cols: C.map(c => c.slice()), p: -1, q: -1 },
+          say: '一轮扫完，最不垂直的那对余弦是 ' + fmt(mx) + '。' + (mx < 1e-12 ? '已经到机器精度，退出。' : '还没到 10⁻¹²，再来一轮。') };
         if(mx < 1e-12) break;
       }
       const S = C.map(c => nrm(c));

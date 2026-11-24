@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>作业题路线图 · 按考点与优先级排的过题顺序｜数值线性代数</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$']] }, svg: { fontCache: 'global' } };
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.1/es5/tex-svg.min.js"></script>
+<style>
+  :root{--paper:#FAF9F6;--ink:#22303F;--cinn:#B04A2F;--steel:#2F5D8A;--mut:#6B6A63;--line:#E2DCD0;--wash:#F1EEE7;--amber:#C8A15A;--green:#3F6B4F;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.72 -apple-system,"Segoe UI","Noto Sans SC",system-ui,sans-serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:26px 18px 72px}
+  a{color:var(--steel);text-decoration:none;border-bottom:1px solid rgba(47,93,138,.25)}
+  a:hover{border-bottom-color:var(--steel)}
+  .nav{display:flex;gap:16px;font-size:13px;color:var(--mut);margin-bottom:22px;flex-wrap:wrap}
+  .mast{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:20px}
+  .tag{display:inline-block;font:11px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;color:var(--paper);background:var(--ink);padding:4px 7px;border-radius:2px}
+  h1{font-size:26px;line-height:1.34;margin:12px 0 8px}
+  .sub{color:var(--mut);font-size:14.5px;max-width:800px;margin:0}
+  h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  h2 .badge{font:11px/1 ui-monospace,Consolas,monospace;color:#fff;background:var(--cinn);padding:3px 6px;border-radius:2px;margin-right:8px;vertical-align:2px}
+  h3{font-size:15.5px;margin:20px 0 8px}
+  p{margin:10px 0}
+  ul,ol{padding-left:22px;margin:8px 0}
+  li{margin:4px 0}
+
+  .tw{overflow-x:auto;margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.6px;margin:0}
+  th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{font-size:12px;color:var(--mut);background:#F6F3EA;font-weight:600;letter-spacing:.04em}
+  tbody tr:nth-child(even){background:#FCFAF4}
+  td.n{font:12.5px ui-monospace,Consolas,monospace;white-space:nowrap}
+  td.t{color:var(--mut);font:12px ui-monospace,Consolas,monospace;white-space:nowrap}
+  input[type=checkbox]{width:15px;height:15px;accent-color:var(--cinn);cursor:pointer}
+
+  .box{background:#FFFDF9;border:1px solid var(--line);border-left:3px solid var(--amber);padding:11px 14px;margin:14px 0;font-size:14.4px}
+  .box b{color:#8A6A24}
+  .note{background:#FDF6F3;border:1px solid #F0DCD3;border-left:3px solid var(--cinn);padding:10px 14px;margin:14px 0;font-size:14.2px}
+  .note b{color:var(--cinn)}
+  .eq{background:#FCFBF7;border:1px solid var(--line);border-radius:3px;padding:4px 10px;margin:10px 0;overflow-x:auto}
+
+  details{border:1px solid var(--line);border-radius:4px;background:#FFFDF9;margin:10px 0;padding:8px 12px}
+  details summary{cursor:pointer;font-size:14px;color:var(--steel);list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary:before{content:"▸ ";color:var(--cinn)}
+  details[open] summary:before{content:"▾ "}
+  details .body{margin-top:6px;font-size:14.2px;border-top:1px dashed var(--line);padding-top:8px}
+
+  .bar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line);padding:8px 0;margin:0 0 6px;font:12.5px ui-monospace,Consolas,monospace;color:var(--mut)}
+  .bar b{color:var(--cinn);font-size:14px}
+  .prog{height:5px;background:#EDE8DE;border-radius:3px;overflow:hidden;margin-top:6px;max-width:420px}
+  .prog i{display:block;height:100%;width:0;background:var(--cinn);transition:width .2s}
+
+  footer{margin-top:46px;padding-top:14px;border-top:1px solid var(--line);font:11.5px/1.6 ui-monospace,Consolas,monospace;color:var(--mut);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  mjx-container[jax="SVG"]{max-width:100%}
+  mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden}
+  mjx-container[display="true"]{min-width:0!important}
+  @media (max-width:640px){h1{font-size:21px}.wrap{padding:18px 12px 56px}th,td{padding:5px 5px;font-size:12.5px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a href="../index.html">← 数学可视化</a>
+    <a href="./index.html">数值线代目录</a>
+    <a href="./作业全解-HW1到HW8.html">作业全解</a>
+    <a href="./期末总复习清单.html">总复习清单</a>
+  </nav>
+
+  <header class="mast">
+    <span class="tag">PLAN · 51 题</span>
+    <h1>51 道作业题：按"先过哪些"排好序，每档配变式</h1>
+    <p class="sub">
+      排序不是按作业编号，而是按<b>考什么、考多重、是不是后面题的前置</b>。六档逐档推进，每档末尾给 1–2 道新变式（带折叠答案）。
+      勾选框存在本机，刷新不丢；全部过完约 6 小时，建议 4–5 天。
+    </p>
+  </header>
+
+  <h2>§00 排序依据与总表</h2>
+  <p>四条判据，按权重从高到低：</p>
+  <ol>
+    <li><b>期末新增</b>：第 10–13 讲（条件数、稳定性、后向稳定）与第 14–16 讲（LU、主元、Cholesky）是本学期新内容，占分最高。</li>
+    <li><b>期中已考原题</b>：期中 8 题 8 道是作业原题 —— 原题必须能一遍做对，不能只"看过"。</li>
+    <li><b>前置关系</b>：1-8（Hermite 实谱）是 8-5/8-6 的前提；7-1（LU 存在性）是 8-2/8-3 的前提。前置不过，后面的题等于背答案。</li>
+    <li><b>单位时间收益</b>：计算型（LU、Cholesky、SVD、Householder）比纯证明型更容易拿分，先过。</li>
+  </ol>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>档</th><th>题数</th><th>覆盖</th><th>为什么排在这里</th><th>建议</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><b>P0</b></td><td>10</td><td>L14–L16 + 1-8</td><td>11 月新课，测验范围明确写了"必考"；计算步骤固定，最容易拿满</td><td>90 min</td></tr>
+      <tr><td class="n"><b>P1</b></td><td>9</td><td>L10–L13</td><td>期末新增考点，占分最高；判断题与误差估计都从这里出</td><td>80 min</td></tr>
+      <tr><td class="n"><b>P2</b></td><td>5</td><td>L6–L9</td><td>QR / 最小二乘，几乎必有一道计算题</td><td>50 min</td></tr>
+      <tr><td class="n"><b>P3</b></td><td>6</td><td>L4–L5</td><td>SVD，题型固定（求 σ、写 UΣVᵀ、低秩近似）</td><td>50 min</td></tr>
+      <tr><td class="n"><b>P4</b></td><td>9</td><td>L2–L3</td><td>范数与投影，选择填空常客，但要先会算</td><td>45 min</td></tr>
+      <tr><td class="n"><b>P5</b></td><td>12</td><td>边角</td><td>低频或纯技巧题，最后扫一遍即可</td><td>45 min</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="bar" id="bar">
+    已完成 <b id="done">0</b> / <span id="total">51</span> 题（不含变式）
+    <div class="prog"><i id="pbar"></i></div>
+  </div>
+
+  <h2><span class="badge">P0</span>直接法与正定：先把"必考且一定能算对"的拿下</h2>
+  <p class="sub" style="margin:0 0 8px">这 10 道全部落在直接法（LU、主元、Cholesky）与 Hermite 上，是 11 月新课的作业：步骤机械、答案可验、几乎不会"会但算错"。先过 7-1 与 1-8 这两个前置（前者给 LU 的存在条件，后者给 Hermite 的实谱），再进 8-2～8-8。</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:36px"></th><th>题号</th><th>考点一句话</th><th>配套页</th><th>时长</th></tr></thead>
+    <tbody>
+      <tr><td><input type="checkbox" data-id="7-1"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex7-1">7-1</a></td><td>LU 存在 ⟺ 各阶顺序主子式非零；分解唯一</td><td><a href="./直接法-高斯消元主元与Cholesky.html">直接法</a></td><td class="t">12′</td></tr>
+      <tr><td><input type="checkbox" data-id="7-2"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex7-2">7-2</a></td><td>Schur 补恒等式；分块消元就是它</td><td><a href="./直接法-高斯消元主元与Cholesky.html">直接法</a></td><td class="t">10′</td></tr>
+      <tr><td><input type="checkbox" data-id="1-8"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-8">1-8</a></td><td>Hermite：特征值实、不同特征值的特征向量正交</td><td><a href="./埃尔米特矩阵-性质与证明.html">Hermite</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="8-2"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex8-2">8-2</a></td><td>由 LU / PA=LU 求 det = ±∏uᵢᵢ</td><td><a href="./直接法-高斯消元主元与Cholesky.html">直接法</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="8-3"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex8-3">8-3</a></td><td>行主元 AQ=LU：非奇异必有，奇异未必</td><td><a href="./直接法-高斯消元主元与Cholesky.html">直接法</a></td><td class="t">12′</td></tr>
+      <tr><td><input type="checkbox" data-id="8-4"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex8-4">8-4</a></td><td>严格列对角占优 ⇒ 列主元不换行（θ=Σ|l|&lt;1 是关键）</td><td><a href="./直接法-高斯消元主元与Cholesky.html">直接法</a></td><td class="t">14′</td></tr>
+      <tr><td><input type="checkbox" data-id="8-5"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex8-5">8-5</a></td><td>Hermite 特征值全正 ⇒ 正定（谱分解一句话）</td><td><a href="./埃尔米特矩阵-性质与证明.html">Hermite</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="8-6"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex8-6">8-6</a></td><td>对称主元、|lᵢⱼ|≤1 的前提、LDL* 与 m³/3</td><td><a href="./埃尔米特矩阵-性质与证明.html">Hermite §04</a></td><td class="t">15′</td></tr>
+      <tr><td><input type="checkbox" data-id="8-7"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex8-7">8-7</a></td><td>QR 的 R 与 Cholesky 的 U 是否相同（正定 ⟺）</td><td><a href="./直接法-高斯消元主元与Cholesky.html">直接法</a></td><td class="t">6′</td></tr>
+      <tr><td><input type="checkbox" data-id="8-8"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex8-8">8-8</a></td><td>Cholesky 解 Ax=b 的后向稳定性（三步复合）</td><td><a href="./后向稳定性-误差如何合成.html">稳定性</a></td><td class="t">12′</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <details>
+    <summary>P0 变式 ①　求 LU 与 det</summary>
+    <div class="body">
+      <p>对 \(A=\begin{bmatrix}1&2&3\\2&5&7\\3&7&9\end{bmatrix}\) 做无主元 LU，并求 \(\det A\)。</p>
+      <p><b>答案</b>：\(l_{21}=2,\ l_{31}=3\)，行 2、3 更新后 \(l_{32}=1\)，得</p>
+      <div class="eq">$$L=\begin{bmatrix}1&0&0\\2&1&0\\3&1&1\end{bmatrix},\quad U=\begin{bmatrix}1&2&3\\0&1&1\\0&0&-1\end{bmatrix},\quad \det A=\prod u_{ii}=-1 .$$</div>
+      <p>自检：\(LU\) 乘回去应等于 \(A\)；若第三行第二列算成 0，说明把 \(l_{31}a_{12}\) 当成了 \(l_{32}\)。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>P0 变式 ②　Cholesky 与 det</summary>
+    <div class="body">
+      <p>对 \(A=\begin{bmatrix}4&2&2\\2&5&1\\2&1&10\end{bmatrix}\) 求 \(A=R^{\mathrm T}R\) 的 \(R\) 与 \(\det A\)。</p>
+      <p><b>答案</b>：\(R=\begin{bmatrix}2&1&1\\0&2&0\\0&0&3\end{bmatrix}\)，\(\det A=(\det R)^2=(2\cdot2\cdot3)^2=144\)。</p>
+      <p>三个对角元 \(2,2,3\) 全正 ⇒ 正定成立；若某个 \(s\le0\)，说明矩阵不正定，不是算错。</p>
+    </div>
+  </details>
+
+  <h2><span class="badge">P1</span>条件数、稳定性与后向稳定：期末新增，占分最高</h2>
+  <p class="sub" style="margin:0 0 8px">这一档全部围绕一条主线：<b>前向误差 ≲ κ · 后向误差</b>。先做 5-2/5-3 学会"造扰动"，再用 6-1～6-3 练判定，最后 6-4/6-6 练估计。</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:36px"></th><th>题号</th><th>考点一句话</th><th>配套页</th><th>时长</th></tr></thead>
+    <tbody>
+      <tr><td><input type="checkbox" data-id="5-2"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex5-2">5-2</a></td><td>构造扰动使 \(\|A^{-1}(\delta A)x\|\) 精确达到上界（κ 可取到）</td><td><a href="./条件数-几何与误差放大.html">条件数</a></td><td class="t">10′</td></tr>
+      <tr><td><input type="checkbox" data-id="5-3"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex5-3">5-3</a></td><td>由 \(\|A\|_2,\|A\|_F\) 给条件数下界</td><td><a href="./条件数-几何与误差放大.html">条件数</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="5-4"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex5-4">5-4</a></td><td>相邻单精度之间夹多少双精度（机器精度换算）</td><td><a href="./后向稳定性-误差如何合成.html">稳定性 §01</a></td><td class="t">6′</td></tr>
+      <tr><td><input type="checkbox" data-id="5-5"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex5-5">5-5</a></td><td>浮点系统里最小不可表示的正整数</td><td><a href="./后向稳定性-误差如何合成.html">稳定性 §01</a></td><td class="t">5′</td></tr>
+      <tr><td><input type="checkbox" data-id="6-1"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex6-1">6-1</a></td><td>内积算法是后向稳定的（把误差推给输入）</td><td><a href="./后向稳定性-误差如何合成.html">稳定性 §01</a></td><td class="t">10′</td></tr>
+      <tr><td><input type="checkbox" data-id="6-2"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex6-2">6-2</a></td><td>大参数 cos 不是后向稳定的（定义域问题）</td><td><a href="./后向稳定性-误差如何合成.html">稳定性 §04</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="6-3"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex6-3">6-3</a></td><td>三个算法判定：后向稳定 / 稳定 / 不稳定</td><td><a href="./后向稳定性-误差如何合成.html">稳定性 §06</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="6-4"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex6-4">6-4</a></td><td>回代误差：从分项界推到 1- 与 ∞-范数估计</td><td><a href="./后向稳定性-误差如何合成.html">稳定性 §03</a></td><td class="t">12′</td></tr>
+      <tr><td><input type="checkbox" data-id="6-6"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex6-6">6-6</a></td><td>酉阵连乘后向稳定；一般矩阵的反例（增长因子）</td><td><a href="./酉矩阵-正交矩阵-性质与证明.html">酉矩阵</a></td><td class="t">12′</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <details>
+    <summary>P1 变式 ①　κ 与前后向误差</summary>
+    <div class="body">
+      <p>设 \(A=\begin{bmatrix}1&1\\1&1.001\end{bmatrix}\)。(a) 求 \(\kappa_2(A)\)；(b) 若解方程的后向误差约 \(10^{-16}\)，前向误差的量级是多少？(c) 若观测到前向误差 \(10^{-3}\)，问题出在哪？</p>
+      <p><b>答案</b>：(a) \(\kappa_2\approx4.0\times10^{3}\)（\(\lambda(A^{\mathrm T}A)\approx0.0,\ 4.002\)，故 \(\sigma_1\approx2.001,\ \sigma_2\approx5\times10^{-4}\)）。
+        (b) \(10^{-16}\times4\times10^{3}=4\times10^{-13}\)。(c) 超出这个量级只能是<b>算法</b>的问题（后向误差没控制住），不能怪矩阵。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>P1 变式 ②　判定三连</summary>
+    <div class="body">
+      <p>下列三个算法分别属于哪一类（后向稳定 / 稳定但不后向 / 不稳定）？(a) 内积 \(\sum a_ib_i\)；(b) 用双精度算 \(\cos(10^{20})\)；(c) Householder QR。</p>
+      <p><b>答案</b>：(a) <b>后向稳定</b> —— 每一步的舍入都能折算成输入 \(\tilde a_i,\tilde b_i\) 的扰动；
+        (b) <b>不稳定</b> —— 输入的 \(10^{20}\) 已经无法精确表示，微小扰动会让 cos 的值完全不同，误差不能推给"数据的微小扰动"；
+        (c) <b>后向稳定</b> —— 每个反射是酉的，\(\|\delta A\|=O(m\epsilon\|A\|)\)，与 \(\kappa(A)\) 无关。</p>
+    </div>
+  </details>
+
+  <h2><span class="badge">P2</span>QR 与最小二乘：一道计算题几乎必出</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:36px"></th><th>题号</th><th>考点一句话</th><th>配套页</th><th>时长</th></tr></thead>
+    <tbody>
+      <tr><td><input type="checkbox" data-id="3-6"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex3-6">3-6</a></td><td>经典 GS 的 flop 精确计数（2mn² 的来历）</td><td><a href="./算法示波器-伪代码与逐步可视化.html#cost_gs">成本</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="3-5"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex3-5">3-5</a></td><td>用 QR 求两平面交线（零空间里取向量）</td><td><a href="./完全QR-两平面交线与棋盘结构.html">完全 QR</a></td><td class="t">12′</td></tr>
+      <tr><td><input type="checkbox" data-id="4-1"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex4-1">4-1</a></td><td>Householder 的特征值、det、奇异值（谱是 1,…,1,−1）</td><td><a href="./酉矩阵-正交矩阵-性质与证明.html">酉矩阵 §05</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="4-2"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex4-2">4-2</a></td><td>反射与旋转、Givens QR、一次旋转 6 flops</td><td><a href="./算法示波器-伪代码与逐步可视化.html#givens">Givens</a></td><td class="t">12′</td></tr>
+      <tr><td><input type="checkbox" data-id="4-4"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex4-4">4-4</a></td><td>MGS 与 Householder 两条 QR + 解最小二乘</td><td><a href="./最小二乘-几何与三种解法.html">最小二乘</a></td><td class="t">14′</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <details>
+    <summary>P2 变式 ①　Householder 手算</summary>
+    <div class="body">
+      <p>用 Householder 把 \(a=(1,2,2)^{\mathrm T}\) 折到 \(e_1\) 轴上，写出 \(v\) 与 \(H\)。</p>
+      <p><b>答案</b>：\(\|a\|=3\)，\(v=a+3e_1=(4,2,2)^{\mathrm T}\)，单位化后 \(H=I-2vv^{\mathrm T}/v^{\mathrm T}v\)，直接算出</p>
+      <div class="eq">$$H=\frac13\begin{bmatrix}-1&-2&-2\\-2&2&-1\\-2&-1&2\end{bmatrix},\qquad Ha=(-3,0,0)^{\mathrm T}.$$</div>
+      <p>自检：\(H\) 对称、\(H^2=I\)、\(\det H=-1\)。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>P2 变式 ②　Givens 一次旋转</summary>
+    <div class="body">
+      <p>用一次 Givens 旋转把 \(A=\begin{bmatrix}3&1\\4&2\end{bmatrix}\) 的第 2 行第 1 列化为 0。</p>
+      <p><b>答案</b>：\(r=5,\ c=3/5,\ s=4/5\)，\(G=\begin{bmatrix}0.6&0.8\\-0.8&0.6\end{bmatrix}\)，</p>
+      <div class="eq">$$GA=\begin{bmatrix}5&2.2\\0&0.4\end{bmatrix}.$$</div>
+      <p>注意第二列也跟着变：\(2.2=0.6\cdot1+0.8\cdot2\)，不是原值 1。</p>
+    </div>
+  </details>
+
+  <h2><span class="badge">P3</span>SVD：题型固定，按模板套</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:36px"></th><th>题号</th><th>考点一句话</th><th>配套页</th><th>时长</th></tr></thead>
+    <tbody>
+      <tr><td><input type="checkbox" data-id="2-1"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex2-1">2-1</a></td><td>三类小矩阵的 SVD（对角、换位、秩一）</td><td><a href="./SVD-几何与低秩近似.html">SVD 几何</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="2-2"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex2-2">2-2</a></td><td>纸面旋转 90° 后奇异值不变（正交不变性）</td><td><a href="./酉矩阵-正交矩阵-性质与证明.html">酉矩阵 §04</a></td><td class="t">6′</td></tr>
+      <tr><td><input type="checkbox" data-id="2-3"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex2-3">2-3</a></td><td>实矩阵有实 SVD（用 AᵀA 的实谱）</td><td><a href="./SVD-几何与低秩近似.html">SVD §02</a></td><td class="t">6′</td></tr>
+      <tr><td><input type="checkbox" data-id="2-4"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex2-4">2-4</a></td><td>精确算出 σmax 与 σmin（不转小数）</td><td><a href="./SVD手算-超椭圆与最少负号.html">SVD 手算</a></td><td class="t">10′</td></tr>
+      <tr><td><input type="checkbox" data-id="2-5"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex2-5">2-5</a></td><td>SVD 综合七问（范数、逆、面积、特征值）</td><td><a href="./SVD手算-超椭圆与最少负号.html">SVD 手算</a></td><td class="t">14′</td></tr>
+      <tr><td><input type="checkbox" data-id="2-6"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex2-6">2-6</a></td><td>分块 \(\left[\begin{smallmatrix}0&A^*\\A&0\end{smallmatrix}\right]\) 的谱 = ±σ</td><td><a href="./埃尔米特矩阵-性质与证明.html">Hermite §06</a></td><td class="t">10′</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <details>
+    <summary>P3 变式 ①　换位矩阵的 SVD</summary>
+    <div class="body">
+      <p>求 \(A=\begin{bmatrix}0&2\\1&0\end{bmatrix}\) 的 SVD。</p>
+      <p><b>答案</b>：\(A^{\mathrm T}A=\operatorname{diag}(1,4)\)，\(\sigma=(2,1)\)。取 \(v_1=e_2,\ v_2=e_1\)，则 \(Av_1=(2,0)^{\mathrm T}=2e_1\)、\(Av_2=(0,1)^{\mathrm T}=e_2\)，于是</p>
+      <div class="eq">$$U=\begin{bmatrix}1&0\\0&1\end{bmatrix},\quad \Sigma=\begin{bmatrix}2&0\\0&1\end{bmatrix},\quad V=\begin{bmatrix}0&1\\1&0\end{bmatrix}.$$</div>
+      <p>验算 \(U\Sigma V^{\mathrm T}=A\)。（\(U\) 也可取 \(-I\)，差符号。）</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>P3 变式 ②　Eckart–Young 一句话</summary>
+    <div class="body">
+      <p>设 \(\sigma(A)=(3,2,1)\)。求最佳秩一近似的 2-范数误差与 F-范数误差。</p>
+      <p><b>答案</b>：\(\|A-A_1\|_2=\sigma_2=2\)；\(\|A-A_1\|_F=\sqrt{\sigma_2^2+\sigma_3^2}=\sqrt5\)。</p>
+      <p>易错：F 范数要把<b>剩下所有</b>奇异值平方求和，不能只取 σ₂。</p>
+    </div>
+  </details>
+
+  <h2><span class="badge">P4</span>范数与投影：选择填空的常客</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:36px"></th><th>题号</th><th>考点一句话</th><th>配套页</th><th>时长</th></tr></thead>
+    <tbody>
+      <tr><td><input type="checkbox" data-id="1-3"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-3">1-3</a></td><td>三角酉阵必为对角阵（用列正交）</td><td><a href="./酉矩阵-正交矩阵-性质与证明.html">酉矩阵 §03</a></td><td class="t">5′</td></tr>
+      <tr><td><input type="checkbox" data-id="1-4"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-4">1-4</a></td><td>对角阵的 2-范数与 p-范数</td><td><a href="./范数-单位球与诱导范数.html">范数</a></td><td class="t">5′</td></tr>
+      <tr><td><input type="checkbox" data-id="1-5"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-5">1-5</a></td><td>单行矩阵的 2-范数 = 该行的 2-范数</td><td><a href="./范数-单位球与诱导范数.html">范数</a></td><td class="t">4′</td></tr>
+      <tr><td><input type="checkbox" data-id="1-6"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-6">1-6</a></td><td>秩一矩阵 \(uv^*\) 的 2-范数 = ‖u‖‖v‖</td><td><a href="./范数-单位球与诱导范数.html">范数</a></td><td class="t">5′</td></tr>
+      <tr><td><input type="checkbox" data-id="1-9"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-9">1-9</a></td><td>谱半径 ≤ 任一矩阵范数</td><td><a href="./范数-单位球与诱导范数.html">范数</a></td><td class="t">6′</td></tr>
+      <tr><td><input type="checkbox" data-id="1-10"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-10">1-10</a></td><td>四条 1/2/∞ 不等式与维数紧性</td><td><a href="./范数-单位球与诱导范数.html">范数</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="3-1"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex3-1">3-1</a></td><td>正交投影 P 使 I−2P 是酉阵</td><td><a href="./投影算子-正交与斜投影.html">投影</a></td><td class="t">5′</td></tr>
+      <tr><td><input type="checkbox" data-id="3-2"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex3-2">3-2</a></td><td>A*A 非奇异 ⟺ A 列满秩</td><td><a href="./投影算子-正交与斜投影.html">投影</a></td><td class="t">5′</td></tr>
+      <tr><td><input type="checkbox" data-id="3-3"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex3-3">3-3</a></td><td>非零投影的范数 ≥1，等号只在正交投影</td><td><a href="./投影算子-正交与斜投影.html">投影</a></td><td class="t">8′</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <details>
+    <summary>P4 变式 ①　三个范数一起算</summary>
+    <div class="body">
+      <p>求 \(A=\begin{bmatrix}1&-2\\3&0\end{bmatrix}\) 的 \(\|A\|_1,\|A\|_\infty,\|A\|_2\)。</p>
+      <p><b>答案</b>：列和 \(4,2\) ⇒ \(\|A\|_1=4\)；行和 \(3,3\) ⇒ \(\|A\|_\infty=3\)；
+        \(A^{\mathrm T}A=\begin{bmatrix}10&-2\\-2&4\end{bmatrix}\)，\(\lambda=7\pm\sqrt{13}\) ⇒ \(\|A\|_2=\sqrt{7+\sqrt{13}}\approx3.257\)。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>P4 变式 ②　投影矩阵</summary>
+    <div class="body">
+      <p>设 \(a=(1,1,1)^{\mathrm T}/\|a\|\)，求 \(P=aa^{\mathrm T}\)，并验证 \(P^2=P\)、\(\|P\|_2=1\)。</p>
+      <p><b>答案</b>：\(P=\frac13 J_{3\times3}\)（全 1 矩阵的 1/3）。\(P^2=\frac19 J^2=\frac19\cdot3J=P\)；
+        \(P\) 对称幂等 ⇒ 正交投影，特征值 \(1,0,0\)，故 \(\|P\|_2=1\)。</p>
+    </div>
+  </details>
+
+  <h2><span class="badge">P5</span>边角题：最后扫一遍</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:36px"></th><th>题号</th><th>考点一句话</th><th>配套页</th><th>时长</th></tr></thead>
+    <tbody>
+      <tr><td><input type="checkbox" data-id="1-1"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-1">1-1</a></td><td>八步初等变换写成 ABC（左右顺序）</td><td><a href="./期末模拟卷-三套.html#s1a">模拟卷一 1</a></td><td class="t">6′</td></tr>
+      <tr><td><input type="checkbox" data-id="1-2"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-2">1-2</a></td><td>求值矩阵：可逆性与 \(A^{-1}_{ij}\) 的含义</td><td><a href="./线性映射-矩阵向量乘积与正交性.html">线性映射</a></td><td class="t">5′</td></tr>
+      <tr><td><input type="checkbox" data-id="1-7"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-7">1-7</a></td><td>正交列的勾股定理（n=2 + 归纳）</td><td><a href="./投影算子-正交与斜投影.html">投影</a></td><td class="t">5′</td></tr>
+      <tr><td><input type="checkbox" data-id="1-11"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex1-11">1-11</a></td><td>\(uv^*\) 的 F-范数：是否也等于 ‖u‖‖v‖</td><td><a href="./范数-单位球与诱导范数.html">范数</a></td><td class="t">4′</td></tr>
+      <tr><td><input type="checkbox" data-id="3-4"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex3-4">3-4</a></td><td>奇偶列正交 ⇒ R̂ 的棋盘结构</td><td><a href="./完全QR-两平面交线与棋盘结构.html">完全 QR</a></td><td class="t">8′</td></tr>
+      <tr><td><input type="checkbox" data-id="4-3"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex4-3">4-3</a></td><td>分块加行后伪逆范数变小</td><td><a href="./完全QR-两平面交线与棋盘结构.html">完全 QR</a></td><td class="t">6′</td></tr>
+      <tr><td><input type="checkbox" data-id="5-1"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex5-1">5-1</a></td><td>对偶范数是范数（三条公理）</td><td><a href="./范数-单位球与诱导范数.html">范数</a></td><td class="t">5′</td></tr>
+      <tr><td><input type="checkbox" data-id="5-6"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex5-6">5-6</a></td><td>四个大 O 判断</td><td><a href="./后向稳定性-误差如何合成.html">稳定性</a></td><td class="t">3′</td></tr>
+      <tr><td><input type="checkbox" data-id="5-7"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex5-7">5-7</a></td><td>O(ε) 的两条代数（可加、可乘）</td><td><a href="./后向稳定性-误差如何合成.html">稳定性</a></td><td class="t">3′</td></tr>
+      <tr><td><input type="checkbox" data-id="6-5"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex6-5">6-5</a></td><td>解与真解的误差（κ 与 ε 的乘积）</td><td><a href="./后向稳定性-误差如何合成.html">稳定性 §04</a></td><td class="t">5′</td></tr>
+      <tr><td><input type="checkbox" data-id="7-3"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex7-3">7-3</a></td><td>列消去、尺度变换与完全消元</td><td><a href="./直接法-高斯消元主元与Cholesky.html">直接法</a></td><td class="t">6′</td></tr>
+      <tr><td><input type="checkbox" data-id="8-1"></td><td class="n"><a href="./作业全解-HW1到HW8.html#ex8-1">8-1</a></td><td>行向量左乘与置换矩阵</td><td><a href="./期末模拟卷-三套.html#s1a">模拟卷一 1</a></td><td class="t">4′</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <details>
+    <summary>P5 变式　秩一的两个范数</summary>
+    <div class="body">
+      <p>设 \(u=(3,0)^{\mathrm T}\)、\(v=(0,4)^{\mathrm T}\)，求 \(uv^{\mathrm T}\) 的 2-范数与 F-范数。</p>
+      <p><b>答案</b>：秩一矩阵只有一个非零奇异值 \(\sigma_1=\|u\|\|v\|=12\)，所以两个范数都等于 <b>12</b>（秩一时 2-范数 = F-范数）。</p>
+    </div>
+  </details>
+
+  <h2>§07 怎么用这张表</h2>
+  <ul>
+    <li><b>一次只过一档</b>：勾完 P0 的 10 个框再做 P1，不要跳。跳档的代价是后面的题变成背答案。</li>
+    <li><b>变式先做后看</b>：折叠答案只在卡住 5 分钟后展开。</li>
+    <li><b>卡住的题去对应页</b>：表格第 4 列是"这题的原理在哪"，不是"答案在哪"。</li>
+    <li><b>考前 3 天</b>：只重做两类 —— 打勾记录里仍空着的题，以及自己做错的变式（答案已经看过也算错，重做要能独立写出）。</li>
+  </ul>
+
+  <div class="box">
+    <b>进度是本机存的</b>（localStorage），换设备不同步。想清零：页内按 F12 执行
+    <code>localStorage.removeItem('nla-plan-v1')</code> 后刷新。
+  </div>
+
+  <footer>
+    <span>NLA-PLAN · 51 题 / 6 档 / 11 道变式</span>
+    <span>数值线性代数 · 期末复习</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var KEY = 'nla-plan-v1';
+  var boxes = [].slice.call(document.querySelectorAll('input[type=checkbox][data-id]'));
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e){ state = {}; }
+  var doneEl = document.getElementById('done');
+  var pbar = document.getElementById('pbar');
+  var totalEl = document.getElementById('total');
+  function refresh(){
+    var n = boxes.filter(function(b){ return b.checked; }).length;
+    doneEl.textContent = n;
+    totalEl.textContent = boxes.length;
+    pbar.style.width = (boxes.length ? (100 * n / boxes.length) : 0) + '%';
+  }
+  boxes.forEach(function(b){
+    if(state[b.getAttribute('data-id')]) b.checked = true;
+    b.addEventListener('change', function(){
+      state[b.getAttribute('data-id')] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
+      refresh();
+    });
+  });
+  refresh();
+})();
+</script>
+</body>
+</html>

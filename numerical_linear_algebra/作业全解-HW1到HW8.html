@@ -58,6 +58,8 @@ a{color:var(--steel)}
 mjx-container[jax="SVG"]{max-width:100%}
 mjx-container[jax="SVG"][display="true"]{min-width:0!important;overflow-x:auto;overflow-y:hidden;padding:2px 0;font-size:.92em}
 table.tb{border-collapse:collapse;margin:12px 0;font-size:13.5px;width:100%}
+.tw{overflow-x:auto;margin:12px 0}
+.tw>table.tb{margin:0}
 table.tb td,table.tb th{border:1px solid var(--line);padding:5px 10px;text-align:left;vertical-align:top}
 table.tb th{background:#F2F5F8;font-weight:650;white-space:nowrap}
 table.tb td.c{text-align:center}
@@ -108,6 +110,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-si
     <a href="#hw1">HW1</a><a href="#hw2">HW2</a><a href="#hw3">HW3</a><a href="#hw4">HW4</a>
     <a href="#hw5">HW5</a><a href="#hw6">HW6</a><a href="#hw7">HW7</a><a href="#hw8">HW8</a>
     <a href="./期末总复习清单.html">总清单</a>
+    <a href="./作业题路线图-按考点与优先级.html">路线图</a>
   </div>
 </div>
 
@@ -117,7 +120,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-si
 <div class="note b">
 <span class="h">怎么用这份全解</span>
 <ol style="margin:4px 0 0">
-<li><strong>不要按顺序读</strong>：先看 §00 的表，从标 "期末概率高" 的节开始（HW7、HW8 是新内容必考；HW5、HW6 全没考过）；</li>
+<li><strong>不要按顺序读</strong>：先做<a href="./作业题路线图-按考点与优先级.html">作业题路线图</a>给的六档顺序（P0 直接法 → P1 条件数与稳定性 → …），那份按"考多重、是不是后面题的前置"排过序，并给每档配了同考点变式；本页只当题库查；</li>
 <li>每题先只读<strong>题意</strong>，合上屏幕自己写一遍，再对解答——这比直接读解答有效得多；</li>
 <li>解答后面的<strong>易错</strong>是给"下次还会错"准备的，复习第二遍只看这一行。</li>
 </ol>
@@ -125,6 +128,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-si
 
 <h2 id="s0"><span class="no">00</span>8 次测试总览</h2>
 
+<div class="tw">
 <table class="tb small">
 <tr><th>节</th><th>日期</th><th>题数</th><th>覆盖讲次</th><th>主题</th><th>期中用过</th><th>期末概率</th></tr>
 <tr class="hi"><td class="c">HW8</td><td>11/16</td><td class="c">8</td><td>L14–L16</td><td>行列式、行主元、对角占优、正定、Cholesky</td><td class="c">—</td><td><strong>最高</strong></td></tr>
@@ -136,6 +140,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-si
 <tr><td class="c">HW2</td><td>9/27</td><td class="c">6</td><td>L4–L5</td><td>SVD 手算、旋转不变、实 SVD、分块谱</td><td class="c">2-5 ★</td><td>中</td></tr>
 <tr><td class="c">HW1</td><td>9/7</td><td class="c">11</td><td>L1–L3</td><td>初等变换、范数、谱半径、Hermitian、勾股</td><td class="c">1-3 1-8 ★</td><td>中</td></tr>
 </table>
+</div>
 
 <p class="hint" style="font-size:12.5px;color:var(--ink2);margin:6px 0">概率判断依据：期中 8 题 = 6 原题 + 2 自编，按"每块 2 道"分布。期末 8 题若仍按块分，新块（HW7/8 直接法、HW5/6 浮点）各 2 道，旧四块各 1 道。详见 <a href="./期末复习-指南.html#s0">R3 §09⁺</a>。</p>
 
@@ -211,7 +216,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-si
 <p>\(A=uv^*\)（\(u\in\mathbb{C}^m\)，\(v\in\mathbb{C}^n\)），证明 \(\|A\|_2=\|u\|_2\|v\|_2\)。</p>
 <span class="lab">解答</span>
 <div class="sol">
-<p>\(\|Ax\|_2=\|u(v^*x)\|_2=\|u\|_2\,|v^*x|\le\|u\|_2\|v\|_2\|x\|_2\)；取 \(x=v/\|v\|_2\) 时 \(v^*x=\|v\|_2\)，达等号。</p>
+<p>由 \(Ax=u(v^*x)\) 及 Cauchy–Schwarz：</p>
+<div class="eq">$$\|Ax\|_2=\|u(v^*x)\|_2=\|u\|_2\,|v^*x|\le\|u\|_2\|v\|_2\|x\|_2 .$$</div>
+<p>取 \(x=v/\|v\|_2\) 时 \(v^*x=\|v\|_2\)，达等号。</p>
 <p>等价说法：\(A\) 只有一个非零奇异值 \(\sigma_1=\|u\|\|v\|\)，而 \(\|A\|_2=\sigma_1\)。</p>
 </div>
 <div class="warn">易错：忘了取等构造；或把结论写成 \(\|A\|_F\)（那是下一题）。</div>
@@ -223,7 +230,8 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-si
 <p>\(x_1,\dots,x_n\) 两两正交。（a）直接计算 \(\|x_1+x_2\|^2\) 验证 \(n=2\)；（b）用归纳法证明一般情形。</p>
 <span class="lab">解答</span>
 <div class="sol">
-<p>（a）\(\|x_1+x_2\|^2=\|x_1\|^2+\langle x_1,x_2\rangle+\langle x_2,x_1\rangle+\|x_2\|^2=\|x_1\|^2+\|x_2\|^2\)（交叉项为零）。</p>
+<p>（a）直接展开，交叉项 \(\langle x_1,x_2\rangle+\langle x_2,x_1\rangle=0\)：</p>
+<div class="eq">$$\|x_1+x_2\|^2=\|x_1\|^2+\langle x_1,x_2\rangle+\langle x_2,x_1\rangle+\|x_2\|^2=\|x_1\|^2+\|x_2\|^2 .$$</div>
 <p>（b）设结论对 \(n-1\) 成立。记 \(s=\sum_{i=1}^{n-1}x_i\)，则由 \(x_n\perp x_i\) 得 \(x_n\perp s\)：</p>
 <div class="eq">$$\Big\|\sum_{i=1}^{n}x_i\Big\|^2=\|s+x_n\|^2=\|s\|^2+\|x_n\|^2=\sum_{i=1}^{n-1}\|x_i\|^2+\|x_n\|^2 .$$</div>
 </div>
@@ -265,7 +273,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-si
 <div class="sol">
 <p>（a）\(\|x\|_2^2=\sum_i|x_i|^2\ge\max_i|x_i|^2\)。取 \(x=e_1\) 达等号。<br>
 （b）\(\|x\|_2^2\le m\max_i|x_i|^2\)。取 \(x=(1,\dots,1)^{\mathrm T}\) 达等号。</p>
-<p>（c）把 \(A\) 按行拆开：\(\|A\|_\infty=\max_i\|a_i^*\|_1\le\max_i\sqrt n\,\|a_i^*\|_2\le\sqrt n\,\|A\|_2\)（第一个不等号是（b）用在每一行上，第二个是行向量的 2-范数不超过 \(\|A\|_2\)）。取 \(A=\mathbf{1}_{m\times n}\)：\(\|A\|_\infty=m\)、\(\|A\|_2=\sqrt{mn}\)，比值 \(\sqrt n\) ✓</p>
+<p>（c）把 \(A\) 按行拆开，第一个不等号是（b）用在每一行上，第二个是行向量的 2-范数不超过 \(\|A\|_2\)：</p>
+<div class="eq">$$\|A\|_\infty=\max_i\|a_i^*\|_1\le\max_i\sqrt n\,\|a_i^*\|_2\le\sqrt n\,\|A\|_2 .$$</div>
+<p>取 \(A=\mathbf{1}_{m\times n}\)：\(\|A\|_\infty=m\)、\(\|A\|_2=\sqrt{mn}\)，比值 \(\sqrt n\) ✓</p>
 <p>（d）先证主不等式 \(\|A\|_2\le\sqrt{\|A\|_1\|A\|_\infty}\)：</p>
 <div class="eq">$$\|Ax\|_2^2=\sum_i\Big|\sum_j a_{ij}x_j\Big|^2\le\sum_i\Big(\sum_j|a_{ij}|\Big)\Big(\sum_j|a_{ij}||x_j|^2\Big)\le\|A\|_\infty\|A\|_1\|x\|_2^2 .$$</div>
 <p>再用 \(\|A\|_1\le\sqrt m\|A\|_2\le m\|A\|_\infty\)（对偶形式）即得（d）。取单列矩阵 \(A=[1,\dots,1]^{\mathrm T}\)：\(\|A\|_2=\sqrt m\)、\(\|A\|_\infty=1\) ✓</p>
@@ -455,7 +465,9 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 <p>对每个 \(j=1..n\)：内层对 \(i=1..j-1\) 做 ① 内积 \(r_{ij}=q_i^*a_j\)（\(m\) 次乘 + \((m-1)\) 次加），② 更新 \(a_j\leftarrow a_j-r_{ij}q_i\)（\(m\) 次乘 + \(m\) 次减）；最后归一化 \(q_j=a_j/r_{jj}\)（\(m\) 次除，\(r_{jj}=\|a_j\|_2\) 还需 \(m\) 次乘 + \((m-1)\) 次加 + 1 次开方）。</p>
 <p>累计（略去低阶项）：</p>
 <div class="eq">$$\text{乘/除}\approx mn^2,\qquad \text{加/减}\approx mn^2,\qquad \text{合计}\approx 2mn^2\ \text{flops}.$$</div>
-<p>更精确：\(\sum_{j=1}^{n}\big[(j-1)(4m-1)+3m\big]=2mn^2-\tfrac12n^2+\tfrac12mn-\tfrac12n\) 量级。</p>
+<p>更精确：</p>
+<div class="eq">$$\sum_{j=1}^{n}\big[(j-1)(4m-1)+3m\big]=2mn^2-\tfrac12n^2+\tfrac12mn-\tfrac12n,$$</div>
+<p>仍是 \(2mn^2\) 量级，低阶项只是把系数从 \(2\) 往下修一点。</p>
 </div>
 <div class="warn">易错：只给 \(O(mn^2)\)（题目要"准确数目"）；只数乘除不数加减；把归一化的 \(m\) 次除法漏掉。</div>
 </div>
@@ -611,12 +623,17 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 <div class="ex" id="ex5-7">
 <div class="exh"><span class="exn">5-7</span><span class="ext">\(O(\epsilon)\) 的两条代数</span><span class="exm">★★</span></div>
 <span class="lab">题意</span>
-<p>（a）证明 \((1+O(\epsilon_{\text{machine}}))(1+O(\epsilon_{\text{machine}}))=1+O(\epsilon_{\text{machine}})\)（写出这句话的准确定义）；（b）证明 \((1+O(\epsilon_{\text{machine}}))^{-1}=1+O(\epsilon_{\text{machine}})\)。</p>
+<p>（a）证明</p>
+<div class="eq">$$(1+O(\epsilon_{\text{machine}}))(1+O(\epsilon_{\text{machine}}))=1+O(\epsilon_{\text{machine}})$$</div>
+<p>（写出这句话的准确定义）；（b）证明</p>
+<div class="eq">$$(1+O(\epsilon_{\text{machine}}))^{-1}=1+O(\epsilon_{\text{machine}}).$$</div>
 <span class="lab">解答</span>
 <div class="sol">
 <p><strong>准确定义</strong>：\(f(\epsilon)=(1+O(\epsilon))(1+O(\epsilon))\) 指存在常数 \(C\)，使足够小的 \(\epsilon\) 下 \(f(\epsilon)=1+g(\epsilon)\) 且 \(|g(\epsilon)|\le C\epsilon\)。</p>
 <p><strong>（a）</strong>展开：\((1+\epsilon_1)(1+\epsilon_2)=1+\epsilon_1+\epsilon_2+\epsilon_1\epsilon_2\)。取 \(|\epsilon_i|\le c\epsilon\)，则偏差 \(\le 2c\epsilon+c^2\epsilon^2\le(2c+c^2)\epsilon\)（\(\epsilon\le1\)），即 \(O(\epsilon)\)。</p>
-<p><strong>（b）</strong>\(\dfrac{1}{1+\delta}=1-\delta+\dfrac{\delta^2}{1+\delta}=1+O(\delta^2)=1+O(\epsilon)\)（\(|\delta|\le c\epsilon\)，故二阶项 \(\le c^2\epsilon^2=O(\epsilon)\)）。</p>
+<p><strong>（b）</strong>由</p>
+<div class="eq">$$\frac{1}{1+\delta}=1-\delta+\frac{\delta^2}{1+\delta}.$$</div>
+<p>取 \(|\delta|\le c\epsilon\)，则二阶项 \(\le c^2\epsilon^2=O(\epsilon)\)，故 \(\dfrac{1}{1+\delta}=1+O(\delta^2)=1+O(\epsilon)\)。</p>
 </div>
 <div class="warn">易错：把 \((1+O(\epsilon))^{-1}\) 的结果写成 \(1-O(\epsilon)\) 就认为"不一样"（\(O\) 带符号，\(-O(\epsilon)\) 仍是 \(O(\epsilon)\)）；不写常数 \(C\) 的存在性。</div>
 </div>
@@ -734,10 +751,13 @@ u_2=\frac{Av_2}{\sigma_2}=\frac{1}{\sqrt2}(1,-1)^{\mathrm T}.$$</div>
 <div class="ex" id="ex7-2">
 <div class="exh"><span class="exn">7-2</span><span class="ext">Schur 补恒等式与分块消元</span><span class="exm">★★</span></div>
 <span class="lab">题意</span>
-<p>\(A=\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}\)，\(A_{11}\) 为 \(n\times n\) 非奇异。（a）证明 \(\begin{bmatrix}I&0\\-A_{21}A_{11}^{-1}&I\end{bmatrix}\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}=\begin{bmatrix}A_{11}&A_{12}\\0&A_{22}-A_{21}A_{11}^{-1}A_{12}\end{bmatrix}\)；（b）\(A_{21}\) 经 \(n\) 步行消元消去后，右下块仍是这个 Schur 补。</p>
+<p>\(A=\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}\)，\(A_{11}\) 为 \(n\times n\) 非奇异。（a）证明</p>
+<div class="eq">$$\begin{bmatrix}I&0\\-A_{21}A_{11}^{-1}&I\end{bmatrix}\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}=\begin{bmatrix}A_{11}&A_{12}\\0&A_{22}-A_{21}A_{11}^{-1}A_{12}\end{bmatrix};$$</div>
+<p>（b）\(A_{21}\) 经 \(n\) 步行消元消去后，右下块仍是这个 Schur 补。</p>
 <span class="lab">解答</span>
 <div class="sol">
-<p><strong>（a）</strong>分块相乘：第一块行 \(=[I,0]\cdot A=[A_{11},A_{12}]\)；第二块行 \(=[-A_{21}A_{11}^{-1},I]\cdot A=[-A_{21}A_{11}^{-1}A_{11}+A_{21},\ -A_{21}A_{11}^{-1}A_{12}+A_{22}]=[0,S]\)。</p>
+<p><strong>（a）</strong>分块相乘：第一块行 \(=[I,0]\cdot A=[A_{11},A_{12}]\)；第二块行</p>
+<div class="eq">$$[-A_{21}A_{11}^{-1},\,I]\cdot A=[-A_{21}A_{11}^{-1}A_{11}+A_{21},\ -A_{21}A_{11}^{-1}A_{12}+A_{22}]=[0,S].$$</div>
 <p><strong>（b）</strong>第 \(j\) 行（\(j&gt;n\)）在第 \(i\) 列（\(i\le n\)）的乘子是 \(\ell_{ji}=a_{ji}^{(i-1)}/a_{ii}^{(i-1)}\)。这些行运算合起来的效果，等价于一次性左乘 \(E=\begin{bmatrix}I&0\\-A_{21}A_{11}^{-1}&I\end{bmatrix}\)（因为对 \(A_{11}\) 做消元得到的乘子矩阵正是 \(A_{21}A_{11}^{-1}\)）。\(E\) 不动上面的块行，只把右下块换成 \(S\)，故结论成立。</p>
 <p class="hint" style="font-size:12.5px;color:var(--ink2)">注意：实际计算中从不去求 \(A_{11}^{-1}\)，这里只是"概念上的等价"。</p>
 </div>

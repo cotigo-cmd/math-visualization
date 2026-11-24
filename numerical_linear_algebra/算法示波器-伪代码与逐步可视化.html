@@ -1726,12 +1726,20 @@ function svdErr(U, S, V, A0){
   return e;
 }
 
-const ALGOS = [
-  algoMVrow(), algoMVcol(), algoTri(), algoProj(),
-  algoGS('cgs'), algoGS('mgs'), algoHouse(), algoGivens(),
-  algoLS('ne'), algoLS('qr'),
-  algoSVD(), algoLU(false), algoLU(true), algoChol(), algoSyPivot()
-].concat(COST_SPECS.map(costAlgo));
+/* 每个算法是一个「工厂」：每次进入/重置都造一份全新的闭包状态。
+   若只造一次，run() 里的 L、R、p、Q 会在第二次运行时带着上一次的残值
+   —— 表现就是「R 矩阵一开场就满的，重置也回不到零」。 */
+const ALG_FACTORY = [
+  algoMVrow, algoMVcol, algoTri, algoProj,
+  () => algoGS('cgs'), () => algoGS('mgs'), algoHouse, algoGivens,
+  () => algoLS('ne'), () => algoLS('qr'),
+  algoSVD, () => algoLU(false), () => algoLU(true), algoChol, algoSyPivot
+].concat(COST_SPECS.map(c => () => costAlgo(c)));
+const ALGOS = ALG_FACTORY.map(f => f());
+function makeAlgo(id){
+  const i = ALGOS.findIndex(x => x.id === id);
+  return i < 0 ? null : ALG_FACTORY[i]();
+}
 
 
 
@@ -2128,7 +2136,7 @@ function paint(){
 
 /* ---- 播放控制 ---- */
 function select(id){
-  const a = ALGOS.find(x => x.id === id);
+  const a = makeAlgo(id);
   if(!a) return;
   stopPlay();
   cur = a;
@@ -2172,7 +2180,7 @@ function boot(){
   $('#prev').addEventListener('click', () => { stopPlay(); step(-1); });
   $('#next').addEventListener('click', () => { stopPlay(); step(1); });
   $('#play').addEventListener('click', play);
-  $('#reset').addEventListener('click', () => { stopPlay(); idx = 0; paint(); });
+  $('#reset').addEventListener('click', () => { stopPlay(); if(cur) select(cur.id); });
   $('#speed').addEventListener('change', e => {
     speed = parseFloat(e.target.value) || 1;
     if(timer){ stopPlay(); play(); }

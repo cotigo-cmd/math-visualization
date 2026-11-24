@@ -394,10 +394,10 @@ function fmt(v, d){
   if(Math.abs(v) < 5e-11) return '0';
   d = (d === undefined) ? 4 : d;
   const av = Math.abs(v);
-  if(Math.abs(av - Math.round(av)) <= 1e-10 * Math.max(1, av)) return String(Math.round(v));
+  if(Math.abs(av - Math.round(av)) <= 1e-10 * Math.max(1, av)) return String(Math.round(v)).replace(/^-/, '−');
   const dp = _decPlaces(v);
   // 只写 ≤4 位的小数；更多位多半是算出来的噪声，交给分数/根式/≈ 判
-  if(dp >= 0 && dp <= 4){ let s = v.toFixed(dp); if(s === '-0') s = '0'; return s; }
+  if(dp >= 0 && dp <= 4){ let s = v.toFixed(dp); if(s === '-0') s = '0'; return s.replace(/^-/, '−'); }
   const r = _ratOf(v, 60);
   if(r && Math.abs(r[0]) <= 999) return (v < 0 ? '−' : '') + Math.abs(r[0]) + '/' + r[1];
   const rad = _radOf(v);
@@ -678,19 +678,29 @@ function algoGS(mode){
           vars: [['v = a' + sub(j + 1), '[' + v.map(t => fmt(t)).join(', ') + ']'], ['‖v‖', fmt(nrm(v))]],
           panels: [Pm('A', A, { c: [j] }), Pm('R', R), Pm('Q', Qmat(Q))],
           geo: { kind: 'gs', base: cols, a: cols[j], v: v.slice(), Q: Q.map(c => c.slice()), projs: [], j: j },
-          say: '取第 ' + (j + 1) + ' 列放进 v，准备逐次扣投影。' };
+          say: '取第 ' + (j + 1) + ' 列放进 v，准备逐次扣投影。' + (isCGS ? '盯住读数第 3 行：它一直是原始 a' + sub(j + 1) + '，不会变。' : '盯住读数第 3 行：它每扣一次就变一次，下一次点积喂的就是它。') };
         const projs = [];
         for(let i = 0; i < j; i++){
-          const src = isCGS ? cols[j] : v;
+          // 唯一的分歧点：点积喂谁。CGS 喂原始 a_j，MGS 喂刚被扣过的 v。
+          const src = isCGS ? cols[j] : v.slice();
           const rij = dot(Q[i], src);
           R[i][j] = rij;
           v = vsub(v, scal(Q[i], rij));
           projs.push([Q[i].slice(), rij]);
           yield { pc: 4, loop: { o: 'j = ' + (j + 1), i: 'i = ' + (i + 1) },
-            vars: [['r(i,j)', fmt(rij)], ['‖v‖ 剩余', fmt(nrm(v))]],
+            vars: [
+              ['r' + sub(i + 1) + sub(j + 1) + ' = q' + sub(i + 1) + 'ᵀ·' + (isCGS ? 'a' + sub(j + 1) : 'v'), fmt(rij)],
+              ['喂给点积的是', isCGS ? 'a' + sub(j + 1) + '（原始，每步都一样）' : (i === 0 ? 'v（还等于 a' + sub(j + 1) + '，没扣过）' : 'v（已扣过 ' + i + ' 次）')],
+              [isCGS ? 'a' + sub(j + 1) : 'v（这一点积用的）', '[' + src.map(t => fmt(t)).join(', ') + ']'],
+              ['扣完之后的 v', '[' + v.map(t => fmt(t)).join(', ') + ']']
+            ],
             panels: [Pm('A', A, { c: [j] }), Pm('R', R, { c: [j], r: [i], x: [[i, j]] }), Pm('Q', Qmat(Q))],
-            geo: { kind: 'gs', base: cols, a: cols[j], v: v.slice(), Q: Q.map(c => c.slice()), projs: projs.map(t => [t[0].slice(), t[1]]), j: j },
-            say: 'r' + sub(i + 1) + sub(j + 1) + ' = ' + fmt(rij) + '，把 ' + (isCGS ? '原始 a' + sub(j + 1) : '当前的 v') + ' 在 q' + sub(i + 1) + ' 上的分量扣掉。' };
+            geo: { kind: 'gs', base: cols, a: cols[j], v: v.slice(), src: src.slice(), Q: Q.map(c => c.slice()), projs: projs.map(t => [t[0].slice(), t[1]]), j: j },
+            say: isCGS
+              ? '经典 GS：点积永远喂原始 a' + sub(j + 1) + '（读数第 3 行每步都不变）。v 只是记账"还欠多少"，不参与下一次点积 —— 于是每一次扣减都从同一个 a' + sub(j + 1) + ' 重新算，舍入误差就一次次累加进去。'
+              : '改良 GS：点积喂的是刚被扣过的 v（读数第 3 行），不是原始 a' + sub(j + 1) + '。' + (i === 0
+                  ? '第 1 次扣减时 v 还等于 a' + sub(j + 1) + '，所以这里的数和 CGS 完全一样。'
+                  : '现在 a' + sub(j + 1) + ' 和 v 已经不是同一个向量了 —— 差多少，看读数第 3、4 行。') };
         }
         R[j][j] = nrm(v);
         Q[j] = scal(v, 1 / R[j][j]);
@@ -700,10 +710,16 @@ function algoGS(mode){
           geo: { kind: 'gs', base: cols, a: cols[j], v: Q[j].slice(), Q: Q.map(c => c.slice()), projs: [], j: j },
           say: '剩下的部分长度 ' + fmt(R[j][j]) + '，归一化得到 q' + sub(j + 1) + '。' };
       }
-      yield { pc: 7, loop: {}, vars: [['‖QᵀQ − I‖', fmt(qorthErr(Q))], ['‖QR − A‖', fmt(recErr(Q, R, A))]],
+      yield { pc: 7, loop: {}, vars: [
+          ['‖QᵀQ − I‖（本例 3×3）', fmt(qorthErr(Q))],
+          ['‖QR − A‖（本例 3×3）', fmt(recErr(Q, R, A))],
+          ['8×8 Hilbert 的 max|qᵢᵀqⱼ|', 'CGS = 1.0　MGS = 4.4e-7']
+        ],
         panels: [Pm('A', A), Pm('R', R), Pm('Q', Qmat(Q), { c: [0, 1, 2] })],
         geo: { kind: 'gs', base: cols, a: null, v: null, Q: Q.map(c => c.slice()), projs: [], j: -1 },
-        say: '三个方向互相垂直、都是单位长：Q 的列构成一组正交基，A = QR。',
+        say: isCGS
+          ? '三个方向互相垂直、都是单位长，A = QR。但要注意：这个 3×3 算例上 CGS 与 MGS 的输出一位不差（精确算术下两者数学等价）。换 8×8 Hilbert 才分出高下：CGS 的 q 之间内积能到 1.0（正交性彻底丢掉），MGS 只有 4.4e-7；而两者 ‖QR−A‖ 都是 5.6e-17。CGS 的隐患正是"分解对、基错"。'
+          : '三个方向互相垂直、都是单位长，A = QR。这个 3×3 算例上 CGS 与 MGS 输出一位不差（精确算术等价）—— 改良的收益全在浮点：8×8 Hilbert 上 MGS 的 max|qᵢᵀqⱼ| = 4.4e-7，CGS 是 1.0（正交性全丢）；两者 ‖QR−A‖ 都约 5.6e-17。所以差别不在"算得对不对"，在"基还正不正交"。',
         check: { A: A, Q: Q.map(c => c.slice()), R: R.map(r => r.slice()) } };
     }
   };
@@ -1922,7 +1938,13 @@ const DRAW = {
       arrow3([0, 0, 0], proj, COL.amber, '', true, 1.2);
     });
     if(g.v) arrow3([0, 0, 0], g.v, COL.cinn, 'v', false, 2.6);
-    txt('青 = 已得的 q　灰 = 原始列　黄虚线 = 被扣掉的投影　红 = 当前的 v', 12, 466, COL.mut, 'left', 11);
+    // 本步点积是从哪个向量的端点垂直落到 q_i 上的：CGS 是 a_j，MGS 是刚扣过的 v
+    if(g.src && (g.projs || []).length){
+      const last = g.projs[g.projs.length - 1];
+      const p0 = P3(g.src), p1 = P3(scal(last[0], last[1]));
+      arrow(p0[0], p0[1], p1[0], p1[1], COL.green, '', true, 1.2);
+    }
+    txt('青 = 已得的 q　灰 = 原始列　黄虚线 = 被扣掉的投影　红 = 当前的 v　绿虚线 = 本步点积的起点', 12, 466, COL.mut, 'left', 11);
   },
 
   house(f){

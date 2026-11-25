@@ -1479,7 +1479,7 @@ function algoChol(){
       yield { pc: 0, loop: {}, vars: [['A', '对称正定'], ['R', '上三角（待填）']],
         panels: [Pm('A', A), Pm('R', R)],
         geo: { kind: 'chol', i: -1, j: -1, aij: 0, acc: 0, s: 0, div: 0 },
-        say: 'Cholesky 只对对称正定矩阵可用，代价约 m³/3，是 LU 的一半，且不需要选主元。' };
+        say: 'Cholesky 只对对称正定矩阵可用，代价约 n³/3，是 LU 方阵值 2n³/3 的一半，且不需要选主元。' };
       for(let j = 0; j < m; j++){
         yield { pc: 1, loop: { o: 'j = ' + (j + 1) },
           vars: [['外循环', 'j = ' + (j + 1) + ' / ' + m], ['这一列要算', 'r(1:' + (j + 1) + ',' + (j + 1) + ') 共 ' + (j + 1) + ' 个']],
@@ -1798,7 +1798,7 @@ function algoSAchol(){
       '解 A x = b：先 R*y = b 前代，再 R x = y 回代'
     ],
     run: function*(){
-      yield { pc: 0, loop: {}, vars: [['A', '对称正定（主元全正 ⇔ 正定）'], ['要算的', '只有上三角一半'], ['成本', 'm³/3，是 LU 的一半']],
+      yield { pc: 0, loop: {}, vars: [['A', '对称正定（主元全正 ⇔ 正定）'], ['要算的', '只有上三角一半'], ['成本', 'n³/3，是 LU 方阵值的一半']],
         panels: [Pm('A', A0), Pm('R', R)],
         geo: { kind: 'band', A: A0, F: R, mode: 'chol', i: -1, j: -1, note: 'R 待填' },
         say: '同一个 A，这次只算上三角的一半，还要把每个对角元"开方"取出来。能不能开下去，就是正定性的体检。' };
@@ -2044,22 +2044,22 @@ const COST_SPECS = [
     f: n => 2 * n * n * n - (2 / 3) * n * n * n, formula: '2mn² − 2n³/3',
     pseudo: ['flops = 0', 'for k = 1 : n', '    for j = k : n',
       '        flops += 4(m-k+1)  // 算 w + 更新一列', '// 求和 → 2mn² − 2n³/3  ← 本帧', 'return 2mn² − 2n³/3'],
-    who: 'm = n', note: '反射只作用在剩下的块上，所以比 GS 省（方阵时约 2/3 倍）。' },
+    who: 'm = n', note: '反射只作用在剩下的块上，所以比 GS 省：方阵 = 4n³/3，是 GS 的 2/3。' },
   { id: 'cost_givens', tag: 'ALG-C4', name: '成本 · Givens QR',
-    f: n => 3 * n * n * n, formula: '3n³',
+    f: n => 3 * n * n * n, formula: '3n³（方阵，含 c,s）',
     pseudo: ['flops = 0', 'for k = 1 : n', '    for i = k+1 : m',
-      '        flops += 6n     // 两行 ~4n + 算 c,s ~2', '// 求和 → 3n³ ≈ MGS 的 1.5 倍 ← 本帧', 'return 3n³'],
-    who: 'm = n', note: '每次只碰两行，但旋转次数是 n²/2 量级；作业里那句“比 MGS 多 50%”就是 3n³ / 2n³。' },
+      '        flops += 6(n-k)  // 两行剩余 n−k 列，每对 6 flop', '// 求和 → 3n²(m−n/3)    ← 本帧', 'return 3n³ 当 m=n'],
+    who: 'm = n', note: '一般形 3n²(m−n/3)（只计更新，方阵 2n³）；本表取含 c,s 开销的 3n³ 口径，正好对上作业「比 MGS 多 50%」。' },
   { id: 'cost_lu', tag: 'ALG-C5', name: '成本 · LU 消元',
-    f: n => (2 / 3) * n * n * n, formula: '2m³/3',
+    f: n => (2 / 3) * n * n * n, formula: 'mn² − n³/3',
     pseudo: ['flops = 0', 'for k = 1 : m-1', '    for i = k+1 : m',
-      '        flops += 2(n-k)     // 行更新', '// 求和 → 2m³/3          ← 本帧', 'return 2m³/3'],
-    who: 'm = n', note: 'Σ_k 2(m−k)(n−k)，方阵时收敛到 2m³/3。' },
+      '        flops += 2(n-k)     // 第 k 步更新 (m−k)×(n−k) 尾块', '// 求和 → mn² − n³/3      ← 本帧', 'return mn² − n³/3'],
+    who: 'm = n', note: '每步只动尾块，Σ_k 2(m−k)(n−k) → mn² − n³/3；方阵 m=n 时是 2n³/3。' },
   { id: 'cost_chol', tag: 'ALG-C6', name: '成本 · Cholesky',
-    f: n => (1 / 3) * n * n * n, formula: 'm³/3',
-    pseudo: ['flops = 0', 'for j = 1 : m', '    for i = 1 : j',
-      '        flops += 2(i-1)+1   // 点积 + 除法/开方', '// 求和 → m³/3           ← 本帧', 'return m³/3'],
-    who: 'm = n', note: '只处理一半的元素，正好是 LU 的一半 —— 对称性换来的折扣。' }
+    f: n => (1 / 3) * n * n * n, formula: 'n³/3',
+    pseudo: ['flops = 0', 'for j = 1 : n', '    for i = j : n       // 一列的下三角',
+      '        flops += 2(j-1)+1   // j−1 次点积 + 1 次除法/开方', '// 求和 → n³/3           ← 本帧', 'return n³/3'],
+    who: 'm = n', note: '只算下三角（对称性），每元 2(j−1)+1；Σ = n³/3，正好是 LU 方阵值 2n³/3 的一半。' }
 ];
 function costAlgo(spec){
   return {
@@ -2070,7 +2070,7 @@ function costAlgo(spec){
       yield { pc: 0, loop: {}, vars: [['口径', '一次浮点乘或加 = 1 flop'], ['规模', spec.who]],
         panels: [Pm('成本表（flop）', [COST_NS.slice(), vals.slice()], null, fmtBig)],
         geo: { kind: 'cost', ns: COST_NS, vals: vals, cur: 2, id: spec.id },
-        say: '这一模块不比“步骤”，比**开销**：同一台机器上，n 翻倍时工作量翻几倍。' };
+        say: '这一模块不比“步骤”，比**开销**：同一台机器上，n 翻倍时工作量翻几倍。记号统一为 A 是 m×n；**表里取点全是方阵 m = n**，所以横轴只有一个 n。' };
       const line = k => String(spec.pseudo[k] || '').replace(/\/\/.*$/, '').trim();
       yield { pc: 1, loop: {}, vars: [['这一行', line(1)], ['含义', '外层一共走 n 次（这里 n 取 4…128）']],
         panels: [Pm('成本表（flop）', [COST_NS.slice(), vals.slice()], null, fmtBig)],
@@ -2096,7 +2096,7 @@ function costAlgo(spec){
         panels: [Pm('成本表（flop）', [COST_NS.slice(), vals.slice()], { x: [[1, 5]] }, fmtBig)],
         geo: { kind: 'cost', ns: COST_NS, vals: vals, cur: 5, id: spec.id },
         say: '闭式 ' + spec.formula + '。' + spec.note,
-        check: { kind: 'cost', id: spec.id, ns: COST_NS.slice(), vals: vals.slice() } };
+        check: { kind: 'cost', id: spec.id, ns: COST_NS.slice(), vals: vals.slice(), formula: spec.formula } };
     }
   };
 }

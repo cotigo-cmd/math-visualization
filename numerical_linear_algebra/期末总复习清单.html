@@ -760,7 +760,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);font-si
 <p>(c) \(e=\sum1/k!\) 从左到右累加、截断于 \(&lt;\epsilon\)：<strong>稳定但不后向稳定</strong>——截断误差无法折成输入扰动（这里根本没有输入数据）。</p>
 </div></details>
 <details><summary>6-2 · 用 \(\cos0\ne0\) 说明 \(\cos\) 不是后向稳定</summary><div class="ans">
-<p>后向稳定要求存在 \(\tilde x\) 使输出 <strong>精确</strong>等于 \(\cos\tilde x\)。后向误差是相对量：在函数值接近 0 的地方（\(\cos x\approx0\)，即 \(x\approx\pi/2\)），一个 \(O(\epsilon)\) 的绝对误差对应无界的相对误差，凑不出这样的 \(\tilde x\)。题目用 \(\cos0\ne0\) 提示的正是这一点——<strong>只有函数值远离 0，相对后向误差才有意义</strong>。</p>
+<p>向后稳定要求输出<strong>精确</strong>等于 \(\cos\tilde x\)。取 \(x=2^{-30}\)：\(\cos x\) 与 1 只差 \(x^2/2=4.3\times10^{-19}&lt;\tfrac12\mathrm{ulp}(1)=2^{-53}\)，任何实现只能输出 \(1\)；而 \(\cos\tilde x=1\iff\tilde x=2k\pi\)，离 \(x\) 最近的是 \(0\)，故相对后向误差 \(=1\ne O(\epsilon)\)。 \(\cos0=1\ne0\) 的作用：值域分辨率是绝对的 \(2^{-53}\)，配合 \(\cos'(0)=0\)，半个 ulp 的窗口对应自变量 \(2^{-26}\) 的平台 \(\gg\epsilon\lvert x\rvert\)。<strong>失败点在 \(x\to0\)，不在 \(\pi/2\)</strong>（那里反而能借 \(\tilde x\) 吸收，\(\cos\) 仍是稳定的）。</p>
 </div></details>
 <span class="lab">三种易错</span>
 <ul>

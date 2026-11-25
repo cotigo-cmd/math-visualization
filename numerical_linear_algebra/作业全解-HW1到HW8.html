@@ -763,12 +763,26 @@ $$\big(H_1a_2\big)_1=2+\frac{94-2t}{98-t}(t-1)=\frac{94(t-1)}{98-t}\Big|_{t=7\sq
 <p>利用 \(\cos0\ne0\) 证明计算 \(\cos\) 的算法不是后向稳定的。</p>
 <span class="lab">解答</span>
 <div class="sol">
-<p>后向稳定要求：对每个输入 \(x\)，存在 \(\tilde x\) 使</p>
-<div class="eq">$$\frac{|\tilde x-x|}{|x|}=O(\epsilon)\qquad\text{且}\qquad \tilde f(x)=\cos\tilde x\ \text{（精确）}.$$</div>
-<p>注意右边是<strong>相对</strong>误差为零。当 \(\cos x\) 接近 0（\(x\approx\pi/2\)）时，任何 \(O(\epsilon)\) 的绝对误差都对应无界的相对误差：若要求 \(\cos\tilde x\) 与计算值精确相等，则 \(\tilde x\) 必须精确落在使 \(\cos\tilde x\) 取该值的点上，而这样的 \(\tilde x\) 与 \(x\) 的相对偏差由 \(\cos\) 在该点的导数决定——在零点处 \(|\cos'\tilde x|=|\sin\tilde x|=1\)，绝对误差 \(O(\epsilon)\) 换成 \(\tilde x\) 的偏差是 \(O(\epsilon)\)，看似可以；但一旦函数值本身是 \(O(\epsilon)\) 量级，相对后向误差 \(|\tilde x-x|/|x|\cdot|f|/|f(\tilde x)|\) 就爆掉。</p>
-<p>题目用 \(\cos0\ne0\) 提示的正是这个门槛：<strong>相对后向误差只在函数值远离 0 时有意义</strong>；在零点附近它无界，故不存在满足定义的 \(\tilde x\)。</p>
+<p><strong>先把两个定义分清楚</strong>（课件的写法，注意是两个不同的等式）：</p>
+<div class="eq">$$\text{稳定：}\ \exists\tilde x,\ \frac{|\tilde x-x|}{|x|}=O(\varepsilon)\ \text{且}\ \frac{|\tilde f(x)-f(\tilde x)|}{|f(\tilde x)|}=O(\varepsilon);\qquad \text{向后稳定：}\ \exists\tilde x,\ \frac{|\tilde x-x|}{|x|}=O(\varepsilon)\ \text{且}\ \tilde f(x)=f(\tilde x)\ \textbf{精确}.$$</div>
+<p>所以只需找一个输入，使"输出必须精确等于 \(f(\tilde x)\)"这一条把 \(|\tilde x-x|/|x|\) 逼成 \(O(1)\)。证明模板与课件 Example 3（\(x\mapsto x+1\)：\(x\approx0\) 时加法注入 \(O(\varepsilon)\) 的<strong>绝对</strong>误差，相对 \(\lvert x\rvert\) 却是无界的，无法解释成数据的相对小扰动）完全一样。</p>
+
+<p><strong>证明</strong>。设算法给出的就是 \(\cos x\) 的舍入值 \(\tilde f(x)=\mathrm{fl}(\cos x)\)（课件对 \(\sin\) 的论证用的是同一假设）。取 \(x=2^{-30}\approx9.3\times10^{-10}\)：</p>
+<div class="eq">$$1-\cos x\approx\frac{x^2}{2}=4.3\times10^{-19}\ \ll\ \tfrac12\,\mathrm{ulp}(1)=2^{-53}\approx1.1\times10^{-16}\ \Longrightarrow\ \tilde f(x)=1 .$$</div>
+<p>（1 附近相邻浮点间距 \(2^{-53}\)，\(\cos x\) 离 1 不到半个间距，舍入只能得 1。）若向后稳定，就必存在 \(\tilde x\) 使 \(\cos\tilde x=1\) <strong>精确</strong>成立，同时 \(\lvert\tilde x-x\rvert/\lvert x\rvert=O(\varepsilon)\)。但</p>
+<div class="eq">$$\cos\tilde x=1\iff\tilde x=2k\pi,\quad k\in\mathbb Z,$$</div>
+<p>离 \(x\) 最近的是 \(\tilde x=0\)（\(2\pi\approx6.28\) 远大于 \(x\)），于是 \(\lvert\tilde x-x\rvert/\lvert x\rvert=1\)，是 \(O(1)\) 而不是 \(O(\varepsilon)\)。<strong>矛盾</strong>，故 \(\cos\) 不是向后稳定的。\(\square\)</p>
+
+<p><strong>\(\cos0\ne0\) 到底用在哪</strong>：它让一片区间塌缩成同一个浮点数。因为 \(\cos0=1\)（非零常数），值域在 1 附近的分辨率是绝对的 \(2^{-53}\)；又因为 \(\cos'(0)=0\)（\(\cos x\approx1-x^2/2\)），<strong>值域里半个 ulp 的窗口对应自变量里 \(\sqrt{2\cdot2^{-53}}=2^{-26}\approx1.5\times10^{-8}\) 的窗口</strong>。后向稳定只允许自变量动 \(O(\varepsilon\lvert x\rvert)\sim10^{-25}\)，与 \(2^{-26}\) 差了 \(\varepsilon\) 的量级。<br>
+反过来看 \(\sin\)：\(\sin0=0\)，小 \(x\) 的像也 \(\approx x\)，输出的一格 ulp 对应相对量 \(\varepsilon\)，"借一个 \(\tilde x\)" 吸收得掉——所以 \(\sin\) 的失败点不在 0 而在 \(\pi/2\)（见下）。</p>
+
+<p><strong>课件给的另一条（对 \(\sin,\cos\) 都成立的）解释</strong>：取 \(x=\frac{\pi}{2}-\delta\)，\(0&lt;\delta\ll1\)，并设 \(\tilde f(x)=\mathrm{fl}(\sin x)\) 恰等于真值。由 \(f'(x)=\cos x\approx\delta\)，</p>
+<div class="eq">$$\tilde x-x\approx\frac{\tilde f(x)-f(x)}{f'(x)}=\frac{O(\varepsilon)}{\delta}=O\!\left(\frac{\varepsilon}{\delta}\right),$$</div>
+<p>\(\delta\) 可任意小 ⇒ 后向误差不是 \(O(\varepsilon)\)。这就是"<strong>导数为 0 的点</strong>把值域的误差放大成自变量的误差"。</p>
+
+<p><strong>不矛盾：\(\cos\) 仍是稳定的</strong>。稳定只要求相对误差 \(O(\varepsilon)\)，允许借一个 \(O(\varepsilon\lvert x\rvert)\) 的 \(\tilde x\)：一般点取 \(\tilde x=x\)（相对前向误差 \(\varepsilon/\lvert\cos x\rvert\)，\(\lvert\cos x\rvert\) 不接近 0 时就是 \(O(\varepsilon)\)）；\(\pi/2\) 附近取 \(\tilde x\) 使 \(\cos\tilde x=\tilde f(x)\) 精确成立，那里 \(\lvert x\rvert\approx1.57\)、\(\lvert\tilde x-x\rvert\approx\lvert\tilde f(x)\rvert=O(\varepsilon)\)，相对扰动仍是 \(O(\varepsilon)\)。真正塌掉的只有 \(x\to0\) 的平台上那一条"精确相等"。</p>
 </div>
-<div class="warn">易错：把"后向误差大"和"前向误差大"混为一谈；用 \(\cos\) 有界来说"所以它精确"（有界与后向稳定无关）。这题以课件口径为准，考场上把"零点附近相对后向误差无界"这一句写清即可。</div>
+<div class="warn">易错：① 把后向误差大当成前向误差大（这里前向相对误差只有 \(O(\varepsilon)\)）；② 说"\(\cos\) 有界所以精确"（有界与向后稳定无关）；③ 只写"零点附近相对误差爆掉"却不落到 \(\cos\tilde x=1\iff\tilde x=2k\pi\) 这一步——这一句才是得分点；④ 把失败点说成 \(x\approx\pi/2\)（那里反而可以借 \(\tilde x\) 吸收，失败点在 \(x\to0\)）。</div>
 </div>
 
 <div class="ex" id="ex6-3">
